@@ -36,7 +36,8 @@ const Icons = {
     Download: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
     Crown: ({className="w-4 h-4"}) => <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
     Refresh: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
-    UserCircle: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    UserCircle: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    Shield: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
 };
 
 const safeNum = (val) => { const n = Number(val); return isNaN(n) ? 0 : n; };
@@ -104,28 +105,22 @@ export default function AdminPerfilCRM({
     // Toggle para esconder dados sensíveis no resumo
     const [mostrarDadosSensiveis, setMostrarDadosSensiveis] = useState(true);
 
-    // 🟢 Novo Modal de Suspensão / Reativação
-    const [modalStatusConta, setModalStatusConta] = useState({ isOpen: false, tipo: null, motivo: '' });
+    // 🟢 Estados dos Formulários de Edição (Modo Editar)
+    const [editMode, setEditMode] = useState({ basico: false, sensivel: false, email: 'idle', senha: 'idle', telefone: false });
+    const [formEdit, setFormEdit] = useState({
+        nome: '', sexo: '', nascimento: '', cpf: '', telefone: '', email: '', motivo: '', arquivo: null
+    });
 
-    // Fluxos de Segurança
-    const [emailFlow, setEmailFlow] = useState({ ativo: false, step: 1, novoEmail: '', motivo: '' });
-    const [emailEditFlow, setEmailEditFlow] = useState({ cooldown: 0, attempts: 0, lockedUntil: null }); 
-    const [phoneFlow, setPhoneFlow] = useState({ novoTelefone: '', motivo: '' });
+    const [modalStatusConta, setModalStatusConta] = useState({ isOpen: false, tipo: null, motivo: '' });
     const [walletFlow, setWalletFlow] = useState({ tipo: 'Hub Coins', valor: '', motivo: '' });
     const [senhaTemp, setSenhaTemp] = useState({ codigo: null, expiraEm: null });
     const [tempoRestanteSenha, setTempoRestanteSenha] = useState('');
-    const [docSensivel, setDocSensivel] = useState({ cpf: '', nascimento: '', arquivo: null });
-    
-    // Formulários
     const [showAddEndereco, setShowAddEndereco] = useState(false);
     const [enderecoFlow, setEnderecoFlow] = useState({ cep: '', rua: '', num: '', complemento: '', bairro: '', cidade: '', uf: '', referencia: '', padrao: false });
 
     // Timeline e Filtros do Histórico
     const [timelinePage, setTimelinePage] = useState(1);
     const timelinePerPage = 6;
-    const [timelineDateOpen, setTimelineDateOpen] = useState(false);
-    const [timelineDateRange, setTimelineDateRange] = useState({ start: '', end: '' });
-    const [loadingTimeline, setLoadingTimeline] = useState(false);
     
     const [orderHistoryTab, setOrderHistoryTab] = useState('TODOS');
     const [orderHistoryPage, setOrderHistoryPage] = useState(1);
@@ -133,16 +128,7 @@ export default function AdminPerfilCRM({
     const [orderHistoryDateRange, setOrderHistoryDateRange] = useState({ start: '', end: '' });
     const orderHistoryPerPage = 5;
 
-    // Cronômetros
-    useEffect(() => {
-        if (emailEditFlow.cooldown > 0) {
-            const timer = setTimeout(() => {
-                setEmailEditFlow(prev => ({ ...prev, cooldown: prev.cooldown - 1 }));
-            }, 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [emailEditFlow.cooldown]);
-
+    // Cronômetros de Senha Temporária
     useEffect(() => {
         if (!senhaTemp.expiraEm) return;
         const atualizaCronometro = () => {
@@ -162,8 +148,7 @@ export default function AdminPerfilCRM({
         return () => clearInterval(interval);
     }, [senhaTemp.expiraEm]);
 
-
-    // Ações de Carregamento Fakes para UI Local
+    // Helpers
     const triggerAcao = (actionId, msg) => {
         setSavingState(actionId);
         setTimeout(() => { setSavingState(null); if (showToastGlob) showToastGlob(msg); }, 1200);
@@ -183,48 +168,104 @@ export default function AdminPerfilCRM({
         if(showToastGlob) showToastGlob(`Dados atualizados em ${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`);
     };
 
-    // Mutações da API
-    const mutacaoNotas = useMutation({
-        mutationFn: async (notas) => await api.put(`/admin/customers/${clienteSelecionado.id}/notes`, { notas }),
-        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); if(showToastGlob) showToastGlob('Anotações salvas!'); },
-    });
+    const abrirEdicao = () => {
+        setFormEdit({
+            nome: clienteSelecionado?.nome || '',
+            sexo: clienteSelecionado?.sexo || '',
+            nascimento: clienteSelecionado?.nascimento || '',
+            cpf: clienteSelecionado?.cpf || '',
+            telefone: clienteSelecionado?.telefone || '',
+            email: '', motivo: '', arquivo: null
+        });
+        setEditMode({ basico: false, sensivel: false, email: 'idle', senha: 'idle', telefone: false });
+        setPerfilEmEdicao(true);
+    };
 
-    const mutacaoTags = useMutation({
-        mutationFn: async (novasTags) => await api.put(`/admin/customers/${clienteSelecionado.id}/tags`, { tags: novasTags }),
-        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); if(showToastGlob) showToastGlob('Tags atualizadas!'); },
-    });
+    // ==========================================
+    // 🟢 FUNÇÕES DE EDIÇÃO ESPECÍFICAS (AUDITORIA)
+    // ==========================================
+    const salvarDadosBasicos = () => {
+        if(!formEdit.motivo.trim()) return alert("O motivo é obrigatório para registrar na auditoria.");
+        triggerAcao('saveBasico', 'Dados pessoais atualizados!');
+        setClienteSelecionado(prev => ({ ...prev, nome: formEdit.nome, sexo: formEdit.sexo }));
+        registrarLogAudit('Dados Pessoais Alterados', `De: ${clienteSelecionado.nome} para ${formEdit.nome} | Gênero: ${formEdit.sexo}. Motivo: ${formEdit.motivo}`, 'warning');
+        setEditMode(prev => ({...prev, basico: false}));
+        setFormEdit(prev => ({...prev, motivo: ''}));
+    };
 
-    const mutacaoTelefone = useMutation({
-        mutationFn: async (dados) => await api.put(`/admin/customers/${clienteSelecionado.id}/phone`, dados),
-        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); if(showToastGlob) showToastGlob('Telefone atualizado!'); setPhoneFlow({ novoTelefone: '', motivo: '' }); },
-    });
+    const salvarDadosSensiveis = () => {
+        if(!formEdit.motivo.trim() || !formEdit.arquivo) return alert("Obrigatório: Anexe o documento RG/CNH legível e informe o motivo.");
+        triggerAcao('saveSensivel', 'Documentos em processamento!');
+        setClienteSelecionado(prev => ({ ...prev, cpf: formEdit.cpf, nascimento: formEdit.nascimento }));
+        registrarLogAudit('Dados Sensíveis (CPF/Nasc) Alterados', `Documento anexado: ${formEdit.arquivo.name}. Motivo: ${formEdit.motivo}`, 'warning');
+        setEditMode(prev => ({...prev, sensivel: false}));
+        setFormEdit(prev => ({...prev, motivo: '', arquivo: null}));
+    };
 
-    const mutacaoDadosSensiveis = useMutation({
-        mutationFn: async (formData) => await api.post(`/admin/customers/${clienteSelecionado.id}/sensitive-data`, formData, { headers: { 'Content-Type': 'multipart/form-data' }}),
-        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); if(showToastGlob) showToastGlob('Documentos enviados!'); },
-    });
+    const salvarTelefone = () => {
+        if(!formEdit.motivo.trim() || !formEdit.telefone.trim()) return alert("Telefone e Motivo são obrigatórios.");
+        triggerAcao('savePhone', 'Telefone de contato atualizado!');
+        setClienteSelecionado(prev => ({ ...prev, telefone: formEdit.telefone }));
+        registrarLogAudit('WhatsApp/Telefone Alterado', `De: ${clienteSelecionado.telefone} para ${formEdit.telefone}. Motivo: ${formEdit.motivo}`, 'warning');
+        setEditMode(prev => ({...prev, telefone: false}));
+        setFormEdit(prev => ({...prev, motivo: ''}));
+    };
 
-    const mutacaoSenha = useMutation({
-        mutationFn: async () => await api.post(`/admin/customers/${clienteSelecionado.id}/generate-temp-password`),
-        onSuccess: (response) => {
-            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
-            const expiraEm = new Date(new Date().getTime() + 7 * 60000); 
-            setSenhaTemp({ codigo: response.data.password, expiraEm }); 
-            if(showToastGlob) showToastGlob(response.data.message);
+    const enviarLinkEmail = () => {
+        if(!formEdit.email.trim()) return alert("Digite um novo e-mail válido.");
+        triggerAcao('emailLink', 'Link enviado para o cliente!');
+        registrarLogAudit('Solicitação de Troca de E-mail', `Link de confirmação enviado para: ${formEdit.email}`, 'info');
+        setEditMode(prev => ({...prev, email: 'idle'}));
+        setFormEdit(prev => ({...prev, email: ''}));
+    };
+
+    const forcarTrocaEmail = () => {
+        if(!formEdit.motivo.trim() || !formEdit.email.trim()) return alert("Motivo e Novo E-mail são obrigatórios na troca forçada.");
+        triggerAcao('emailForce', 'E-mail alterado forçadamente!');
+        setClienteSelecionado(prev => ({ ...prev, email: formEdit.email }));
+        registrarLogAudit('E-mail Alterado (Forçado pelo Gestor)', `De: ${clienteSelecionado.email} para ${formEdit.email}. Motivo: ${formEdit.motivo}`, 'warning');
+        setEditMode(prev => ({...prev, email: 'idle'}));
+        setFormEdit(prev => ({...prev, email: '', motivo: ''}));
+    };
+
+    const enviarLinkSenha = () => {
+        triggerAcao('senhaLink', 'Link de redefinição enviado ao e-mail atual do cliente!');
+        registrarLogAudit('Redefinição de Senha (Link)', `Link válido por 7 minutos enviado para o e-mail cadastrado.`, 'info');
+        setEditMode(prev => ({...prev, senha: 'idle'}));
+    };
+
+    const gerarSenhaProvisoria = () => {
+        setSavingState('senhaTemp');
+        mutacaoSenha.mutate(null, { onSettled: () => {
+            setSavingState(null);
+            setEditMode(prev => ({...prev, senha: 'temp'}));
+            registrarLogAudit('Senha Provisória Gerada', `Senha temporária criada pelo gestor (válida por 7 min).`, 'warning');
+        }});
+    };
+
+    const salvarNotasAPI = () => {
+        setSavingState('notas');
+        mutacaoNotas.mutate(clienteSelecionado.notas, { onSettled: () => setSavingState(null) });
+    };
+
+    const adicionarTag = () => {
+        if (novaTag.trim() && clienteSelecionado) {
+            const tagFormatada = novaTag.trim();
+            const tagsAtuais = clienteSelecionado.tags || [];
+            if (!tagsAtuais.includes(tagFormatada)) {
+                const novasTags = [...tagsAtuais, tagFormatada];
+                setClienteSelecionado(prev => ({ ...prev, tags: novasTags }));
+                mutacaoTags.mutate(novasTags);
+            }
+            setNovaTag('');
         }
-    });
+    };
 
-    // 🟢 MUTAÇÃO DE STATUS DA CONTA (O MODAL AGORA CONTROLA ISSO)
-    const mutacaoStatusConta = useMutation({
-        mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/status`, dados), 
-        onSuccess: (response, variables) => {
-            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
-            const novoStatus = variables.acao === 'SUSPENDER' ? 'BLOQUEADA' : 'ATIVO';
-            setClienteSelecionado(prev => ({...prev, status: novoStatus}));
-            setModalStatusConta({ isOpen: false, tipo: null, motivo: '' });
-            if(showToastGlob) showToastGlob(variables.acao === 'SUSPENDER' ? 'Conta suspensa com sucesso.' : 'Conta reativada com sucesso.');
-        }
-    });
+    const removerTag = (tagParaRemover) => {
+        const novasTags = (clienteSelecionado.tags || []).filter(t => t !== tagParaRemover);
+        setClienteSelecionado(prev => ({ ...prev, tags: novasTags }));
+        mutacaoTags.mutate(novasTags);
+    };
 
     const handleConfirmarStatusConta = () => {
         if (!modalStatusConta.motivo.trim()) return alert("O motivo é obrigatório.");
@@ -251,70 +292,39 @@ export default function AdminPerfilCRM({
         );
     };
 
-    const mutacaoCarteira = useMutation({
-        mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/wallet-transaction`, dados),
+    const mutacaoStatusConta = useMutation({
+        mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/status`, dados), 
+        onSuccess: (response, variables) => {
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
+            const novoStatus = variables.acao === 'SUSPENDER' ? 'BLOQUEADA' : 'ATIVO';
+            setClienteSelecionado(prev => ({...prev, status: novoStatus}));
+            setModalStatusConta({ isOpen: false, tipo: null, motivo: '' });
+            if(showToastGlob) showToastGlob(variables.acao === 'SUSPENDER' ? 'Conta suspensa com sucesso.' : 'Conta reativada com sucesso.');
+        }
+    });
+
+    const mutacaoNotas = useMutation({
+        mutationFn: async (notas) => await api.put(`/admin/customers/${clienteSelecionado.id}/notes`, { notas }),
+        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); if(showToastGlob) showToastGlob('Anotações salvas!'); },
+    });
+    const mutacaoTags = useMutation({
+        mutationFn: async (novasTags) => await api.put(`/admin/customers/${clienteSelecionado.id}/tags`, { tags: novasTags }),
+        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); if(showToastGlob) showToastGlob('Tags atualizadas!'); },
+    });
+    const mutacaoSenha = useMutation({
+        mutationFn: async () => await api.post(`/admin/customers/${clienteSelecionado.id}/generate-temp-password`),
         onSuccess: (response) => {
-            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); 
-            setWalletFlow({ tipo: 'Hub Coins', valor: '', motivo: '' }); 
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
+            const expiraEm = new Date(new Date().getTime() + 7 * 60000); 
+            setSenhaTemp({ codigo: response.data.password, expiraEm }); 
             if(showToastGlob) showToastGlob(response.data.message);
         }
     });
 
-    // --- FUNÇÕES DE AÇÃO ---
-    const adicionarTag = () => {
-        if (novaTag.trim() && clienteSelecionado) {
-            const tagFormatada = novaTag.trim();
-            const tagsAtuais = clienteSelecionado.tags || [];
-            if (!tagsAtuais.includes(tagFormatada)) {
-                const novasTags = [...tagsAtuais, tagFormatada];
-                setClienteSelecionado(prev => ({ ...prev, tags: novasTags }));
-                mutacaoTags.mutate(novasTags);
-            }
-            setNovaTag('');
-        }
-    };
-
-    const removerTag = (tagParaRemover) => {
-        const novasTags = (clienteSelecionado.tags || []).filter(t => t !== tagParaRemover);
-        setClienteSelecionado(prev => ({ ...prev, tags: novasTags }));
-        mutacaoTags.mutate(novasTags);
-    };
-
-    const salvarNotasAPI = () => {
-        setSavingState('notas');
-        mutacaoNotas.mutate(clienteSelecionado.notas, { onSettled: () => setSavingState(null) });
-    };
-
-    const avancarEmailStep2 = () => {
-        if (!emailFlow.motivo.trim()) return alert("Obrigatório: Preencha o motivo da alteração.");
-        registrarLogAudit('Início da Troca de E-mail', 'Motivo informado pelo gestor: ' + emailFlow.motivo, 'info');
-        setEmailFlow(prev => ({ ...prev, step: 2 }));
-    };
-
-    const enviarCodigoEmail = () => {
-        if (emailEditFlow.lockedUntil && new Date() < emailEditFlow.lockedUntil) return alert("Sistema de segurança ativo. Aguarde.");
-        if (!emailFlow.novoEmail.trim() || !emailFlow.novoEmail.includes('@')) return alert("Digite um e-mail válido.");
-
-        const novasTentativas = emailEditFlow.attempts + 1;
-        triggerAcao('envioEmailCode', 'Código enviado para o novo e-mail!');
-        registrarLogAudit('Validação de Novo E-mail', `Código de confirmação enviado para ${emailFlow.novoEmail}.`, 'warning');
-
-        if (novasTentativas >= 3) {
-            const tempoBloqueio = new Date(new Date().getTime() + 5 * 60000);
-            setEmailEditFlow({ cooldown: 0, attempts: 0, lockedUntil: tempoBloqueio });
-            registrarLogAudit('Alerta de Segurança', `Bloqueio automático após 3 tentativas de envio para ${emailFlow.novoEmail}.`, 'warning');
-        } else {
-            setEmailEditFlow(prev => ({ ...prev, cooldown: 45, attempts: novasTentativas }));
-        }
-    };
-
-    const salvarTelefone = () => {
-        if (!phoneFlow.motivo.trim() || !phoneFlow.novoTelefone.trim()) return alert("Preencha todos os campos.");
-        setSavingState('savePhone');
-        mutacaoTelefone.mutate({ telefone: phoneFlow.novoTelefone, motivo: phoneFlow.motivo }, { onSettled: () => { 
-            setSavingState(null);
-            registrarLogAudit('Telefone Alterado', `Novo: ${phoneFlow.novoTelefone} | Motivo: ${phoneFlow.motivo}`, 'warning');
-        }});
+    const processarTransacaoWallet = () => {
+        if (!walletFlow.valor || walletFlow.valor <= 0 || !walletFlow.motivo.trim()) return alert("Preencha valor e motivo.");
+        setSavingState('transacao');
+        mutacaoCarteira.mutate({ tipo: walletFlow.tipo, valor: walletFlow.valor, motivo: walletFlow.motivo }, { onSettled: () => setSavingState(null) });
     };
 
     const salvarNovoEndereco = () => {
@@ -327,32 +337,14 @@ export default function AdminPerfilCRM({
         setShowAddEndereco(false);
     };
 
-    const salvarDadosSensiveis = () => {
-        if (!docSensivel.arquivo) return alert("Obrigatório: Anexe o documento oficial.");
-        setSavingState('saveDocs');
-        const formData = new FormData();
-        formData.append('arquivo', docSensivel.arquivo);
-        if (docSensivel.cpf) formData.append('cpf', docSensivel.cpf);
-        if (docSensivel.nascimento) formData.append('nascimento', docSensivel.nascimento);
-        mutacaoDadosSensiveis.mutate(formData, { onSettled: () => {
-            setSavingState(null);
-            registrarLogAudit('Dados Sensíveis Atualizados', `Solicitação de alteração enviada com anexo (${docSensivel.arquivo.name}).`, 'warning');
-        }});
-    };
-
-    const gerarSenhaProvisoria = () => { setSavingState('gerarSenha'); mutacaoSenha.mutate(null, { onSettled: () => setSavingState(null) }); };
-    
-    const processarTransacaoWallet = () => {
-        if (!walletFlow.valor || walletFlow.valor <= 0 || !walletFlow.motivo.trim()) return alert("Preencha valor e motivo.");
-        setSavingState('transacao');
-        mutacaoCarteira.mutate({ tipo: walletFlow.tipo, valor: walletFlow.valor, motivo: walletFlow.motivo }, { onSettled: () => setSavingState(null) });
-    };
-
-    const aplicarFiltroTimeline = () => {
-        setIsTimelineModalOpen(false);
-        setLoadingTimeline(true);
-        setTimeout(() => setLoadingTimeline(false), 800);
-    };
+    const mutacaoCarteira = useMutation({
+        mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/wallet-transaction`, dados),
+        onSuccess: (response) => {
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); 
+            setWalletFlow({ tipo: 'Hub Coins', valor: '', motivo: '' }); 
+            if(showToastGlob) showToastGlob(response.data.message);
+        }
+    });
 
     const handleExportarPDF = () => {
         triggerAcao('exportPdf', 'Relatório gerado para impressão!');
@@ -375,26 +367,19 @@ export default function AdminPerfilCRM({
     // --- CÁLCULOS E FILTRAGENS (MEMOS) ---
     const auditLogsFiltrados = useMemo(() => {
         if(!clienteSelecionado || !clienteSelecionado.auditLogs) return [];
-        let logs = clienteSelecionado.auditLogs;
-        if (timelineDateRange.start) logs = logs.filter(log => new Date(log.data.split('T')[0]) >= new Date(timelineDateRange.start));
-        if (timelineDateRange.end) logs = logs.filter(log => new Date(log.data.split('T')[0]) <= new Date(timelineDateRange.end));
-        return logs.sort((a,b) => new Date(b.data).getTime() - new Date(a.data).getTime());
-    }, [clienteSelecionado, timelineDateRange]);
-
+        return clienteSelecionado.auditLogs.sort((a,b) => new Date(b.data).getTime() - new Date(a.data).getTime());
+    }, [clienteSelecionado]);
     const totalTimelinePages = Math.ceil(auditLogsFiltrados.length / timelinePerPage) || 1;
     const auditLogsPaginados = auditLogsFiltrados.slice((timelinePage - 1) * timelinePerPage, timelinePage * timelinePerPage);
 
     const historicoPedidosFiltrado = useMemo(() => {
         if(!clienteSelecionado || !clienteSelecionado.pedidos) return [];
         let ped = clienteSelecionado.pedidos;
-        if (orderHistoryDateRange.start) ped = ped.filter(p => new Date(p.data_raw) >= new Date(orderHistoryDateRange.start));
-        if (orderHistoryDateRange.end) ped = ped.filter(p => new Date(p.data_raw) <= new Date(orderHistoryDateRange.end));
         if (orderHistoryTab === 'CONCLUÍDOS') ped = ped.filter(p => ['ENTREGUE', 'DESPACHADO', 'SEPARACAO'].includes(p.status));
         else if (orderHistoryTab === 'REEMBOLSADOS') ped = ped.filter(p => p.status === 'REEMBOLSADO');
         else if (orderHistoryTab === 'CANCELADOS') ped = ped.filter(p => p.status === 'CANCELADO');
         return ped.sort((a,b) => new Date(b.data_raw).getTime() - new Date(a.data_raw).getTime());
-    }, [clienteSelecionado, orderHistoryDateRange, orderHistoryTab]);
-
+    }, [clienteSelecionado, orderHistoryTab]);
     const totalOrderHistoryPages = Math.ceil(historicoPedidosFiltrado.length / orderHistoryPerPage) || 1;
     const orderHistoryPaginados = historicoPedidosFiltrado.slice((orderHistoryPage - 1) * orderHistoryPerPage, orderHistoryPage * orderHistoryPerPage);
 
@@ -429,7 +414,6 @@ export default function AdminPerfilCRM({
         return trilha.reverse(); // Mais recente primeiro
     }, [clienteSelecionado]);
 
-
     const getAvatarInitials = (nome) => {
         if (!nome || typeof nome !== 'string') return 'N';
         const split = nome.trim().split(' ');
@@ -448,7 +432,6 @@ export default function AdminPerfilCRM({
     let headerGradient = 'from-slate-200 to-transparent';
     if (sexoStr === 'feminino' || sexoStr === 'f') headerGradient = 'from-pink-200 to-transparent';
     else if (sexoStr === 'masculino' || sexoStr === 'm') headerGradient = 'from-sky-200 to-transparent';
-
 
     // ==========================================
     // RENDERIZAÇÃO PRINCIPAL DO PERFIL
@@ -492,11 +475,16 @@ export default function AdminPerfilCRM({
 
                                 <span className="text-sm font-medium text-slate-500 border-l border-slate-300 pl-3">Membro desde {formatDateBR(clienteSelecionado?.dataCadastro)}</span>
                             </div>
+                            {/* 🟢 TAGS NO CABEÇALHO COM HOVER ELEGANTE PARA REMOVER */}
                             {clienteSelecionado?.tags && clienteSelecionado.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-3">
                                     {clienteSelecionado.tags.map((tag, idx) => (
-                                        <span key={idx} className="bg-white border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
-                                            <Icons.Tag className="w-3 h-3 inline-block mr-1 -mt-0.5"/>{tag}
+                                        <span key={idx} className="group relative flex items-center gap-1 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shadow-sm transition-all hover:pr-6 cursor-default">
+                                            <Icons.Tag className="w-3 h-3 inline-block text-indigo-500 -mt-0.5"/>
+                                            {tag}
+                                            <button onClick={() => removerTag(tag)} className="absolute right-1 opacity-0 group-hover:opacity-100 text-rose-500 hover:text-rose-700 transition-opacity">
+                                                <Icons.Close className="w-3 h-3" />
+                                            </button>
                                         </span>
                                     ))}
                                 </div>
@@ -505,12 +493,10 @@ export default function AdminPerfilCRM({
                     </div>
                     
                     <div className="flex items-center gap-3 z-10 relative">
-                        {/* 🟢 BOTÃO REFRESH COM TOAST */}
                         <button onClick={handleRefreshProfile} className={`w-12 h-12 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-slate-50 transition-all shadow-sm ${savingState === 'refreshProfile' || isFetchingClients ? 'animate-spin text-blue-500' : ''}`} title="Atualizar">
                             <Icons.Refresh className="w-6 h-6"/>
                         </button>
 
-                        {/* 🟢 BOTÃO SUSPENDER / REATIVAR ABRE O MODAL */}
                         {clienteSelecionado?.status === 'INATIVO' || clienteSelecionado?.status === 'BLOQUEADA' ? (
                             <button onClick={() => setModalStatusConta({ isOpen: true, tipo: 'REATIVAR', motivo: '' })} className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 border border-emerald-600 text-white rounded-xl text-sm font-bold transition-all shadow-sm flex items-center justify-center gap-1.5">
                                 <Icons.Check className="w-4 h-4"/> Reativar Conta
@@ -605,7 +591,7 @@ export default function AdminPerfilCRM({
                                                 <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
                                                     <Icons.UserCircle className="w-5 h-5 text-blue-500"/> Sobre o Cliente
                                                 </h3>
-                                                <button onClick={() => setPerfilEmEdicao(true)} className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                                                <button onClick={abrirEdicao} className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
                                                     Editar
                                                 </button>
                                             </div>
@@ -720,86 +706,171 @@ export default function AdminPerfilCRM({
                             </motion.section>
                         )}
 
-                        {/* 🟢 ABA: RESUMO (MODO DE EDIÇÃO) */}
+                        {/* 🟢 ABA: RESUMO (MODO DE EDIÇÃO ORGANIZADO EM CARDS) */}
                         {crmSubTab === 'RESUMO' && perfilEmEdicao && (
-                          <motion.section key="EDITAR_PERFIL" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 w-full max-w-4xl mx-auto flex flex-col my-6">
-                              <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-100">
-                                  <div><h3 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.Edit3 className="w-6 h-6 text-blue-500" /> Editar Cliente</h3></div>
-                                  <button onClick={() => setPerfilEmEdicao(false)} className="px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-800 font-bold rounded-xl transition-colors shadow-sm text-sm">Voltar</button>
-                              </div>
-                              <div className="space-y-8">
-                                  {/* FLUXO E-MAIL */}
-                                  <div className="border-t border-slate-100 pt-8">
-                                      <div className="flex items-center justify-between mb-4"><label className="text-base font-bold text-slate-800">E-mail Principal</label>{!emailFlow.ativo && <button onClick={() => setEmailFlow(prev => ({...prev, ativo: true}))} className="text-xs uppercase font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg">Alterar</button>}</div>
-                                      {!emailFlow.ativo ? <p className="text-sm text-slate-600">{clienteSelecionado?.email}</p> : (
-                                          <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl space-y-5">
-                                              {emailFlow.step === 1 ? (
-                                                  <div className="flex gap-4 items-end"><div className="flex-1"><label className="text-xs font-bold text-blue-800 mb-2">Motivo</label><input type="text" value={emailFlow.motivo} onChange={e => setEmailFlow({...emailFlow, motivo: e.target.value})} className="w-full bg-white border border-blue-200 rounded-xl px-4 py-3" /></div><ProgressButton onClick={avancarEmailStep2} text="Avançar" className="bg-blue-600 text-white py-3 px-6 rounded-xl" /></div>
-                                              ) : (
-                                                  <div className="flex gap-4 items-end"><div className="flex-1"><label className="text-xs font-bold text-blue-800 mb-2">Novo E-mail</label><input type="email" value={emailFlow.novoEmail} onChange={e => setEmailFlow({...emailFlow, novoEmail: e.target.value})} className="w-full bg-white border border-blue-200 rounded-xl px-4 py-3" /></div><ProgressButton onClick={enviarCodigoEmail} loading={savingState === 'envioEmailCode'} text="Enviar Código" className="bg-emerald-600 text-white py-3 px-5 rounded-xl" /></div>
+                          <motion.section key="EDITAR_PERFIL" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
+                              
+                              <div className="bg-white border border-slate-200 shadow-sm rounded-[24px] p-6 sm:p-8 w-full max-w-5xl mx-auto flex flex-col">
+                                  <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-100">
+                                      <div>
+                                          <h3 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.Edit3 className="w-6 h-6 text-blue-500" /> Central de Edição do Cliente</h3>
+                                          <p className="text-[11px] text-slate-500 font-medium mt-1">Alterações aqui geram auditoria irreversível no histórico do cliente.</p>
+                                      </div>
+                                      <button onClick={() => setPerfilEmEdicao(false)} className="px-5 py-2.5 bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-800 font-bold rounded-xl transition-colors shadow-sm text-sm">Voltar ao Resumo</button>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                      
+                                      {/* CARD: DADOS BÁSICOS */}
+                                      <div className="bg-slate-50/50 border border-slate-200 p-6 rounded-2xl shadow-sm transition-all hover:border-blue-200">
+                                          <div className="flex justify-between items-center mb-4">
+                                              <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Icons.UserCircle className="w-4 h-4 text-blue-500"/> Dados Pessoais</h4>
+                                              {!editMode.basico && <button onClick={()=>setEditMode({...editMode, basico: true})} className="text-[10px] text-blue-600 font-bold uppercase bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm hover:bg-blue-100 transition-colors">Alterar</button>}
+                                          </div>
+                                          {!editMode.basico ? (
+                                              <div className="grid grid-cols-2 gap-4">
+                                                  <div><span className="text-[9px] text-slate-400 block uppercase font-bold tracking-widest">Nome Completo</span><span className="text-sm font-black text-slate-800">{clienteSelecionado?.nome}</span></div>
+                                                  <div><span className="text-[9px] text-slate-400 block uppercase font-bold tracking-widest">Gênero</span><span className="text-sm font-black text-slate-800">{clienteSelecionado?.sexo || 'Não informado'}</span></div>
+                                              </div>
+                                          ) : (
+                                              <div className="space-y-4">
+                                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                      <div><label className="text-[9px] text-slate-500 uppercase font-bold tracking-wider block mb-1">Nome Completo</label><input type="text" value={formEdit.nome} onChange={e=>setFormEdit({...formEdit, nome: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold shadow-sm" /></div>
+                                                      <div><label className="text-[9px] text-slate-500 uppercase font-bold tracking-wider block mb-1">Gênero</label><select value={formEdit.sexo} onChange={e=>setFormEdit({...formEdit, sexo: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold shadow-sm"><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option><option value="Outro">Outro</option></select></div>
+                                                  </div>
+                                                  <div>
+                                                      <label className="text-[9px] text-rose-500 uppercase font-bold tracking-wider block mb-1">Motivo da Alteração *</label>
+                                                      <input type="text" value={formEdit.motivo} onChange={e=>setFormEdit({...formEdit, motivo: e.target.value})} className="w-full bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 text-sm text-rose-800 font-medium placeholder-rose-300" placeholder="Ex: Correção ortográfica..." />
+                                                  </div>
+                                                  <div className="flex gap-2 justify-end pt-2">
+                                                      <button onClick={()=>setEditMode({...editMode, basico: false})} className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                                                      <ProgressButton onClick={salvarDadosBasicos} loading={savingState === 'saveBasico'} text="Confirmar" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors" />
+                                                  </div>
+                                              </div>
+                                          )}
+                                      </div>
+
+                                      {/* CARD: DADOS SENSÍVEIS (CPF) */}
+                                      <div className="bg-slate-50/50 border border-slate-200 p-6 rounded-2xl shadow-sm transition-all hover:border-blue-200">
+                                          <div className="flex justify-between items-center mb-4">
+                                              <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Icons.Shield className="w-4 h-4 text-emerald-500"/> Documentação (Sensível)</h4>
+                                              {!editMode.sensivel && <button onClick={()=>setEditMode({...editMode, sensivel: true})} className="text-[10px] text-emerald-600 font-bold uppercase bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 shadow-sm hover:bg-emerald-100 transition-colors">Alterar Documentos</button>}
+                                          </div>
+                                          {!editMode.sensivel ? (
+                                              <div className="grid grid-cols-2 gap-4">
+                                                  <div><span className="text-[9px] text-slate-400 block uppercase font-bold tracking-widest">CPF Registrado</span><span className="text-sm font-mono font-black text-slate-800">{clienteSelecionado?.cpf}</span></div>
+                                                  <div><span className="text-[9px] text-slate-400 block uppercase font-bold tracking-widest">Nascimento</span><span className="text-sm font-black text-slate-800">{formatDateBR(clienteSelecionado?.nascimento)}</span></div>
+                                              </div>
+                                          ) : (
+                                              <div className="space-y-4">
+                                                  <div className="grid grid-cols-2 gap-4">
+                                                      <div><label className="text-[9px] text-slate-500 uppercase font-bold tracking-wider block mb-1">Novo CPF</label><input type="text" value={formEdit.cpf} onChange={e=>setFormEdit({...formEdit, cpf: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono font-bold shadow-sm" /></div>
+                                                      <div><label className="text-[9px] text-slate-500 uppercase font-bold tracking-wider block mb-1">Nova Data</label><input type="date" value={formEdit.nascimento} onChange={e=>setFormEdit({...formEdit, nascimento: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold shadow-sm" /></div>
+                                                  </div>
+                                                  <div>
+                                                      <label className="text-[9px] text-emerald-600 uppercase font-bold tracking-wider block mb-1">Anexo Obrigatório (RG/CNH) *</label>
+                                                      <label className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 bg-white hover:bg-slate-50 rounded-xl p-3 cursor-pointer transition-colors shadow-sm text-xs font-bold text-slate-500">
+                                                          <Icons.Upload className="w-4 h-4 text-slate-400" /> {formEdit.arquivo ? formEdit.arquivo.name : 'Anexar Foto (Máx 3MB)'}
+                                                          <input type="file" accept="image/*,.pdf" onChange={e=>setFormEdit({...formEdit, arquivo: e.target.files[0]})} className="hidden" />
+                                                      </label>
+                                                  </div>
+                                                  <div>
+                                                      <label className="text-[9px] text-rose-500 uppercase font-bold tracking-wider block mb-1">Motivo da Alteração *</label>
+                                                      <input type="text" value={formEdit.motivo} onChange={e=>setFormEdit({...formEdit, motivo: e.target.value})} className="w-full bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 text-sm text-rose-800 font-medium placeholder-rose-300" placeholder="Ex: Cliente corrigindo nome na Receita..." />
+                                                  </div>
+                                                  <div className="flex gap-2 justify-end pt-2">
+                                                      <button onClick={()=>setEditMode({...editMode, sensivel: false})} className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                                                      <ProgressButton onClick={salvarDadosSensiveis} loading={savingState === 'saveSensivel'} text="Confirmar Segurança" className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors" />
+                                                  </div>
+                                              </div>
+                                          )}
+                                      </div>
+
+                                      {/* CARD: TELEFONE / WHATSAPP */}
+                                      <div className="bg-slate-50/50 border border-slate-200 p-6 rounded-2xl shadow-sm transition-all hover:border-blue-200">
+                                          <div className="flex justify-between items-center mb-4">
+                                              <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Icons.WhatsApp className="w-4 h-4 text-[#25D366]"/> Contato (Telefone)</h4>
+                                              {!editMode.telefone && <button onClick={()=>setEditMode({...editMode, telefone: true})} className="text-[10px] text-emerald-600 font-bold uppercase bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 shadow-sm hover:bg-emerald-100 transition-colors">Alterar Contato</button>}
+                                          </div>
+                                          {!editMode.telefone ? (
+                                              <div><span className="text-[9px] text-slate-400 block uppercase font-bold tracking-widest">WhatsApp Validado</span><span className="text-sm font-black text-slate-800">{formatPhone(clienteSelecionado?.telefone)}</span></div>
+                                          ) : (
+                                              <div className="space-y-4">
+                                                  <div><label className="text-[9px] text-slate-500 uppercase font-bold tracking-wider block mb-1">Novo Telefone / WhatsApp</label><input type="text" value={formEdit.telefone} onChange={e=>setFormEdit({...formEdit, telefone: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold shadow-sm" placeholder="+55 11 99999-9999"/></div>
+                                                  <div>
+                                                      <label className="text-[9px] text-rose-500 uppercase font-bold tracking-wider block mb-1">Motivo da Alteração *</label>
+                                                      <input type="text" value={formEdit.motivo} onChange={e=>setFormEdit({...formEdit, motivo: e.target.value})} className="w-full bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 text-sm text-rose-800 font-medium placeholder-rose-300" placeholder="Ex: Perda do número antigo..." />
+                                                  </div>
+                                                  <div className="flex gap-2 justify-end pt-2">
+                                                      <button onClick={()=>setEditMode({...editMode, telefone: false})} className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                                                      <ProgressButton onClick={salvarTelefone} loading={savingState === 'savePhone'} text="Salvar Telefone" className="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors" />
+                                                  </div>
+                                              </div>
+                                          )}
+                                      </div>
+
+                                      {/* CARD: AUTENTICAÇÃO (E-MAIL E SENHA) */}
+                                      <div className="bg-slate-50/50 border border-slate-200 p-6 rounded-2xl shadow-sm transition-all hover:border-blue-200 flex flex-col justify-between">
+                                          <div className="flex justify-between items-center mb-4">
+                                              <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Icons.Key className="w-4 h-4 text-amber-500"/> Segurança da Conta</h4>
+                                          </div>
+                                          
+                                          {/* E-mail */}
+                                          <div className="mb-6 border-b border-slate-100 pb-5">
+                                              <span className="text-[9px] text-slate-400 block uppercase font-bold tracking-widest mb-1.5">E-mail Principal de Login</span>
+                                              
+                                              {editMode.email === 'idle' && (
+                                                  <div className="flex items-center justify-between">
+                                                      <span className="text-sm font-bold text-slate-800">{clienteSelecionado?.email}</span>
+                                                      <div className="flex gap-2">
+                                                          <button onClick={() => setEditMode({...editMode, email: 'link'})} title="Enviar Link de Confirmação" className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 border border-blue-100 shadow-sm transition-colors"><Icons.Mail className="w-4 h-4"/></button>
+                                                          <button onClick={() => setEditMode({...editMode, email: 'force'})} title="Forçar Troca Manualmente" className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 border border-rose-100 shadow-sm transition-colors"><Icons.AlertTriangle className="w-4 h-4"/></button>
+                                                      </div>
+                                                  </div>
+                                              )}
+
+                                              {editMode.email === 'link' && (
+                                                  <div className="space-y-3 bg-blue-50/50 p-4 rounded-xl border border-blue-100 mt-2">
+                                                      <div><label className="text-[9px] text-blue-700 uppercase font-bold tracking-wider block mb-1">Disparar link p/ Novo E-mail</label><input type="email" value={formEdit.email} onChange={e=>setFormEdit({...formEdit, email: e.target.value})} className="w-full bg-white border border-blue-200 rounded-lg px-3 py-2 text-xs font-bold shadow-sm" placeholder="novo@email.com"/></div>
+                                                      <div className="flex justify-end gap-2"><button onClick={()=>setEditMode({...editMode, email: 'idle'})} className="text-[10px] font-bold text-slate-500 hover:text-slate-800">Cancelar</button><ProgressButton onClick={enviarLinkEmail} text="Enviar Validação" loading={savingState === 'emailLink'} className="bg-blue-600 text-white text-[10px] px-3 py-1.5 rounded-lg shadow-sm font-bold"/></div>
+                                                  </div>
+                                              )}
+
+                                              {editMode.email === 'force' && (
+                                                  <div className="space-y-3 bg-rose-50/50 p-4 rounded-xl border border-rose-100 mt-2">
+                                                      <div><label className="text-[9px] text-rose-700 uppercase font-bold tracking-wider block mb-1">Forçar Novo E-mail</label><input type="email" value={formEdit.email} onChange={e=>setFormEdit({...formEdit, email: e.target.value})} className="w-full bg-white border border-rose-200 rounded-lg px-3 py-2 text-xs font-bold shadow-sm" placeholder="novo@email.com"/></div>
+                                                      <div><label className="text-[9px] text-rose-700 uppercase font-bold tracking-wider block mb-1">Motivo (Audit) *</label><input type="text" value={formEdit.motivo} onChange={e=>setFormEdit({...formEdit, motivo: e.target.value})} className="w-full bg-white border border-rose-200 rounded-lg px-3 py-2 text-xs shadow-sm" placeholder="Motivo da alteração forçada..."/></div>
+                                                      <div className="flex justify-end gap-2"><button onClick={()=>setEditMode({...editMode, email: 'idle'})} className="text-[10px] font-bold text-slate-500 hover:text-slate-800">Cancelar</button><ProgressButton onClick={forcarTrocaEmail} text="Aplicar Troca" loading={savingState === 'emailForce'} className="bg-rose-600 hover:bg-rose-700 text-white text-[10px] px-3 py-1.5 rounded-lg shadow-sm font-bold"/></div>
+                                                  </div>
                                               )}
                                           </div>
-                                      )}
-                                  </div>
 
-                                  {/* FLUXO TELEFONE */}
-                                  <div className="border-t border-slate-100 pt-8">
-                                      <label className="text-base font-bold text-slate-800 block mb-4">WhatsApp</label>
-                                      <div className="flex gap-5"><div className="flex-1"><input type="text" value={phoneFlow.novoTelefone} onChange={e => setPhoneFlow({...phoneFlow, novoTelefone: e.target.value})} placeholder={clienteSelecionado?.telefone} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3" /></div><div className="flex-[2] flex gap-3"><input type="text" value={phoneFlow.motivo} onChange={e => setPhoneFlow({...phoneFlow, motivo: e.target.value})} placeholder="Motivo" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3" /><ProgressButton onClick={salvarTelefone} loading={savingState === 'savePhone'} text="Salvar" className="bg-slate-800 text-white py-3 px-8 rounded-xl" /></div></div>
-                                  </div>
+                                          {/* Senha */}
+                                          <div>
+                                              <span className="text-[9px] text-slate-400 block uppercase font-bold tracking-widest mb-1.5">Redefinição de Senha</span>
+                                              
+                                              {editMode.senha === 'idle' && (
+                                                  <div className="flex gap-2">
+                                                      <ProgressButton onClick={enviarLinkSenha} loading={savingState === 'senhaLink'} text="Enviar Link" icon={Icons.Mail} className="flex-1 bg-white border border-slate-200 text-slate-700 hover:text-blue-600 font-bold py-2 rounded-xl text-[11px] shadow-sm transition-colors" />
+                                                      <ProgressButton onClick={gerarSenhaProvisoria} loading={savingState === 'senhaTemp'} text="Gerar Temp (7m)" icon={Icons.Key} className="flex-1 bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 font-bold py-2 rounded-xl text-[11px] shadow-sm transition-colors" />
+                                                  </div>
+                                              )}
 
-                                  {/* SENHA */}
-                                  <div className="border-t border-slate-100 pt-8">
-                                      <label className="text-base font-bold text-slate-800 block mb-4">Senha Provisória</label>
-                                      <div className="flex flex-col sm:flex-row gap-4 w-full">
-                                          <div className="flex-1 min-w-[250px] relative">
-                                            {senhaTemp.codigo ? (
-                                                <div className="flex gap-2 w-full">
-                                                    <div className="bg-amber-50 border border-amber-200 text-amber-800 font-mono font-bold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-between shadow-sm flex-1">
-                                                        <span>{senhaTemp.codigo}</span> 
-                                                        <div className="flex flex-col items-end">
-                                                          <span className="text-[9px] uppercase bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-bold">Força Alteração</span>
-                                                          <span className={`text-[10px] font-bold mt-0.5 ${tempoRestanteSenha === 'Expirada' ? 'text-rose-600' : 'text-amber-700'}`}>
-                                                              {tempoRestanteSenha === 'Expirada' ? 'Expirada' : `Restam ${tempoRestanteSenha}`}
-                                                          </span>
-                                                        </div>
-                                                    </div>
-                                                    <button onClick={gerarSenhaProvisoria} title="Gerar Outra Senha Provisória" className="w-12 flex items-center justify-center bg-white border border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 rounded-xl shadow-sm transition-colors shrink-0"><Icons.Repeat className="w-5 h-5" /></button>
-                                                </div>
-                                            ) : (
-                                                <ProgressButton onClick={gerarSenhaProvisoria} loading={savingState === 'gerarSenha'} text="Gerar Nova Senha (7min)" className="bg-white border border-amber-200 text-amber-600 py-3 px-5 rounded-xl w-full" />
-                                            )}
+                                              {editMode.senha === 'temp' && (
+                                                  <div className="flex gap-2 w-full">
+                                                      <div className="bg-amber-50 border border-amber-200 text-amber-800 font-mono font-bold py-2 px-4 rounded-xl text-center text-xs flex items-center justify-between shadow-sm flex-1">
+                                                          <span className="text-base">{senhaTemp.codigo}</span> 
+                                                          <div className="flex flex-col items-end">
+                                                            <span className="text-[8px] uppercase bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-black">Temp</span>
+                                                            <span className={`text-[9px] font-bold mt-0.5 ${tempoRestanteSenha === 'Expirada' ? 'text-rose-600' : 'text-amber-700'}`}>{tempoRestanteSenha}</span>
+                                                          </div>
+                                                      </div>
+                                                      <button onClick={() => setEditMode({...editMode, senha: 'idle'})} title="Fechar" className="w-10 flex items-center justify-center bg-white border border-slate-200 text-slate-400 hover:bg-slate-100 rounded-xl shadow-sm transition-colors shrink-0"><Icons.Close className="w-4 h-4" /></button>
+                                                  </div>
+                                              )}
                                           </div>
                                       </div>
-                                  </div>
 
-                                  {/* DOCUMENTOS */}
-                                  <div className="border-t border-slate-100 pt-8">
-                                      <div className="flex items-center justify-between mb-4">
-                                          <label className="text-sm font-bold text-slate-800">Dados Pessoais Sensíveis</label>
-                                          <ProgressButton onClick={salvarDadosSensiveis} loading={savingState === 'saveDocs'} text="Salvar Documento" loadingText="..." className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg text-[10px] uppercase tracking-wider shadow-sm transition-colors" />
-                                      </div>
-                                      <div className="bg-yellow-50 border border-yellow-100 p-3 rounded-xl mb-6 text-[11px] text-yellow-800 font-medium flex gap-2 items-center shadow-sm">
-                                          <Icons.Info className="w-4 h-4 shrink-0" />
-                                          <p>Para alterar CPF ou Nascimento, preencha os novos dados e <strong>anexe obrigatoriamente a foto legível do RG ou CNH</strong> (Máx 3MB).</p>
-                                      </div>
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                          <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl">
-                                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Novo CPF / NIF</label>
-                                              <input type="text" value={docSensivel.cpf} onChange={e => setDocSensivel({...docSensivel, cpf: e.target.value})} placeholder={clienteSelecionado?.cpf} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 transition-all shadow-sm" />
-                                          </div>
-                                          <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl">
-                                              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Nova Data de Nascimento</label>
-                                              <input type="date" value={docSensivel.nascimento} onChange={e => setDocSensivel({...docSensivel, nascimento: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 transition-all shadow-sm" />
-                                          </div>
-                                      </div>
-                                      <div className="mt-4">
-                                          <label className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 rounded-xl p-4 cursor-pointer transition-colors shadow-sm">
-                                              <Icons.Upload className="w-4 h-4 text-slate-400" />
-                                              <span className="text-xs font-bold text-slate-600">{docSensivel.arquivo ? docSensivel.arquivo.name : 'Clique para Anexar Comprovante (Obrigatório)'}</span>
-                                              <input type="file" accept="image/*,application/pdf" onChange={e => setDocSensivel({...docSensivel, arquivo: e.target.files[0]})} className="hidden" />
-                                          </label>
-                                      </div>
                                   </div>
                               </div>
                           </motion.section>
@@ -809,18 +880,25 @@ export default function AdminPerfilCRM({
                         {crmSubTab === 'CARTEIRAS (LIVRO RAZÃO)' && (
                           <motion.section key="CARTEIRAS" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 max-w-4xl mx-auto w-full p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <article className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-3xl shadow-sm text-white"><p className="text-xs font-bold text-blue-200 mb-2">Saldo Atual (Coins)</p><p className="text-5xl font-black">{safeNum(clienteSelecionado?.coins)}</p></article>
-                                <article className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm"><p className="text-xs font-bold text-slate-400 mb-2">Cashback Disponível</p><p className="text-5xl font-black text-emerald-600">{formatCurrency(clienteSelecionado?.cashback)}</p></article>
+                                <article className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-[24px] shadow-sm text-white relative overflow-hidden">
+                                    <div className="absolute right-0 top-0 w-32 h-32 bg-white opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+                                    <p className="text-[10px] font-bold text-blue-200 uppercase tracking-wider mb-2 relative z-10">Saldo Atual (Coins)</p>
+                                    <p className="text-4xl font-black text-white relative z-10">{safeNum(clienteSelecionado?.coins)}</p>
+                                </article>
+                                <article className="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Cashback Disponível</p>
+                                    <p className="text-4xl font-black text-emerald-600">{formatCurrency(clienteSelecionado?.cashback)}</p>
+                                </article>
                             </div>
-                            <article className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                                <h4 className="text-lg font-bold text-slate-800 mb-6">Adicionar Transação Manual</h4>
+                            <article className="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm">
+                                <h4 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><Icons.Plus className="text-blue-500 w-5 h-5"/> Adicionar Transação Manual</h4>
                                 <div className="space-y-5">
                                   <div className="flex gap-5">
                                     <select value={walletFlow.tipo} onChange={e => setWalletFlow({...walletFlow, tipo: e.target.value})} className="w-1/3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3"><option>Hub Coins</option><option>Cashback (R$)</option></select>
-                                    <input type="number" value={walletFlow.valor} onChange={e => setWalletFlow({...walletFlow, valor: e.target.value})} placeholder="Valor" className="w-2/3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3" />
+                                    <input type="number" value={walletFlow.valor} onChange={e => setWalletFlow({...walletFlow, valor: e.target.value})} placeholder="Valor numérico" className="w-2/3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3" />
                                   </div>
-                                  <input type="text" value={walletFlow.motivo} onChange={e => setWalletFlow({...walletFlow, motivo: e.target.value})} placeholder="Motivo da Transação" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3" />
-                                  <ProgressButton onClick={processarTransacaoWallet} loading={savingState === 'transacao'} text="Processar Transação" className="w-full bg-blue-600 text-white py-4 rounded-xl" />
+                                  <input type="text" value={walletFlow.motivo} onChange={e => setWalletFlow({...walletFlow, motivo: e.target.value})} placeholder="Motivo da Transação Obrigatório (Audit)" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3" />
+                                  <ProgressButton onClick={processarTransacaoWallet} loading={savingState === 'transacao'} text="Processar Transação" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-colors" />
                                 </div>
                             </article>
                           </motion.section>
@@ -831,20 +909,20 @@ export default function AdminPerfilCRM({
                           <motion.section key="ENDEREÇOS" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-5xl mx-auto w-full p-6 space-y-6">
                             <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                                 <div><h3 className="text-xl font-black text-slate-800 flex items-center gap-3"><Icons.MapPin className="w-6 h-6 text-blue-500"/> Agenda de Endereços</h3></div>
-                                <button onClick={() => setShowAddEndereco(!showAddEndereco)} className="bg-blue-600 text-white py-3 px-6 rounded-xl font-bold">Novo Endereço</button>
+                                <button onClick={() => setShowAddEndereco(!showAddEndereco)} className="bg-blue-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-sm">Novo Endereço</button>
                             </div>
                             
                             <AnimatePresence>
                                 {showAddEndereco && (
                                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                                        <div className="bg-slate-50 border border-blue-200 p-8 rounded-3xl shadow-sm mb-6">
+                                        <div className="bg-slate-50 border border-blue-200 p-8 rounded-[24px] shadow-sm mb-6">
                                             <div className="grid grid-cols-4 gap-5">
-                                                <input type="text" value={enderecoFlow.cep} onChange={e=>setEnderecoFlow({...enderecoFlow, cep: e.target.value})} placeholder="CEP" className="col-span-1 p-3 rounded-xl border border-slate-200" />
-                                                <input type="text" value={enderecoFlow.rua} onChange={e=>setEnderecoFlow({...enderecoFlow, rua: e.target.value})} placeholder="Rua" className="col-span-2 p-3 rounded-xl border border-slate-200" />
-                                                <input type="text" value={enderecoFlow.num} onChange={e=>setEnderecoFlow({...enderecoFlow, num: e.target.value})} placeholder="Número" className="col-span-1 p-3 rounded-xl border border-slate-200" />
-                                                <input type="text" value={enderecoFlow.bairro} onChange={e=>setEnderecoFlow({...enderecoFlow, bairro: e.target.value})} placeholder="Bairro" className="col-span-2 p-3 rounded-xl border border-slate-200" />
-                                                <input type="text" value={enderecoFlow.cidade} onChange={e=>setEnderecoFlow({...enderecoFlow, cidade: e.target.value})} placeholder="Cidade" className="col-span-2 p-3 rounded-xl border border-slate-200" />
-                                                <input type="text" value={enderecoFlow.uf} onChange={e=>setEnderecoFlow({...enderecoFlow, uf: e.target.value})} placeholder="UF" className="col-span-1 p-3 rounded-xl border border-slate-200 uppercase" maxLength="2" />
+                                                <input type="text" value={enderecoFlow.cep} onChange={e=>setEnderecoFlow({...enderecoFlow, cep: e.target.value})} placeholder="CEP" className="col-span-1 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                                                <input type="text" value={enderecoFlow.rua} onChange={e=>setEnderecoFlow({...enderecoFlow, rua: e.target.value})} placeholder="Rua" className="col-span-2 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                                                <input type="text" value={enderecoFlow.num} onChange={e=>setEnderecoFlow({...enderecoFlow, num: e.target.value})} placeholder="Número" className="col-span-1 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                                                <input type="text" value={enderecoFlow.bairro} onChange={e=>setEnderecoFlow({...enderecoFlow, bairro: e.target.value})} placeholder="Bairro" className="col-span-2 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                                                <input type="text" value={enderecoFlow.cidade} onChange={e=>setEnderecoFlow({...enderecoFlow, cidade: e.target.value})} placeholder="Cidade" className="col-span-2 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                                                <input type="text" value={enderecoFlow.uf} onChange={e=>setEnderecoFlow({...enderecoFlow, uf: e.target.value})} placeholder="UF" className="col-span-1 p-3 rounded-xl border border-slate-200 uppercase focus:ring-2 focus:ring-blue-500/20 outline-none" maxLength="2" />
                                             </div>
                                             <div className="mt-6 flex justify-end gap-4"><button onClick={()=>setShowAddEndereco(false)} className="px-6 py-3 font-bold text-slate-500 hover:text-slate-800">Cancelar</button><ProgressButton onClick={salvarNovoEndereco} text="Salvar Endereço" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold"/></div>
                                         </div>
@@ -854,20 +932,21 @@ export default function AdminPerfilCRM({
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {clienteSelecionado?.enderecos?.map((end, idx) => (
-                                    <article key={idx} className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 relative">
+                                    <article key={idx} className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-8 relative hover:border-blue-300 transition-colors">
                                         {end.padrao && <span className="absolute top-6 right-6 bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Entrega Padrão</span>}
                                         <h5 className="text-xl font-black text-slate-800 mb-2">{end.rua}, {end.num}</h5>
                                         <p className="text-sm text-slate-500 mb-6">{end.cidade} - {end.uf} | CEP: {end.cep}</p>
                                     </article>
                                 ))}
+                                {clienteSelecionado?.enderecos?.length === 0 && <p className="text-slate-500 col-span-2 text-center py-10 font-medium">Nenhum endereço cadastrado.</p>}
                             </div>
                           </motion.section>
                         )}
 
-                        {/* 🟢 ABA: HISTÓRICO DE PEDIDOS (SAAS CARROSSEL NETFLIX) */}
+                        {/* 🟢 ABA: HISTÓRICO DE PEDIDOS */}
                         {crmSubTab === 'HISTÓRICO DE PEDIDOS' && (
                           <motion.section key="HISTORICO" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-6xl mx-auto w-full flex flex-col space-y-6 p-6">
-                              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
+                              <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
                                   <header className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shrink-0">
                                       <div>
                                           <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3"><Icons.Package className="w-7 h-7 text-blue-500"/> Histórico de Pedidos</h3>
@@ -876,10 +955,7 @@ export default function AdminPerfilCRM({
                                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
                                           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                                               {Array.from(new Set(['TODOS', ...historicoPedidosFiltrado.map(p => p.status)])).map(tab => (
-                                                  <button 
-                                                    key={tab} onClick={() => { setOrderHistoryTab(tab); setOrderHistoryPage(1); }} 
-                                                    className={`px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all border shadow-sm ${orderHistoryTab === tab ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
-                                                  >
+                                                  <button key={tab} onClick={() => { setOrderHistoryTab(tab); setOrderHistoryPage(1); }} className={`px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all border shadow-sm ${orderHistoryTab === tab ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}>
                                                       {tab}
                                                   </button>
                                               ))}
@@ -900,26 +976,17 @@ export default function AdminPerfilCRM({
                                                   <div className="flex items-center justify-between w-full">
                                                       <div className="flex items-center gap-3">
                                                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black shadow-sm border transition-colors ${isPedidoExpandido ? 'bg-white/20 text-white border-transparent' : 'bg-slate-50 text-blue-600 border-slate-200'}`}><Icons.Package className="w-5 h-5" /></div>
-                                                          <div>
-                                                              <h4 className={`text-base font-black transition-colors ${isPedidoExpandido ? 'text-white' : 'text-slate-900'}`}>#{pedido.id}</h4>
-                                                              <span className={`text-[9px] font-bold uppercase tracking-widest ${isPedidoExpandido ? 'text-blue-100' : 'text-slate-400'}`}>{formatDateBR(pedido.created_at || pedido.data_raw)}</span>
-                                                          </div>
+                                                          <div><h4 className={`text-base font-black transition-colors ${isPedidoExpandido ? 'text-white' : 'text-slate-900'}`}>#{pedido.id}</h4><span className={`text-[9px] font-bold uppercase tracking-widest ${isPedidoExpandido ? 'text-blue-100' : 'text-slate-400'}`}>{formatDateBR(pedido.created_at || pedido.data_raw)}</span></div>
                                                       </div>
                                                   </div>
                                                   <div className="flex items-center justify-between w-full mt-2">
-                                                      <div className="flex flex-col">
-                                                          <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${isPedidoExpandido ? 'text-blue-200' : 'text-slate-400'}`}>Total Pago</span>
-                                                          <span className={`text-lg font-black ${isPedidoExpandido ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(pedido.total)}</span>
-                                                      </div>
+                                                      <div className="flex flex-col"><span className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${isPedidoExpandido ? 'text-blue-200' : 'text-slate-400'}`}>Total Pago</span><span className={`text-lg font-black ${isPedidoExpandido ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(pedido.total)}</span></div>
                                                       <span className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg border shadow-sm transition-colors ${isPedidoExpandido ? 'bg-white text-blue-600 border-transparent' : statusColor}`}>{pedido.status}</span>
                                                   </div>
                                               </button>
                                           );
                                       }) : (
-                                          <div className="w-full py-6 flex flex-col items-center justify-center text-center text-slate-500 font-medium">
-                                              <Icons.Package className="w-8 h-8 text-slate-300 mb-2" />
-                                              <p className="text-sm font-bold">Nenhum pedido atende ao filtro.</p>
-                                          </div>
+                                          <div className="w-full py-6 flex flex-col items-center justify-center text-center text-slate-500 font-medium"><Icons.Package className="w-8 h-8 text-slate-300 mb-2" /><p className="text-sm font-bold">Nenhum pedido atende ao filtro.</p></div>
                                       )}
                                   </div>
 
@@ -1084,13 +1151,13 @@ export default function AdminPerfilCRM({
                         {/* 🟢 ABA: TIMELINE / AUDITORIA */}
                         {crmSubTab === 'TIMELINE (AUDIT)' && (
                           <motion.section key="TIMELINE" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-4xl mx-auto w-full p-6">
-                              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm h-[600px] flex flex-col">
+                              <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm h-[600px] flex flex-col">
                                   <header className="p-8 border-b border-slate-100 flex justify-between items-center">
                                       <div>
                                           <h3 className="text-xl font-black"><Icons.Activity className="inline mr-2 text-blue-500"/> Registro de Auditoria</h3>
                                           <p className="text-[11px] text-slate-500 mt-1 font-medium">Histórico imutável de ações e segurança.</p>
                                       </div>
-                                      <ProgressButton onClick={handleExportarPDF} text="Exportar PDF" icon={Icons.Download} className="bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl shadow-sm"/>
+                                      <ProgressButton onClick={handleExportarPDF} text="Exportar PDF" icon={Icons.Download} className="bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-50 transition-colors"/>
                                   </header>
                                   <div className="p-8 relative flex-1 overflow-y-auto custom-scrollbar">
                                       <div className="absolute left-[43px] top-8 bottom-8 w-[2px] bg-slate-100 hidden sm:block"></div>
@@ -1100,7 +1167,7 @@ export default function AdminPerfilCRM({
                                                   <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full ring-4 ring-white shadow-sm flex items-center justify-center hidden sm:flex ${log.tipo === 'success' ? 'bg-emerald-500' : log.tipo === 'warning' ? 'bg-amber-500' : 'bg-blue-500'}`}>
                                                       <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                                                   </div>
-                                                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-200 transition-all group">
+                                                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 transition-all group">
                                                       <p className="text-[10px] font-bold text-slate-400 mb-2">{formatDateTimeBR(log.data)}</p>
                                                       <h5 className="font-black text-slate-800 text-base">{log.titulo}</h5>
                                                       <p className="text-sm text-slate-600 mt-2 leading-relaxed">{log.desc}</p>
