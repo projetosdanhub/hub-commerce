@@ -35,7 +35,8 @@ const Icons = {
     Key: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>,
     Download: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
     Crown: ({className="w-4 h-4"}) => <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
-    Refresh: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+    Refresh: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+    UserCircle: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
 };
 
 const safeNum = (val) => { const n = Number(val); return isNaN(n) ? 0 : n; };
@@ -75,34 +76,6 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
     </button>
 );
 
-const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, isOpen, onClose }) => {
-  const ref = useRef(null);
-  useEffect(() => {
-    function handleClickOutside(event) { if (ref.current && !ref.current.contains(event.target)) onClose(); }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} ref={ref} className="absolute right-0 mt-2 bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 w-80 z-[100]" role="dialog" aria-modal="true" aria-label="Filtrar Período">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Icons.Calendar className="w-4 h-4"/> Filtrar Período</p>
-          <div className="space-y-4">
-            <div><label className="block text-xs font-bold text-slate-700 mb-1.5">Data Inicial</label><input type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all" /></div>
-            <div><label className="block text-xs font-bold text-slate-700 mb-1.5">Data Final</label><input type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all" /></div>
-            <div className="pt-2 flex gap-2">
-              <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors">Limpar</button>
-              <button type="button" onClick={onApply} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-2.5 rounded-xl shadow-sm transition-colors">{loading ? 'Aplicando...' : 'Aplicar Filtro'}</button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
-
-
 // ============================================================================
 // COMPONENTE PRINCIPAL (O PERFIL DO CLIENTE ISOLADO)
 // ============================================================================
@@ -125,9 +98,12 @@ export default function AdminPerfilCRM({
     const [produtoExpandido, setProdutoExpandido] = useState(null);
     const [novaTag, setNovaTag] = useState('');                      
     const [riscoPage, setRiscoPage] = useState(1);                  
-    const [riscoPerPage] = useState(5);             
+    const [riscoPerPage] = useState(4); // 🟢 4 itens por página como solicitado
     const [perfilEmEdicao, setPerfilEmEdicao] = useState(false);
     
+    // Toggle para esconder dados sensíveis no resumo
+    const [mostrarDadosSensiveis, setMostrarDadosSensiveis] = useState(true);
+
     // 🟢 Novo Modal de Suspensão / Reativação
     const [modalStatusConta, setModalStatusConta] = useState({ isOpen: false, tipo: null, motivo: '' });
 
@@ -200,7 +176,9 @@ export default function AdminPerfilCRM({
 
     // 🟢 REFRESH COM TOAST
     const handleRefreshProfile = async () => {
+        setSavingState('refreshProfile');
         await refetchClients();
+        setSavingState(null);
         const now = new Date();
         if(showToastGlob) showToastGlob(`Dados atualizados em ${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`);
     };
@@ -236,15 +214,13 @@ export default function AdminPerfilCRM({
         }
     });
 
-    // 🟢 MUTAÇÃO DE STATUS DA CONTA
+    // 🟢 MUTAÇÃO DE STATUS DA CONTA (O MODAL AGORA CONTROLA ISSO)
     const mutacaoStatusConta = useMutation({
         mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/status`, dados), 
         onSuccess: (response, variables) => {
             queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
-            
             const novoStatus = variables.acao === 'SUSPENDER' ? 'BLOQUEADA' : 'ATIVO';
             setClienteSelecionado(prev => ({...prev, status: novoStatus}));
-            
             setModalStatusConta({ isOpen: false, tipo: null, motivo: '' });
             if(showToastGlob) showToastGlob(variables.acao === 'SUSPENDER' ? 'Conta suspensa com sucesso.' : 'Conta reativada com sucesso.');
         }
@@ -259,6 +235,7 @@ export default function AdminPerfilCRM({
             { 
                onSettled: () => setSavingState(null),
                onError: () => {
+                   // Fallback Optimista caso a API ainda não esteja rodando no backend
                    const novoStatus = modalStatusConta.tipo === 'SUSPENDER' ? 'BLOQUEADA' : 'ATIVO';
                    setClienteSelecionado(prev => ({...prev, status: novoStatus}));
                    registrarLogAudit(
@@ -427,6 +404,32 @@ export default function AdminPerfilCRM({
     const totalRiscoPages = Math.ceil(alertasDoCliente.length / riscoPerPage) || 1;
     const alertasPaginados = alertasDoCliente.slice((riscoPage - 1) * riscoPerPage, riscoPage * riscoPerPage);
 
+    // 🟢 Trilha de Benefícios (Mock para visualização baseada no status)
+    const trilhaBeneficios = useMemo(() => {
+        const trilha = [];
+        trilha.push({
+            id: 'cadastro', icone: Icons.UserCircle, cor: 'bg-slate-600',
+            titulo: 'Conta Criada (Iniciante)', data: clienteSelecionado?.dataCadastro || clienteSelecionado?.created_at,
+            desc: 'O cliente realizou o cadastro na loja.'
+        });
+        if (safeNum(clienteSelecionado?.compras) > 0) {
+            trilha.push({
+                id: 'primeira_compra', icone: Icons.Package, cor: 'bg-blue-500',
+                titulo: 'Primeira Compra', data: clienteSelecionado?.ultimaCompra,
+                desc: 'Cliente ativou sua primeira compra com sucesso.'
+            });
+        }
+        if (clienteSelecionado?.rank && clienteSelecionado.rank !== 'Iniciante') {
+            trilha.push({
+                id: 'rank_up', icone: Icons.Trophy, cor: 'bg-amber-500',
+                titulo: `Evoluiu para ${clienteSelecionado.rank}`, data: new Date().toISOString(),
+                desc: `Adquiriu novos benefícios e multiplicadores da loja.`
+            });
+        }
+        return trilha.reverse(); // Mais recente primeiro
+    }, [clienteSelecionado]);
+
+
     const getAvatarInitials = (nome) => {
         if (!nome || typeof nome !== 'string') return 'N';
         const split = nome.trim().split(' ');
@@ -447,7 +450,9 @@ export default function AdminPerfilCRM({
     else if (sexoStr === 'masculino' || sexoStr === 'm') headerGradient = 'from-sky-200 to-transparent';
 
 
-    // 🟢 Renderização do JSX (O Retorno principal do Perfil)
+    // ==========================================
+    // RENDERIZAÇÃO PRINCIPAL DO PERFIL
+    // ==========================================
     return (
         <FadeIn key="crm_perfil" className="space-y-6 flex flex-col h-full">
             <div className="flex items-center gap-4 shrink-0">
@@ -457,7 +462,8 @@ export default function AdminPerfilCRM({
             </div>
 
             <div className={`bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[600px] flex-1 relative`}>  
-                {/* GRADIENTE INTELIGENTE APLICADO */}
+                
+                {/* 🟢 GRADIENTE INTELIGENTE APLICADO AQUI */}
                 <div className={`absolute top-0 left-0 w-full h-32 opacity-30 pointer-events-none bg-gradient-to-b ${headerGradient}`}></div>
                 
                 {/* CABEÇALHO DO CLIENTE */}
@@ -517,9 +523,10 @@ export default function AdminPerfilCRM({
                     </div>
                 </header>
 
+                {/* NAVEGAÇÃO DE ABAS */}
                 <nav className="flex px-8 border-t border-slate-100 bg-slate-50/50 shrink-0 overflow-x-auto custom-scrollbar relative z-10">
                     {['RESUMO', 'CARTEIRAS (LIVRO RAZÃO)', 'ENDEREÇOS','HISTÓRICO DE PEDIDOS','TIMELINE (AUDIT)'].map((tab) => (
-                        <button key={tab} onClick={() => { setCrmSubTab(tab); refetchClients(); }} className={`relative px-6 py-5 text-sm font-bold tracking-wider whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${crmSubTab === tab ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}>
+                        <button key={tab} onClick={() => { setCrmSubTab(tab); refetchClients(); }} className={`relative px-6 py-5 text-xs font-bold tracking-wider whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${crmSubTab === tab ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}>
                         {tab}
                         {crmSubTab === tab && <motion.div layoutId="crmActiveTab" className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-500 rounded-t-full" />}
                         </button>
@@ -529,101 +536,188 @@ export default function AdminPerfilCRM({
                 <div className="flex-1 min-h-0 overflow-y-auto bg-slate-50/30">
                     <AnimatePresence mode="wait">
                         
-                        {/* 🟢 ABA: RESUMO LÍQUIDO */}
+                        {/* ========================================================= */}
+                        {/* 🟢 ABA: RESUMO LÍQUIDO (TOTALMENTE REDESENHADA)           */}
+                        {/* ========================================================= */}
                         {crmSubTab === 'RESUMO' && !perfilEmEdicao && (
                             <motion.section key="RESUMO_READ" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-col lg:flex-row gap-6 p-6">
-                            <div className="w-full lg:w-1/3 flex flex-col gap-6">
-                                <article className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm relative">
-                                    <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
-                                        <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2"><Icons.Eye className="w-5 h-5 text-slate-400"/> Sobre o Cliente</h3>
-                                        <button onClick={() => setPerfilEmEdicao(true)} className="text-blue-600 hover:text-white font-bold bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-transparent px-3 py-1.5 rounded-lg transition-colors text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-1.5">
-                                            <Icons.Edit3 className="w-3.5 h-3.5" /> Editar
-                                        </button>
-                                    </div>
-                                    <div className="space-y-4 text-xs font-medium text-slate-600 mb-6 border-b border-slate-100 pb-6 relative">
-                                        
-                                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">WhatsApp / Telefone</span><span className="font-bold text-slate-800 text-base">{formatPhone(clienteSelecionado?.telefone)}</span></div>
-                                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">E-mail de Contato</span><span className="text-base">{safeStr(clienteSelecionado?.email)}</span></div>
-                                        <div className="grid grid-cols-2 gap-4 pt-2">
-                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">CPF</span><span className="font-mono text-base">{safeStr(clienteSelecionado?.cpf)}</span></div>
-                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nascimento</span><span className="text-base">{formatDateBR(clienteSelecionado?.nascimento)}</span></div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-6">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Adicionar Etiqueta de Segmentação</label>
-                                        <div className="flex gap-2 mt-4">
-                                            <input type="text" placeholder="Nova tag..." value={novaTag} onChange={(e) => setNovaTag(e.target.value)} className="border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 w-full" />
-                                            <button onClick={adicionarTag} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">Adicionar</button>
-                                        </div>
-                                    </div>
-                                    <a href={`https://wa.me/${safeStr(clienteSelecionado?.telefone).replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="w-full bg-[#25D366] text-white text-sm font-bold py-3.5 rounded-xl flex justify-center items-center gap-2 shadow-sm hover:bg-[#1ebe57] transition-all"><Icons.WhatsApp className="w-5 h-5"/> Falar no WhatsApp</a>
-                                </article>
-
-                                <article className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex-1 flex flex-col">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h4 className="text-base font-bold text-slate-800 flex items-center gap-2"><Icons.FileText className="w-5 h-5 text-slate-400" /> Anotações Internas</h4>
-                                        <ProgressButton onClick={salvarNotasAPI} loading={savingState === 'notas'} text="Salvar" className="text-blue-600 hover:text-white font-bold bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-transparent px-4 py-2 rounded-lg transition-colors text-xs shadow-sm" />
-                                    </div>
-                                    <textarea className="w-full flex-1 min-h-[120px] bg-slate-50 border border-slate-200 rounded-xl p-4 text-base text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none shadow-inner" value={clienteSelecionado?.notas || ''} onChange={(e) => setClienteSelecionado({...clienteSelecionado, notas: e.target.value})} placeholder="Adicione observações sobre este cliente. Visível apenas para gestores." />
-                                </article>
-                            </div>
-
-                            <div className="w-full lg:w-2/3 flex flex-col gap-6">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                   <article className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
-                                      <div className="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl pointer-events-none"></div>
-                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Gasto Total (LTV)</p>
-                                      <p className="text-3xl font-black text-emerald-600 relative z-10">{formatCurrency(clienteSelecionado?.ltv)}</p>
-                                      <p className="text-[10px] text-slate-500 mt-2 font-medium">Ticket Médio: <span className="font-bold text-slate-700">{formatCurrency(safeNum(clienteSelecionado?.ltv) / (safeNum(clienteSelecionado?.compras) || 1))}</span></p>
-                                   </article>
-                                   <article className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center">
-                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pedidos Finalizados</p>
-                                      <p className="text-3xl font-black text-slate-800">{safeNum(clienteSelecionado?.compras)}</p>
-                                      <p className="text-[10px] text-slate-500 mt-2 font-medium">Última compra: <span className="font-bold text-slate-700">{formatDateBR(clienteSelecionado?.ultimaCompra)}</span></p>
-                                   </article>
-                                   <article className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center">
-                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Uso de Benefícios</p>
-                                      <div className="mt-1 space-y-1">
-                                          <p className="text-xs text-slate-600 font-medium flex justify-between">Cupons: <strong className="text-slate-800">{safeNum(clienteSelecionado?.cuponsUsados)}</strong></p>
-                                          <p className="text-xs text-slate-600 font-medium flex justify-between">Desc Frete: <strong className="text-emerald-600">{formatCurrency(clienteSelecionado?.descontoFrete)}</strong></p>
-                                      </div>
-                                   </article>
-                                </div>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-                                    <article className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 shadow-sm rounded-2xl flex flex-col h-[350px] overflow-hidden">
-                                        <header className="p-5 border-b border-indigo-100/50 bg-white/50 shrink-0"><h4 className="text-base font-bold text-slate-900 flex items-center gap-2"><Icons.Trophy className="w-5 h-5 text-indigo-600"/> Trilha de Benefícios</h4></header>
-                                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 relative before:absolute before:inset-0 before:ml-8 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-300 before:via-slate-300 before:to-transparent">
-                                            <div className="relative flex items-start gap-4">
-                                                <div className="flex items-center justify-center w-6 h-6 rounded-full border-2 border-white bg-amber-500 shadow shrink-0 z-10 mt-1"></div>
-                                                <div className="flex-1 bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><span className="font-bold text-slate-800 text-sm">Membro Bronze</span><p className="text-xs text-slate-500 mt-1">Desbloqueou: 1.5x Hub Coins por compra.</p></div>
+                                {/* COLUNA ESQUERDA: BARRA VERTICAL DE MÉTRICAS */}
+                                <div className="flex flex-col border border-slate-200 rounded-[24px] bg-white shadow-sm overflow-hidden w-full lg:w-1/4 shrink-0 h-max">
+                                    
+                                    <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Gasto Total (LTV)</p>
+                                        <p className="text-2xl font-black text-emerald-600 group-hover:scale-105 transform origin-left transition-transform">{formatCurrency(clienteSelecionado?.ltv)}</p>
+                                        <p className="text-[10px] text-slate-500 mt-1 font-medium">Ticket Médio: <strong className="text-slate-700">{formatCurrency(safeNum(clienteSelecionado?.ltv) / (safeNum(clienteSelecionado?.compras) || 1))}</strong></p>
+                                    </div>
+                                    
+                                    <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pedidos Finalizados</p>
+                                        <p className="text-2xl font-black text-slate-800 group-hover:scale-105 transform origin-left transition-transform">{safeNum(clienteSelecionado?.compras)}</p>
+                                        <p className="text-[10px] text-slate-500 mt-1 font-medium">Última compra: <strong className="text-slate-700">{formatDateBR(clienteSelecionado?.ultimaCompra)}</strong></p>
+                                    </div>
+                                    
+                                    <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Qtd. de Produtos</p>
+                                        <p className="text-2xl font-black text-slate-800 group-hover:scale-105 transform origin-left transition-transform">{safeNum(clienteSelecionado?.produtosComprados) || 0}</p>
+                                    </div>
+                                    
+                                    <div className="p-5 hover:bg-slate-50 transition-colors group cursor-default">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Uso de Benefícios</p>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="text-slate-500 font-medium">Cupons Usados:</span>
+                                                <strong className="text-slate-800 bg-slate-100 px-2 py-0.5 rounded">{safeNum(clienteSelecionado?.cuponsUsados)}</strong>
+                                            </div>
+                                            {/* Lista de Cupons Usados */}
+                                            {clienteSelecionado?.historicoCupons && clienteSelecionado.historicoCupons.length > 0 && (
+                                                <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-2 mt-2 pr-1 border-t border-slate-100 pt-3">
+                                                    {clienteSelecionado.historicoCupons.map((cupom, idx) => (
+                                                        <div key={idx} className="flex flex-col gap-0.5 bg-white border border-slate-200 p-2 rounded-lg shadow-sm">
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-[9px] font-black text-slate-700">{cupom.nome}</span>
+                                                                <span className="text-[9px] font-bold text-emerald-600">-{formatCurrency(cupom.valor)}</span>
+                                                            </div>
+                                                            <span className="text-[8px] text-slate-400 uppercase">{cupom.tipo}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-center text-xs border-t border-slate-100 pt-3">
+                                                <span className="text-slate-500 font-medium">Desc. Frete:</span>
+                                                <strong className="text-emerald-600">{formatCurrency(clienteSelecionado?.descontoFrete)}</strong>
+                                            </div>
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="text-slate-500 font-medium">Desc. Loja:</span>
+                                                <strong className="text-emerald-600">{formatCurrency(clienteSelecionado?.descontoLoja)}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* COLUNA DIREITA: DADOS DO CLIENTE, TIMELINE E ALERTAS */}
+                                <div className="flex-1 flex flex-col gap-6 min-w-0">
+                                    
+                                    {/* 1. Sobre o Cliente (Card Horizontal) */}
+                                    <article className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm flex flex-col gap-6 w-full relative">
+                                        <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                                            <div className="flex items-center gap-3">
+                                                <h3 className="text-sm font-black text-slate-800 flex items-center gap-2">
+                                                    <Icons.UserCircle className="w-5 h-5 text-blue-500"/> Sobre o Cliente
+                                                </h3>
+                                                <button onClick={() => setPerfilEmEdicao(true)} className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+                                                    Editar
+                                                </button>
+                                            </div>
+                                            <button onClick={() => setMostrarDadosSensiveis(!mostrarDadosSensiveis)} title="Exibir/Esconder Dados" className="text-slate-400 hover:text-slate-600 transition-colors p-1 bg-slate-50 rounded-lg border border-slate-200 shadow-sm">
+                                                {mostrarDadosSensiveis ? <Icons.EyeOff className="w-4 h-4" /> : <Icons.Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">WhatsApp / Telefone</span>
+                                                <span className="font-bold text-slate-800 text-sm">{mostrarDadosSensiveis ? formatPhone(clienteSelecionado?.telefone) : '***.***.***-**'}</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">E-mail de Contato</span>
+                                                <span className="font-medium text-slate-800 text-sm truncate">{mostrarDadosSensiveis ? safeStr(clienteSelecionado?.email) : '***@***.***'}</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">CPF</span>
+                                                <span className="font-mono text-sm text-slate-800">{mostrarDadosSensiveis ? safeStr(clienteSelecionado?.cpf) : '***.***.***-**'}</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nascimento</span>
+                                                <span className="font-medium text-slate-800 text-sm">{mostrarDadosSensiveis ? formatDateBR(clienteSelecionado?.nascimento) : '**/**/****'}</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gênero / Sexo</span>
+                                                <span className="font-medium text-slate-800 text-sm">{safeStr(clienteSelecionado?.sexo) || 'Não informado'}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col sm:flex-row items-end gap-4 pt-4 border-t border-slate-100">
+                                            <a href={`https://wa.me/${safeStr(clienteSelecionado?.telefone).replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="w-full sm:w-auto bg-[#25D366] text-white text-xs font-bold px-6 py-3 rounded-xl flex justify-center items-center gap-2 shadow-sm hover:bg-[#1ebe57] transition-all relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 ease-in-out"></div>
+                                                <Icons.WhatsApp className="w-4 h-4 relative z-10"/> <span className="relative z-10">Falar no WhatsApp</span>
+                                            </a>
+
+                                            <div className="flex-1 w-full flex flex-col">
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Adicionar Etiqueta de Segmentação</label>
+                                                <div className="flex gap-2">
+                                                    <input type="text" placeholder="Ex: Cliente VIP..." value={novaTag} onChange={(e) => setNovaTag(e.target.value)} className="border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-blue-500 w-full shadow-sm bg-slate-50" />
+                                                    <button onClick={adicionarTag} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-sm">Adicionar</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </article>
 
-                                    <article className="bg-rose-50/30 border border-rose-100 shadow-sm rounded-3xl flex flex-col h-[350px] overflow-hidden">
-                                         <header className="p-5 border-b border-rose-100/50 bg-white/50 flex items-center justify-between shrink-0"><h4 className="text-base font-bold text-rose-800 flex items-center gap-2"><Icons.AlertTriangle className="w-5 h-5 text-rose-500"/> Alertas de Risco</h4></header>
-                                         <div className="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-4">
-                                             {alertasPaginados?.map((alerta, i) => (
-                                                 <div key={i} className="bg-white rounded-xl p-4 border border-rose-100 shadow-sm">
-                                                     <div className="flex justify-between items-center mb-2"><span className="text-xs uppercase font-bold text-slate-500">{alerta.titulo}</span><span className="text-xs font-black text-emerald-600">{alerta.nivel}</span></div>
-                                                     <div className="flex justify-between items-center border-t border-slate-50 pt-2 mt-2 text-xs"><span className="font-bold text-slate-400">{alerta.item1}</span><span className="font-bold text-slate-700">{alerta.valor1}</span></div>
-                                                     <div className="flex justify-between items-center border-t border-slate-50 pt-2 mt-2 text-xs"><span className="font-bold text-slate-400">{alerta.item2}</span><span className="font-bold text-rose-500">{alerta.valor2}</span></div>
-                                                 </div>
-                                             ))}
-                                         </div>
-                                         <footer className="p-4 border-t border-rose-100/50 bg-white/50 shrink-0 flex justify-between items-center text-xs font-bold text-slate-500">
-                                            <span>Pág {riscoPage} de {totalRiscoPages}</span>
-                                            <div className="flex gap-2">
-                                                <button onClick={() => setRiscoPage(p => Math.max(1, p - 1))} disabled={riscoPage === 1} className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50"><Icons.ChevronLeft className="w-4 h-4"/></button>
-                                                <button onClick={() => setRiscoPage(p => Math.min(totalRiscoPages, p + 1))} disabled={riscoPage === totalRiscoPages} className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50"><Icons.ChevronRight className="w-4 h-4"/></button>
+                                    {/* 2. Grid Netflix: Trilha de Benefícios & Alertas */}
+                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                        
+                                        {/* Trilha de Benefícios (Estilo Netflix Automatizado) */}
+                                        <article className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 shadow-sm rounded-[24px] flex flex-col h-[350px] overflow-hidden">
+                                            <header className="p-5 border-b border-indigo-100/50 bg-white/50 shrink-0">
+                                                <h4 className="text-sm font-black text-slate-900 flex items-center gap-2"><Icons.Trophy className="w-4 h-4 text-indigo-600"/> Trilha de Benefícios do Cliente</h4>
+                                            </header>
+                                            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5 relative before:absolute before:inset-0 before:ml-7 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-300 before:via-slate-300 before:to-transparent">
+                                                {trilhaBeneficios.map((item, idx) => (
+                                                    <div key={item.id} className="relative flex items-start gap-3">
+                                                        <div className={`flex items-center justify-center w-5 h-5 rounded-full border-2 border-white ${item.cor} shadow shrink-0 z-10 mt-1`}>
+                                                            <item.icone className="w-2.5 h-2.5 text-white"/>
+                                                        </div>
+                                                        <div className="flex-1 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 transition-colors">
+                                                            <div className="flex items-center justify-between mb-1">
+                                                                <span className="font-bold text-slate-800 text-xs">{item.titulo}</span>
+                                                                <span className="text-[9px] font-bold text-slate-400">{formatDateBR(item.data)}</span>
+                                                            </div>
+                                                            <p className="text-[10px] text-slate-500 leading-relaxed">{item.desc}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                         </footer>
-                                      </article>
+                                        </article>
+
+                                        {/* Alertas de Risco */}
+                                        <article className="bg-rose-50/30 border border-rose-100 shadow-sm rounded-[24px] flex flex-col h-[350px] overflow-hidden">
+                                            <header className="p-5 border-b border-rose-100/50 bg-white/50 flex items-center justify-between shrink-0">
+                                                <h4 className="text-sm font-black text-rose-800 flex items-center gap-2"><Icons.AlertTriangle className="w-4 h-4 text-rose-500"/> Alertas de Risco</h4>
+                                            </header>
+                                            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
+                                                {alertasPaginados?.map((alerta, i) => (
+                                                    <div key={i} className="bg-white rounded-xl p-3.5 border border-rose-100 shadow-sm hover:border-rose-300 transition-colors">
+                                                        <div className="flex justify-between items-center mb-1.5"><span className="text-[10px] uppercase font-black text-slate-600">{alerta.titulo}</span><span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{alerta.nivel}</span></div>
+                                                        <div className="flex justify-between items-center border-t border-slate-50 pt-1.5 mt-1 text-[10px]"><span className="font-bold text-slate-400">{alerta.item1}</span><span className="font-bold text-slate-700">{alerta.valor1}</span></div>
+                                                        <div className="flex justify-between items-center border-t border-slate-50 pt-1.5 mt-1 text-[10px]"><span className="font-bold text-slate-400">{alerta.item2}</span><span className="font-bold text-rose-600">{alerta.valor2}</span></div>
+                                                    </div>
+                                                ))}
+                                                {alertasPaginados?.length === 0 && <p className="text-center text-xs text-slate-400 pt-10">Nenhum alerta registrado.</p>}
+                                            </div>
+                                            {totalRiscoPages > 1 && (
+                                            <footer className="p-3 border-t border-rose-100/50 bg-white/50 shrink-0 flex justify-between items-center text-[10px] font-bold text-slate-500">
+                                                <span>Pág {riscoPage} de {totalRiscoPages}</span>
+                                                <div className="flex gap-1.5">
+                                                    <button onClick={() => setRiscoPage(p => Math.max(1, p - 1))} disabled={riscoPage === 1} className="w-6 h-6 flex items-center justify-center bg-white border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-50 shadow-sm"><Icons.ChevronLeft className="w-3 h-3"/></button>
+                                                    <button onClick={() => setRiscoPage(p => Math.min(totalRiscoPages, p + 1))} disabled={riscoPage === totalRiscoPages} className="w-6 h-6 flex items-center justify-center bg-white border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-50 shadow-sm"><Icons.ChevronRight className="w-3 h-3"/></button>
+                                                </div>
+                                            </footer>
+                                            )}
+                                        </article>
+
+                                    </div>
+
+                                    {/* 3. Anotações Internas */}
+                                    <article className="bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm flex flex-col">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Icons.FileText className="w-4 h-4 text-slate-400" /> Anotações Internas (Gestão)</h4>
+                                            <ProgressButton onClick={salvarNotasAPI} loading={savingState === 'notas'} text="Salvar Anotação" className="text-blue-600 hover:text-white font-bold bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-transparent px-4 py-2 rounded-xl transition-colors text-xs shadow-sm" />
+                                        </div>
+                                        <textarea className="w-full min-h-[120px] bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y shadow-inner" value={clienteSelecionado?.notas || ''} onChange={(e) => setClienteSelecionado({...clienteSelecionado, notas: e.target.value})} placeholder="Adicione observações estratégicas sobre este cliente. Visível apenas para gestores." />
+                                    </article>
+
                                 </div>
-                            </div>
-                          </motion.section>
+                            </motion.section>
                         )}
 
                         {/* 🟢 ABA: RESUMO (MODO DE EDIÇÃO) */}
