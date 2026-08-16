@@ -14,18 +14,24 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
+// 🟢 Adicionados para Gerenciar os E-mails na Fila
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VerifyEmailUpdate;
+use App\Mail\TemporaryPassword;
+
 class CustomerController extends Controller
 {
     /**
      * Helper Privado: Salva o Log de Auditoria no Banco de Dados
      */
-    private function registrarLog($customerId, $acao, $detalhes)
+    private function registrarLog($customerId, $acao, $detalhes, $tipo = 'info')
     {
         CustomerAuditLog::create([
-            'cliente_id' => $customerId,
-            'acao'       => $acao,
-            'detalhes'   => $detalhes,
-            'admin_id'   => Auth::id() ?? 1 
+            'user_id'    => $customerId, // 🟢 Ajustado para user_id (padrão que definimos nas migrations)
+            'admin_id'   => Auth::id() ?? 1,
+            'titulo'     => $acao,       // 🟢 Ajustado para titulo
+            'desc'       => $detalhes,   // 🟢 Ajustado para desc
+            'tipo'       => $tipo        // 🟢 Adicionado campo tipo (info, warning, success)
         ]);
     }
 
@@ -150,7 +156,7 @@ class CustomerController extends Controller
                 'reembolsosPagos' => $pedidosReembolsados->sum('total'),
                 'enderecos' => $c->addresses,
 
-                // 🟢 HISTÓRICO VISUAL DE PEDIDOS (Agora completo com Endereço e Rastreio!)
+                // 🟢 HISTÓRICO VISUAL DE PEDIDOS
                 'pedidos' => $c->orders->map(function ($order) {
                     $cuponsJson = is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : $order->applied_coupons;
                     return [
@@ -197,9 +203,9 @@ class CustomerController extends Controller
                     return [
                         'id' => 'crm_'.$log->id,
                         'data' => $log->created_at->format('Y-m-d\TH:i:s'),
-                        'titulo' => $log->acao,
-                        'desc' => $log->detalhes,
-                        'tipo' => 'info'
+                        'titulo' => $log->titulo,
+                        'desc' => $log->desc,
+                        'tipo' => $log->tipo
                     ];
                 }))->sortByDesc('data')->values()
             ];
@@ -221,7 +227,30 @@ class CustomerController extends Controller
     }
 
     // =========================================================================
-    // 3. ATUALIZAR TELEFONE
+    // 3. ATUALIZAR DADOS BÁSICOS (NOME, GÊNERO)
+    // =========================================================================
+    public function updateBasics(Request $request, $id)
+    {
+        $request->validate([
+            'nome' => 'required|string|max:255',
+            'sexo' => 'nullable|string',
+            'motivo' => 'required|string'
+        ]);
+
+        $cliente = User::findOrFail($id);
+        $nomeAntigo = $cliente->name;
+        
+        $cliente->name = $request->nome;
+        $cliente->sexo = $request->sexo;
+        $cliente->save();
+
+        $this->registrarLog($cliente->id, 'Dados Pessoais Alterados', "Nome de: {$nomeAntigo} para {$cliente->name}. Gênero: {$cliente->sexo}. Motivo: {$request->motivo}", 'warning');
+
+        return response()->json(['status' => 'success', 'message' => 'Dados básicos atualizados.']);
+    }
+
+    // =========================================================================
+    // 4. ATUALIZAR TELEFONE
     // =========================================================================
     public function updatePhone(Request $request, $id)
     {
@@ -236,15 +265,62 @@ class CustomerController extends Controller
         $cliente->telefone = $request->telefone;
         $cliente->save();
 
-        $this->registrarLog($cliente->id, 'Alteração de Telefone/WhatsApp', "De: {$telefoneAntigo} Para: {$cliente->telefone}. Motivo: {$request->motivo}");
+        $this->registrarLog($cliente->id, 'Telefone/WhatsApp Alterado', "De: {$telefoneAntigo} Para: {$cliente->telefone}. Motivo: {$request->motivo}", 'warning');
 
         return response()->json(['status' => 'success', 'message' => 'Telefone atualizado com sucesso.']);
     }
 
     // =========================================================================
-    // 4. ATUALIZAR E-MAIL
+    // 5. ATUALIZAR DADOS SENSÍVEIS (CPF / NASC) C/ ARQUIVO
     // =========================================================================
-    public function updateEmail(Request $request, $id)
+    public function updateSensitiveData(Request $request, $id)
+    {
+        $request->validate([
+            'arquivo' => 'required|file|mimes:jpeg,png,jpg,pdf|max:3072', // Máx 3MB
+            'motivo'  => 'required|string'
+        ]);
+
+        $cliente = User::findOrFail($id);
+        $path = $request->file('arquivo')->store('comprovantes', 'public');
+
+        $alteracoes = [];
+        if ($request->filled('cpf')) {
+            $alteracoes[] = "CPF de {$cliente->cpf} para {$request->cpf}";
+            $cliente->cpf = $request->cpf;
+        }
+        if ($request->filled('nascimento')) {
+            $alteracoes[] = "Nascimento de {$cliente->nascimento} para {$request->nascimento}";
+            $cliente->nascimento = $request->nascimento;
+        }
+        
+        $cliente->save();
+
+        $descLog = implode(" | ", $alteracoes) . ". Documento arquivado (Ref: {$path}). Motivo: {$request->motivo}";
+        $this->registrarLog($cliente->id, 'Alteração de Dados Sensíveis', $descLog, 'warning');
+
+        return response()->json(['status' => 'success', 'message' => 'Dados sensíveis atualizados.']);
+    }
+
+    // =========================================================================
+    // 6. GESTÃO DE E-MAIL (ENVIAR LINK OU FORÇAR)
+    // =========================================================================
+    public function sendEmailUpdateLink(Request $request, $id)
+    {
+        $request->validate(['email' => 'required|email']);
+        $cliente = User::findOrFail($id);
+        
+        // Simulação de geração de token (A ser expandida)
+        $token = Str::random(60); 
+
+        // Na função sendEmailUpdateLink:
+        Mail::to($request->email)->send(new VerifyEmailUpdate($token, $request->email, $cliente->name));    
+
+        $this->registrarLog($cliente->id, 'Solicitação de Troca de E-mail', "Link enviado para validação do endereço: {$request->email}", 'info');
+
+        return response()->json(['status' => 'success', 'message' => 'Link de verificação enviado!']);
+    }
+
+    public function forceEmailUpdate(Request $request, $id)
     {
         $request->validate([
             'email'  => 'required|email|unique:users,email,'.$id, 
@@ -257,45 +333,37 @@ class CustomerController extends Controller
         $cliente->email = $request->email;
         $cliente->save();
 
-        $this->registrarLog($cliente->id, 'Alteração de E-mail', "De: {$emailAntigo} Para: {$cliente->email}. Motivo: {$request->motivo}");
+        $this->registrarLog($cliente->id, 'E-mail Alterado (Forçado)', "De: {$emailAntigo} Para: {$cliente->email}. Motivo: {$request->motivo}", 'warning');
 
-        return response()->json(['status' => 'success', 'message' => 'E-mail atualizado com sucesso.']);
+        return response()->json(['status' => 'success', 'message' => 'E-mail alterado forçadamente.']);
     }
 
-    // =========================================================================
-    // 5. ATUALIZAR DADOS SENSÍVEIS (E SALVAR ARQUIVO COMPROBATÓRIO)
-    // =========================================================================
-    public function updateSensitiveData(Request $request, $id)
-    {
-        $request->validate([
-            'arquivo' => 'required|file|mimes:jpeg,png,jpg,pdf|max:3072', // Máx 3MB
-        ]);
 
+    // =========================================================================
+    // 7. GESTÃO DE SENHA (GERAR TEMP)
+    // =========================================================================
+    public function generateTempPassword($id)
+    {
         $cliente = User::findOrFail($id);
         
-        $path = $request->file('arquivo')->store('comprovantes', 'public');
-
-        $alteracoes = [];
-        if ($request->filled('cpf')) {
-            $alteracoes[] = "CPF atualizado para {$request->cpf}";
-            $cliente->cpf = $request->cpf;
-        }
-        if ($request->filled('nascimento')) {
-            $alteracoes[] = "Nascimento atualizado para {$request->nascimento}";
-            $cliente->nascimento = $request->nascimento;
-        }
-        
+        $senhaProvisoria = strtoupper(Str::random(8));
+        $cliente->password = Hash::make($senhaProvisoria);
         $cliente->save();
 
-        $descLog = implode(" e ", $alteracoes) . ". Documento comprobatório salvo no sistema com a referência: {$path}";
-        
-        $this->registrarLog($cliente->id, 'Alteração de Dados Sensíveis', $descLog);
+        // Na função generateTempPassword:
+        Mail::to($cliente->email)->send(new TemporaryPassword($senhaProvisoria, $cliente->name));
 
-        return response()->json(['status' => 'success', 'message' => 'Dados sensíveis atualizados e documento arquivado.']);
+        $this->registrarLog($cliente->id, 'Senha Provisória Gerada', 'Nova credencial temporária gerada e enviada por e-mail.', 'warning');
+
+        return response()->json([
+            'status'   => 'success', 
+            'password' => $senhaProvisoria,
+            'message'  => 'Senha gerada e e-mail colocado na fila de envio.'
+        ]);
     }
 
     // =========================================================================
-    // 6. ATUALIZAR NOTAS INTERNAS
+    // 8. ATUALIZAR NOTAS INTERNAS
     // =========================================================================
     public function updateNotes(Request $request, $id)
     {
@@ -303,55 +371,36 @@ class CustomerController extends Controller
         $cliente->notas = $request->notas;
         $cliente->save();
 
-        $this->registrarLog($cliente->id, 'Anotações Atualizadas', 'O Gestor atualizou as notas internas do cliente.');
+        $this->registrarLog($cliente->id, 'Anotações Atualizadas', 'O Gestor atualizou as notas internas do cliente.', 'info');
 
-        return response()->json(['status' => 'success', 'message' => 'Anotações internas salvas.']);
+        return response()->json(['status' => 'success', 'message' => 'Anotações salvas.']);
     }
 
     // =========================================================================
-    // 7. SUSPENDER OU REATIVAR CONTA
+    // 9. SUSPENDER OU REATIVAR CONTA
     // =========================================================================
     public function toggleSuspension(Request $request, $id)
     {
         $request->validate([
-            'acao'   => 'required|string',
+            'acao'   => 'required|in:SUSPENDER,REATIVAR',
             'motivo' => 'required|string'
         ]);
 
         $cliente = User::findOrFail($id);
-        
-        $novoStatus = $request->acao === 'SUSPENDER' ? 'INATIVO' : 'ATIVO';
+        $novoStatus = $request->acao === 'SUSPENDER' ? 'BLOQUEADA' : 'ATIVO';
         $cliente->status = $novoStatus;
         $cliente->save();
 
-        $titulo = $novoStatus === 'INATIVO' ? 'Conta Suspensa / Bloqueada' : 'Conta Reativada pelo Admin';
-        $this->registrarLog($cliente->id, $titulo, "Motivo: {$request->motivo}");
-
-        return response()->json(['status' => 'success', 'message' => "A conta do cliente foi alterada para {$novoStatus} com sucesso."]);
-    }
-
-    // =========================================================================
-    // 8. GERAR SENHA PROVISÓRIA
-    // =========================================================================
-    public function generateTempPassword($id)
-    {
-        $cliente = User::findOrFail($id);
+        $titulo = $novoStatus === 'BLOQUEADA' ? 'Conta Suspensa / Bloqueada' : 'Conta Reativada pelo Admin';
+        $tipo = $novoStatus === 'BLOQUEADA' ? 'warning' : 'success';
         
-        $senhaProvisoria = 'HUB' . rand(1000, 9999) . '@#';
-        $cliente->password = Hash::make($senhaProvisoria);
-        $cliente->save();
+        $this->registrarLog($cliente->id, $titulo, "Motivo: {$request->motivo}", $tipo);
 
-        $this->registrarLog($cliente->id, 'Senha Provisória Gerada', 'Nova credencial temporária gerada. O cliente precisará redefinir a senha ao logar.');
-
-        return response()->json([
-            'status'   => 'success', 
-            'password' => $senhaProvisoria,
-            'message'  => 'Senha provisória gerada e aplicada ao cliente.'
-        ]);
+        return response()->json(['status' => 'success', 'message' => "Conta alterada para {$novoStatus}."]);
     }
 
     // =========================================================================
-    // 9. ADICIONAR SALDO (LIVRO RAZÃO)
+    // 10. ADICIONAR SALDO (LIVRO RAZÃO)
     // =========================================================================
     public function addWalletTransaction(Request $request, $id)
     {
@@ -377,13 +426,13 @@ class CustomerController extends Controller
             'descricao' => "{$request->tipo} inserido manualmente pelo gestor. Motivo: {$request->motivo}"
         ]);
 
-        $this->registrarLog($cliente->id, "Saldo Manual Adicionado: {$request->tipo}", "Valor: {$request->valor}. Motivo Formal: {$request->motivo}");
+        $this->registrarLog($cliente->id, "Saldo Manual Adicionado: {$request->tipo}", "Valor: {$request->valor}. Motivo Formal: {$request->motivo}", 'success');
 
-        return response()->json(['status' => 'success', 'message' => 'Transação financeira validada e registrada no Livro Razão.']);
+        return response()->json(['status' => 'success', 'message' => 'Transação financeira registrada.']);
     }
 
     // =========================================================================
-    // 10. MÉTRICAS REAIS DO DASHBOARD
+    // 11. MÉTRICAS REAIS DO DASHBOARD
     // =========================================================================
     public function getDashboardMetrics()
     {
@@ -443,7 +492,7 @@ class CustomerController extends Controller
     }
 
     // =========================================================================
-    // 11. REGRAS E NÍVEIS VIP (Com Suporte a Upload de Imagem)
+    // 12. REGRAS E NÍVEIS VIP (Com Suporte a Upload de Imagem)
     // =========================================================================
     public function getVipLevels() {
         try {
@@ -458,7 +507,7 @@ class CustomerController extends Controller
     {
         $request->validate([
             'nome' => 'required|string',
-            'imagem' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp|max:2048' // Máx 2MB
+            'imagem' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp|max:2048'
         ]);
 
         if ($request->is_default) {
@@ -478,7 +527,7 @@ class CustomerController extends Controller
 
         $vip = VipLevel::updateOrCreate(['id' => $request->id], $fields);
 
-        $this->registrarLog(1, 'Regra VIP Atualizada', "O Nível VIP '{$vip->nome}' foi modificado/criado.");
+        $this->registrarLog(1, 'Regra VIP Atualizada', "O Nível VIP '{$vip->nome}' foi modificado/criado.", 'info');
 
         return response()->json(['status' => 'success', 'message' => 'Nível VIP processado.', 'data' => $vip]);
     }
@@ -490,7 +539,7 @@ class CustomerController extends Controller
     }
 
     // =========================================================================
-    // 12. CONFIGURAÇÕES DA LOJA E CRM
+    // 13. CONFIGURAÇÕES DA LOJA E CRM
     // =========================================================================
     public function getSettings()
     {
@@ -515,24 +564,21 @@ class CustomerController extends Controller
 
         $settings->update($fields);
 
-        return response()->json(['status' => 'success', 'message' => 'Configurações atualizadas com sucesso.']);
+        return response()->json(['status' => 'success', 'message' => 'Configurações atualizadas.']);
     }
 
     // =========================================================================
-    // 13. ATUALIZAR ETIQUETAS (TAGS)
+    // 14. ATUALIZAR ETIQUETAS (TAGS)
     // =========================================================================
     public function syncTags(Request $request, $id)
     {
-        $request->validate([
-            'tags' => 'array'
-        ]);
+        $request->validate(['tags' => 'array']);
 
         $cliente = User::findOrFail($id);
-        
         $cliente->tags = $request->tags;
         $cliente->save();
 
-        $this->registrarLog($cliente->id, 'Etiquetas (Tags) Atualizadas', 'A lista de tags do cliente foi modificada pelo gestor.');
+        $this->registrarLog($cliente->id, 'Etiquetas (Tags) Atualizadas', 'As tags do cliente foram atualizadas.', 'info');
 
         return response()->json(['status' => 'success', 'message' => 'Tags atualizadas com sucesso!']);
     }
