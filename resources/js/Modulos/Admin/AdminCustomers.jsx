@@ -8,6 +8,7 @@
 import React, { useState, useMemo, useRef, useEffect, Component } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QueryClient, QueryClientProvider, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../api';
 import AdminPerfilCRM from './AdminPerfilCRM';
 
@@ -153,7 +154,6 @@ const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'curre
 const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } };
 const itemVariants = { hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } } };
 
-
 // ==========================================
 // 4. COMPONENTES UI COMPARTILHADOS
 // ==========================================
@@ -275,6 +275,11 @@ const AnimatedNotification = ({ show, status, titulo }) => (
 const AdminCustomersContent = ({ mainTab, setMainTab }) => {
   const queryClientLocal = useQueryClient(); // Para invalidar dados pós-mutação
 
+  // ============================================================================
+  // 🟢 FUNÇÕES DE NAVEGAÇÃO DA URL (Sync de Cliente e CRM)
+  // ============================================================================
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // ==========================================
   // 5.1. ESTADOS GLOBAIS E DE UI
   // ==========================================
@@ -321,7 +326,8 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
   // 5.2. ESTADOS DO IN-PAGE CRM (Visão 360º)
   // ==========================================
   const [clienteSelecionado, setClienteSelecionado] = useState(null);
-    // ==========================================
+
+  // ==========================================
   // 5.3. FETCH DE DADOS (USEQUERY)
   // ==========================================
   const { data: listaClientesDaApi = [], isLoading: carregandoClientes, isFetching: isFetchingClients, refetch: refetchClients } = useQuery({
@@ -363,7 +369,9 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
   useEffect(() => {
       if (clienteSelecionado && listaClientesDaApi.length > 0) {
           const clienteAtualizado = listaClientesDaApi.find(c => c.id === clienteSelecionado.id);
-          if (clienteAtualizado) setClienteSelecionado(clienteAtualizado);
+          if (clienteAtualizado && JSON.stringify(clienteAtualizado) !== JSON.stringify(clienteSelecionado)) {
+              setClienteSelecionado(clienteAtualizado);
+          }
       }
   }, [listaClientesDaApi]);
 
@@ -377,6 +385,7 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
           });
       }
   }, [configDaApi]);
+
   // ==========================================
   // 5.5. HELPERS DE AÇÃO E NOTIFICAÇÃO
   // ==========================================
@@ -393,6 +402,7 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
       if (successMessage) showToast(successMessage, 'success');
     }, 1200); 
   };
+
   // ==========================================
   // 5.6. INTEGRAÇÃO BACKEND: MUTAÇÕES (useMutation)
   // ==========================================
@@ -444,16 +454,26 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
   // 5.7. FUNÇÕES DE AÇÃO E FLUXOS
   // ==========================================
   const handleSearchChange = (e) => { setSearchTerm(e.target.value); setCurrentPage(1); };
-  const handleItemsPerPageChange = (e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); };
 
+  // 🟢 NAVEGAÇÃO DE ABERTURA E FECHAMENTO DO CRM SINCRONIZADA COM A URL
   const abrirPerfilCliente = (cliente) => {
       setClienteSelecionado(cliente);
-      setCrmSubTab('RESUMO');
-      setMainTab('CLIENTES (CRM)');
-      setPerfilEmEdicao(false);
-      setTimelinePage(1);
-      setTimelineDateRange({start:'', end:''});
+      
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('maintab', 'CLIENTES (CRM)');
+      newParams.set('id', cliente.id);
+      setSearchParams(newParams);
+
       if (typeof window !== 'undefined') { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  };
+
+  const fecharPerfilCliente = () => {
+      setClienteSelecionado(null);
+      
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('id');
+      newParams.delete('tab'); 
+      setSearchParams(newParams);
   };
 
   const isDateInRange = (dateStr, range) => {
@@ -531,9 +551,6 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
       }));
   }, [niveisVIPDaApi]);
 
-  const maxLTVGeral = listaClientesDaApi.length > 0 ? Math.max(...listaClientesDaApi.map(c => safeNum(c.ltv))) : 0;
-  const maxCompraGeral = listaClientesDaApi.length > 0 ? Math.max(...listaClientesDaApi.map(c => safeNum(c.ultimaCompraValor))) : 0;
-
   const clientesFiltrados = useMemo(() => {
     return listaClientesDaApi.filter(c => {
       const matchBusca = safeStr(c?.nome).toLowerCase().includes(safeStr(searchTerm).toLowerCase()) || 
@@ -560,17 +577,6 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const clientesPaginados = (clientesFiltrados || []).slice(indexOfFirstItem, indexOfLastItem);
 
-  const rankingClientesList = useMemo(() => {
-    return listaClientesDaApi
-      .filter(c => safeNum(c?.ltv) >= 1) 
-      .filter(c => maxLTVFiltro === '' ? true : safeNum(c?.ltv) <= safeNum(maxLTVFiltro))
-      .filter(c => safeNum(c?.produtosComprados) >= 1) 
-      .filter(c => qtdProdutosFiltro === '' ? true : safeNum(c?.produtosComprados) <= safeNum(qtdProdutosFiltro))
-      .filter(c => isDateInRange(c.ultimaCompra, rankDateRange))
-      .sort((a, b) => safeNum(b?.ltv) - safeNum(a?.ltv))
-      .slice(0, safeNum(topClientsCount) || 5);
-  }, [listaClientesDaApi, topClientsCount, maxLTVFiltro, qtdProdutosFiltro, rankDateRange]);
-
   const ultimasComprasListFiltrada = useMemo(() => {
     return listaClientesDaApi
       .filter(c => safeNum(c?.compras) > 0 && safeNum(c?.ultimaCompraValor) >= 1) 
@@ -585,8 +591,7 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
 
   const ltvMedioCRM = listaClientesDaApi.length > 0 ? (listaClientesDaApi.reduce((acc, c) => acc + safeNum(c?.ltv), 0) / listaClientesDaApi.length) : 0;
   const comprasTotaisCRM = listaClientesDaApi.reduce((acc, c) => acc + safeNum(c?.compras), 0);
-  const cashbackTotalCRM = listaClientesDaApi.reduce((acc, c) => acc + safeNum(c?.cashback), 0);
-  const coinsTotaisCRM = listaClientesDaApi.reduce((acc, c) => acc + safeNum(c?.coins), 0);
+
   // ==========================================
   // 5.9. RENDERIZADORES DE TABELAS (HELPERS UI)
   // ==========================================
@@ -644,8 +649,6 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
     </div>
   );
 
-  // Aqui ficarão os próximos renders visuais JSX!
- 
 // ============================================================================
 // 6. RENDERIZADORES DE TELAS (PÁGINAS)
 // ============================================================================
@@ -976,7 +979,8 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
     </FadeIn>
     );
   };
-// ============================================================================
+
+  // ============================================================================
   // 6.4. RENDER MODULAR: BENEFÍCIOS (ESTILO NETFLIX CARDS)
   // ============================================================================
   const renderBeneficios = () => {
@@ -1309,12 +1313,13 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
           {mainTab === 'PAINEL' && renderPainel()}
           {mainTab === 'CLIENTES (CRM)' && !clienteSelecionado && renderClientesCRMLista()}
           
-          {/* 🟢 AQUI CHAMAMOS O NOVO COMPONENTE SEPARADO */}
           {mainTab === 'CLIENTES (CRM)' && clienteSelecionado && (
               <AdminPerfilCRM 
+                  cliente={clienteSelecionado}
                   clienteSelecionado={clienteSelecionado} 
                   setClienteSelecionado={setClienteSelecionado} 
-                  onBack={() => setClienteSelecionado(null)} 
+                  onBack={fecharPerfilCliente} 
+                  onVoltar={fecharPerfilCliente} 
                   niveisVIPDaApi={niveisVIPDaApi} 
                   refetchClients={refetchClients} 
                   isFetchingClients={isFetchingClients}
@@ -1331,46 +1336,80 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
 };
 
 // ============================================================================
-// 7. COMPONENTE ROOT (LIMPO - A PROTEÇÃO AGORA FICA NO ADMIN LAYOUT)
+// 7. COMPONENTE ROOT
 // ============================================================================
 export default function AdminCustomers() {
-  const [mainTab, setMainTab] = useState('PAINEL');
-  const abasDisponiveis = ['PAINEL', 'CLIENTES (CRM)', 'BENEFÍCIOS', 'CONFIGURAÇÕES'];
+    const [searchParams, setSearchParams] = useSearchParams();
+    
+    // Lê a aba principal da URL ou usa 'PAINEL' como padrão
+    const mainTabUrl = searchParams.get('maintab') || 'PAINEL';
+    
+    // Lê se existe um cliente aberto
+    const customerIdUrl = searchParams.get('id');
 
-  return (
-    <QueryClientProvider client={queryClient}>
-        <ErrorBoundary>
-        <div className="w-full min-h-screen bg-slate-50 pb-20 relative font-sans">
-            <GlobalStyles />
+    const abasDisponiveis = ['PAINEL', 'CLIENTES (CRM)', 'BENEFÍCIOS', 'CONFIGURAÇÕES'];
 
-            <header className="mb-6 pt-4 px-4 md:px-8">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">CRM DE CLIENTES</h1>
-                        <p className="text-sm font-medium text-slate-500 mt-1">Gestão 360º de base de dados, LTV e funil de vendas.</p>
-                    </div>
+    // GARANTE QUE SE TIVER UM ID NA URL, A ABA É A DE CRM
+    React.useEffect(() => {
+        if (customerIdUrl && mainTabUrl !== 'CLIENTES (CRM)') {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.set('maintab', 'CLIENTES (CRM)');
+            setSearchParams(newParams);
+        }
+    }, [customerIdUrl, mainTabUrl, searchParams, setSearchParams]);
+
+    // FUNÇÃO INTELIGENTE DE TROCA DE ABAS
+    const handleMainTabChange = (tab) => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('maintab', tab);
+        
+        // Se sair da aba de CRM, removemos o ID do cliente da URL
+        if (tab !== 'CLIENTES (CRM)') {
+            newParams.delete('id');
+            newParams.delete('tab'); 
+        }
+        
+        setSearchParams(newParams);
+    };
+
+    return (
+        <QueryClientProvider client={queryClient}>
+            <ErrorBoundary>
+                <div className="w-full min-h-screen bg-slate-50 pb-20 relative font-sans">
+                    <GlobalStyles />
+
+                    <header className="mb-6 pt-4 px-4 md:px-8">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h1 className="text-3xl font-black text-slate-900 tracking-tight">CRM DE CLIENTES</h1>
+                                <p className="text-sm font-medium text-slate-500 mt-1">Gestão 360º de base de dados, LTV e funil de vendas.</p>
+                            </div>
+                        </div>
+                        
+                        <nav className="flex gap-8 border-b border-slate-200 mt-8 overflow-x-auto no-scrollbar relative w-full" aria-label="Navegação do CRM">
+                            {abasDisponiveis.map(tab => (
+                                <button 
+                                    type="button" 
+                                    key={tab} 
+                                    aria-label={`Aba ${tab}`} 
+                                    aria-current={mainTabUrl === tab ? "page" : undefined} 
+                                    onClick={() => handleMainTabChange(tab)} 
+                                    className={`relative pb-4 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${mainTabUrl === tab ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+                                >
+                                    {tab}
+                                    {mainTabUrl === tab && (
+                                        <motion.div layoutId="activeTabIndicatorAdminMain" className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
+                                    )}
+                                </button>
+                            ))}
+                        </nav>
+                    </header>
+
+                    <main className="flex-1 min-w-0 px-4 md:px-8 relative pt-2">
+                       <AdminCustomersContent mainTab={mainTabUrl} setMainTab={handleMainTabChange} />
+                    </main>
                 </div>
-                
-                <nav className="flex gap-8 border-b border-slate-200 mt-8 overflow-x-auto no-scrollbar relative w-full" aria-label="Navegação do CRM">
-                    {abasDisponiveis.map(tab => (
-                        <button 
-                        type="button" key={tab} aria-label={`Aba ${tab}`} aria-current={mainTab === tab ? "page" : undefined} onClick={() => setMainTab(tab)} 
-                        className={`relative pb-4 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${mainTab === tab ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
-                        >
-                            {tab}
-                            {mainTab === tab && (
-                                <motion.div layoutId="activeTabIndicatorAdminMain" className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
-                            )}
-                        </button>
-                    ))}
-                </nav>
-            </header>
-
-            <main className="flex-1 min-w-0 px-4 md:px-8 relative pt-2">
-               <AdminCustomersContent mainTab={mainTab} setMainTab={setMainTab} />
-            </main>
-        </div>
-        </ErrorBoundary>
-    </QueryClientProvider>
-  );
+            </ErrorBoundary>
+        </QueryClientProvider>
+    );
 }
