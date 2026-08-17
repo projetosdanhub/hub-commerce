@@ -178,7 +178,7 @@ const formatPhone = (phone) => {
 const AdminOrdersContent = () => {
     const queryClientLocal = useQueryClient();
     const prefixo = "HUB-"; 
-
+    
     // Estados Listagem
     const [abaAtiva, setAbaAtiva] = useState('TUDO');
     const [termoPesquisa, setTermoPesquisa] = useState('');
@@ -199,7 +199,7 @@ const AdminOrdersContent = () => {
     
     // 🟢 ESTADO PRINCIPAL: FIRST PAGE VIEW E MODAL
     const [modalConfirmacao, setModalConfirmacao] = useState({ isOpen: false, tipo: null, pedidoId: null });
-    const [pedidoSelecionado, setPedidoSelecionado] = useState(null); 
+
     const [motivoReembolso, setMotivoReembolso] = useState('');
     const [comprovanteReembolso, setComprovanteReembolso] = useState(null); 
     const [loadingAcao, setLoadingAcao] = useState(null); 

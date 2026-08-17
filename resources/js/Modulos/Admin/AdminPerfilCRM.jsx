@@ -103,10 +103,10 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
 
 // 🟢 ANIMAÇÕES SUAVES PADRONIZADAS PARA AS ABAS E TRANSIÇÕES
 const tabTransition = {
-        initial: { opacity: 0 },
-        animate: { opacity: 1, transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } },
-        exit: { opacity: 0, transition: { duration: 0.2, ease: "easeInOut" } }
-    };
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
+    exit: { opacity: 0, transition: { duration: 0.15, ease: "easeIn" } }
+};
 export default function AdminPerfilCRM({ 
     clienteSelecionado, 
     setClienteSelecionado, 
@@ -1121,9 +1121,8 @@ export default function AdminPerfilCRM({
                             </div>
                         </motion.section>
                         )}
-
-                        {/* 🟢 ABA: HISTÓRICO DE PEDIDOS (Premium Invoice Cards) */}
-                        {crmSubTab === 'HISTÓRICO DE PEDIDOS' && (
+                        {/* 🟢 PONTO DE REFERÊNCIA 3: DENTRO DE <AnimatePresence mode="wait"> */}
+                        {(crmSubTab === 'HISTÓRICO DE PEDIDOS' || crmSubTab === 'HISTORICO') && (
                         <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-6">
                             
                             {/* Cabeçalho da Seção */}
@@ -1145,7 +1144,6 @@ export default function AdminPerfilCRM({
                                 {clienteSelecionado?.pedidos && clienteSelecionado.pedidos.length > 0 ? (
                                     clienteSelecionado.pedidos.map((pedido) => {
                                         
-                                        // Definir cor e ícone baseados no status do pedido
                                         let statusColor = "bg-slate-50 text-slate-600 border-slate-200";
                                         let StatusIcon = Icons.Clock;
 
@@ -1169,20 +1167,18 @@ export default function AdminPerfilCRM({
                                                 statusColor = "bg-rose-50 text-rose-600 border-rose-200";
                                                 StatusIcon = Icons.XCircle;
                                                 break;
-                                            case 'A_PAGAR':
-                                            case 'AGUARDANDO_PAGAMENTO':
+                                            default:
                                                 statusColor = "bg-amber-50 text-amber-600 border-amber-200";
                                                 StatusIcon = Icons.Clock;
                                                 break;
                                         }
 
-                                        // Garante a leitura do array de cupons (caso o backend mande JSON string ou array direto)
                                         const cuponsUsados = typeof pedido.coupons === 'string' ? JSON.parse(pedido.coupons || '[]') : (pedido.coupons || []);
 
                                         return (
                                             <article key={pedido.id} className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden transition-all duration-300 hover:border-blue-300 hover:shadow-md group cursor-default">
                                                 
-                                                {/* 1. Header do Card de Pedido (Resumo Rápido) */}
+                                                {/* Topo do Card do Pedido */}
                                                 <div className="p-5 sm:p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                                                     <div className="flex items-start gap-4">
                                                         <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 shadow-sm group-hover:text-blue-500 group-hover:border-blue-200 transition-colors">
@@ -1211,21 +1207,21 @@ export default function AdminPerfilCRM({
                                                             <span className="text-xl font-black text-emerald-600 leading-none">{formatCurrency(pedido.total)}</span>
                                                         </div>
                                                         
-                                                        {/* Botão de Ação: Navega para a página detalhada do pedido */}
+                                                        {/* Botão de Redirecionamento Direto */}
                                                         <button 
-                                                            onClick={() => window.open(`/admin/orders/${pedido.id}`, '_blank')} 
+                                                            onClick={() => window.location.href = `/admin/orders?id=${pedido.id}`} 
                                                             className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-4 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm shrink-0"
-                                                            title="Visualizar este pedido em nova aba"
+                                                            title="Ver no Módulo de Pedidos"
                                                         >
                                                             Ver Pedido <Icons.ExternalLink className="w-3.5 h-3.5" />
                                                         </button>
                                                     </div>
                                                 </div>
 
-                                                {/* 2. Corpo do Card (Detalhamento Dividido em 3 Colunas) */}
+                                                {/* Detalhes Financeiros, Logística e Cupons */}
                                                 <div className="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
                                                     
-                                                    {/* COLUNA A: Extrato Financeiro */}
+                                                    {/* 1. Composição do Valor */}
                                                     <div className="space-y-3">
                                                         <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
                                                             <Icons.DollarSign className="w-3.5 h-3.5 text-emerald-500"/> Composição do Valor
@@ -1241,7 +1237,6 @@ export default function AdminPerfilCRM({
                                                                 <span className="text-slate-800 font-bold">{formatCurrency(pedido.frete_valor)}</span>
                                                             </div>
 
-                                                            {/* Descontos Específicos deste Pedido */}
                                                             {safeNum(pedido.desconto_loja) > 0 && (
                                                                 <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60 text-rose-500">
                                                                     <span>(-) Desc. Loja/Cupom:</span>
@@ -1268,14 +1263,13 @@ export default function AdminPerfilCRM({
                                                         </div>
                                                     </div>
 
-                                                    {/* COLUNA B: Dados de Envio e Itens */}
+                                                    {/* 2. Logística */}
                                                     <div className="space-y-3">
                                                         <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
                                                             <Icons.MapPin className="w-3.5 h-3.5 text-blue-500"/> Logística & Transporte
                                                         </h6>
 
                                                         <div className="space-y-3 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-[calc(100%-32px)]">
-                                                            
                                                             <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                                                                 <span className="text-slate-400">Total de Volumes:</span>
                                                                 <span className="text-slate-800 font-black bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{pedido.items?.length || 0} un.</span>
@@ -1303,7 +1297,7 @@ export default function AdminPerfilCRM({
                                                         </div>
                                                     </div>
 
-                                                    {/* COLUNA C: Cupons, Benefícios e Descontos Detalhados */}
+                                                    {/* 3. Cupons Utilizados */}
                                                     <div className="space-y-3">
                                                         <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
                                                             <Icons.Tag className="w-3.5 h-3.5 text-amber-500"/> Cupons & Vantagens
@@ -1315,7 +1309,7 @@ export default function AdminPerfilCRM({
                                                                     <div key={idx} className="bg-amber-50/40 border border-amber-100/80 p-3.5 rounded-2xl flex flex-col gap-2 shadow-sm transition-colors hover:bg-amber-50">
                                                                         <div className="flex justify-between items-start gap-2">
                                                                             <div className="min-w-0">
-                                                                                <strong className="text-[11px] font-black text-slate-800 block truncate" title={cupom.nome || cupom.codigo}>
+                                                                                <strong className="text-[11px] font-black text-slate-800 block truncate">
                                                                                     {cupom.nome || cupom.codigo}
                                                                                 </strong>
                                                                                 <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest bg-amber-100/50 px-1.5 py-0.5 rounded mt-1 inline-block">
@@ -1350,7 +1344,6 @@ export default function AdminPerfilCRM({
                                         );
                                     })
                                 ) : (
-                                    // Empty State Elegante (Caso o cliente não tenha pedidos)
                                     <div className="w-full flex flex-col items-center justify-center py-20 bg-white rounded-[24px] border-2 border-slate-200 border-dashed">
                                         <div className="w-16 h-16 bg-slate-50 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
                                             <Icons.ShoppingBag className="w-8 h-8 text-slate-300" />
