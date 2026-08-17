@@ -20,6 +20,9 @@ use App\Mail\VerifyEmailUpdate;
 use App\Mail\TemporaryPassword;
 use App\Mail\EmailForcedUpdate;
 
+use Illuminate\Support\Facades\Cache; // 🟢 IMPORTANTE PARA O TOKEN FUNCIONAR
+use App\Mail\PasswordResetLink;       // 🟢 IMPORTANTE
+
 class CustomerController extends Controller
 {
     /**
@@ -299,7 +302,45 @@ class CustomerController extends Controller
 
         return response()->json(['status' => 'success', 'message' => 'Dados sensíveis atualizados.']);
     }
+// =========================================================================
+    // CONFIRMAÇÃO DE E-MAIL VIA LINK (CLIQUE DO CLIENTE)
+    // =========================================================================
+   public function confirmEmailUpdate(Request $request)
+    {
+        $token = $request->query('token');
+        
+        // 🟢 BUSCA OS DADOS QUE GUARDAMOS NO CACHE
+        $dados = Cache::get("email_update_{$token}");
 
+        if (!$token || !$dados) {
+            return response()->make('
+                <html><body style="font-family:sans-serif;text-align:center;padding:50px;">
+                    <h2 style="color:#e11d48;">Link Expirado ou Inválido</h2>
+                    <p>Este link já foi utilizado ou passou do limite de 7 minutos.</p>
+                </body></html>
+            ', 400);
+        }
+
+        // 🟢 APLICA A ALTERAÇÃO NO BANCO DE DADOS
+        $user = User::findOrFail($dados['user_id']);
+        $emailAntigo = $user->email;
+        $user->email = $dados['novo_email'];
+        $user->save();
+
+        // 🟢 APAGA O TOKEN DO CACHE PARA NÃO SER REUTILIZADO
+        Cache::forget("email_update_{$token}");
+
+        $this->registrarLog($user->id, 'E-mail Confirmado via Link', "De: {$emailAntigo} Para: {$user->email}", 'success');
+
+        return response()->make('
+            <html><body style="font-family:sans-serif;text-align:center;padding:50px;background-color:#f8fafc;">
+                <div style="max-width:500px;margin:0 auto;background:#fff;padding:30px;border-radius:16px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <h2 style="color:#10b981;margin-bottom:10px;">E-mail Atualizado com Sucesso!</h2>
+                    <p style="color:#475569;">Seu novo endereço de e-mail (<strong>'.$user->email.'</strong>) foi verificado e salvo.</p>
+                </div>
+            </body></html>
+        ', 200, ['Content-Type' => 'text/html']);
+    }
     // =========================================================================
     // 6. GESTÃO DE E-MAIL
     // =========================================================================
@@ -310,32 +351,20 @@ class CustomerController extends Controller
         
         $token = Str::random(60); 
 
+        // 🟢 GUARDA OS DADOS NO CACHE POR 7 MINUTOS!
+        Cache::put("email_update_{$token}", [
+            'user_id' => $cliente->id,
+            'novo_email' => $request->email
+        ], now()->addMinutes(7));
+
         Mail::to($request->email)->send(new VerifyEmailUpdate($token, $request->email, $cliente->name));
 
-        $this->registrarLog($cliente->id, 'Solicitação de Troca de E-mail', "Link enviado para validação do endereço: {$request->email}", 'info');
+        $this->registrarLog($cliente->id, 'Solicitação de Troca de E-mail', "Link enviado para: {$request->email}", 'info');
 
         return response()->json(['status' => 'success', 'message' => 'Link de verificação enviado!']);
     }
 
-    public function forceEmailUpdate(Request $request, $id)
-    {
-        $request->validate([
-            'email'  => 'required|email|unique:users,email,'.$id, 
-            'motivo' => 'required|string'
-        ]);
 
-        $cliente = User::findOrFail($id);
-        $emailAntigo = $cliente->email;
-        
-        $cliente->email = $request->email;
-        $cliente->save();
-
-        Mail::to($emailAntigo)->send(new EmailForcedUpdate($cliente->name, $request->email, $request->motivo));
-
-        $this->registrarLog($cliente->id, 'E-mail Alterado (Forçado)', "De: {$emailAntigo} Para: {$cliente->email}. Motivo: {$request->motivo}", 'warning');
-
-        return response()->json(['status' => 'success', 'message' => 'E-mail alterado forçadamente.']);
-    }
 
 // =========================================================================
     // 7. GESTÃO DE SENHA
@@ -362,11 +391,58 @@ class CustomerController extends Controller
     public function sendPasswordResetLink($id)
     {
         $cliente = User::findOrFail($id);
+        $token = Str::random(60);
         
-        // Dispara o registro de auditoria e responde ao React
-        $this->registrarLog($cliente->id, 'Redefinição de Senha', 'Link de redefinição de senha enviado para o e-mail atual do cliente.', 'info');
+        // 🟢 GUARDA O PEDIDO DE SENHA NO CACHE
+        Cache::put("password_reset_{$token}", ['user_id' => $cliente->id], now()->addMinutes(7));
+
+        Mail::to($cliente->email)->send(new PasswordResetLink($token, $cliente->name));
+
+        $this->registrarLog($cliente->id, 'Redefinição de Senha', 'Link de redefinição de senha enviado ao cliente.', 'info');
 
         return response()->json(['status' => 'success', 'message' => 'Link de redefinição enviado com sucesso!']);
+    }
+
+    // Rota que exibe o formulário de nova senha ao clicar no e-mail
+    public function showPasswordResetForm(Request $request)
+    {
+        $token = $request->query('token');
+        if (!Cache::has("password_reset_{$token}")) {
+            return response()->make('<html><body style="text-align:center;padding:50px;"><h2 style="color:red;">Link Expirado.</h2></body></html>', 400);
+        }
+
+        return response()->make('
+            <html><body style="font-family:sans-serif;text-align:center;padding:50px;background-color:#f1f5f9;">
+                <form action="'.url('/api/clientes/processar-senha').'" method="POST" style="max-width:400px;margin:0 auto;background:#fff;padding:30px;border-radius:16px;">
+                    <h2>Criar Nova Senha</h2>
+                    <input type="hidden" name="token" value="'.$token.'">
+                    <input type="password" name="password" placeholder="Nova Senha" required style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid #ccc;">
+                    <button type="submit" style="width:100%;padding:12px;background:#2563eb;color:#fff;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">Salvar Nova Senha</button>
+                </form>
+            </body></html>
+        ', 200, ['Content-Type' => 'text/html']);
+    }
+
+    // Processa a senha enviada pelo formulário acima
+    public function processPasswordReset(Request $request)
+    {
+        $token = $request->input('token');
+        $novaSenha = $request->input('password');
+
+        $dados = Cache::get("password_reset_{$token}");
+
+        if (!$token || !$dados || strlen($novaSenha) < 6) {
+            return response()->make('<html><body style="text-align:center;padding:50px;"><h2>Erro: Link expirado ou senha muito curta.</h2></body></html>', 400);
+        }
+
+        $user = User::findOrFail($dados['user_id']);
+        $user->password = Hash::make($novaSenha);
+        $user->save();
+
+        Cache::forget("password_reset_{$token}");
+        $this->registrarLog($user->id, 'Senha Redefinida via Link', 'O cliente criou uma nova senha via e-mail.', 'success');
+
+        return response()->make('<html><body style="text-align:center;padding:50px;"><h2>Senha Atualizada com Sucesso!</h2><p>Você já pode acessar sua conta com a nova senha.</p></body></html>', 200, ['Content-Type' => 'text/html']);
     }
 
     // =========================================================================

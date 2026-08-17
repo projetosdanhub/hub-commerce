@@ -21,14 +21,22 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 // ==========================================
-// ROTA DE LOGIN (PÚBLICA)
+// ROTAS DE LOGIN (PÚBLICAS) E VALIDAÇÃO DE E-MAIL
 // ==========================================
 Route::post('/admin/login', [AuthController::class, 'login']);
+
+// 🟢 Rota pública acionada quando o cliente clica no link do E-mail (Validar E-mail)
+Route::get('/clientes/confirmar-email', [AdminCustomerController::class, 'confirmEmailUpdate']);
+
+// Redefinição de Senha via Link
+Route::get('/clientes/redefinir-senha', [AdminCustomerController::class, 'showPasswordResetForm']);
+Route::post('/clientes/processar-senha', [AdminCustomerController::class, 'processPasswordReset']);
 
 // ==========================================
 // ROTAS DO FRONT-END (VITRINE / REACT)
 // ==========================================
 Route::get('/customers', [ApiCustomerController::class, 'index']);
+
 
 // ==========================================
 // ROTAS DO HUB COMMERCE: ADMIN (PROTEGIDAS)
@@ -85,7 +93,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::put('/{id}/status', [OrderController::class, 'updateStatus']);
         Route::post('/{id}/dispatch', [OrderController::class, 'dispatchOrder']);
         
-        // Rota de Cancelamento e Reembolso (Usa POST para suportar upload de comprovante)
+        // Rota de Cancelamento e Reembolso
         Route::post('/{id}/cancel', [OrderController::class, 'cancelOrder']);
     });
 
