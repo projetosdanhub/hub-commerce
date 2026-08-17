@@ -1,7 +1,7 @@
 // ============================================================================
 // FICHEIRO: resources/js/Modulos/Admin/AdminOrders.jsx
 // ARQUITETURA: Gestão de Pedidos First Page 100% API (Com Real-Time Polling)
-// UI/UX: Premium Minimal SaaS | Flex Inteligente Anti-Reflow | Filtros
+// UI/UX: Premium Minimal SaaS | Flex Inteligente Anti-Reflow | Filtros URL Sync
 // ============================================================================
 
 import React, { useState, useMemo, useEffect, useRef, Component } from 'react';
@@ -11,6 +11,15 @@ import { useQuery, useMutation, useQueryClient, QueryClientProvider, QueryClient
 import api from '../../api';
 
 const queryClient = new QueryClient();
+
+// =========================================================
+// 🟢 ANIMAÇÃO PADRÃO ULTRA-SUAVE (TAB TRANSITION)
+// =========================================================
+const tabTransition = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } },
+    exit: { opacity: 0, transition: { duration: 0.2, ease: "easeInOut" } }
+};
 
 class ErrorBoundary extends Component {
     constructor(props) { super(props); this.state = { hasError: false, error: null }; }
@@ -48,7 +57,9 @@ const Icons = {
     Tag: () => <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>,
     Refresh: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
     Download: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
-    Crown: () => <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>
+    Crown: () => <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
+    DollarSign: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>,
+    User: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
 };
 
 const statusConfig = {
@@ -164,6 +175,13 @@ const formatDateBR = (dateStr) => {
     if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
     return dateStr;
 };
+const formatDateTimeBR = (dateVal) => {
+    if (!dateVal) return '-';
+    try {
+        const d = new Date(dateVal);
+        return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(d);
+    } catch (e) { return '-'; }
+};
 const formatPhone = (phone) => {
     if (!phone || phone === '-') return '-';
     const str = String(phone).replace(/\D/g, '');
@@ -172,10 +190,23 @@ const formatPhone = (phone) => {
     return phone;
 };
 
+// Parse cupons seguro
+const parseCoupons = (coupons) => {
+    if (!coupons) return [];
+    return typeof coupons === 'string' ? JSON.parse(coupons) : coupons;
+};
+
 // ============================================================================
 // CONTEÚDO PRINCIPAL (AdminOrdersContent)
 // ============================================================================
 const AdminOrdersContent = () => {
+    
+    // =========================================================
+    // 🔗 LEITURA DE PARÂMETROS DA URL (SYNC COM CRM)
+    // =========================================================
+    const searchParams = new URLSearchParams(window.location.search);
+    const orderIdUrl = searchParams.get('id');
+    
     const queryClientLocal = useQueryClient();
     const prefixo = "HUB-"; 
     
@@ -198,6 +229,7 @@ const AdminOrdersContent = () => {
     const [pedidosSelecionados, setPedidosSelecionados] = useState([]);
     
     // 🟢 ESTADO PRINCIPAL: FIRST PAGE VIEW E MODAL
+    const [pedidoSelecionado, setPedidoSelecionado] = useState(null);
     const [modalConfirmacao, setModalConfirmacao] = useState({ isOpen: false, tipo: null, pedidoId: null });
 
     const [motivoReembolso, setMotivoReembolso] = useState('');
@@ -224,11 +256,25 @@ const AdminOrdersContent = () => {
     const pedidosDaApi = fetchResult.data || [];
     const metricas = fetchResult.metrics || { conversao_pix: 0, total_pix_gerados: 0 };
 
+    // =========================================================
+    // 🎯 AUTO-OPEN MODAL VIA URL (SYNC CRM)
+    // =========================================================
+    useEffect(() => {
+        if (orderIdUrl && pedidosDaApi && pedidosDaApi.length > 0) {
+            const pedidoAlvo = pedidosDaApi.find(p => String(p.id) === String(orderIdUrl));
+            if (pedidoAlvo && (!pedidoSelecionado || pedidoSelecionado.id !== pedidoAlvo.id)) {
+                setPedidoSelecionado(pedidoAlvo);
+            }
+        }
+    }, [orderIdUrl, pedidosDaApi]);
+
     // Sincronizador Real-Time
     useEffect(() => {
         if (pedidoSelecionado && pedidosDaApi.length > 0) {
             const pedidoAtualizado = pedidosDaApi.find(p => p.id === pedidoSelecionado.id);
-            if (pedidoAtualizado) setPedidoSelecionado(pedidoAtualizado);
+            if (pedidoAtualizado && JSON.stringify(pedidoAtualizado) !== JSON.stringify(pedidoSelecionado)) {
+                setPedidoSelecionado(pedidoAtualizado);
+            }
         }
     }, [pedidosDaApi]);
 
@@ -399,7 +445,7 @@ const AdminOrdersContent = () => {
     };
 
     return (
-        <div className="w-full pb-20 font-sans">
+        <div className="w-full pb-20 font-sans" style={{ scrollbarGutter: 'stable' }}>
             <Helmet><title>Gestão de Pedidos | HUB ADMIN</title></Helmet>
             <GlobalStyles />
             <AnimatedNotification show={toast.show} status={toast.status} titulo={toast.message} />
@@ -409,7 +455,7 @@ const AdminOrdersContent = () => {
                 {/* VISUALIZAÇÃO 1: DIRETÓRIO DE PEDIDOS (TABLE)                   */}
                 {/* ============================================================== */}
                 {!pedidoSelecionado ? (
-                    <FadeIn key="dashboard_pedidos" className="flex flex-col h-full min-h-[85vh]">
+                    <FadeIn key="dashboard_pedidos" className="flex flex-col h-full min-h-[85vh] p-6 sm:p-10">
                         <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <h1 className="text-3xl font-black text-slate-900 tracking-tight">Gestão de Pedidos</h1>
@@ -494,45 +540,47 @@ const AdminOrdersContent = () => {
                                     </thead>
                                     <tbody className="divide-y divide-slate-50 bg-white">
                                         <AnimatePresence mode="wait">
-                                            {carregandoPedidos ? (
-                                                <motion.tr key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                                    <td colSpan="7" className="p-16 text-center text-slate-400 text-sm font-bold animate-pulse">Sincronizando com a Base de Dados...</td>
-                                                </motion.tr>
-                                            ) : pedidosPaginados.length > 0 ? pedidosPaginados.map(pedido => (
-                                                <motion.tr layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key={pedido.id} className={`transition-colors cursor-pointer group ${pedidosSelecionados.includes(pedido.id) ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`} onClick={() => setPedidoSelecionado(pedido)}>
-                                                    <td className="p-5 pl-6" onClick={e => e.stopPropagation()}><input type="checkbox" checked={pedidosSelecionados.includes(pedido.id)} onChange={() => toggleSelecionar(pedido.id)} /></td>
-                                                    <td className="p-5">
-                                                        <div className="flex flex-col"><span className="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors">#{prefixo}{pedido.id}</span><span className="text-[11px] font-semibold text-slate-400 mt-1 flex items-center gap-1"><Icons.Clock /> {pedido.data}</span></div>
-                                                    </td>
-                                                    <td className="p-5">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-sm text-slate-600 shadow-sm overflow-hidden">
-                                                                {pedido.cliente?.avatar ? <img src={pedido.cliente.avatar} className="w-full h-full object-cover" alt="" /> : (pedido.cliente?.nome?.substring(0,2) || 'CL')}
+                                            <motion.tbody key={abaAtiva} {...tabTransition}>
+                                                {carregandoPedidos ? (
+                                                    <motion.tr key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                                        <td colSpan="7" className="p-16 text-center text-slate-400 text-sm font-bold animate-pulse">Sincronizando com a Base de Dados...</td>
+                                                    </motion.tr>
+                                                ) : pedidosPaginados.length > 0 ? pedidosPaginados.map(pedido => (
+                                                    <motion.tr layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key={pedido.id} className={`transition-colors cursor-pointer group ${pedidosSelecionados.includes(pedido.id) ? 'bg-blue-50/50' : 'hover:bg-slate-50'}`} onClick={() => setPedidoSelecionado(pedido)}>
+                                                        <td className="p-5 pl-6" onClick={e => e.stopPropagation()}><input type="checkbox" checked={pedidosSelecionados.includes(pedido.id)} onChange={() => toggleSelecionar(pedido.id)} /></td>
+                                                        <td className="p-5">
+                                                            <div className="flex flex-col"><span className="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors">#{prefixo}{pedido.id}</span><span className="text-[11px] font-semibold text-slate-400 mt-1 flex items-center gap-1"><Icons.Clock /> {formatDateTimeBR(pedido.created_at)}</span></div>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-sm text-slate-600 shadow-sm overflow-hidden">
+                                                                    {pedido.cliente?.avatar ? <img src={pedido.cliente.avatar} className="w-full h-full object-cover" alt="" /> : (pedido.cliente?.nome?.substring(0,2) || 'CL')}
+                                                                </div>
+                                                                <div className="flex flex-col"><span className="font-bold text-slate-800 text-sm block">{pedido.cliente?.nome}</span><span className="text-[10px] text-slate-500 font-mono mt-0.5">{pedido.cliente?.cpf}</span></div>
                                                             </div>
-                                                            <div className="flex flex-col"><span className="font-bold text-slate-800 text-sm block">{pedido.cliente?.nome}</span><span className="text-[10px] text-slate-500 font-mono mt-0.5">{pedido.cliente?.cpf}</span></div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-5 text-center">
-                                                        <div className="flex flex-col items-center justify-center gap-1.5">
-                                                            <span className="text-sm font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">{pedido.itens?.reduce((a, b) => a + b.qtd, 0) || 0}</span>
-                                                            {pedido.itens?.some(i => i.personalizacao) && <span className="px-1.5 py-0.5 bg-purple-50 text-purple-600 text-[8px] font-bold rounded uppercase shadow-sm border border-purple-100">Personalizado</span>}
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-5 text-right"><span className="font-black text-slate-900 text-base">{formatCurrency(pedido.total)}</span></td>
-                                                    <td className="p-5 text-center">
-                                                        <span className={`text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-widest border whitespace-nowrap bg-white shadow-sm ${statusConfig[pedido.status]?.cor || 'bg-slate-50 text-slate-500 border-slate-200'}`}>
-                                                            {statusConfig[pedido.status]?.label || pedido.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="p-5 pr-6 text-center" onClick={e => e.stopPropagation()}>
-                                                        <button onClick={() => setPedidoSelecionado(pedido)} className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 hover:border-blue-300 rounded-full shadow-sm mx-auto text-slate-500 hover:text-blue-600 transition-colors"><Icons.Eye /></button>
-                                                    </td>
-                                                </motion.tr>
-                                            )) : (
-                                                <motion.tr key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                                    <td colSpan="7" className="p-16 text-center text-slate-400 text-base font-medium">Nenhum pedido encontrado nesta aba.</td>
-                                                </motion.tr>
-                                            )}
+                                                        </td>
+                                                        <td className="p-5 text-center">
+                                                            <div className="flex flex-col items-center justify-center gap-1.5">
+                                                                <span className="text-sm font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">{pedido.itens?.reduce((a, b) => a + b.qtd, 0) || 0}</span>
+                                                                {pedido.itens?.some(i => i.personalizacao) && <span className="px-1.5 py-0.5 bg-purple-50 text-purple-600 text-[8px] font-bold rounded uppercase shadow-sm border border-purple-100">Personalizado</span>}
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-5 text-right"><span className="font-black text-slate-900 text-base">{formatCurrency(pedido.total)}</span></td>
+                                                        <td className="p-5 text-center">
+                                                            <span className={`text-[10px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-widest border whitespace-nowrap bg-white shadow-sm ${statusConfig[pedido.status]?.cor || 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                                                                {statusConfig[pedido.status]?.label || pedido.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-5 pr-6 text-center" onClick={e => e.stopPropagation()}>
+                                                            <button onClick={() => setPedidoSelecionado(pedido)} className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 hover:border-blue-300 rounded-full shadow-sm mx-auto text-slate-500 hover:text-blue-600 transition-colors"><Icons.Eye /></button>
+                                                        </td>
+                                                    </motion.tr>
+                                                )) : (
+                                                    <motion.tr key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                                        <td colSpan="7" className="p-16 text-center text-slate-400 text-base font-medium">Nenhum pedido encontrado nesta aba.</td>
+                                                    </motion.tr>
+                                                )}
+                                            </motion.tbody>
                                         </AnimatePresence>
                                     </tbody>
                                 </table>
@@ -557,17 +605,27 @@ const AdminOrdersContent = () => {
                 /* ============================================================== */
                 /* VISUALIZAÇÃO 2: DETALHES DO PEDIDO (FIRST PAGE - GRID CARDS)   */
                 /* ============================================================== */
-                    <FadeIn key="detalhes_pedido" className="flex flex-col gap-6">
+                    <FadeIn key="detalhes_pedido" className="flex flex-col gap-6 p-6 sm:p-10">
                         
                         {/* CABEÇALHO DO PEDIDO */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
-                                <button onClick={() => {setPedidoSelecionado(null); setMotivoReembolso(''); setComprovanteReembolso(null);}} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors">
+                                <button onClick={() => {
+                                    setPedidoSelecionado(null); 
+                                    setMotivoReembolso(''); 
+                                    setComprovanteReembolso(null);
+                                    // Remove o id da URL caso o usuário volte para a lista
+                                    if(orderIdUrl) {
+                                        const newParams = new URLSearchParams(window.location.search);
+                                        newParams.delete('id');
+                                        window.history.replaceState({}, '', `${window.location.pathname}?${newParams.toString()}`);
+                                    }
+                                }} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors">
                                     <Icons.ChevronLeft /> Voltar 
                                 </button>
                                 <div>
                                     <h2 className="text-2xl font-black text-slate-900 leading-tight">#{prefixo}{pedidoSelecionado.id}</h2>
-                                    <p className="text-[11px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">{pedidoSelecionado.data} às {pedidoSelecionado.hora}</p>
+                                    <p className="text-[11px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">{formatDateTimeBR(pedidoSelecionado.created_at)}</p>
                                 </div>
                             </div>
                             
@@ -649,21 +707,49 @@ const AdminOrdersContent = () => {
                                         ))}
                                     </div>
                                     
-                                    {/* DETALHES FINANCEIROS AVANÇADOS */}
-                                    <div className="space-y-3 text-sm font-medium">
-                                        <div className="flex justify-between items-center text-slate-500 border-b border-slate-50 pb-3 mb-3">
-                                            <span className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2 py-1 rounded text-[10px] font-bold uppercase"><Icons.CreditCard /> Gateway: {pedidoSelecionado.pagamento?.gateway}</span>
+                                    {/* DETALHES FINANCEIROS AVANÇADOS (NETFLIX INVOICE STYLE) */}
+                                    <div className="space-y-3 text-[11px] font-medium text-slate-600 bg-slate-50/80 p-5 rounded-2xl border border-slate-100">
+                                        <div className="flex justify-between items-center text-slate-500 border-b border-slate-200/60 pb-3 mb-3">
+                                            <span className="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-sm"><Icons.CreditCard /> Gateway: {pedidoSelecionado.pagamento?.gateway || 'N/A'}</span>
                                             <div className="text-right">
-                                                <span className="font-bold text-slate-700 block">{pedidoSelecionado.pagamento?.metodo} em {pedidoSelecionado.pagamento?.parcelas}x</span>
+                                                <span className="font-black text-slate-800 block text-xs">{pedidoSelecionado.pagamento?.metodo} em {pedidoSelecionado.pagamento?.parcelas}x</span>
                                                 {pedidoSelecionado.pagamento?.parcelas > 1 && (
-                                                    <span className="text-[10px] text-slate-400">Parcela de {formatCurrency(pedidoSelecionado.pagamento?.valor_parcela)} {pedidoSelecionado.pagamento?.juros > 0 ? `(Juros ${formatCurrency(pedidoSelecionado.pagamento?.juros)})` : '(Sem Juros)'}</span>
+                                                    <span className="text-[10px] text-slate-500">Parcela de {formatCurrency(pedidoSelecionado.pagamento?.valor_parcela)} {pedidoSelecionado.pagamento?.juros > 0 ? `(Juros ${formatCurrency(pedidoSelecionado.pagamento?.juros)})` : '(Sem Juros)'}</span>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex justify-between text-slate-600 mt-4"><span>Subtotal</span><span className="font-bold">{formatCurrency(pedidoSelecionado.subtotal)}</span></div>
-                                        <div className="flex justify-between text-slate-600"><span>Frete</span><span className="font-bold">{formatCurrency(pedidoSelecionado.frete)}</span></div>
-                                        <div className="flex justify-between text-emerald-600"><span>Descontos Aplicados</span><span className="font-bold">- {formatCurrency(pedidoSelecionado.desconto)}</span></div>
-                                        <div className="flex justify-between items-center pt-4 mt-2 border-t border-slate-100"><span className="font-black text-slate-900 uppercase tracking-widest text-[11px]">Total Final</span><span className="text-2xl font-black text-slate-900">{formatCurrency(pedidoSelecionado.total)}</span></div>
+                                        <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                            <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Subtotal Produtos:</span>
+                                            <span className="text-slate-800 font-black">{formatCurrency(pedidoSelecionado.subtotal)}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                            <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Frete Cobrado:</span>
+                                            <span className="text-slate-800 font-black">{formatCurrency(pedidoSelecionado.frete_valor)}</span>
+                                        </div>
+
+                                        {safeNum(pedidoSelecionado.desconto_loja) > 0 && (
+                                            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 text-rose-500">
+                                                <span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. Loja/Cupom:</span>
+                                                <span className="font-black">-{formatCurrency(pedidoSelecionado.desconto_loja)}</span>
+                                            </div>
+                                        )}
+                                        {safeNum(pedidoSelecionado.desconto_vip_produtos) > 0 && (
+                                            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 text-indigo-500">
+                                                <span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. VIP (Produtos):</span>
+                                                <span className="font-black">-{formatCurrency(pedidoSelecionado.desconto_vip_produtos)}</span>
+                                            </div>
+                                        )}
+                                        {safeNum(pedidoSelecionado.desconto_frete) > 0 && (
+                                            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 text-rose-500">
+                                                <span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. Frete:</span>
+                                                <span className="font-black">-{formatCurrency(pedidoSelecionado.desconto_frete)}</span>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between items-center pt-2 mt-2">
+                                            <span className="text-slate-800 font-black uppercase tracking-widest text-xs">Líquido Recebido:</span>
+                                            <span className="text-xl text-emerald-600 font-black">{formatCurrency(pedidoSelecionado.total)}</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -717,7 +803,7 @@ const AdminOrdersContent = () => {
                                     </div>
                                 )}
 
-                                {/* 🟢 CARD: TIMELINE / AUDITORIA (COM PAGINAÇÃO FIXA E ALTURA PRESERVADA) */}
+                                {/* 🟢 CARD: TIMELINE / AUDITORIA */}
                                 <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 shadow-sm flex flex-col h-[500px]">
                                     <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
                                         <div>
@@ -725,7 +811,6 @@ const AdminOrdersContent = () => {
                                             <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Histórico Imutável do Pedido</p>
                                         </div>
                                         <div className="relative">
-                                            {/* ÍCONE DO CALENDÁRIO DA TIMELINE COM ANIMAÇÃO FAKE PROGRESS */}
                                             <HoverProgressRoundButton 
                                                 text={(timelinePeriodo.start || timelinePeriodo.end) ? 'Filtrado' : 'Filtrar'} 
                                                 onClick={() => setIsTimelineModalOpen(!isTimelineModalOpen)} 
@@ -756,7 +841,7 @@ const AdminOrdersContent = () => {
                                         {timelinePaginada?.map((log, idx) => (
                                             <div key={idx} className="relative pl-6">
                                                 <div className="absolute -left-[31px] top-0 w-4 h-4 bg-blue-500 rounded-full border-4 border-white shadow-sm"></div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{log.data}</p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{formatDateTimeBR(log.data_raw || log.data)}</p>
                                                 <p className="text-sm text-slate-800 font-bold mt-1.5 leading-relaxed">{log.evento}</p>
                                             </div>
                                         ))}
@@ -765,7 +850,6 @@ const AdminOrdersContent = () => {
                                         )}
                                     </div>
 
-                                    {/* PAGINAÇÃO DA TIMELINE PREGADA NO RODAPÉ DO CARD */}
                                     {timelineFiltrada.length > timelinePerPage && (
                                         <div className="mt-auto pt-6 border-t border-slate-100 flex justify-between items-center text-xs font-bold text-slate-500">
                                             <span>Pág. {timelinePage} de {totalPaginasTimeline}</span>
@@ -782,7 +866,7 @@ const AdminOrdersContent = () => {
                             <div className="space-y-6">
                                 {/* CARD: CLIENTE (Com VIP) */}
                                 <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm">
-                                    <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-6 pb-4 border-b border-slate-100"><Icons.Eye /> Sobre o Cliente</h3>
+                                    <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-6 pb-4 border-b border-slate-100"><Icons.User /> Sobre o Cliente</h3>
                                     
                                     <div className="flex items-center gap-4 mb-6 relative">
                                         <div className="w-14 h-14 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-lg text-slate-600 shadow-sm overflow-hidden">
@@ -791,7 +875,7 @@ const AdminOrdersContent = () => {
                                         <div>
                                             <p className="font-black text-slate-900 text-base leading-tight">{pedidoSelecionado.cliente?.nome}</p>
                                             <div className="flex items-center gap-1 mt-1">
-                                                <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-sm">{pedidoSelecionado.cliente?.origem}</span>
+                                                <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-sm">{pedidoSelecionado.cliente?.origem || 'Website'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -799,15 +883,14 @@ const AdminOrdersContent = () => {
                                     <div className="space-y-4 text-xs font-medium text-slate-600 mb-6 border-b border-slate-100 pb-6 relative">
                                         {/* 🟢 SELO VIP COM ÍCONE DE COROA ESTILIZADO */}
                                         <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-200 text-yellow-700 font-black text-[10px] uppercase px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-sm">
-                                            <Icons.Crown/>{pedidoSelecionado.cliente?.rank}
+                                            <Icons.Crown/>{pedidoSelecionado.cliente?.rank || 'Iniciante'}
                                         </div>
                                         
-                                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">WhatsApp / Telefone</span><span className="font-bold text-slate-800">{formatPhone(pedidoSelecionado.cliente?.telefone)}</span></div>
+                                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">WhatsApp / Telefone</span><span className="font-bold text-slate-800">{formatPhone(pedidoSelecionado.cliente?.telefone || pedidoSelecionado.cliente?.phone)}</span></div>
                                         <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">E-mail de Contato</span><span>{pedidoSelecionado.cliente?.email}</span></div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">CPF</span><span className="font-mono">{pedidoSelecionado.cliente?.cpf}</span></div>
-                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gênero</span><span>{pedidoSelecionado.cliente?.sexo}</span></div>
-                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nascimento</span><span>{formatDateBR(pedidoSelecionado.cliente?.nascimento)}</span></div>
+                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nascimento</span><span>{formatDateBR(pedidoSelecionado.cliente?.nascimento || pedidoSelecionado.cliente?.nascimento)}</span></div>
                                         </div>
                                     </div>
 
@@ -817,27 +900,27 @@ const AdminOrdersContent = () => {
                                         </div>
                                     )}
 
-                                    <a href={`https://wa.me/${pedidoSelecionado.cliente?.telefone?.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="w-full bg-[#25D366] text-white text-xs font-bold py-3.5 rounded-xl flex justify-center items-center gap-2 shadow-sm hover:bg-[#1ebe57] transition-all">
+                                    <a href={`https://wa.me/${(pedidoSelecionado.cliente?.telefone || pedidoSelecionado.cliente?.phone)?.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="w-full bg-[#25D366] text-white text-xs font-bold py-3.5 rounded-xl flex justify-center items-center gap-2 shadow-sm hover:bg-[#1ebe57] transition-all">
                                         <Icons.WhatsApp /> Falar no WhatsApp
                                     </a>
                                 </div>
 
                                 {/* CARD: BENEFÍCIOS MÚLTIPLOS USADOS */}
                                 <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm">
-                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Cupons Aplicados no Pedido</h4>
+                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icons.Tag /> Cupons Aplicados</h4>
                                     <div className="space-y-3 text-sm">
-                                        {pedidoSelecionado.cupons && pedidoSelecionado.cupons.length > 0 ? (
-                                            pedidoSelecionado.cupons.map((cupom, i) => (
+                                        {parseCoupons(pedidoSelecionado.coupons).length > 0 ? (
+                                            parseCoupons(pedidoSelecionado.coupons).map((cupom, i) => (
                                                 <div key={i} className="flex justify-between items-center pb-2 border-b border-slate-50">
                                                     <div>
-                                                        <span className="font-black text-slate-900 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 shadow-sm">{cupom.nome}</span>
-                                                        <span className={`block text-[9px] font-bold mt-2 uppercase ${cupom.tipo === 'Frete' ? 'text-blue-500' : 'text-emerald-500'}`}>Desc. {cupom.tipo}</span>
+                                                        <span className="font-black text-slate-900 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 shadow-sm">{cupom.nome || cupom.codigo}</span>
+                                                        <span className={`block text-[9px] font-bold mt-2 uppercase ${cupom.tipo === 'Frete' ? 'text-blue-500' : 'text-emerald-500'}`}>Desc. {cupom.tipo || 'CUPOM'}</span>
                                                     </div>
-                                                    <span className="font-black text-emerald-600">- {formatCurrency(cupom.valor)}</span>
+                                                    <span className="font-black text-emerald-600">- {formatCurrency(cupom.valor || cupom.desconto)}</span>
                                                 </div>
                                             ))
                                         ) : (
-                                            <span className="font-medium text-slate-400 text-xs">Nenhum cupom foi utilizado nesta compra.</span>
+                                            <span className="font-medium text-slate-400 text-xs text-center block py-4 border border-dashed border-slate-200 rounded-xl bg-slate-50">Nenhum cupom manual utilizado.</span>
                                         )}
                                     </div>
                                 </div>
@@ -851,10 +934,9 @@ const AdminOrdersContent = () => {
                                             <h4 className="text-sm font-bold text-slate-800">Endereço de Entrega</h4>
                                         </div>
                                         <div className="space-y-3 text-xs font-medium text-slate-600">
-                                            {/* CORREÇÃO DO ENDEREÇO COM OS NOVOS CAMPOS DO BANCO */}
-                                            <div className="flex flex-col"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Rua</span><span className="font-black text-slate-800 text-sm">{pedidoSelecionado.endereco?.rua}, {pedidoSelecionado.endereco?.num}</span></div>
+                                            <div className="flex flex-col"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Rua</span><span className="font-black text-slate-800 text-sm">{pedidoSelecionado.endereco?.rua}, {pedidoSelecionado.endereco?.numero || pedidoSelecionado.endereco?.num}</span></div>
                                             <div className="grid grid-cols-2 gap-3">
-                                                <div className="flex flex-col"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Bairro</span><span>{pedidoSelecionado.endereco?.bairro}</span></div>
+                                                <div className="flex flex-col"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Bairro</span><span>{pedidoSelecionado.endereco?.bairro || '-'}</span></div>
                                                 <div className="flex flex-col"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">CEP</span><span className="font-mono font-bold text-slate-500">{pedidoSelecionado.endereco?.cep}</span></div>
                                             </div>
                                             <div className="flex flex-col"><span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Cidade / UF</span><span className="font-bold text-slate-800">{pedidoSelecionado.endereco?.cidade} - {pedidoSelecionado.endereco?.uf}</span></div>
@@ -877,7 +959,7 @@ const AdminOrdersContent = () => {
                 )}
             </AnimatePresence>
 
-            {/* MODAL DE RASTREIO E CANCELAMENTO */}
+            {/* MODAL DE RASTREIO */}
             <AnimatePresence>
                 {modalRastreio.isOpen && (
                     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
@@ -895,6 +977,7 @@ const AdminOrdersContent = () => {
                 )}
             </AnimatePresence>
 
+            {/* MODAL DE CANCELAMENTO */}
             <AnimatePresence>
                 {modalConfirmacao.isOpen && (
                     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
