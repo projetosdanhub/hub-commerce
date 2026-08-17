@@ -90,9 +90,10 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
 // ============================================================================
 
 // 🟢 ANIMAÇÕES SUAVES PADRONIZADAS PARA AS ABAS E TRANSIÇÕES
-    const tabTransition = {
-        animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } },
-        exit: { opacity: 0, y: -10, scale: 0.98, filter: 'blur(2px)', transition: { duration: 0.2, ease: "easeInOut" } }
+const tabTransition = {
+        initial: { opacity: 0 },
+        animate: { opacity: 1, transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } },
+        exit: { opacity: 0, transition: { duration: 0.2, ease: "easeInOut" } }
     };
 export default function AdminPerfilCRM({ 
     clienteSelecionado, 
@@ -129,8 +130,6 @@ export default function AdminPerfilCRM({
     const [walletFlow, setWalletFlow] = useState({ tipo: 'Hub Coins', valor: '', motivo: '' });
     const [senhaTemp, setSenhaTemp] = useState({ codigo: null, expiraEm: null });
     const [tempoRestanteSenha, setTempoRestanteSenha] = useState('');
-    const [showAddEndereco, setShowAddEndereco] = useState(false);
-    const [enderecoFlow, setEnderecoFlow] = useState({ cep: '', rua: '', num: '', complemento: '', bairro: '', cidade: '', uf: '', referencia: '', padrao: false });
 
     // Timeline e Histórico
     const [timelinePage, setTimelinePage] = useState(1);
@@ -397,16 +396,6 @@ export default function AdminPerfilCRM({
         mutacaoCarteira.mutate({ tipo: walletFlow.tipo, valor: walletFlow.valor, motivo: walletFlow.motivo }, { onSettled: () => setSavingState(null) });
     };
 
-    const salvarNovoEndereco = () => {
-        if (!enderecoFlow.cep || !enderecoFlow.rua || !enderecoFlow.num) return alert("Preencha os campos obrigatórios.");
-        // Simulação rápida para endereço (idealmente também iria para a API)
-        const novoEndereco = { ...enderecoFlow, id: Date.now() };
-        setClienteSelecionado(prev => ({ ...prev, enderecos: [novoEndereco, ...(prev.enderecos || [])] }));
-        setEnderecoFlow({ cep: '', rua: '', num: '', complemento: '', bairro: '', cidade: '', uf: '', referencia: '', padrao: false });
-        setShowAddEndereco(false);
-        if(showToastGlob) showToastGlob("Endereço adicionado localmente.");
-    };
-
     const handleExportarPDF = () => {
         if(showToastGlob) showToastGlob("Relatório gerado para impressão!");
         setTimeout(() => {
@@ -593,41 +582,143 @@ export default function AdminPerfilCRM({
                         {crmSubTab === 'RESUMO' && !perfilEmEdicao && (
                             <motion.section key="RESUMO_READ" {...tabTransition} className="flex flex-col lg:flex-row gap-6 p-6">
                                 {/* ... conteúdo do resumo ... */}
-                                {/* COLUNA ESQUERDA: BARRA VERTICAL DE MÉTRICAS */}
-                                <div className="flex flex-col border border-slate-200 rounded-[24px] bg-white shadow-sm overflow-hidden w-full lg:w-1/4 shrink-0 h-max">
-                                    <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Gasto Total (LTV)</p>
-                                        <p className="text-2xl font-black text-emerald-600 group-hover:scale-105 transform origin-left transition-transform">{formatCurrency(clienteSelecionado?.ltv)}</p>
-                                        <p className="text-[10px] text-slate-500 mt-1 font-medium">Ticket Médio: <strong className="text-slate-700">{formatCurrency(safeNum(clienteSelecionado?.ltv) / (safeNum(clienteSelecionado?.compras) || 1))}</strong></p>
-                                    </div>
-                                    <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pedidos Finalizados</p>
-                                        <p className="text-2xl font-black text-slate-800 group-hover:scale-105 transform origin-left transition-transform">{safeNum(clienteSelecionado?.compras)}</p>
-                                        <p className="text-[10px] text-slate-500 mt-1 font-medium">Última compra: <strong className="text-slate-700">{formatDateBR(clienteSelecionado?.ultimaCompra)}</strong></p>
-                                    </div>
-                                    <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Qtd. de Produtos</p>
-                                        <p className="text-2xl font-black text-slate-800 group-hover:scale-105 transform origin-left transition-transform">{safeNum(clienteSelecionado?.produtosComprados) || 0}</p>
-                                    </div>
-                                    <div className="p-5 hover:bg-slate-50 transition-colors group cursor-default">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Uso de Benefícios</p>
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between items-center text-xs"><span className="text-slate-500 font-medium">Cupons Usados:</span><strong className="text-slate-800 bg-slate-100 px-2 py-0.5 rounded">{safeNum(clienteSelecionado?.cuponsUsados)}</strong></div>
-                                            {clienteSelecionado?.historicoCupons && clienteSelecionado.historicoCupons.length > 0 && (
-                                                <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-2 mt-2 pr-1 border-t border-slate-100 pt-3">
-                                                    {clienteSelecionado.historicoCupons.map((cupom, idx) => (
-                                                        <div key={idx} className="flex flex-col gap-0.5 bg-white border border-slate-200 p-2 rounded-lg shadow-sm">
-                                                            <div className="flex justify-between items-center"><span className="text-[9px] font-black text-slate-700">{cupom.nome}</span><span className="text-[9px] font-bold text-emerald-600">-{formatCurrency(cupom.valor)}</span></div>
-                                                            <span className="text-[8px] text-slate-400 uppercase">{cupom.tipo}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                {/* COLUNA ESQUERDA: BARRA VERTICAL DE MÉTRICAS E DEMONSTRATIVO DE LTV */}
+                            <div className="flex flex-col border border-slate-200 rounded-[24px] bg-white shadow-sm overflow-hidden w-full lg:w-1/4 shrink-0 h-max">
+                                
+                            {/* 1. Demonstrativo Financeiro / LTV Líquido */}
+                            <div className="p-5 border-b border-slate-100 hover:bg-slate-50/60 transition-colors group cursor-default">
+                                <div className="flex justify-between items-center mb-2">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">LTV Líquido (Gasto Real)</p>
+                                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md shadow-sm">
+                                        Receita Real
+                                    </span>
+                                </div>
+
+                                {/* Valor Final do LTV */}
+                                <p className="text-3xl font-black text-emerald-600 tracking-tight">
+                                    {formatCurrency(clienteSelecionado?.ltv)}
+                                </p>
+
+                                {/* Ticket Médio baseado no LTV real */}
+                                <div className="flex justify-between items-center text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-100">
+                                    <span className="font-medium">Ticket Médio Líquido:</span>
+                                    <strong className="text-slate-800 font-black">
+                                        {formatCurrency(safeNum(clienteSelecionado?.ltv) / (safeNum(clienteSelecionado?.compras) || 1))}
+                                    </strong>
+                                </div>
+
+                                {/* Detalhamento do Subtotal x Descontos Separados */}
+                                <div className="mt-3 pt-3 border-t border-slate-100 space-y-1.5 text-[10px]">
+                                    {/* Subtotal Bruto recalculado somando todos os descontos reais do histórico */}
+                                    <div className="flex justify-between items-center text-slate-500 mb-2">
+                                        <span>Subtotal Bruto (Produtos):</span>
+                                        <span className="font-black text-slate-700">
+                                            {formatCurrency(
+                                                safeNum(clienteSelecionado?.ltv) + 
+                                                safeNum(clienteSelecionado?.descontoLoja) + 
+                                                safeNum(clienteSelecionado?.descontoVipProdutos) +
+                                                safeNum(clienteSelecionado?.descontoVipFrete) +
+                                                safeNum(clienteSelecionado?.descontoFrete)
                                             )}
-                                            <div className="flex justify-between items-center text-xs border-t border-slate-100 pt-3"><span className="text-slate-500 font-medium">Desc. Frete:</span><strong className="text-emerald-600">{formatCurrency(clienteSelecionado?.descontoFrete)}</strong></div>
-                                            <div className="flex justify-between items-center text-xs"><span className="text-slate-500 font-medium">Desc. Loja:</span><strong className="text-emerald-600">{formatCurrency(clienteSelecionado?.descontoLoja)}</strong></div>
-                                        </div>
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Descontos de Cupons em Produtos */}
+                                    <div className="flex justify-between items-center text-rose-500 font-medium">
+                                        <span>(-) Descontos de Loja/Cupons:</span>
+                                        <span className="font-bold">
+                                            -{formatCurrency(clienteSelecionado?.descontoLoja)}
+                                        </span>
+                                    </div>
+
+                                    {/* Desconto VIP em Produtos */}
+                                    <div className="flex justify-between items-center text-indigo-600 font-medium">
+                                        <span>(-) Desconto VIP (Produtos):</span>
+                                        <span className="font-bold">
+                                            -{formatCurrency(clienteSelecionado?.descontoVipProdutos)}
+                                        </span>
+                                    </div>
+
+                                    {/* Desconto VIP em Frete */}
+                                    <div className="flex justify-between items-center text-indigo-600 font-medium">
+                                        <span>(-) Desconto VIP (Frete):</span>
+                                        <span className="font-bold">
+                                            -{formatCurrency(clienteSelecionado?.descontoVipFrete)}
+                                        </span>
+                                    </div>
+
+                                    {/* Desconto de Frete por Cupons */}
+                                    <div className="flex justify-between items-center text-rose-500 font-medium">
+                                        <span>(-) Subsídio/Desc. Frete (Cupons):</span>
+                                        <span className="font-bold">
+                                            -{formatCurrency(clienteSelecionado?.descontoFrete)}
+                                        </span>
                                     </div>
                                 </div>
+                            </div>
+
+                                {/* 2. Pedidos Concluídos */}
+                                <div className="p-5 border-b border-slate-100 hover:bg-slate-50/60 transition-colors group cursor-default">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Pedidos Concluídos</p>
+                                    <p className="text-2xl font-black text-slate-800 tracking-tight">{safeNum(clienteSelecionado?.compras)}</p>
+                                    <p className="text-[10px] text-slate-500 mt-1 font-medium flex justify-between items-center">
+                                        <span>Última compra:</span> 
+                                        <strong className="text-slate-700 font-bold">{formatDateBR(clienteSelecionado?.ultimaCompra)}</strong>
+                                    </p>
+                                </div>
+
+                                {/* 3. Produtos Comprados & Cupons Resgatados (Métricas Alinhadas no Mesmo Tamanho) */}
+                                <div className="p-5 border-b border-slate-100 hover:bg-slate-50/60 transition-colors group cursor-default space-y-4">
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Qtd. Total de Produtos</p>
+                                        <p className="text-2xl font-black text-slate-800 tracking-tight">{safeNum(clienteSelecionado?.produtosComprados) || 0} un.</p>
+                                    </div>
+
+                                    <div className="pt-3 border-t border-slate-100">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Cupons Resgatados</p>
+                                        <p className="text-2xl font-black text-slate-800 tracking-tight">{safeNum(clienteSelecionado?.cuponsUsados)} un.</p>
+                                    </div>
+                                </div>
+
+                                {/* 4. Vantagens do Rank VIP (Posicionado no Final da Coluna) */}
+                                {(() => {
+                                    const rankInfo = niveisVIPDaApi?.find(n => safeStr(n.nome).toLowerCase() === safeStr(clienteSelecionado?.rank).toLowerCase());
+                                    const multCoins = rankInfo?.multiplicador_coins || clienteSelecionado?.multiplicadorCoins || clienteSelecionado?.multiplicador || '1x';
+                                    const descProd = rankInfo?.desconto_produtos != null ? `${rankInfo.desconto_produtos}%` : (clienteSelecionado?.descontoProdutosVip != null ? `${clienteSelecionado.descontoProdutosVip}%` : '0%');
+                                    const descFrete = rankInfo?.desconto_frete != null ? `${rankInfo.desconto_frete}%` : (clienteSelecionado?.descontoFreteVip != null ? `${clienteSelecionado.descontoFreteVip}%` : '0%');
+
+                                    return (
+                                        <div className="p-5 bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors group cursor-default">
+                                            <div className="flex justify-between items-center mb-3">
+                                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-wider flex items-center gap-1.5">
+                                                    <Icons.Crown className="w-3.5 h-3.5 text-amber-500"/> Vantagens do Rank VIP
+                                                </p>
+                                                <span className="text-[10px] font-black text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-sm">
+                                                    {clienteSelecionado?.rank || 'Sem Rank'}
+                                                </span>
+                                            </div>
+
+                                            <div className="space-y-2 text-[11px] font-medium bg-white p-3 rounded-2xl border border-indigo-100/80 shadow-sm">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-slate-500">Multiplicador de Coins:</span>
+                                                    <strong className="text-indigo-600 font-black">{multCoins}</strong>
+                                                </div>
+
+                                                <div className="flex justify-between items-center border-t border-slate-100 pt-1.5">
+                                                    <span className="text-slate-500">Desc. Produtos (%):</span>
+                                                    <strong className="text-emerald-600 font-black">{descProd}</strong>
+                                                </div>
+
+                                                <div className="flex justify-between items-center border-t border-slate-100 pt-1.5">
+                                                    <span className="text-slate-500">Desc. Frete (%):</span>
+                                                    <strong className="text-emerald-600 font-black">{descFrete}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                            </div>
 
                                 {/* COLUNA DIREITA */}
                                 <div className="flex-1 flex flex-col gap-6 min-w-0">
@@ -894,310 +985,396 @@ export default function AdminPerfilCRM({
                               </div>
                           </motion.section>
                         )}
-
-                        {/* 🟢 ABA: CARTEIRAS */}
-                        {crmSubTab === 'CARTEIRAS (LIVRO RAZÃO)' && (
-                          <motion.section key="CARTEIRAS" {...tabTransition} className="space-y-6 max-w-4xl mx-auto w-full p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <article className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-[24px] shadow-sm text-white relative overflow-hidden">
-                                    <div className="absolute right-0 top-0 w-32 h-32 bg-white opacity-10 rounded-full blur-3xl pointer-events-none"></div>
-                                    <p className="text-[10px] font-bold text-blue-200 uppercase tracking-wider mb-2 relative z-10">Saldo Atual (Coins)</p>
-                                    <p className="text-4xl font-black text-white relative z-10">{safeNum(clienteSelecionado?.coins)}</p>
-                                </article>
-                                <article className="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Cashback Disponível</p>
-                                    <p className="text-4xl font-black text-emerald-600">{formatCurrency(clienteSelecionado?.cashback)}</p>
-                                </article>
-                            </div>
-                            <article className="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm">
-                                <h4 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><Icons.Plus className="text-blue-500 w-5 h-5"/> Adicionar Transação Manual</h4>
-                                <div className="space-y-5">
-                                  <div className="flex gap-5">
-                                    <select value={walletFlow.tipo} onChange={e => setWalletFlow({...walletFlow, tipo: e.target.value})} className="w-1/3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3"><option>Hub Coins</option><option>Cashback (R$)</option></select>
-                                    <input type="number" value={walletFlow.valor} onChange={e => setWalletFlow({...walletFlow, valor: e.target.value})} placeholder="Valor numérico" className="w-2/3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3" />
-                                  </div>
-                                  <input type="text" value={walletFlow.motivo} onChange={e => setWalletFlow({...walletFlow, motivo: e.target.value})} placeholder="Motivo da Transação Obrigatório (Audit)" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3" />
-                                  <ProgressButton onClick={processarTransacaoWallet} loading={savingState === 'transacao'} text="Processar Transação" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-colors" />
-                                </div>
-                            </article>
-                          </motion.section>
-                        )}
-
-                        {/* 🟢 ABA: ENDEREÇOS */}
+                        {/* 🟢 ABA: ENDEREÇOS (Modo Leitura / Estilo Netflix Clean & Performático) */}
                         {crmSubTab === 'ENDEREÇOS' && (
-                          <motion.section key="ENDEREÇOS" {...tabTransition} className="max-w-5xl mx-auto w-full p-6 space-y-6">
-                            <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                                <div><h3 className="text-xl font-black text-slate-800 flex items-center gap-3"><Icons.MapPin className="w-6 h-6 text-blue-500"/> Agenda de Endereços</h3></div>
-                                <button onClick={() => setShowAddEndereco(!showAddEndereco)} className="bg-blue-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-sm">Novo Endereço</button>
+                        <motion.section key="ENDEREÇOS" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-6">
+                            
+                            {/* Cabeçalho */}
+                            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
+                                        <Icons.MapPin className="w-6 h-6 text-blue-500"/> Agenda de Endereços
+                                    </h3>
+                                    <p className="text-xs text-slate-500 mt-1 font-medium">Endereços cadastrados pelo cliente. Modo de visualização e auditoria.</p>
+                                </div>
+                                <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-center">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Total Registrado</span>
+                                    <span className="text-lg font-black text-slate-800 leading-tight">{clienteSelecionado?.enderecos?.length || 0}</span>
+                                </div>
                             </div>
                             
-                            <AnimatePresence>
-                                {showAddEndereco && (
-                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                                        <div className="bg-slate-50 border border-blue-200 p-8 rounded-[24px] shadow-sm mb-6">
-                                            <div className="grid grid-cols-4 gap-5">
-                                                <input type="text" value={enderecoFlow.cep} onChange={e=>setEnderecoFlow({...enderecoFlow, cep: e.target.value})} placeholder="CEP" className="col-span-1 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
-                                                <input type="text" value={enderecoFlow.rua} onChange={e=>setEnderecoFlow({...enderecoFlow, rua: e.target.value})} placeholder="Rua" className="col-span-2 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
-                                                <input type="text" value={enderecoFlow.num} onChange={e=>setEnderecoFlow({...enderecoFlow, num: e.target.value})} placeholder="Número" className="col-span-1 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
-                                                <input type="text" value={enderecoFlow.bairro} onChange={e=>setEnderecoFlow({...enderecoFlow, bairro: e.target.value})} placeholder="Bairro" className="col-span-2 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
-                                                <input type="text" value={enderecoFlow.cidade} onChange={e=>setEnderecoFlow({...enderecoFlow, cidade: e.target.value})} placeholder="Cidade" className="col-span-2 p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
-                                                <input type="text" value={enderecoFlow.uf} onChange={e=>setEnderecoFlow({...enderecoFlow, uf: e.target.value})} placeholder="UF" className="col-span-1 p-3 rounded-xl border border-slate-200 uppercase focus:ring-2 focus:ring-blue-500/20 outline-none" maxLength="2" />
+                            {/* Container Estilo Netflix (Carrossel Horizontal com Rolagem Fluida) */}
+                            <div className="flex gap-5 overflow-x-auto custom-scrollbar snap-x pb-4 pt-1 px-1">
+                                {clienteSelecionado?.enderecos?.length > 0 ? (
+                                    clienteSelecionado.enderecos.map((end, idx) => (
+                                        <article 
+                                            key={end.id || idx} 
+                                            className="snap-start shrink-0 w-[340px] bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 flex flex-col justify-between transition-all duration-200 hover:border-blue-400 hover:shadow-md group cursor-default"
+                                        >
+                                            <div>
+                                                {/* Topo do Card: Ícone, Título e Badge Padrão Integrado (Sem cortes) */}
+                                                <div className="flex items-start justify-between gap-2 mb-4">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-200 transition-colors shrink-0">
+                                                            <Icons.MapPin className="w-5 h-5"/>
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <h5 className="text-sm font-black text-slate-800 tracking-wide truncate" title={end.titulo || 'Endereço'}>
+                                                                {end.titulo || 'Endereço sem Título'}
+                                                            </h5>
+                                                            <span className="text-[10px] font-bold text-slate-400 font-mono bg-slate-50 inline-block px-2 py-0.5 rounded-md mt-0.5 border border-slate-100">
+                                                                CEP: {end.cep || '-'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Badge "Padrão" integrado dentro do fluxo (Sem sobressair para fora do card) */}
+                                                    {end.padrao && (
+                                                        <span className="shrink-0 bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                                            Padrão
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Dados Detalhados do Endereço */}
+                                                <div className="space-y-2 text-[11px] text-slate-600 font-medium mb-5 bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100">
+                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
+                                                        <span className="text-slate-800 font-bold text-right truncate max-w-[190px]" title={`${end.rua}, ${end.num}`}>
+                                                            {end.rua ? `${end.rua}, ${end.num}` : '-'}
+                                                        </span>
+                                                    </div>
+
+                                                    {end.complemento && (
+                                                        <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                            <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Complemento:</span> 
+                                                            <span className="text-slate-800 text-right truncate max-w-[170px]" title={end.complemento}>
+                                                                {end.complemento}
+                                                            </span>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Bairro:</span> 
+                                                        <span className="text-slate-800 text-right truncate max-w-[190px]" title={end.bairro}>
+                                                            {end.bairro || '-'}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Cidade/UF:</span> 
+                                                        <span className="text-slate-800 font-bold text-right truncate">
+                                                            {end.cidade || '-'}{end.uf ? ` - ${end.uf}` : ''}
+                                                        </span>
+                                                    </div>
+
+                                                    {end.referencia && (
+                                                        <div className="pt-1">
+                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Ponto de Referência:</span>
+                                                            <p className="text-[10px] text-slate-600 italic bg-white p-2 rounded-lg border border-slate-200/80 leading-relaxed break-words">
+                                                                "{end.referencia}"
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="mt-6 flex justify-end gap-4"><button onClick={()=>setShowAddEndereco(false)} className="px-6 py-3 font-bold text-slate-500 hover:text-slate-800">Cancelar</button><ProgressButton onClick={salvarNovoEndereco} text="Salvar Endereço" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold"/></div>
+
+                                            {/* Rodapé de Auditoria (Data e Hora) */}
+                                            <div className="border-t border-slate-100 pt-3 mt-auto space-y-1.5">
+                                                <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                                    <span>Criado em:</span> 
+                                                    <span className="text-slate-600 font-medium bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{formatDateTimeBR(end.created_at || new Date())}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                                                    <span>Atualizado:</span> 
+                                                    <span className="text-slate-600 font-medium bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{formatDateTimeBR(end.updated_at || new Date())}</span>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    ))
+                                ) : (
+                                    <div className="w-full flex flex-col items-center justify-center py-16 bg-white rounded-[24px] border-2 border-slate-200 border-dashed">
+                                        <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-3 text-slate-300 border border-slate-100">
+                                            <Icons.MapPin className="w-7 h-7" />
                                         </div>
-                                    </motion.div>
+                                        <p className="text-sm text-slate-500 font-bold">Nenhum endereço cadastrado por este cliente.</p>
+                                    </div>
                                 )}
-                            </AnimatePresence>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {clienteSelecionado?.enderecos?.map((end, idx) => (
-                                    <article key={idx} className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-8 relative hover:border-blue-300 transition-colors">
-                                        {end.padrao && <span className="absolute top-6 right-6 bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase">Entrega Padrão</span>}
-                                        <h5 className="text-xl font-black text-slate-800 mb-2">{end.rua}, {end.num}</h5>
-                                        <p className="text-sm text-slate-500 mb-6">{end.cidade} - {end.uf} | CEP: {end.cep}</p>
-                                    </article>
-                                ))}
-                                {clienteSelecionado?.enderecos?.length === 0 && <p className="text-slate-500 col-span-2 text-center py-10 font-medium">Nenhum endereço cadastrado.</p>}
                             </div>
-                          </motion.section>
+                        </motion.section>
                         )}
+                        {/* 🟢 ABA: CARTEIRAS / LIVRO RAZÃO (Estilo Netflix Clean & Performático) */}
+                        {crmSubTab === 'CARTEIRAS (LIVRO RAZÃO)' && (
+                        <motion.section key="CARTEIRAS" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-8">
+                            
+                            {/* Cabeçalho da Seção */}
+                            <div className="flex justify-between items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
+                                        <Icons.CreditCard className="w-6 h-6 text-blue-500"/> Gestão de Carteira & Saldos
+                                    </h3>
+                                    <p className="text-xs text-slate-500 mt-1 font-medium">Visualização e lançamento manual de créditos, moedas e cashback do cliente.</p>
+                                </div>
+                                <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-center">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Status da Carteira</span>
+                                    <span className="text-xs font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200/60 inline-block mt-0.5">Ativa</span>
+                                </div>
+                            </div>
 
-                        {/* 🟢 ABA: HISTÓRICO DE PEDIDOS */}
-                        {crmSubTab === 'HISTÓRICO DE PEDIDOS' && (
-                          <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full flex flex-col space-y-6 p-6">
-                              <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
-                                  <header className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shrink-0">
-                                      <div>
-                                          <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3"><Icons.Package className="w-7 h-7 text-blue-500"/> Histórico de Pedidos</h3>
-                                          <p className="text-base text-slate-500 mt-1 font-medium">Visão detalhada de compras, personalizações e envios.</p>
-                                      </div>
-                                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
-                                          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                                              {Array.from(new Set(['TODOS', ...historicoPedidosFiltrado.map(p => p.status)])).map(tab => (
-                                                  <button key={tab} onClick={() => { setOrderHistoryTab(tab); setOrderHistoryPage(1); }} className={`px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all border shadow-sm ${orderHistoryTab === tab ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}>
-                                                      {tab}
-                                                  </button>
-                                              ))}
-                                          </div>
-                                      </div>
-                                  </header>
+                            {/* Carrossel Estilo Netflix para os Saldos (Cards Alinhados Lado a Lado) */}
+                            <div className="flex gap-5 overflow-x-auto custom-scrollbar snap-x pb-2 pt-1 px-1">
+                                
+                                {/* Card 1: Hub Coins */}
+                                <article className="snap-start shrink-0 w-[320px] bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900 p-6 rounded-[24px] shadow-sm text-white flex flex-col justify-between relative overflow-hidden border border-indigo-700/50 transition-all duration-200 hover:border-indigo-400 hover:shadow-md group cursor-default">
+                                    <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                                    
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest block mb-1">Moeda Interna</span>
+                                            <h5 className="text-sm font-black text-white tracking-wide">Hub Coins</h5>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-400 shrink-0">
+                                            <Icons.Crown className="w-5 h-5"/>
+                                        </div>
+                                    </div>
 
-                                  <div className="p-6 md:p-8 bg-slate-50/50 border-b border-slate-100 flex gap-4 overflow-x-auto custom-scrollbar snap-x shrink-0">
-                                      {orderHistoryPaginados.length > 0 ? orderHistoryPaginados.map(pedido => {
-                                          const isPedidoExpandido = pedidoExpandido === pedido.id;
-                                          let statusColor = 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200';
-                                          if(pedido.status?.toUpperCase() === 'CANCELADO') statusColor = 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100';
-                                          if(pedido.status?.toUpperCase() === 'CONCLUÍDO' || pedido.status?.toUpperCase() === 'ENTREGUE') statusColor = 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
-                                          if(pedido.status?.toUpperCase() === 'A_PAGAR') statusColor = 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100';
+                                    <div>
+                                        <p className="text-3xl font-black text-white tracking-tight">{safeNum(clienteSelecionado?.coins)}</p>
+                                        <span className="text-[10px] text-indigo-200/80 font-medium block mt-1">
+                                            Moedas acumuladas por compras e engajamento.
+                                        </span>
+                                    </div>
+                                </article>
 
-                                          return (
-                                              <button key={pedido.id} onClick={() => setPedidoExpandido(isPedidoExpandido ? null : pedido.id)} className={`snap-center shrink-0 w-72 text-left p-5 flex flex-col justify-between gap-4 border rounded-[20px] transition-all duration-300 shadow-sm ${isPedidoExpandido ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-slate-200 hover:border-blue-300 hover:shadow-md'}`}>
-                                                  <div className="flex items-center justify-between w-full">
-                                                      <div className="flex items-center gap-3">
-                                                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black shadow-sm border transition-colors ${isPedidoExpandido ? 'bg-white/20 text-white border-transparent' : 'bg-slate-50 text-blue-600 border-slate-200'}`}><Icons.Package className="w-5 h-5" /></div>
-                                                          <div><h4 className={`text-base font-black transition-colors ${isPedidoExpandido ? 'text-white' : 'text-slate-900'}`}>#{pedido.id}</h4><span className={`text-[9px] font-bold uppercase tracking-widest ${isPedidoExpandido ? 'text-blue-100' : 'text-slate-400'}`}>{formatDateBR(pedido.created_at || pedido.data_raw)}</span></div>
-                                                      </div>
-                                                  </div>
-                                                  <div className="flex items-center justify-between w-full mt-2">
-                                                      <div className="flex flex-col"><span className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${isPedidoExpandido ? 'text-blue-200' : 'text-slate-400'}`}>Total Pago</span><span className={`text-lg font-black ${isPedidoExpandido ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(pedido.total)}</span></div>
-                                                      <span className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg border shadow-sm transition-colors ${isPedidoExpandido ? 'bg-white text-blue-600 border-transparent' : statusColor}`}>{pedido.status}</span>
-                                                  </div>
-                                              </button>
-                                          );
-                                      }) : (
-                                          <div className="w-full py-6 flex flex-col items-center justify-center text-center text-slate-500 font-medium"><Icons.Package className="w-8 h-8 text-slate-300 mb-2" /><p className="text-sm font-bold">Nenhum pedido atende ao filtro.</p></div>
-                                      )}
-                                  </div>
+                                {/* Card 2: Cashback Disponível */}
+                                <article className="snap-start shrink-0 w-[320px] bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm flex flex-col justify-between transition-all duration-200 hover:border-emerald-300 hover:shadow-md group cursor-default">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Saldo em Reais</span>
+                                            <h5 className="text-sm font-black text-slate-800 tracking-wide">Cashback Reembolsável</h5>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                                            <Icons.CreditCard className="w-5 h-5"/>
+                                        </div>
+                                    </div>
 
-                                  <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30">
-                                      <AnimatePresence mode="wait">
-                                          {pedidoExpandido && orderHistoryPaginados.find(p=>p.id===pedidoExpandido) && (
-                                              (() => {
-                                                  const pedidoAtivo = orderHistoryPaginados.find(p=>p.id===pedidoExpandido);
-                                                  const dataEnvio = pedidoAtivo.history?.find(h => safeStr(h.evento).toLowerCase().includes('despachado'))?.created_at || 'Aguardando Liberação';
-                                                  const dataEntrega = pedidoAtivo.history?.find(h => safeStr(h.evento).toLowerCase().includes('entregue'))?.created_at || 'Pendente / Em Trânsito';
-                                                  
-                                                  return (
-                                                      <motion.div key={pedidoAtivo.id} {...tabTransition} className="p-6 md:p-8 space-y-8">
-                                                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                                              <div className="space-y-6">
-                                                                  <div>
-                                                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-3"><Icons.MapPin className="w-4 h-4"/> Prazos de Logística</p>
-                                                                      <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2 text-[10px] text-slate-600 font-medium shadow-sm">
-                                                                          <div className="flex justify-between items-center"><span className="text-slate-400 uppercase tracking-wider font-bold">Despacho:</span> <strong className="text-slate-700 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded">{dataEnvio !== 'Aguardando Liberação' ? formatDateBR(dataEnvio) : dataEnvio}</strong></div>
-                                                                          <div className="flex justify-between items-center"><span className="text-slate-400 uppercase tracking-wider font-bold">Entrega Final:</span> <strong className="text-slate-700 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded">{dataEntrega !== 'Pendente / Em Trânsito' ? formatDateBR(dataEntrega) : dataEntrega}</strong></div>
-                                                                      </div>
-                                                                  </div>
-                                                                  <div>
-                                                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Endereço Gravado no Pedido</p>
-                                                                      {pedidoAtivo.endereco || pedidoAtivo.address ? (
-                                                                          <div className="bg-white border border-slate-200 rounded-2xl p-5 text-[11px] text-slate-600 font-medium space-y-1.5 shadow-sm">
-                                                                              <p><span className="font-bold text-slate-800">Rua:</span> {(pedidoAtivo.endereco ?? pedidoAtivo.address).logradouro || (pedidoAtivo.endereco ?? pedidoAtivo.address).rua}</p>
-                                                                              <p><span className="font-bold text-slate-800">Número:</span> {(pedidoAtivo.endereco ?? pedidoAtivo.address).numero || (pedidoAtivo.endereco ?? pedidoAtivo.address).num}</p>
-                                                                              {(pedidoAtivo.endereco ?? pedidoAtivo.address).complemento && <p><span className="font-bold text-slate-800">Complemento:</span> {(pedidoAtivo.endereco ?? pedidoAtivo.address).complemento}</p>}
-                                                                              <p><span className="font-bold text-slate-800">Bairro:</span> {(pedidoAtivo.endereco ?? pedidoAtivo.address).bairro}</p>
-                                                                              <p><span className="font-bold text-slate-800">Cidade/UF:</span> {(pedidoAtivo.endereco ?? pedidoAtivo.address).cidade} / {(pedidoAtivo.endereco ?? pedidoAtivo.address).uf || (pedidoAtivo.endereco ?? pedidoAtivo.address).estado}</p>
-                                                                              <p className="pt-2"><span className="font-bold text-slate-800 bg-slate-50 border border-slate-100 px-2 py-1 rounded-md">CEP: <span className="font-mono text-xs ml-1">{(pedidoAtivo.endereco ?? pedidoAtivo.address).cep}</span></span></p>
-                                                                          </div>
-                                                                      ) : (
-                                                                          <p className="text-[10px] font-medium text-slate-400 bg-white rounded-xl p-4 border border-slate-200 shadow-sm">Endereço não registrado neste pedido.</p>
-                                                                      )}
-                                                                  </div>
-                                                              </div>
+                                    <div>
+                                        <p className="text-3xl font-black text-emerald-600 tracking-tight">{formatCurrency(clienteSelecionado?.cashback)}</p>
+                                        <span className="text-[10px] text-slate-400 font-medium block mt-1">
+                                            Disponível para abatimento no próximo checkout.
+                                        </span>
+                                    </div>
+                                </article>
 
-                                                              <div className="space-y-4 flex flex-col justify-between">
-                                                                  <div>
-                                                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-3"><Icons.CreditCard className="w-4 h-4"/> Detalhamento Financeiro</p>
-                                                                      <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-4 mb-4 shadow-sm">
-                                                                          <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider mb-2">Cupons de Carrinho</p>
-                                                                          <div className="space-y-2">
-                                                                              {pedidoAtivo.applied_coupons && pedidoAtivo.applied_coupons.length > 0 ? pedidoAtivo.applied_coupons.map((cupom, idx) => (
-                                                                                  <div key={idx} className="flex flex-col gap-1">
-                                                                                      <div className="flex justify-between items-center text-[10px]">
-                                                                                          <span className="font-black text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-sm">{cupom.nome}</span>
-                                                                                          <span className="font-bold text-emerald-600 text-xs">- {formatCurrency(cupom.valor)}</span>
-                                                                                      </div>
-                                                                                      <span className="text-[9px] text-slate-500 font-bold ml-1 uppercase tracking-wider">Ref: {cupom.tipo}</span>
-                                                                                  </div>
-                                                                              )) : <span className="text-[10px] text-slate-500 font-medium">Nenhum cupom extra aplicado.</span>}
-                                                                          </div>
-                                                                      </div>
-                                                                      <div className="space-y-2.5 text-[11px] font-medium text-slate-600 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                                                                          <div className="flex justify-between items-center"><span>Soma dos Produtos:</span><strong className="text-slate-800 text-xs">{formatCurrency(pedidoAtivo.subtotal)}</strong></div>
-                                                                          <div className="flex justify-between items-center"><span>Frete Total:</span><strong className="text-slate-800 text-xs">{formatCurrency(pedidoAtivo.frete)}</strong></div>
-                                                                          <div className="flex justify-between items-center text-emerald-600 pt-2 border-t border-slate-100"><span>Total de Descontos:</span><strong className="text-xs">-{formatCurrency(pedidoAtivo.desconto)}</strong></div>
-                                                                      </div>
-                                                                  </div>
-                                                                  <div className="bg-slate-800 rounded-2xl p-5 shadow-sm text-white flex justify-between items-center mt-4">
-                                                                      <span className="font-bold text-slate-300 uppercase tracking-widest text-[10px]">Valor Efetivamente Pago</span>
-                                                                      <strong className="text-2xl font-black">{formatCurrency(pedidoAtivo.total)}</strong>
-                                                                  </div>
-                                                              </div>
-                                                          </div>
+                                {/* Card 3: Resumo de Uso / Economia */}
+                                <article className="snap-start shrink-0 w-[320px] bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm flex flex-col justify-between transition-all duration-200 hover:border-blue-300 hover:shadow-md group cursor-default">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Economia Gerada</span>
+                                            <h5 className="text-sm font-black text-slate-800 tracking-wide">Descontos Utilizados</h5>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                                            <Icons.Tag className="w-5 h-5"/>
+                                        </div>
+                                    </div>
 
-                                                          <div className="border-t border-slate-200/60 pt-8">
-                                                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-4"><Icons.Box className="w-4 h-4" /> Relatório de Produtos Fabricados ({pedidoAtivo.itens?.length || 0})</p>                          
-                                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                                  {pedidoAtivo.itens && pedidoAtivo.itens.length > 0 ? pedidoAtivo.itens.map((produto, idx) => {
-                                                                      const uniqueId = `ord-${pedidoAtivo.id}-${produto.id || idx}`;
-                                                                      const isProdExpandido = produtoExpandido === uniqueId;
-                                                                      const qtd = safeNum(produto.quantity) || safeNum(produto.pivot?.quantidade) || 1;
-                                                                      const precoBase = safeNum(produto.price) || safeNum(produto.preco);
-                                                                      const varArray = Array.isArray(produto.variacoes) ? produto.variacoes : (produto.variation_name ? produto.variation_name.split('|').map(v => ({nome: v.split(':')[0]?.trim(), valor: v.split(':')[1]?.trim()})) : []);
-                                                                      const persObject = produto.personalizacoes || produto.customization;
-                                                                      const persArray = Array.isArray(persObject) ? persObject : Object.entries(persObject || {}).map(([key, value]) => ({ label: key, valor: value, tipo: (key === 'imagem' || key === 'Foto Estampada' || key === 'Arte Frontal' || key === 'Estampa da Almofada' || value.includes('http')) ? 'imagem' : 'texto' }));
+                                    <div>
+                                        <p className="text-3xl font-black text-slate-800 tracking-tight">{formatCurrency(safeNum(clienteSelecionado?.descontoLoja) + safeNum(clienteSelecionado?.descontoFrete))}</p>
+                                        <span className="text-[10px] text-slate-400 font-medium block mt-1">
+                                            Total economizado com cupons e frete grátis.
+                                        </span>
+                                    </div>
+                                </article>
+                            </div>
 
-                                                                      return (
-                                                                      <div key={idx} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col md:flex-row group hover:border-blue-300 transition-colors">
-                                                                          <div className="p-6 md:w-1/3 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/50 flex flex-col items-center text-center gap-3 cursor-pointer" onClick={() => setProdutoExpandido(isProdExpandido ? null : uniqueId)}>
-                                                                              {produto.product_image || produto.imagem ? (
-                                                                                  <img src={produto.product_image || produto.imagem} className="w-24 h-24 rounded-xl object-cover border border-slate-200 shadow-sm" alt={produto.product_name || produto.nome} />
-                                                                              ) : (
-                                                                                  <div className="w-24 h-24 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-300 shadow-sm"><Icons.Box className="w-8 h-8"/></div>
-                                                                              )}
-                                                                              <div>
-                                                                                  <p className="text-sm font-black text-slate-800 leading-tight">{produto.product_name || produto.nome}</p>
-                                                                                  <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">SKU: {produto.sku || produto.variation_sku || 'ND'}</p>
-                                                                                  <div className="mt-3 flex justify-center gap-2 text-[10px]">
-                                                                                      <span className="font-bold text-slate-600 bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-sm">Qtd: <strong className="text-slate-800">{qtd} un.</strong></span>
-                                                                                      <span className="font-bold text-slate-600 bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-sm">Base: <strong className="text-slate-800">{formatCurrency(precoBase)}</strong></span>
-                                                                                  </div>
-                                                                              </div>
-                                                                              <Icons.ChevronRight className={`w-5 h-5 text-slate-400 transition-transform hidden md:block ${isProdExpandido ? 'rotate-90 text-blue-500' : ''}`} />
-                                                                          </div>
-                                                                          
-                                                                          <div className="p-6 flex-1 space-y-6">
-                                                                              {varArray && varArray.length > 0 && varArray[0].nome && (
-                                                                                  <div>
-                                                                                      <span className="block text-slate-400 font-bold mb-2 uppercase text-[9px] tracking-wider">Variações Escolhidas</span>
-                                                                                      <div className="flex flex-wrap gap-2">
-                                                                                          {varArray.map((v, vIdx) => (
-                                                                                              <span key={vIdx} className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-slate-700 text-[10px] font-bold shadow-sm">
-                                                                                                  {v.nome}: <span className="text-slate-500 font-medium ml-1">{v.valor}</span>
-                                                                                              </span>
-                                                                                          ))}
-                                                                                      </div>
-                                                                                  </div>
-                                                                              )}
-                                                                              {persArray && persArray.length > 0 && (
-                                                                                  <div>
-                                                                                      <span className="block text-slate-400 font-bold mb-2 uppercase text-[9px] tracking-wider">Dados da Personalização</span>
-                                                                                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-                                                                                          {persArray.map((pers, pIdx) => (
-                                                                                              <div key={pIdx} className="bg-slate-50 border border-slate-200 p-3 rounded-xl shadow-sm flex items-center gap-3">
-                                                                                                  {pers.tipo === 'imagem' ? (
-                                                                                                      <>
-                                                                                                          <img src={pers.valor} alt={pers.label} className="w-12 h-12 rounded-lg object-cover border border-slate-200 shadow-sm shrink-0" />
-                                                                                                          <div className="flex-1">
-                                                                                                              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">{pers.label}</p>
-                                                                                                              <div className="flex flex-wrap gap-1.5">
-                                                                                                                  <a href={pers.valor} target="_blank" rel="noreferrer" className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 px-2 py-1 rounded-md text-[9px] font-bold transition-colors shadow-sm"><Icons.Eye className="w-3 h-3 inline mr-1"/> Ver</a>
-                                                                                                                  <a href={pers.valor} download target="_blank" rel="noreferrer" className="bg-slate-800 text-white hover:bg-slate-900 px-2 py-1 rounded-md text-[9px] font-bold transition-colors shadow-sm"><Icons.Download className="w-3 h-3 inline mr-1"/> Download</a>
-                                                                                                              </div>
-                                                                                                          </div>
-                                                                                                      </>
-                                                                                                  ) : (
-                                                                                                      <div className="w-full">
-                                                                                                          <div className="flex justify-between items-center mb-1">
-                                                                                                              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{pers.label}</p>
-                                                                                                              <button onClick={() => {navigator.clipboard.writeText(pers.valor); showToastGlob('Texto copiado!');}} className="text-[9px] text-blue-600 font-bold hover:text-blue-800 transition-colors uppercase bg-blue-50 border border-blue-100 px-2 py-0.5 rounded shadow-sm">Copiar</button>
-                                                                                                          </div>
-                                                                                                          <p className="text-xs font-black text-slate-800 break-words leading-relaxed bg-white border border-slate-100 p-2.5 rounded-lg w-full">"{pers.valor}"</p>
-                                                                                                      </div>
-                                                                                                  )}
-                                                                                              </div>
-                                                                                          ))}
-                                                                                      </div>
-                                                                                  </div>
-                                                                              )}
-                                                                          </div>
-                                                                      </div>
-                                                                  )}) : (
-                                                                      <p className="text-[11px] text-slate-500 italic col-span-2">Nenhum item listado.</p>
-                                                                  )}
-                                                              </div>
-                                                          </div>
-                                                      </motion.div>
-                                                  );
-                                              })()
-                                          )}
-                                      </AnimatePresence>
-                                  </div>
-                              </div>
-                          </motion.section>
+                            {/* Form de Adicionar Transação Manual (Caixa de Ação da Gestão) */}
+                            <article className="bg-white p-6 sm:p-8 rounded-[24px] border border-slate-200 shadow-sm">
+                                <div className="flex items-center gap-3 pb-6 border-b border-slate-100 mb-6">
+                                    <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                                        <Icons.Plus className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-base font-black text-slate-800">Lançamento de Ajuste Manual</h4>
+                                        <p className="text-xs text-slate-500 font-medium">Insira créditos ou debite valores da carteira do cliente com justificativa de auditoria.</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-5 max-w-3xl">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Tipo de Ativo *</label>
+                                            <select 
+                                                value={walletFlow.tipo} 
+                                                onChange={e => setWalletFlow({...walletFlow, tipo: e.target.value})} 
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all"
+                                            >
+                                                <option>Hub Coins</option>
+                                                <option>Cashback (R$)</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="sm:col-span-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Valor Numérico (Positivo ou Negativo) *</label>
+                                            <input 
+                                                type="number" 
+                                                value={walletFlow.valor} 
+                                                onChange={e => setWalletFlow({...walletFlow, valor: e.target.value})} 
+                                                placeholder="Ex: 50 ou -20" 
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all" 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[10px] font-bold text-rose-500 uppercase tracking-wider block mb-1.5">Motivo da Transação (Obrigatório p/ Auditoria) *</label>
+                                        <input 
+                                            type="text" 
+                                            value={walletFlow.motivo} 
+                                            onChange={e => setWalletFlow({...walletFlow, motivo: e.target.value})} 
+                                            placeholder="Ex: Bonificação por estorno pendente no pedido #1024..." 
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-medium text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all placeholder:text-slate-400" 
+                                        />
+                                    </div>
+
+                                    <div className="pt-2 flex justify-end">
+                                        <ProgressButton 
+                                            onClick={processarTransacaoWallet} 
+                                            loading={savingState === 'transacao'} 
+                                            text="Processar Transação" 
+                                            icon={Icons.Check} 
+                                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-xl transition-colors shadow-sm text-xs" 
+                                        />
+                                    </div>
+                                </div>
+                            </article>
+                        </motion.section>
                         )}
-
-                        {/* 🟢 ABA: TIMELINE / AUDITORIA */}
+                        {/* 🟢 ABA: TIMELINE / AUDITORIA (Log Feed Moderno & Elegante) */}
                         {crmSubTab === 'TIMELINE (AUDIT)' && (
-                          <motion.section key="TIMELINE" {...tabTransition} className="max-w-4xl mx-auto w-full p-6">
-                              <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm h-[600px] flex flex-col">
-                                  <header className="p-8 border-b border-slate-100 flex justify-between items-center">
-                                      <div>
-                                          <h3 className="text-xl font-black"><Icons.Activity className="inline mr-2 text-blue-500"/> Registro de Auditoria</h3>
-                                          <p className="text-[11px] text-slate-500 mt-1 font-medium">Histórico imutável de ações e segurança.</p>
-                                      </div>
-                                      <ProgressButton onClick={handleExportarPDF} text="Exportar PDF" icon={Icons.Download} className="bg-white border border-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-50 transition-colors"/>
-                                  </header>
-                                  <div className="p-8 relative flex-1 overflow-y-auto custom-scrollbar">
-                                      <div className="absolute left-[43px] top-8 bottom-8 w-[2px] bg-slate-100 hidden sm:block"></div>
-                                      <div className="space-y-6 relative z-10">
-                                          {auditLogsPaginados.map(log => (
-                                              <article key={log.id} className="relative sm:pl-12">
-                                                  <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full ring-4 ring-white shadow-sm flex items-center justify-center hidden sm:flex ${log.tipo === 'success' ? 'bg-emerald-500' : log.tipo === 'warning' ? 'bg-amber-500' : 'bg-blue-500'}`}>
-                                                      <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                                                  </div>
-                                                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 transition-all group">
-                                                      <p className="text-[10px] font-bold text-slate-400 mb-2">{formatDateTimeBR(log.data)}</p>
-                                                      <h5 className="font-black text-slate-800 text-base">{log.titulo}</h5>
-                                                      <p className="text-sm text-slate-600 mt-2 leading-relaxed">{log.desc}</p>
-                                                  </div>
-                                              </article>
-                                          ))}
-                                          {auditLogsPaginados.length === 0 && <p className="text-center text-slate-500 text-sm py-10">Nenhum evento registrado.</p>}
-                                      </div>
-                                  </div>
-                              </div>
-                          </motion.section>
+                        <motion.section key="TIMELINE" {...tabTransition} className="max-w-5xl mx-auto w-full p-6">
+                            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+                                
+                                {/* Cabeçalho da Auditoria */}
+                                <header className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                                            <Icons.Activity className="w-5 h-5"/>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-black text-slate-800">Trilha de Auditoria & Segurança</h3>
+                                            <p className="text-xs text-slate-500 font-medium mt-0.5">Histórico imutável de eventos, alterações e logs de segurança do perfil.</p>
+                                        </div>
+                                    </div>
+
+                                    <ProgressButton 
+                                        onClick={handleExportarPDF} 
+                                        text="Exportar PDF" 
+                                        icon={Icons.Download} 
+                                        className="bg-white border border-slate-200 text-slate-700 hover:text-blue-600 font-bold px-4 py-2.5 rounded-xl shadow-sm hover:bg-slate-50 transition-colors text-xs"
+                                    />
+                                </header>
+
+                                {/* Feed da Linha do Tempo */}
+                                <div className="p-6 sm:p-8 relative flex-1 overflow-y-auto custom-scrollbar">
+                                    {/* Linha vertical centralizada nos ícones */}
+                                    <div className="absolute left-6 sm:left-12 top-8 bottom-8 w-0.5 bg-slate-200/80"></div>
+
+                                    <div className="space-y-6 relative z-10">
+                                        {auditLogsPaginados.map(log => {
+                                            // Definição de cores e ícones baseados no tipo do evento
+                                            let badgeStyle = "bg-blue-50 text-blue-600 border-blue-200";
+                                            let dotStyle = "bg-blue-500 ring-blue-100";
+                                            
+                                            if (log.tipo === 'success' || log.tipo === 'REATIVAR') {
+                                                badgeStyle = "bg-emerald-50 text-emerald-600 border-emerald-200";
+                                                dotStyle = "bg-emerald-500 ring-emerald-100";
+                                            } else if (log.tipo === 'warning' || log.tipo === 'SUSPENDER') {
+                                                badgeStyle = "bg-amber-50 text-amber-600 border-amber-200";
+                                                dotStyle = "bg-amber-500 ring-amber-100";
+                                            } else if (log.tipo === 'danger' || log.tipo === 'ERROR') {
+                                                badgeStyle = "bg-rose-50 text-rose-600 border-rose-200";
+                                                dotStyle = "bg-rose-500 ring-rose-100";
+                                            }
+
+                                            return (
+                                                <article key={log.id || Math.random()} className="relative pl-8 sm:pl-14 group">
+                                                    {/* Marcador na Linha do Tempo */}
+                                                    <div className={`absolute left-0 sm:left-[21px] top-4 w-3.5 h-3.5 rounded-full ring-4 shadow-sm transition-transform duration-200 ${dotStyle}`}></div>
+
+                                                    {/* Card do Evento */}
+                                                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 transition-all duration-200">
+                                                        
+                                                        {/* Cabeçalho do Log: Título + Badge + Data */}
+                                                        <div className="flex flex-wrap justify-between items-center gap-2 mb-2 pb-2 border-b border-slate-100">
+                                                            <div className="flex items-center gap-2.5">
+                                                                <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border ${badgeStyle}`}>
+                                                                    {log.tipo || 'EVENTO'}
+                                                                </span>
+                                                                <h5 className="font-black text-slate-800 text-sm tracking-wide">{log.titulo}</h5>
+                                                            </div>
+                                                            
+                                                            <span className="text-[10px] font-bold text-slate-400 font-mono bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                                                                {formatDateTimeBR(log.data || log.created_at)}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Descrição do Evento */}
+                                                        <p className="text-xs text-slate-600 font-medium leading-relaxed bg-slate-50/60 p-3 rounded-xl border border-slate-100/80">
+                                                            {log.desc || log.motivo || 'Nenhum detalhe adicional fornecido.'}
+                                                        </p>
+
+                                                        {/* Autor ou Origem da ação se existir */}
+                                                        {log.autor && (
+                                                            <div className="mt-2.5 flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                                                <span>Executado por:</span>
+                                                                <span className="text-slate-700 bg-slate-100 px-2 py-0.5 rounded">{log.autor}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </article>
+                                            );
+                                        })}
+
+                                        {auditLogsPaginados.length === 0 && (
+                                            <div className="flex flex-col items-center justify-center py-16 text-center">
+                                                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mb-3 text-slate-300 border border-slate-100">
+                                                    <Icons.Activity className="w-7 h-7" />
+                                                </div>
+                                                <p className="text-sm font-bold text-slate-500">Nenhum registro de auditoria encontrado para este cliente.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Rodapé com Paginação */}
+                                {totalTimelinePages > 1 && (
+                                    <footer className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center text-xs font-bold text-slate-500 gap-3 shrink-0">
+                                        <span>Mostrando {auditLogsPaginados.length} de {auditLogsFiltrados.length} registros</span>
+                                        <div className="flex items-center gap-3">
+                                            <span>Página {timelinePage} de {totalTimelinePages}</span>
+                                            <div className="flex gap-1.5">
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setTimelinePage(p => Math.max(1, p - 1))} 
+                                                    disabled={timelinePage === 1} 
+                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"
+                                                >
+                                                    <Icons.ChevronLeft className="w-4 h-4" />
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setTimelinePage(p => Math.min(totalTimelinePages, p + 1))} 
+                                                    disabled={timelinePage === totalTimelinePages} 
+                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"
+                                                >
+                                                    <Icons.ChevronRight className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                )}
+                            </div>
+                        </motion.section>
                         )}
                     </AnimatePresence>
                 </div>
