@@ -1212,7 +1212,7 @@ export default function AdminPerfilCRM({
                                                         
                                                         {/* Antes estava: onClick={() => window.location.href = ...} */}
                                                         <button 
-                                                            onClick={() => navigate(`/admin/orders?id=${pedido.id}`)} 
+                                                            onClick={() => navigate(`/admin/pedidos?id=${pedido.id}`)} 
                                                             className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-4 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm shrink-0"
                                                             title="Ver no Módulo de Pedidos"
                                                         >
