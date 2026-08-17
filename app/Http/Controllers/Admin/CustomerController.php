@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyEmailUpdate;
 use App\Mail\TemporaryPassword;
+use App\Mail\EmailForcedUpdate;
 
 class CustomerController extends Controller
 {
@@ -312,8 +313,8 @@ class CustomerController extends Controller
         // Simulação de geração de token (A ser expandida)
         $token = Str::random(60); 
 
-        // Na função sendEmailUpdateLink:
-        Mail::to($request->email)->send(new VerifyEmailUpdate($token, $request->email, $cliente->name));    
+        // 🟢 Passando o nome do cliente no envio do e-mail
+        Mail::to($request->email)->send(new VerifyEmailUpdate($token, $request->email, $cliente->name));
 
         $this->registrarLog($cliente->id, 'Solicitação de Troca de E-mail', "Link enviado para validação do endereço: {$request->email}", 'info');
 
@@ -332,6 +333,9 @@ class CustomerController extends Controller
         
         $cliente->email = $request->email;
         $cliente->save();
+
+        // 🟢 Dispara o e-mail de alerta para o E-MAIL ANTIGO do cliente para avisar sobre a troca forçada
+        Mail::to($emailAntigo)->send(new EmailForcedUpdate($cliente->name, $request->email, $request->motivo));
 
         $this->registrarLog($cliente->id, 'E-mail Alterado (Forçado)', "De: {$emailAntigo} Para: {$cliente->email}. Motivo: {$request->motivo}", 'warning');
 
