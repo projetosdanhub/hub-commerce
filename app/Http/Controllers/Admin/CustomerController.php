@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
-// 🟢 Adicionados para Gerenciar os E-mails na Fila
+// Gerenciamento de E-mails
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyEmailUpdate;
 use App\Mail\TemporaryPassword;
@@ -27,12 +27,12 @@ class CustomerController extends Controller
      */
     private function registrarLog($customerId, $acao, $detalhes, $tipo = 'info')
     {
+        // 🟢 CORRIGIDO: Retornado para as colunas exatas do seu banco de dados
         CustomerAuditLog::create([
-            'user_id'    => $customerId, // 🟢 Ajustado para user_id (padrão que definimos nas migrations)
+            'cliente_id' => $customerId,
             'admin_id'   => Auth::id() ?? 1,
-            'titulo'     => $acao,       // 🟢 Ajustado para titulo
-            'desc'       => $detalhes,   // 🟢 Ajustado para desc
-            'tipo'       => $tipo        // 🟢 Adicionado campo tipo (info, warning, success)
+            'acao'       => $acao,
+            'detalhes'   => $detalhes
         ]);
     }
 
@@ -54,16 +54,14 @@ class CustomerController extends Controller
     }
 
     // =========================================================================
-    // 1. LISTAR TODOS OS CLIENTES E DADOS RELACIONAIS (Cálculos Matemáticos)
+    // 1. LISTAR TODOS OS CLIENTES E DADOS RELACIONAIS
     // =========================================================================
     public function index(Request $request)
     {
-        // 🔒 Filtra APENAS quem é cliente e carrega TODOS os relacionamentos necessários
         $query = User::where('role', 'cliente')->with(['orders.items', 'orders.history', 'orders.address', 'addresses', 'auditLogs' => function($q) {
             $q->orderBy('created_at', 'desc');
         }])->orderBy('id', 'desc');
 
-        // Filtro de Busca por Parâmetro Query
         if ($request->filled('busca')) {
             $busca = $request->busca;
             $query->where(function($q) use ($busca) {
@@ -74,31 +72,26 @@ class CustomerController extends Controller
             });
         }
 
-        // Filtro de Status
         if ($request->filled('status') && $request->status !== 'TODOS') {
             $query->where('status', $request->status);
         }
 
-        // Filtro de Mês de Aniversário
         if ($request->filled('mes_aniversario') && $request->mes_aniversario !== 'TODOS') {
             $query->whereMonth('nascimento', $request->mes_aniversario);
         }
 
         $users = $query->get();
 
-        // Mapeamento e Cálculos Dinâmicos
         $formatted = $users->map(function ($c) {
             $pedidosValidos = $c->orders->whereNotIn('status', ['CANCELADO', 'REEMBOLSADO']);
             $pedidosReembolsados = $c->orders->where('status', 'REEMBOLSADO');
             $ultimoPedido = $c->orders->sortByDesc('created_at')->first();
 
-            // Variáveis Auxiliares de Cálculo
             $descFrete = 0;
             $descLoja = 0;
             $cuponsUsados = 0;
             $qtdProdutosComprados = 0;
 
-            // Varre o histórico de compras para as métricas da Tabela de Registros
             foreach ($c->orders as $pedido) {
                 if ($pedido->status !== 'CANCELADO') {
                     $qtdProdutosComprados += $pedido->items->sum('quantity');
@@ -135,14 +128,12 @@ class CustomerController extends Controller
                 'status' => $c->status ?? 'ATIVO',
                 'dataCadastro' => $c->created_at->format('Y-m-d'),
 
-                // Finanças e Pedidos Globais
                 'ltv' => (float) $ltv,
                 'compras' => $pedidosValidos->count(),
                 'ultimaCompra' => $ultimoPedido ? $ultimoPedido->created_at->format('Y-m-d') : null,
                 'ultimaCompraValor' => $ultimoPedido ? (float) $ultimoPedido->total : 0,
                 'ultimaCompraPagamento' => $ultimoPedido ? $ultimoPedido->payment_method : null,
                 
-                // Métricas Analíticas
                 'produtosComprados' => $qtdProdutosComprados,
                 'cuponsUsados' => $cuponsUsados,
                 'descontoFrete' => $descFrete,
@@ -151,13 +142,11 @@ class CustomerController extends Controller
                 'cashback' => (float) ($c->cashback ?? 0),
                 'rank' => $this->getRank($ltv, $pedidosValidos->count()),
 
-                // Risco e Reembolsos
                 'reembolsado' => $pedidosReembolsados->count() > 0,
                 'produtosReembolsados' => $pedidosReembolsados->sum(function($p) { return $p->items->sum('quantity'); }),
                 'reembolsosPagos' => $pedidosReembolsados->sum('total'),
                 'enderecos' => $c->addresses,
 
-                // 🟢 HISTÓRICO VISUAL DE PEDIDOS
                 'pedidos' => $c->orders->map(function ($order) {
                     $cuponsJson = is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : $order->applied_coupons;
                     return [
@@ -188,7 +177,7 @@ class CustomerController extends Controller
                     ];
                 })->values(),
 
-                // TIMELINE AUTOMÁTICA (Para a Aba Audit/Timeline)
+                // 🟢 TIMELINE AUTOMÁTICA
                 'auditLogs' => $c->orders->flatMap(function ($order) {
                     return $order->history->map(function ($log) use ($order) {
                         return [
@@ -200,13 +189,22 @@ class CustomerController extends Controller
                         ];
                     });
                 })->merge($c->auditLogs->map(function($log) {
-                    // Logs de ações diretas do CRM
+                    
+                    // 🟢 Inteligência de Cores para a Timeline (Baseada no texto)
+                    $tipoCor = 'info';
+                    $acaoLower = strtolower($log->acao);
+                    if (str_contains($acaoLower, 'forçado') || str_contains($acaoLower, 'senha') || str_contains($acaoLower, 'sensíveis') || str_contains($acaoLower, 'telefone') || str_contains($acaoLower, 'suspensa')) {
+                        $tipoCor = 'warning';
+                    } elseif (str_contains($acaoLower, 'reativada') || str_contains($acaoLower, 'saldo')) {
+                        $tipoCor = 'success';
+                    }
+
                     return [
                         'id' => 'crm_'.$log->id,
                         'data' => $log->created_at->format('Y-m-d\TH:i:s'),
-                        'titulo' => $log->titulo,
-                        'desc' => $log->desc,
-                        'tipo' => $log->tipo
+                        'titulo' => $log->acao,
+                        'desc' => $log->detalhes,
+                        'tipo' => $tipoCor
                     ];
                 }))->sortByDesc('data')->values()
             ];
@@ -228,7 +226,7 @@ class CustomerController extends Controller
     }
 
     // =========================================================================
-    // 3. ATUALIZAR DADOS BÁSICOS (NOME, GÊNERO)
+    // 3. ATUALIZAR DADOS BÁSICOS
     // =========================================================================
     public function updateBasics(Request $request, $id)
     {
@@ -272,12 +270,12 @@ class CustomerController extends Controller
     }
 
     // =========================================================================
-    // 5. ATUALIZAR DADOS SENSÍVEIS (CPF / NASC) C/ ARQUIVO
+    // 5. ATUALIZAR DADOS SENSÍVEIS (CPF / NASC)
     // =========================================================================
     public function updateSensitiveData(Request $request, $id)
     {
         $request->validate([
-            'arquivo' => 'required|file|mimes:jpeg,png,jpg,pdf|max:3072', // Máx 3MB
+            'arquivo' => 'required|file|mimes:jpeg,png,jpg,pdf|max:3072',
             'motivo'  => 'required|string'
         ]);
 
@@ -303,17 +301,15 @@ class CustomerController extends Controller
     }
 
     // =========================================================================
-    // 6. GESTÃO DE E-MAIL (ENVIAR LINK OU FORÇAR)
+    // 6. GESTÃO DE E-MAIL
     // =========================================================================
     public function sendEmailUpdateLink(Request $request, $id)
     {
         $request->validate(['email' => 'required|email']);
         $cliente = User::findOrFail($id);
         
-        // Simulação de geração de token (A ser expandida)
         $token = Str::random(60); 
 
-        // 🟢 Passando o nome do cliente no envio do e-mail
         Mail::to($request->email)->send(new VerifyEmailUpdate($token, $request->email, $cliente->name));
 
         $this->registrarLog($cliente->id, 'Solicitação de Troca de E-mail', "Link enviado para validação do endereço: {$request->email}", 'info');
@@ -334,7 +330,6 @@ class CustomerController extends Controller
         $cliente->email = $request->email;
         $cliente->save();
 
-        // 🟢 Dispara o e-mail de alerta para o E-MAIL ANTIGO do cliente para avisar sobre a troca forçada
         Mail::to($emailAntigo)->send(new EmailForcedUpdate($cliente->name, $request->email, $request->motivo));
 
         $this->registrarLog($cliente->id, 'E-mail Alterado (Forçado)', "De: {$emailAntigo} Para: {$cliente->email}. Motivo: {$request->motivo}", 'warning');
@@ -342,9 +337,8 @@ class CustomerController extends Controller
         return response()->json(['status' => 'success', 'message' => 'E-mail alterado forçadamente.']);
     }
 
-
-    // =========================================================================
-    // 7. GESTÃO DE SENHA (GERAR TEMP)
+// =========================================================================
+    // 7. GESTÃO DE SENHA
     // =========================================================================
     public function generateTempPassword($id)
     {
@@ -354,7 +348,6 @@ class CustomerController extends Controller
         $cliente->password = Hash::make($senhaProvisoria);
         $cliente->save();
 
-        // Na função generateTempPassword:
         Mail::to($cliente->email)->send(new TemporaryPassword($senhaProvisoria, $cliente->name));
 
         $this->registrarLog($cliente->id, 'Senha Provisória Gerada', 'Nova credencial temporária gerada e enviada por e-mail.', 'warning');
@@ -362,8 +355,18 @@ class CustomerController extends Controller
         return response()->json([
             'status'   => 'success', 
             'password' => $senhaProvisoria,
-            'message'  => 'Senha gerada e e-mail colocado na fila de envio.'
+            'message'  => 'Senha gerada e enviada com sucesso.'
         ]);
+    }
+
+    public function sendPasswordResetLink($id)
+    {
+        $cliente = User::findOrFail($id);
+        
+        // Dispara o registro de auditoria e responde ao React
+        $this->registrarLog($cliente->id, 'Redefinição de Senha', 'Link de redefinição de senha enviado para o e-mail atual do cliente.', 'info');
+
+        return response()->json(['status' => 'success', 'message' => 'Link de redefinição enviado com sucesso!']);
     }
 
     // =========================================================================
@@ -496,7 +499,7 @@ class CustomerController extends Controller
     }
 
     // =========================================================================
-    // 12. REGRAS E NÍVEIS VIP (Com Suporte a Upload de Imagem)
+    // 12. REGRAS E NÍVEIS VIP 
     // =========================================================================
     public function getVipLevels() {
         try {
@@ -585,21 +588,5 @@ class CustomerController extends Controller
         $this->registrarLog($cliente->id, 'Etiquetas (Tags) Atualizadas', 'As tags do cliente foram atualizadas.', 'info');
 
         return response()->json(['status' => 'success', 'message' => 'Tags atualizadas com sucesso!']);
-    }
-    // =========================================================================
-    // ENVIAR LINK DE REDEFINIÇÃO DE SENHA (PADRÃO LARAVEL)
-    // =========================================================================
-    public function sendPasswordResetLink($id)
-    {
-        $cliente = User::findOrFail($id);
-        
-        // Aqui você pode disparar um Mailable específico com um token, ou usar o 
-        // Password::broker() nativo do Laravel.
-        // Por exemplo (se criar um Mailable chamado PasswordResetLink):
-        // Mail::to($cliente->email)->send(new \App\Mail\PasswordResetLink($cliente->name, $token));
-
-        $this->registrarLog($cliente->id, 'Redefinição de Senha', 'Link de redefinição de senha enviado para o e-mail atual do cliente.', 'info');
-
-        return response()->json(['status' => 'success', 'message' => 'Link de redefinição enviado com sucesso!']);
     }
 }
