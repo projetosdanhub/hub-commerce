@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api';
+import { useNavigate } from 'react-router-dom';
 
 // ==========================================
 // 1. ÍCONES E UTILITÁRIOS LOCAIS
@@ -117,6 +118,8 @@ export default function AdminPerfilCRM({
     triggerAcaoGlob,
     showToastGlob
 }) {
+
+    const navigate = useNavigate();
     const queryClientLocal = useQueryClient();
     
     // Estados Locais e Exclusivos deste Componente
@@ -1207,9 +1210,9 @@ export default function AdminPerfilCRM({
                                                             <span className="text-xl font-black text-emerald-600 leading-none">{formatCurrency(pedido.total)}</span>
                                                         </div>
                                                         
-                                                        {/* Botão de Redirecionamento Direto */}
+                                                        {/* Antes estava: onClick={() => window.location.href = ...} */}
                                                         <button 
-                                                            onClick={() => window.location.href = `/admin/orders?id=${pedido.id}`} 
+                                                            onClick={() => navigate(`/admin/orders?id=${pedido.id}`)} 
                                                             className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-4 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm shrink-0"
                                                             title="Ver no Módulo de Pedidos"
                                                         >

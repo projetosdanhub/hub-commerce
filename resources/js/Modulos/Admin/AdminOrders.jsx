@@ -8,6 +8,7 @@ import React, { useState, useMemo, useEffect, useRef, Component } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient, QueryClientProvider, QueryClient } from '@tanstack/react-query';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
 
 const queryClient = new QueryClient();
@@ -93,7 +94,7 @@ FadeIn.displayName = 'FadeIn';
 const ProgressButton = ({ onClick, loading, text, loadingText, className, disabled = false, icon: Icon, ariaLabel }) => (
     <button aria-label={ariaLabel || text} onClick={onClick} disabled={loading || disabled} className={`relative overflow-hidden ${className} disabled:opacity-90 disabled:cursor-not-allowed transition-all focus:ring-2 focus:ring-blue-500/20`}>
         {loading && <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1.5, ease: "linear" }} className="absolute left-0 top-0 h-full bg-black/10 z-0" />}
-        <span className="relative z-10 flex items-center justify-center gap-2">{loading ? <><Icons.Spinner /> {loadingText}</> : <>{Icon && <Icon />} {text}</>}</span>
+        <span className="relative z-10 flex items-center justify-center gap-2">{loading ? <><Icons.Spinner /> {loadingText || text}</> : <>{Icon && <Icon />} {text}</>}</span>
     </button>
 );
 
@@ -189,8 +190,6 @@ const formatPhone = (phone) => {
     if (str.length === 11) return `+55 (${str.slice(0,2)}) ${str.slice(2,7)}-${str.slice(7)}`;
     return phone;
 };
-
-// Parse cupons seguro
 const parseCoupons = (coupons) => {
     if (!coupons) return [];
     return typeof coupons === 'string' ? JSON.parse(coupons) : coupons;
@@ -202,10 +201,11 @@ const parseCoupons = (coupons) => {
 const AdminOrdersContent = () => {
     
     // =========================================================
-    // 🔗 LEITURA DE PARÂMETROS DA URL (SYNC COM CRM)
+    // 🟢 1. LEITURA REATIVA DE PARÂMETROS DA URL
     // =========================================================
-    const searchParams = new URLSearchParams(window.location.search);
+    const [searchParams, setSearchParams] = useSearchParams();
     const orderIdUrl = searchParams.get('id');
+    const navigate = useNavigate(); // Útil caso precise mudar de tela completamente
     
     const queryClientLocal = useQueryClient();
     const prefixo = "HUB-"; 
@@ -228,7 +228,7 @@ const AdminOrdersContent = () => {
     const [codigoRastreio, setCodigoRastreio] = useState('');
     const [pedidosSelecionados, setPedidosSelecionados] = useState([]);
     
-    // 🟢 ESTADO PRINCIPAL: FIRST PAGE VIEW E MODAL
+    // ESTADO PRINCIPAL: FIRST PAGE VIEW E MODAL
     const [pedidoSelecionado, setPedidoSelecionado] = useState(null);
     const [modalConfirmacao, setModalConfirmacao] = useState({ isOpen: false, tipo: null, pedidoId: null });
 
@@ -257,18 +257,23 @@ const AdminOrdersContent = () => {
     const metricas = fetchResult.metrics || { conversao_pix: 0, total_pix_gerados: 0 };
 
     // =========================================================
-    // 🎯 AUTO-OPEN MODAL VIA URL (SYNC CRM)
+    // 🟢 2. AUTO-OPEN MODAL VIA URL (Com Proteção)
     // =========================================================
     useEffect(() => {
         if (orderIdUrl && pedidosDaApi && pedidosDaApi.length > 0) {
             const pedidoAlvo = pedidosDaApi.find(p => String(p.id) === String(orderIdUrl));
+            
+            // Só atualiza se for diferente para evitar loop infinito
             if (pedidoAlvo && (!pedidoSelecionado || pedidoSelecionado.id !== pedidoAlvo.id)) {
                 setPedidoSelecionado(pedidoAlvo);
+            } else if (!pedidoAlvo) {
+                // ID inexistente: limpa a URL para não dar erro na tela
+                setSearchParams({});
             }
         }
-    }, [orderIdUrl, pedidosDaApi]);
+    }, [orderIdUrl, pedidosDaApi]); 
 
-    // Sincronizador Real-Time
+    // Sincronizador Real-Time para Pedido Selecionado
     useEffect(() => {
         if (pedidoSelecionado && pedidosDaApi.length > 0) {
             const pedidoAtualizado = pedidosDaApi.find(p => p.id === pedidoSelecionado.id);
@@ -279,6 +284,20 @@ const AdminOrdersContent = () => {
     }, [pedidosDaApi]);
 
     useEffect(() => { setTimelinePage(1); }, [pedidoSelecionado]);
+
+    // =========================================================
+    // 🟢 3. FUNÇÃO SEGURA PARA FECHAR O PEDIDO E LIMPAR URL
+    // =========================================================
+    const handleFecharPedido = () => {
+        setPedidoSelecionado(null);
+        setMotivoReembolso('');
+        setComprovanteReembolso(null);
+        
+        // Remove os parâmetros da URL sem recarregar a página
+        if (orderIdUrl) {
+            setSearchParams({});
+        }
+    };
 
     const mutacaoAvancarStatus = useMutation({
         mutationFn: async ({ id, status }) => await api.put(`/admin/orders/${id}/status`, { status }),
@@ -348,11 +367,6 @@ const AdminOrdersContent = () => {
 
     const toggleSelecionar = (id) => {
         setPedidosSelecionados(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
-    };
-
-    const processarAcaoEmLote = (acao) => {
-        if(acao === 'IMPRIMIR') alert("Gerando PDF em lote...");
-        setPedidosSelecionados([]);
     };
 
     const imprimirPickingList = () => {
@@ -610,17 +624,7 @@ const AdminOrdersContent = () => {
                         {/* CABEÇALHO DO PEDIDO */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
-                                <button onClick={() => {
-                                    setPedidoSelecionado(null); 
-                                    setMotivoReembolso(''); 
-                                    setComprovanteReembolso(null);
-                                    // Remove o id da URL caso o usuário volte para a lista
-                                    if(orderIdUrl) {
-                                        const newParams = new URLSearchParams(window.location.search);
-                                        newParams.delete('id');
-                                        window.history.replaceState({}, '', `${window.location.pathname}?${newParams.toString()}`);
-                                    }
-                                }} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors">
+                                <button onClick={handleFecharPedido} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors">
                                     <Icons.ChevronLeft /> Voltar 
                                 </button>
                                 <div>
@@ -959,7 +963,7 @@ const AdminOrdersContent = () => {
                 )}
             </AnimatePresence>
 
-            {/* MODAL DE RASTREIO */}
+            {/* MODAL DE RASTREIO E CANCELAMENTO */}
             <AnimatePresence>
                 {modalRastreio.isOpen && (
                     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
@@ -977,7 +981,6 @@ const AdminOrdersContent = () => {
                 )}
             </AnimatePresence>
 
-            {/* MODAL DE CANCELAMENTO */}
             <AnimatePresence>
                 {modalConfirmacao.isOpen && (
                     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
