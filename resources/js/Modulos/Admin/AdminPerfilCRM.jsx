@@ -62,7 +62,15 @@ const formatPhone = (phone) => {
 };
 
 const FadeIn = React.forwardRef(({ children, className = "", ...props }, ref) => (
-  <motion.div ref={ref} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3, ease: "easeOut" }} className={className} {...props}>
+  <motion.div 
+      ref={ref} 
+      initial={{ opacity: 0, x: -20 }} 
+      animate={{ opacity: 1, x: 0 }} 
+      exit={{ opacity: 0, x: 20 }} 
+      transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }} 
+      className={`flex flex-col h-full w-full ${className}`} 
+      {...props}
+  >
       {children}
   </motion.div>
 ));
@@ -80,6 +88,12 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
 // ============================================================================
 // COMPONENTE PRINCIPAL (O PERFIL DO CLIENTE ISOLADO)
 // ============================================================================
+
+// 🟢 ANIMAÇÕES SUAVES PADRONIZADAS PARA AS ABAS E TRANSIÇÕES
+    const tabTransition = {
+        animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } },
+        exit: { opacity: 0, y: -10, scale: 0.98, filter: 'blur(2px)', transition: { duration: 0.2, ease: "easeInOut" } }
+    };
 export default function AdminPerfilCRM({ 
     clienteSelecionado, 
     setClienteSelecionado, 
@@ -566,15 +580,19 @@ export default function AdminPerfilCRM({
                     ))}
                 </nav>
 
-                <div className="flex-1 min-h-0 overflow-y-auto bg-slate-50/30">
+                {/* O SEGREDO ESTÁ AQUI: scrollbarGutter: 'stable' reserva o espaço da barra de rolagem */}
+                <div 
+                    className="flex-1 min-h-0 overflow-y-auto bg-slate-50/30 custom-scrollbar relative"
+                    style={{ scrollbarGutter: 'stable' }} 
+                >
                     <AnimatePresence mode="wait">
                         
                         {/* ========================================================= */}
                         {/* 🟢 ABA: RESUMO LÍQUIDO                                    */}
                         {/* ========================================================= */}
                         {crmSubTab === 'RESUMO' && !perfilEmEdicao && (
-                            <motion.section key="RESUMO_READ" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-col lg:flex-row gap-6 p-6">
-                                
+                            <motion.section key="RESUMO_READ" {...tabTransition} className="flex flex-col lg:flex-row gap-6 p-6">
+                                {/* ... conteúdo do resumo ... */}
                                 {/* COLUNA ESQUERDA: BARRA VERTICAL DE MÉTRICAS */}
                                 <div className="flex flex-col border border-slate-200 rounded-[24px] bg-white shadow-sm overflow-hidden w-full lg:w-1/4 shrink-0 h-max">
                                     <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
@@ -709,7 +727,7 @@ export default function AdminPerfilCRM({
 
                         {/* 🟢 ABA: RESUMO (MODO DE EDIÇÃO ORGANIZADO EM CARDS) */}
                         {crmSubTab === 'RESUMO' && perfilEmEdicao && (
-                          <motion.section key="EDITAR_PERFIL" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
+                          <motion.section key="EDITAR_PERFIL" {...tabTransition} className="p-6">
                               
                               <div className="bg-white border border-slate-200 shadow-sm rounded-[24px] p-6 sm:p-8 w-full max-w-5xl mx-auto flex flex-col">
                                   <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-100">
@@ -879,7 +897,7 @@ export default function AdminPerfilCRM({
 
                         {/* 🟢 ABA: CARTEIRAS */}
                         {crmSubTab === 'CARTEIRAS (LIVRO RAZÃO)' && (
-                          <motion.section key="CARTEIRAS" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6 max-w-4xl mx-auto w-full p-6">
+                          <motion.section key="CARTEIRAS" {...tabTransition} className="space-y-6 max-w-4xl mx-auto w-full p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <article className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-[24px] shadow-sm text-white relative overflow-hidden">
                                     <div className="absolute right-0 top-0 w-32 h-32 bg-white opacity-10 rounded-full blur-3xl pointer-events-none"></div>
@@ -907,7 +925,7 @@ export default function AdminPerfilCRM({
 
                         {/* 🟢 ABA: ENDEREÇOS */}
                         {crmSubTab === 'ENDEREÇOS' && (
-                          <motion.section key="ENDEREÇOS" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-5xl mx-auto w-full p-6 space-y-6">
+                          <motion.section key="ENDEREÇOS" {...tabTransition} className="max-w-5xl mx-auto w-full p-6 space-y-6">
                             <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                                 <div><h3 className="text-xl font-black text-slate-800 flex items-center gap-3"><Icons.MapPin className="w-6 h-6 text-blue-500"/> Agenda de Endereços</h3></div>
                                 <button onClick={() => setShowAddEndereco(!showAddEndereco)} className="bg-blue-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-sm">Novo Endereço</button>
@@ -946,7 +964,7 @@ export default function AdminPerfilCRM({
 
                         {/* 🟢 ABA: HISTÓRICO DE PEDIDOS */}
                         {crmSubTab === 'HISTÓRICO DE PEDIDOS' && (
-                          <motion.section key="HISTORICO" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-6xl mx-auto w-full flex flex-col space-y-6 p-6">
+                          <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full flex flex-col space-y-6 p-6">
                               <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
                                   <header className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shrink-0">
                                       <div>
@@ -1000,7 +1018,7 @@ export default function AdminPerfilCRM({
                                                   const dataEntrega = pedidoAtivo.history?.find(h => safeStr(h.evento).toLowerCase().includes('entregue'))?.created_at || 'Pendente / Em Trânsito';
                                                   
                                                   return (
-                                                      <motion.div key={pedidoAtivo.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6 md:p-8 space-y-8">
+                                                      <motion.div key={pedidoAtivo.id} {...tabTransition} className="p-6 md:p-8 space-y-8">
                                                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                                               <div className="space-y-6">
                                                                   <div>
@@ -1151,7 +1169,7 @@ export default function AdminPerfilCRM({
 
                         {/* 🟢 ABA: TIMELINE / AUDITORIA */}
                         {crmSubTab === 'TIMELINE (AUDIT)' && (
-                          <motion.section key="TIMELINE" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-4xl mx-auto w-full p-6">
+                          <motion.section key="TIMELINE" {...tabTransition} className="max-w-4xl mx-auto w-full p-6">
                               <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm h-[600px] flex flex-col">
                                   <header className="p-8 border-b border-slate-100 flex justify-between items-center">
                                       <div>
