@@ -37,7 +37,19 @@ const Icons = {
     Crown: ({className="w-4 h-4"}) => <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
     Refresh: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
     UserCircle: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-    Shield: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+    Shield: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
+    ShoppingBag: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>,
+    Clock: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>,
+    CheckCircle: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>,
+    Truck: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>,
+    Package: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>,
+    XCircle: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>,
+    ExternalLink: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>,
+    DollarSign: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>,
+    MapPin: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>,
+    Copy: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>,
+    Tag: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+    // Você também pode manter os outros ícones que já tinha.
 };
 
 const safeNum = (val) => { const n = Number(val); return isNaN(n) ? 0 : n; };
@@ -680,44 +692,50 @@ export default function AdminPerfilCRM({
                                     </div>
                                 </div>
 
-                                {/* 4. Vantagens do Rank VIP (Posicionado no Final da Coluna) */}
-                                {(() => {
-                                    const rankInfo = niveisVIPDaApi?.find(n => safeStr(n.nome).toLowerCase() === safeStr(clienteSelecionado?.rank).toLowerCase());
-                                    const multCoins = rankInfo?.multiplicador_coins || clienteSelecionado?.multiplicadorCoins || clienteSelecionado?.multiplicador || '1x';
-                                    const descProd = rankInfo?.desconto_produtos != null ? `${rankInfo.desconto_produtos}%` : (clienteSelecionado?.descontoProdutosVip != null ? `${clienteSelecionado.descontoProdutosVip}%` : '0%');
-                                    const descFrete = rankInfo?.desconto_frete != null ? `${rankInfo.desconto_frete}%` : (clienteSelecionado?.descontoFreteVip != null ? `${clienteSelecionado.descontoFreteVip}%` : '0%');
+                                {/* 4. Vantagens do Rank VIP (Lendo exatamente os campos de VipLevel.php) */}
+                                    {(() => {
+                                        const rankInfo = niveisVIPDaApi?.find(n => safeStr(n.nome).toLowerCase() === safeStr(clienteSelecionado?.rank).toLowerCase());
 
-                                    return (
-                                        <div className="p-5 bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors group cursor-default">
-                                            <div className="flex justify-between items-center mb-3">
-                                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                    <Icons.Crown className="w-3.5 h-3.5 text-amber-500"/> Vantagens do Rank VIP
-                                                </p>
-                                                <span className="text-[10px] font-black text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-sm">
-                                                    {clienteSelecionado?.rank || 'Sem Rank'}
-                                                </span>
+                                        // Apontando para as colunas exatas do Model VipLevel: mult_coins, desc_produtos, desc_frete
+                                        const rawMult = rankInfo?.mult_coins ?? clienteSelecionado?.multiplicadorCoins ?? 1;
+                                        const multCoins = typeof rawMult === 'number' || !isNaN(Number(rawMult)) ? `${Number(rawMult)}x` : safeStr(rawMult);
+
+                                        const rawDescProd = rankInfo?.desc_produtos ?? clienteSelecionado?.descontoProdutosVip ?? 0;
+                                        const descProd = `${safeNum(rawDescProd)}%`;
+
+                                        const rawDescFrete = rankInfo?.desc_frete ?? clienteSelecionado?.descontoFreteVip ?? 0;
+                                        const descFrete = `${safeNum(rawDescFrete)}%`;
+
+                                        return (
+                                            <div className="p-5 bg-indigo-50/40 hover:bg-indigo-50/70 transition-colors group cursor-default">
+                                                <div className="flex justify-between items-center mb-3">
+                                                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-wider flex items-center gap-1.5">
+                                                        <Icons.Crown className="w-3.5 h-3.5 text-amber-500"/> Vantagens do Rank VIP
+                                                    </p>
+                                                    <span className="text-[10px] font-black text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-sm">
+                                                        {clienteSelecionado?.rank || 'Sem Rank'}
+                                                    </span>
+                                                </div>
+
+                                                <div className="space-y-2 text-[11px] font-medium bg-white p-3 rounded-2xl border border-indigo-100/80 shadow-sm">
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-slate-500">Multiplicador de Coins:</span>
+                                                        <strong className="text-indigo-600 font-black">{multCoins}</strong>
+                                                    </div>
+
+                                                    <div className="flex justify-between items-center border-t border-slate-100 pt-1.5">
+                                                        <span className="text-slate-500">Desc. Produtos (%):</span>
+                                                        <strong className="text-emerald-600 font-black">{descProd}</strong>
+                                                    </div>
+
+                                                    <div className="flex justify-between items-center border-t border-slate-100 pt-1.5">
+                                                        <span className="text-slate-500">Desc. Frete (%):</span>
+                                                        <strong className="text-emerald-600 font-black">{descFrete}</strong>
+                                                    </div>
+                                                </div>
                                             </div>
-
-                                            <div className="space-y-2 text-[11px] font-medium bg-white p-3 rounded-2xl border border-indigo-100/80 shadow-sm">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-slate-500">Multiplicador de Coins:</span>
-                                                    <strong className="text-indigo-600 font-black">{multCoins}</strong>
-                                                </div>
-
-                                                <div className="flex justify-between items-center border-t border-slate-100 pt-1.5">
-                                                    <span className="text-slate-500">Desc. Produtos (%):</span>
-                                                    <strong className="text-emerald-600 font-black">{descProd}</strong>
-                                                </div>
-
-                                                <div className="flex justify-between items-center border-t border-slate-100 pt-1.5">
-                                                    <span className="text-slate-500">Desc. Frete (%):</span>
-                                                    <strong className="text-emerald-600 font-black">{descFrete}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })()}
-
+                                        );
+                                    })()}
                             </div>
 
                                 {/* COLUNA DIREITA */}
@@ -1103,6 +1121,250 @@ export default function AdminPerfilCRM({
                             </div>
                         </motion.section>
                         )}
+
+                        {/* 🟢 ABA: HISTÓRICO DE PEDIDOS (Premium Invoice Cards) */}
+                        {crmSubTab === 'HISTÓRICO DE PEDIDOS' && (
+                        <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-6">
+                            
+                            {/* Cabeçalho da Seção */}
+                            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm gap-4">
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
+                                        <Icons.ShoppingBag className="w-6 h-6 text-blue-500"/> Histórico de Transações
+                                    </h3>
+                                    <p className="text-xs text-slate-500 mt-1 font-medium">Registro imutável de compras, status logístico e benefícios aplicados por pedido.</p>
+                                </div>
+                                <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-center shrink-0">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Volume de Pedidos</span>
+                                    <span className="text-lg font-black text-slate-800 leading-tight">{clienteSelecionado?.pedidos?.length || 0}</span>
+                                </div>
+                            </header>
+
+                            {/* Feed Vertical de Pedidos */}
+                            <div className="space-y-6">
+                                {clienteSelecionado?.pedidos && clienteSelecionado.pedidos.length > 0 ? (
+                                    clienteSelecionado.pedidos.map((pedido) => {
+                                        
+                                        // Definir cor e ícone baseados no status do pedido
+                                        let statusColor = "bg-slate-50 text-slate-600 border-slate-200";
+                                        let StatusIcon = Icons.Clock;
+
+                                        switch(pedido.status) {
+                                            case 'ENTREGUE':
+                                            case 'CONCLUIDO':
+                                                statusColor = "bg-emerald-50 text-emerald-600 border-emerald-200";
+                                                StatusIcon = Icons.CheckCircle;
+                                                break;
+                                            case 'DESPACHADO':
+                                            case 'EM_TRANSITO':
+                                                statusColor = "bg-blue-50 text-blue-600 border-blue-200";
+                                                StatusIcon = Icons.Truck;
+                                                break;
+                                            case 'SEPARACAO':
+                                            case 'PAGO':
+                                                statusColor = "bg-indigo-50 text-indigo-600 border-indigo-200";
+                                                StatusIcon = Icons.Package;
+                                                break;
+                                            case 'CANCELADO':
+                                                statusColor = "bg-rose-50 text-rose-600 border-rose-200";
+                                                StatusIcon = Icons.XCircle;
+                                                break;
+                                            case 'A_PAGAR':
+                                            case 'AGUARDANDO_PAGAMENTO':
+                                                statusColor = "bg-amber-50 text-amber-600 border-amber-200";
+                                                StatusIcon = Icons.Clock;
+                                                break;
+                                        }
+
+                                        // Garante a leitura do array de cupons (caso o backend mande JSON string ou array direto)
+                                        const cuponsUsados = typeof pedido.coupons === 'string' ? JSON.parse(pedido.coupons || '[]') : (pedido.coupons || []);
+
+                                        return (
+                                            <article key={pedido.id} className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden transition-all duration-300 hover:border-blue-300 hover:shadow-md group cursor-default">
+                                                
+                                                {/* 1. Header do Card de Pedido (Resumo Rápido) */}
+                                                <div className="p-5 sm:p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                                                    <div className="flex items-start gap-4">
+                                                        <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 shadow-sm group-hover:text-blue-500 group-hover:border-blue-200 transition-colors">
+                                                            <Icons.ShoppingBag className="w-6 h-6" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+                                                                <h4 className="text-base font-black text-slate-800 tracking-tight">Pedido #{pedido.id}</h4>
+                                                                <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusColor}`}>
+                                                                    <StatusIcon className="w-3 h-3" /> {pedido.status?.replace(/_/g, ' ')}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-[11px] text-slate-500 font-medium">
+                                                                Efetuado em <strong className="text-slate-700">{formatDateTimeBR(pedido.created_at)}</strong>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-6 lg:justify-end">
+                                                        <div className="text-right border-r border-slate-200 pr-6 hidden sm:block">
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Pagamento via</span>
+                                                            <span className="text-xs font-black text-slate-700 uppercase">{pedido.pagamento_metodo || 'N/A'}</span>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Total Pago</span>
+                                                            <span className="text-xl font-black text-emerald-600 leading-none">{formatCurrency(pedido.total)}</span>
+                                                        </div>
+                                                        
+                                                        {/* Botão de Ação: Navega para a página detalhada do pedido */}
+                                                        <button 
+                                                            onClick={() => window.open(`/admin/orders/${pedido.id}`, '_blank')} 
+                                                            className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-4 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm shrink-0"
+                                                            title="Visualizar este pedido em nova aba"
+                                                        >
+                                                            Ver Pedido <Icons.ExternalLink className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* 2. Corpo do Card (Detalhamento Dividido em 3 Colunas) */}
+                                                <div className="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+                                                    
+                                                    {/* COLUNA A: Extrato Financeiro */}
+                                                    <div className="space-y-3">
+                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                                                            <Icons.DollarSign className="w-3.5 h-3.5 text-emerald-500"/> Composição do Valor
+                                                        </h6>
+                                                        
+                                                        <div className="space-y-2.5 text-[11px] font-medium text-slate-600 bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
+                                                            <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60">
+                                                                <span className="text-slate-500">Subtotal Produtos:</span>
+                                                                <span className="text-slate-800 font-bold">{formatCurrency(pedido.subtotal)}</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60">
+                                                                <span className="text-slate-500">Frete Cobrado:</span>
+                                                                <span className="text-slate-800 font-bold">{formatCurrency(pedido.frete_valor)}</span>
+                                                            </div>
+
+                                                            {/* Descontos Específicos deste Pedido */}
+                                                            {safeNum(pedido.desconto_loja) > 0 && (
+                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60 text-rose-500">
+                                                                    <span>(-) Desc. Loja/Cupom:</span>
+                                                                    <span className="font-bold">-{formatCurrency(pedido.desconto_loja)}</span>
+                                                                </div>
+                                                            )}
+                                                            {safeNum(pedido.desconto_vip_produtos) > 0 && (
+                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60 text-indigo-500">
+                                                                    <span>(-) Desc. VIP (Produtos):</span>
+                                                                    <span className="font-bold">-{formatCurrency(pedido.desconto_vip_produtos)}</span>
+                                                                </div>
+                                                            )}
+                                                            {safeNum(pedido.desconto_frete) > 0 && (
+                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60 text-rose-500">
+                                                                    <span>(-) Desc. Frete:</span>
+                                                                    <span className="font-bold">-{formatCurrency(pedido.desconto_frete)}</span>
+                                                                </div>
+                                                            )}
+
+                                                            <div className="flex justify-between items-center pt-1 mt-1 text-xs">
+                                                                <span className="text-slate-800 font-black">Líquido Recebido:</span>
+                                                                <span className="text-emerald-600 font-black">{formatCurrency(pedido.total)}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* COLUNA B: Dados de Envio e Itens */}
+                                                    <div className="space-y-3">
+                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                                                            <Icons.MapPin className="w-3.5 h-3.5 text-blue-500"/> Logística & Transporte
+                                                        </h6>
+
+                                                        <div className="space-y-3 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-[calc(100%-32px)]">
+                                                            
+                                                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                                                                <span className="text-slate-400">Total de Volumes:</span>
+                                                                <span className="text-slate-800 font-black bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{pedido.items?.length || 0} un.</span>
+                                                            </div>
+                                                            
+                                                            {pedido.tracking_code ? (
+                                                                <div className="pt-1">
+                                                                    <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">
+                                                                        Cód. Rastreio ({pedido.carrier || 'Transportadora'}):
+                                                                    </span>
+                                                                    <div className="flex items-center justify-between bg-blue-50/50 border border-blue-100 p-2 rounded-lg">
+                                                                        <span className="text-blue-700 font-mono font-bold tracking-widest">
+                                                                            {pedido.tracking_code}
+                                                                        </span>
+                                                                        <Icons.Copy className="w-3.5 h-3.5 text-blue-400 cursor-pointer hover:text-blue-600 transition-colors" title="Copiar Rastreio"/>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="pt-2">
+                                                                    <span className="text-[10px] text-amber-500 bg-amber-50 border border-amber-100 px-2 py-1 rounded block text-center font-bold">
+                                                                        Aguardando Despacho / Sem Rastreio
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* COLUNA C: Cupons, Benefícios e Descontos Detalhados */}
+                                                    <div className="space-y-3">
+                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                                                            <Icons.Tag className="w-3.5 h-3.5 text-amber-500"/> Cupons & Vantagens
+                                                        </h6>
+                                                        
+                                                        {cuponsUsados.length > 0 ? (
+                                                            <div className="space-y-3 max-h-[160px] overflow-y-auto custom-scrollbar pr-2">
+                                                                {cuponsUsados.map((cupom, idx) => (
+                                                                    <div key={idx} className="bg-amber-50/40 border border-amber-100/80 p-3.5 rounded-2xl flex flex-col gap-2 shadow-sm transition-colors hover:bg-amber-50">
+                                                                        <div className="flex justify-between items-start gap-2">
+                                                                            <div className="min-w-0">
+                                                                                <strong className="text-[11px] font-black text-slate-800 block truncate" title={cupom.nome || cupom.codigo}>
+                                                                                    {cupom.nome || cupom.codigo}
+                                                                                </strong>
+                                                                                <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest bg-amber-100/50 px-1.5 py-0.5 rounded mt-1 inline-block">
+                                                                                    {cupom.tipo || 'CUPOM'}
+                                                                                </span>
+                                                                            </div>
+                                                                            <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">
+                                                                                -{formatCurrency(cupom.valor || cupom.desconto)}
+                                                                            </span>
+                                                                        </div>
+                                                                        {cupom.descricao && (
+                                                                            <p className="text-[10px] text-slate-500 font-medium leading-relaxed bg-white/70 p-2 rounded-xl border border-amber-100/50 italic">
+                                                                                "{cupom.descricao}"
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="h-[calc(100%-32px)] min-h-[100px] flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-slate-200 border-dashed p-4 text-center">
+                                                                <div className="w-10 h-10 bg-white rounded-full shadow-sm border border-slate-100 flex items-center justify-center mb-2">
+                                                                    <Icons.Tag className="w-4 h-4 text-slate-300" />
+                                                                </div>
+                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum cupom</p>
+                                                                <p className="text-[9px] text-slate-400 font-medium mt-0.5">Compra com preço de catálogo.</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                </div>
+                                            </article>
+                                        );
+                                    })
+                                ) : (
+                                    // Empty State Elegante (Caso o cliente não tenha pedidos)
+                                    <div className="w-full flex flex-col items-center justify-center py-20 bg-white rounded-[24px] border-2 border-slate-200 border-dashed">
+                                        <div className="w-16 h-16 bg-slate-50 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
+                                            <Icons.ShoppingBag className="w-8 h-8 text-slate-300" />
+                                        </div>
+                                        <h4 className="text-base font-black text-slate-700">Histórico Limpo</h4>
+                                        <p className="text-xs text-slate-500 font-medium mt-1">Este cliente ainda não efetuou nenhuma compra.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                        </motion.section>
+                        )}
+
+
                         {/* 🟢 ABA: CARTEIRAS / LIVRO RAZÃO (Estilo Netflix Clean & Performático) */}
                         {crmSubTab === 'CARTEIRAS (LIVRO RAZÃO)' && (
                         <motion.section key="CARTEIRAS" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-8">
