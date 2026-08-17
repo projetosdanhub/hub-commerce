@@ -99,7 +99,7 @@ export default function AdminPerfilCRM({
     const [produtoExpandido, setProdutoExpandido] = useState(null);
     const [novaTag, setNovaTag] = useState('');                      
     const [riscoPage, setRiscoPage] = useState(1);                  
-    const [riscoPerPage] = useState(4); // 🟢 4 itens por página como solicitado
+    const [riscoPerPage] = useState(4); 
     const [perfilEmEdicao, setPerfilEmEdicao] = useState(false);
     
     // Toggle para esconder dados sensíveis no resumo
@@ -118,14 +118,12 @@ export default function AdminPerfilCRM({
     const [showAddEndereco, setShowAddEndereco] = useState(false);
     const [enderecoFlow, setEnderecoFlow] = useState({ cep: '', rua: '', num: '', complemento: '', bairro: '', cidade: '', uf: '', referencia: '', padrao: false });
 
-    // Timeline e Filtros do Histórico
+    // Timeline e Histórico
     const [timelinePage, setTimelinePage] = useState(1);
     const timelinePerPage = 6;
     
     const [orderHistoryTab, setOrderHistoryTab] = useState('TODOS');
     const [orderHistoryPage, setOrderHistoryPage] = useState(1);
-    const [orderHistoryDateOpen, setOrderHistoryDateOpen] = useState(false);
-    const [orderHistoryDateRange, setOrderHistoryDateRange] = useState({ start: '', end: '' });
     const orderHistoryPerPage = 5;
 
     // Cronômetros de Senha Temporária
@@ -148,16 +146,6 @@ export default function AdminPerfilCRM({
         return () => clearInterval(interval);
     }, [senhaTemp.expiraEm]);
 
-    // Helpers
-    const triggerAcao = (actionId, msg) => {
-        setSavingState(actionId);
-        setTimeout(() => { setSavingState(null); if (showToastGlob) showToastGlob(msg); }, 1200);
-    };
-
-    const registrarLogAudit = (titulo, desc, tipo = 'info') => {
-        const novoLog = { id: Date.now(), data: new Date().toISOString(), titulo, desc, tipo };
-        setClienteSelecionado(prev => ({ ...prev, auditLogs: [novoLog, ...(prev.auditLogs || [])] }));
-    };
 
     // 🟢 REFRESH COM TOAST
     const handleRefreshProfile = async () => {
@@ -182,65 +170,178 @@ export default function AdminPerfilCRM({
     };
 
     // ==========================================
-    // 🟢 FUNÇÕES DE EDIÇÃO ESPECÍFICAS (AUDITORIA)
+    // 🟢 MUTAÇÕES REAIS DA API (SALVANDO NO BANCO)
     // ==========================================
+
+    const mutacaoBasicos = useMutation({
+        mutationFn: async (dados) => await api.put(`/admin/customers/${clienteSelecionado.id}/basics`, dados),
+        onSuccess: () => {
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
+            refetchClients();
+            if(showToastGlob) showToastGlob('Dados pessoais atualizados!');
+            setEditMode(prev => ({...prev, basico: false}));
+            setFormEdit(prev => ({...prev, motivo: ''}));
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoSensivel = useMutation({
+        mutationFn: async (formData) => await api.post(`/admin/customers/${clienteSelecionado.id}/sensitive-data`, formData, { headers: { 'Content-Type': 'multipart/form-data' }}),
+        onSuccess: () => {
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
+            refetchClients();
+            if(showToastGlob) showToastGlob('Documentos enviados e atualizados!');
+            setEditMode(prev => ({...prev, sensivel: false}));
+            setFormEdit(prev => ({...prev, motivo: '', arquivo: null}));
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoTelefone = useMutation({
+        mutationFn: async (dados) => await api.put(`/admin/customers/${clienteSelecionado.id}/phone`, dados),
+        onSuccess: () => {
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
+            refetchClients();
+            if(showToastGlob) showToastGlob('Telefone atualizado!');
+            setEditMode(prev => ({...prev, telefone: false}));
+            setFormEdit(prev => ({...prev, motivo: ''}));
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoLinkEmail = useMutation({
+        mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/email-link`, dados),
+        onSuccess: () => {
+            if(showToastGlob) showToastGlob('Link enviado para o novo e-mail do cliente!');
+            setEditMode(prev => ({...prev, email: 'idle'}));
+            setFormEdit(prev => ({...prev, email: ''}));
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoForcarEmail = useMutation({
+        mutationFn: async (dados) => await api.put(`/admin/customers/${clienteSelecionado.id}/force-email`, dados),
+        onSuccess: () => {
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
+            refetchClients();
+            if(showToastGlob) showToastGlob('E-mail alterado forçadamente!');
+            setEditMode(prev => ({...prev, email: 'idle'}));
+            setFormEdit(prev => ({...prev, email: '', motivo: ''}));
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoSenha = useMutation({
+        mutationFn: async () => await api.post(`/admin/customers/${clienteSelecionado.id}/generate-temp-password`),
+        onSuccess: (response) => {
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
+            const expiraEm = new Date(new Date().getTime() + 7 * 60000); 
+            setSenhaTemp({ codigo: response.data.password, expiraEm }); 
+            if(showToastGlob) showToastGlob(response.data.message);
+            setEditMode(prev => ({...prev, senha: 'temp'}));
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoLinkSenha = useMutation({
+        mutationFn: async () => await api.post(`/admin/customers/${clienteSelecionado.id}/password-link`),
+        onSuccess: () => {
+            if(showToastGlob) showToastGlob('Link de redefinição enviado ao e-mail atual do cliente!');
+            setEditMode(prev => ({...prev, senha: 'idle'}));
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoStatusConta = useMutation({
+        mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/status`, dados), 
+        onSuccess: (response, variables) => {
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
+            refetchClients();
+            setModalStatusConta({ isOpen: false, tipo: null, motivo: '' });
+            if(showToastGlob) showToastGlob(variables.acao === 'SUSPENDER' ? 'Conta suspensa com sucesso.' : 'Conta reativada com sucesso.');
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoNotas = useMutation({
+        mutationFn: async (notas) => await api.put(`/admin/customers/${clienteSelecionado.id}/notes`, { notas }),
+        onSuccess: () => { 
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); 
+            refetchClients();
+            if(showToastGlob) showToastGlob('Anotações salvas com sucesso!'); 
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoTags = useMutation({
+        mutationFn: async (novasTags) => await api.put(`/admin/customers/${clienteSelecionado.id}/tags`, { tags: novasTags }),
+        onSuccess: () => { 
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); 
+            refetchClients();
+            if(showToastGlob) showToastGlob('Tags atualizadas!'); 
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+    const mutacaoCarteira = useMutation({
+        mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/wallet-transaction`, dados),
+        onSuccess: (response) => {
+            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); 
+            refetchClients();
+            setWalletFlow({ tipo: 'Hub Coins', valor: '', motivo: '' }); 
+            if(showToastGlob) showToastGlob(response.data.message);
+        },
+        onError: (err) => alert('Erro: ' + (err.response?.data?.message || err.message))
+    });
+
+
+    // ==========================================
+    // 🟢 FUNÇÕES QUE DISPARAM AS MUTAÇÕES ACIMA
+    // ==========================================
+
     const salvarDadosBasicos = () => {
-        if(!formEdit.motivo.trim()) return alert("O motivo é obrigatório para registrar na auditoria.");
-        triggerAcao('saveBasico', 'Dados pessoais atualizados!');
-        setClienteSelecionado(prev => ({ ...prev, nome: formEdit.nome, sexo: formEdit.sexo }));
-        registrarLogAudit('Dados Pessoais Alterados', `De: ${clienteSelecionado.nome} para ${formEdit.nome} | Gênero: ${formEdit.sexo}. Motivo: ${formEdit.motivo}`, 'warning');
-        setEditMode(prev => ({...prev, basico: false}));
-        setFormEdit(prev => ({...prev, motivo: ''}));
+        if(!formEdit.motivo.trim() || !formEdit.nome.trim()) return alert("Nome e motivo são obrigatórios.");
+        setSavingState('saveBasico');
+        mutacaoBasicos.mutate({ nome: formEdit.nome, sexo: formEdit.sexo, motivo: formEdit.motivo }, { onSettled: () => setSavingState(null) });
     };
 
     const salvarDadosSensiveis = () => {
         if(!formEdit.motivo.trim() || !formEdit.arquivo) return alert("Obrigatório: Anexe o documento RG/CNH legível e informe o motivo.");
-        triggerAcao('saveSensivel', 'Documentos em processamento!');
-        setClienteSelecionado(prev => ({ ...prev, cpf: formEdit.cpf, nascimento: formEdit.nascimento }));
-        registrarLogAudit('Dados Sensíveis (CPF/Nasc) Alterados', `Documento anexado: ${formEdit.arquivo.name}. Motivo: ${formEdit.motivo}`, 'warning');
-        setEditMode(prev => ({...prev, sensivel: false}));
-        setFormEdit(prev => ({...prev, motivo: '', arquivo: null}));
+        setSavingState('saveSensivel');
+        const formData = new FormData();
+        formData.append('arquivo', formEdit.arquivo);
+        if (formEdit.cpf) formData.append('cpf', formEdit.cpf);
+        if (formEdit.nascimento) formData.append('nascimento', formEdit.nascimento);
+        formData.append('motivo', formEdit.motivo);
+        mutacaoSensivel.mutate(formData, { onSettled: () => setSavingState(null) });
     };
 
     const salvarTelefone = () => {
         if(!formEdit.motivo.trim() || !formEdit.telefone.trim()) return alert("Telefone e Motivo são obrigatórios.");
-        triggerAcao('savePhone', 'Telefone de contato atualizado!');
-        setClienteSelecionado(prev => ({ ...prev, telefone: formEdit.telefone }));
-        registrarLogAudit('WhatsApp/Telefone Alterado', `De: ${clienteSelecionado.telefone} para ${formEdit.telefone}. Motivo: ${formEdit.motivo}`, 'warning');
-        setEditMode(prev => ({...prev, telefone: false}));
-        setFormEdit(prev => ({...prev, motivo: ''}));
+        setSavingState('savePhone');
+        mutacaoTelefone.mutate({ telefone: formEdit.telefone, motivo: formEdit.motivo }, { onSettled: () => setSavingState(null) });
     };
 
     const enviarLinkEmail = () => {
-        if(!formEdit.email.trim()) return alert("Digite um novo e-mail válido.");
-        triggerAcao('emailLink', 'Link enviado para o cliente!');
-        registrarLogAudit('Solicitação de Troca de E-mail', `Link de confirmação enviado para: ${formEdit.email}`, 'info');
-        setEditMode(prev => ({...prev, email: 'idle'}));
-        setFormEdit(prev => ({...prev, email: ''}));
+        if(!formEdit.email.trim() || !formEdit.email.includes('@')) return alert("Digite um novo e-mail válido.");
+        setSavingState('emailLink');
+        mutacaoLinkEmail.mutate({ email: formEdit.email }, { onSettled: () => setSavingState(null) });
     };
 
     const forcarTrocaEmail = () => {
-        if(!formEdit.motivo.trim() || !formEdit.email.trim()) return alert("Motivo e Novo E-mail são obrigatórios na troca forçada.");
-        triggerAcao('emailForce', 'E-mail alterado forçadamente!');
-        setClienteSelecionado(prev => ({ ...prev, email: formEdit.email }));
-        registrarLogAudit('E-mail Alterado (Forçado pelo Gestor)', `De: ${clienteSelecionado.email} para ${formEdit.email}. Motivo: ${formEdit.motivo}`, 'warning');
-        setEditMode(prev => ({...prev, email: 'idle'}));
-        setFormEdit(prev => ({...prev, email: '', motivo: ''}));
+        if(!formEdit.motivo.trim() || !formEdit.email.trim() || !formEdit.email.includes('@')) return alert("Motivo e Novo E-mail são obrigatórios na troca forçada.");
+        setSavingState('emailForce');
+        mutacaoForcarEmail.mutate({ email: formEdit.email, motivo: formEdit.motivo }, { onSettled: () => setSavingState(null) });
     };
 
     const enviarLinkSenha = () => {
-        triggerAcao('senhaLink', 'Link de redefinição enviado ao e-mail atual do cliente!');
-        registrarLogAudit('Redefinição de Senha (Link)', `Link válido por 7 minutos enviado para o e-mail cadastrado.`, 'info');
-        setEditMode(prev => ({...prev, senha: 'idle'}));
+        setSavingState('senhaLink');
+        mutacaoLinkSenha.mutate(null, { onSettled: () => setSavingState(null) });
     };
 
     const gerarSenhaProvisoria = () => {
         setSavingState('senhaTemp');
-        mutacaoSenha.mutate(null, { onSettled: () => {
-            setSavingState(null);
-            setEditMode(prev => ({...prev, senha: 'temp'}));
-            registrarLogAudit('Senha Provisória Gerada', `Senha temporária criada pelo gestor (válida por 7 min).`, 'warning');
-        }});
+        mutacaoSenha.mutate(null, { onSettled: () => setSavingState(null) });
     };
 
     const salvarNotasAPI = () => {
@@ -270,56 +371,11 @@ export default function AdminPerfilCRM({
     const handleConfirmarStatusConta = () => {
         if (!modalStatusConta.motivo.trim()) return alert("O motivo é obrigatório.");
         setSavingState('statusConta');
-        
         mutacaoStatusConta.mutate(
             { acao: modalStatusConta.tipo, motivo: modalStatusConta.motivo },
-            { 
-               onSettled: () => setSavingState(null),
-               onError: () => {
-                   // Fallback Optimista caso a API ainda não esteja rodando no backend
-                   const novoStatus = modalStatusConta.tipo === 'SUSPENDER' ? 'BLOQUEADA' : 'ATIVO';
-                   setClienteSelecionado(prev => ({...prev, status: novoStatus}));
-                   registrarLogAudit(
-                       modalStatusConta.tipo === 'SUSPENDER' ? 'Conta Suspensa' : 'Conta Reativada',
-                       `Motivo: ${modalStatusConta.motivo}`,
-                       modalStatusConta.tipo === 'SUSPENDER' ? 'warning' : 'success'
-                   );
-                   if(showToastGlob) showToastGlob(modalStatusConta.tipo === 'SUSPENDER' ? 'Conta suspensa com sucesso.' : 'Conta reativada com sucesso.');
-                   setModalStatusConta({ isOpen: false, tipo: null, motivo: '' });
-                   setSavingState(null);
-               }
-            }
+            { onSettled: () => setSavingState(null) }
         );
     };
-
-    const mutacaoStatusConta = useMutation({
-        mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/status`, dados), 
-        onSuccess: (response, variables) => {
-            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
-            const novoStatus = variables.acao === 'SUSPENDER' ? 'BLOQUEADA' : 'ATIVO';
-            setClienteSelecionado(prev => ({...prev, status: novoStatus}));
-            setModalStatusConta({ isOpen: false, tipo: null, motivo: '' });
-            if(showToastGlob) showToastGlob(variables.acao === 'SUSPENDER' ? 'Conta suspensa com sucesso.' : 'Conta reativada com sucesso.');
-        }
-    });
-
-    const mutacaoNotas = useMutation({
-        mutationFn: async (notas) => await api.put(`/admin/customers/${clienteSelecionado.id}/notes`, { notas }),
-        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); if(showToastGlob) showToastGlob('Anotações salvas!'); },
-    });
-    const mutacaoTags = useMutation({
-        mutationFn: async (novasTags) => await api.put(`/admin/customers/${clienteSelecionado.id}/tags`, { tags: novasTags }),
-        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); if(showToastGlob) showToastGlob('Tags atualizadas!'); },
-    });
-    const mutacaoSenha = useMutation({
-        mutationFn: async () => await api.post(`/admin/customers/${clienteSelecionado.id}/generate-temp-password`),
-        onSuccess: (response) => {
-            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] });
-            const expiraEm = new Date(new Date().getTime() + 7 * 60000); 
-            setSenhaTemp({ codigo: response.data.password, expiraEm }); 
-            if(showToastGlob) showToastGlob(response.data.message);
-        }
-    });
 
     const processarTransacaoWallet = () => {
         if (!walletFlow.valor || walletFlow.valor <= 0 || !walletFlow.motivo.trim()) return alert("Preencha valor e motivo.");
@@ -329,25 +385,16 @@ export default function AdminPerfilCRM({
 
     const salvarNovoEndereco = () => {
         if (!enderecoFlow.cep || !enderecoFlow.rua || !enderecoFlow.num) return alert("Preencha os campos obrigatórios.");
-        triggerAcao('saveAddress', 'Novo endereço adicionado com sucesso!');
+        // Simulação rápida para endereço (idealmente também iria para a API)
         const novoEndereco = { ...enderecoFlow, id: Date.now() };
         setClienteSelecionado(prev => ({ ...prev, enderecos: [novoEndereco, ...(prev.enderecos || [])] }));
-        registrarLogAudit('Novo Endereço Adicionado', `O gestor adicionou manualmente o endereço: ${enderecoFlow.rua}, ${enderecoFlow.num} - ${enderecoFlow.cidade}/${enderecoFlow.uf}.`, 'info');
         setEnderecoFlow({ cep: '', rua: '', num: '', complemento: '', bairro: '', cidade: '', uf: '', referencia: '', padrao: false });
         setShowAddEndereco(false);
+        if(showToastGlob) showToastGlob("Endereço adicionado localmente.");
     };
 
-    const mutacaoCarteira = useMutation({
-        mutationFn: async (dados) => await api.post(`/admin/customers/${clienteSelecionado.id}/wallet-transaction`, dados),
-        onSuccess: (response) => {
-            queryClientLocal.invalidateQueries({ queryKey: ['clientesCRM'] }); 
-            setWalletFlow({ tipo: 'Hub Coins', valor: '', motivo: '' }); 
-            if(showToastGlob) showToastGlob(response.data.message);
-        }
-    });
-
     const handleExportarPDF = () => {
-        triggerAcao('exportPdf', 'Relatório gerado para impressão!');
+        if(showToastGlob) showToastGlob("Relatório gerado para impressão!");
         setTimeout(() => {
             const janela = window.open('', '', 'width=900,height=700');
             janela.document.write(`
@@ -523,68 +570,50 @@ export default function AdminPerfilCRM({
                     <AnimatePresence mode="wait">
                         
                         {/* ========================================================= */}
-                        {/* 🟢 ABA: RESUMO LÍQUIDO (TOTALMENTE REDESENHADA)           */}
+                        {/* 🟢 ABA: RESUMO LÍQUIDO                                    */}
                         {/* ========================================================= */}
                         {crmSubTab === 'RESUMO' && !perfilEmEdicao && (
                             <motion.section key="RESUMO_READ" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-col lg:flex-row gap-6 p-6">
                                 
                                 {/* COLUNA ESQUERDA: BARRA VERTICAL DE MÉTRICAS */}
                                 <div className="flex flex-col border border-slate-200 rounded-[24px] bg-white shadow-sm overflow-hidden w-full lg:w-1/4 shrink-0 h-max">
-                                    
                                     <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Gasto Total (LTV)</p>
                                         <p className="text-2xl font-black text-emerald-600 group-hover:scale-105 transform origin-left transition-transform">{formatCurrency(clienteSelecionado?.ltv)}</p>
                                         <p className="text-[10px] text-slate-500 mt-1 font-medium">Ticket Médio: <strong className="text-slate-700">{formatCurrency(safeNum(clienteSelecionado?.ltv) / (safeNum(clienteSelecionado?.compras) || 1))}</strong></p>
                                     </div>
-                                    
                                     <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pedidos Finalizados</p>
                                         <p className="text-2xl font-black text-slate-800 group-hover:scale-105 transform origin-left transition-transform">{safeNum(clienteSelecionado?.compras)}</p>
                                         <p className="text-[10px] text-slate-500 mt-1 font-medium">Última compra: <strong className="text-slate-700">{formatDateBR(clienteSelecionado?.ultimaCompra)}</strong></p>
                                     </div>
-                                    
                                     <div className="p-5 border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-default">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Qtd. de Produtos</p>
                                         <p className="text-2xl font-black text-slate-800 group-hover:scale-105 transform origin-left transition-transform">{safeNum(clienteSelecionado?.produtosComprados) || 0}</p>
                                     </div>
-                                    
                                     <div className="p-5 hover:bg-slate-50 transition-colors group cursor-default">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Uso de Benefícios</p>
                                         <div className="space-y-3">
-                                            <div className="flex justify-between items-center text-xs">
-                                                <span className="text-slate-500 font-medium">Cupons Usados:</span>
-                                                <strong className="text-slate-800 bg-slate-100 px-2 py-0.5 rounded">{safeNum(clienteSelecionado?.cuponsUsados)}</strong>
-                                            </div>
-                                            {/* Lista de Cupons Usados */}
+                                            <div className="flex justify-between items-center text-xs"><span className="text-slate-500 font-medium">Cupons Usados:</span><strong className="text-slate-800 bg-slate-100 px-2 py-0.5 rounded">{safeNum(clienteSelecionado?.cuponsUsados)}</strong></div>
                                             {clienteSelecionado?.historicoCupons && clienteSelecionado.historicoCupons.length > 0 && (
                                                 <div className="max-h-32 overflow-y-auto custom-scrollbar space-y-2 mt-2 pr-1 border-t border-slate-100 pt-3">
                                                     {clienteSelecionado.historicoCupons.map((cupom, idx) => (
                                                         <div key={idx} className="flex flex-col gap-0.5 bg-white border border-slate-200 p-2 rounded-lg shadow-sm">
-                                                            <div className="flex justify-between items-center">
-                                                                <span className="text-[9px] font-black text-slate-700">{cupom.nome}</span>
-                                                                <span className="text-[9px] font-bold text-emerald-600">-{formatCurrency(cupom.valor)}</span>
-                                                            </div>
+                                                            <div className="flex justify-between items-center"><span className="text-[9px] font-black text-slate-700">{cupom.nome}</span><span className="text-[9px] font-bold text-emerald-600">-{formatCurrency(cupom.valor)}</span></div>
                                                             <span className="text-[8px] text-slate-400 uppercase">{cupom.tipo}</span>
                                                         </div>
                                                     ))}
                                                 </div>
                                             )}
-                                            <div className="flex justify-between items-center text-xs border-t border-slate-100 pt-3">
-                                                <span className="text-slate-500 font-medium">Desc. Frete:</span>
-                                                <strong className="text-emerald-600">{formatCurrency(clienteSelecionado?.descontoFrete)}</strong>
-                                            </div>
-                                            <div className="flex justify-between items-center text-xs">
-                                                <span className="text-slate-500 font-medium">Desc. Loja:</span>
-                                                <strong className="text-emerald-600">{formatCurrency(clienteSelecionado?.descontoLoja)}</strong>
-                                            </div>
+                                            <div className="flex justify-between items-center text-xs border-t border-slate-100 pt-3"><span className="text-slate-500 font-medium">Desc. Frete:</span><strong className="text-emerald-600">{formatCurrency(clienteSelecionado?.descontoFrete)}</strong></div>
+                                            <div className="flex justify-between items-center text-xs"><span className="text-slate-500 font-medium">Desc. Loja:</span><strong className="text-emerald-600">{formatCurrency(clienteSelecionado?.descontoLoja)}</strong></div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* COLUNA DIREITA: DADOS DO CLIENTE, TIMELINE E ALERTAS */}
+                                {/* COLUNA DIREITA */}
                                 <div className="flex-1 flex flex-col gap-6 min-w-0">
                                     
-                                    {/* 1. Sobre o Cliente (Card Horizontal) */}
                                     <article className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm flex flex-col gap-6 w-full relative">
                                         <div className="flex justify-between items-center pb-4 border-b border-slate-100">
                                             <div className="flex items-center gap-3">
@@ -601,26 +630,11 @@ export default function AdminPerfilCRM({
                                         </div>
                                         
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">WhatsApp / Telefone</span>
-                                                <span className="font-bold text-slate-800 text-sm">{mostrarDadosSensiveis ? formatPhone(clienteSelecionado?.telefone) : '***.***.***-**'}</span>
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">E-mail de Contato</span>
-                                                <span className="font-medium text-slate-800 text-sm truncate">{mostrarDadosSensiveis ? safeStr(clienteSelecionado?.email) : '***@***.***'}</span>
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">CPF</span>
-                                                <span className="font-mono text-sm text-slate-800">{mostrarDadosSensiveis ? safeStr(clienteSelecionado?.cpf) : '***.***.***-**'}</span>
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nascimento</span>
-                                                <span className="font-medium text-slate-800 text-sm">{mostrarDadosSensiveis ? formatDateBR(clienteSelecionado?.nascimento) : '**/**/****'}</span>
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gênero / Sexo</span>
-                                                <span className="font-medium text-slate-800 text-sm">{safeStr(clienteSelecionado?.sexo) || 'Não informado'}</span>
-                                            </div>
+                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">WhatsApp / Telefone</span><span className="font-bold text-slate-800 text-sm">{mostrarDadosSensiveis ? formatPhone(clienteSelecionado?.telefone) : '***.***.***-**'}</span></div>
+                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">E-mail de Contato</span><span className="font-medium text-slate-800 text-sm truncate">{mostrarDadosSensiveis ? safeStr(clienteSelecionado?.email) : '***@***.***'}</span></div>
+                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">CPF</span><span className="font-mono text-sm text-slate-800">{mostrarDadosSensiveis ? safeStr(clienteSelecionado?.cpf) : '***.***.***-**'}</span></div>
+                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nascimento</span><span className="font-medium text-slate-800 text-sm">{mostrarDadosSensiveis ? formatDateBR(clienteSelecionado?.nascimento) : '**/**/****'}</span></div>
+                                            <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gênero / Sexo</span><span className="font-medium text-slate-800 text-sm">{safeStr(clienteSelecionado?.sexo) || 'Não informado'}</span></div>
                                         </div>
 
                                         <div className="flex flex-col sm:flex-row items-end gap-4 pt-4 border-t border-slate-100">
@@ -639,10 +653,7 @@ export default function AdminPerfilCRM({
                                         </div>
                                     </article>
 
-                                    {/* 2. Grid Netflix: Trilha de Benefícios & Alertas */}
                                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                                        
-                                        {/* Trilha de Benefícios (Estilo Netflix Automatizado) */}
                                         <article className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 shadow-sm rounded-[24px] flex flex-col h-[350px] overflow-hidden">
                                             <header className="p-5 border-b border-indigo-100/50 bg-white/50 shrink-0">
                                                 <h4 className="text-sm font-black text-slate-900 flex items-center gap-2"><Icons.Trophy className="w-4 h-4 text-indigo-600"/> Trilha de Benefícios do Cliente</h4>
@@ -650,14 +661,9 @@ export default function AdminPerfilCRM({
                                             <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-5 relative before:absolute before:inset-0 before:ml-7 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-300 before:via-slate-300 before:to-transparent">
                                                 {trilhaBeneficios.map((item, idx) => (
                                                     <div key={item.id} className="relative flex items-start gap-3">
-                                                        <div className={`flex items-center justify-center w-5 h-5 rounded-full border-2 border-white ${item.cor} shadow shrink-0 z-10 mt-1`}>
-                                                            <item.icone className="w-2.5 h-2.5 text-white"/>
-                                                        </div>
+                                                        <div className={`flex items-center justify-center w-5 h-5 rounded-full border-2 border-white ${item.cor} shadow shrink-0 z-10 mt-1`}><item.icone className="w-2.5 h-2.5 text-white"/></div>
                                                         <div className="flex-1 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-300 transition-colors">
-                                                            <div className="flex items-center justify-between mb-1">
-                                                                <span className="font-bold text-slate-800 text-xs">{item.titulo}</span>
-                                                                <span className="text-[9px] font-bold text-slate-400">{formatDateBR(item.data)}</span>
-                                                            </div>
+                                                            <div className="flex items-center justify-between mb-1"><span className="font-bold text-slate-800 text-xs">{item.titulo}</span><span className="text-[9px] font-bold text-slate-400">{formatDateBR(item.data)}</span></div>
                                                             <p className="text-[10px] text-slate-500 leading-relaxed">{item.desc}</p>
                                                         </div>
                                                     </div>
@@ -665,11 +671,8 @@ export default function AdminPerfilCRM({
                                             </div>
                                         </article>
 
-                                        {/* Alertas de Risco */}
                                         <article className="bg-rose-50/30 border border-rose-100 shadow-sm rounded-[24px] flex flex-col h-[350px] overflow-hidden">
-                                            <header className="p-5 border-b border-rose-100/50 bg-white/50 flex items-center justify-between shrink-0">
-                                                <h4 className="text-sm font-black text-rose-800 flex items-center gap-2"><Icons.AlertTriangle className="w-4 h-4 text-rose-500"/> Alertas de Risco</h4>
-                                            </header>
+                                            <header className="p-5 border-b border-rose-100/50 bg-white/50 flex items-center justify-between shrink-0"><h4 className="text-sm font-black text-rose-800 flex items-center gap-2"><Icons.AlertTriangle className="w-4 h-4 text-rose-500"/> Alertas de Risco</h4></header>
                                             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
                                                 {alertasPaginados?.map((alerta, i) => (
                                                     <div key={i} className="bg-white rounded-xl p-3.5 border border-rose-100 shadow-sm hover:border-rose-300 transition-colors">
@@ -690,10 +693,8 @@ export default function AdminPerfilCRM({
                                             </footer>
                                             )}
                                         </article>
-
                                     </div>
 
-                                    {/* 3. Anotações Internas */}
                                     <article className="bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm flex flex-col">
                                         <div className="flex justify-between items-center mb-4">
                                             <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Icons.FileText className="w-4 h-4 text-slate-400" /> Anotações Internas (Gestão)</h4>

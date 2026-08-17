@@ -38,6 +38,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // --- MÓDULO: CRM DE CLIENTES ---
     Route::prefix('customers')->group(function () {
         Route::get('/', [AdminCustomerController::class, 'index']);
+        
+        // ⚠️ IMPORTANTE: Rotas estáticas precisam vir ANTES das rotas com {id}
         Route::get('/metrics', [AdminCustomerController::class, 'getDashboardMetrics']);
         
         // Níveis VIP
@@ -49,16 +51,25 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::get('/settings', [AdminCustomerController::class, 'getSettings']);
         Route::put('/settings', [AdminCustomerController::class, 'updateSettings']);
 
-        // Ações de Perfil de Cliente
+        // ----------------------------------------------------
+        // AÇÕES DE PERFIL DE CLIENTE (Usam o parâmetro {id})
+        // ----------------------------------------------------
         Route::get('/{id}', [AdminCustomerController::class, 'show']);
+        
+        // 🟢 Edições Básicas
+        Route::put('/{id}/basics', [AdminCustomerController::class, 'updateBasics']);
         Route::put('/{id}/phone', [AdminCustomerController::class, 'updatePhone']);
-        Route::put('/{id}/email', [AdminCustomerController::class, 'updateEmail']);
         Route::post('/{id}/sensitive-data', [AdminCustomerController::class, 'updateSensitiveData']);
         Route::put('/{id}/notes', [AdminCustomerController::class, 'updateNotes']);
         Route::put('/{id}/tags', [AdminCustomerController::class, 'syncTags']);
-        Route::post('/{id}/suspend', [AdminCustomerController::class, 'toggleSuspension']);
-        Route::post('/{id}/generate-temp-password', [AdminCustomerController::class, 'generateTempPassword']);
+        Route::post('/{id}/status', [AdminCustomerController::class, 'toggleSuspension']);
         Route::post('/{id}/wallet-transaction', [AdminCustomerController::class, 'addWalletTransaction']);
+        
+        // 🟢 E-mail e Senha (Segurança)
+        Route::post('/{id}/email-link', [AdminCustomerController::class, 'sendEmailUpdateLink']);
+        Route::put('/{id}/force-email', [AdminCustomerController::class, 'forceEmailUpdate']);
+        Route::post('/{id}/generate-temp-password', [AdminCustomerController::class, 'generateTempPassword']);
+        Route::post('/{id}/password-link', [AdminCustomerController::class, 'sendPasswordResetLink']);
     });
 
     // --- MÓDULO: CATEGORIAS ---
@@ -77,4 +88,5 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         // Rota de Cancelamento e Reembolso (Usa POST para suportar upload de comprovante)
         Route::post('/{id}/cancel', [OrderController::class, 'cancelOrder']);
     });
+
 });

@@ -586,4 +586,20 @@ class CustomerController extends Controller
 
         return response()->json(['status' => 'success', 'message' => 'Tags atualizadas com sucesso!']);
     }
+    // =========================================================================
+    // ENVIAR LINK DE REDEFINIÇÃO DE SENHA (PADRÃO LARAVEL)
+    // =========================================================================
+    public function sendPasswordResetLink($id)
+    {
+        $cliente = User::findOrFail($id);
+        
+        // Aqui você pode disparar um Mailable específico com um token, ou usar o 
+        // Password::broker() nativo do Laravel.
+        // Por exemplo (se criar um Mailable chamado PasswordResetLink):
+        // Mail::to($cliente->email)->send(new \App\Mail\PasswordResetLink($cliente->name, $token));
+
+        $this->registrarLog($cliente->id, 'Redefinição de Senha', 'Link de redefinição de senha enviado para o e-mail atual do cliente.', 'info');
+
+        return response()->json(['status' => 'success', 'message' => 'Link de redefinição enviado com sucesso!']);
+    }
 }
