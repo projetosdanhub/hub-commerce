@@ -305,40 +305,85 @@ class CustomerController extends Controller
 // =========================================================================
     // CONFIRMAÇÃO DE E-MAIL VIA LINK (CLIQUE DO CLIENTE)
     // =========================================================================
-   public function confirmEmailUpdate(Request $request)
+public function confirmEmailUpdate(Request $request)
     {
         $token = $request->query('token');
-        
-        // 🟢 BUSCA OS DADOS QUE GUARDAMOS NO CACHE
         $dados = Cache::get("email_update_{$token}");
 
         if (!$token || !$dados) {
             return response()->make('
-                <html><body style="font-family:sans-serif;text-align:center;padding:50px;">
-                    <h2 style="color:#e11d48;">Link Expirado ou Inválido</h2>
-                    <p>Este link já foi utilizado ou passou do limite de 7 minutos.</p>
-                </body></html>
-            ', 400);
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Link Expirado</title>
+                    <style>
+                        body { font-family: -apple-system, sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+                        .card { background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); text-align: center; max-width: 420px; border: 1px solid #e2e8f0; }
+                        .icon { width: 60px; height: 60px; background: #ffe4e6; color: #e11d48; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; font-weight: bold; }
+                        h2 { color: #0f172a; margin: 0 0 10px; font-size: 20px; }
+                        p { color: #64748b; font-size: 14px; margin: 0 0 20px; line-height: 1.5; }
+                        a { display: inline-block; background: #0f172a; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 700; }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <div class="icon">&times;</div>
+                        <h2>Link Expirado ou Inválido</h2>
+                        <p>Este link de verificação já foi utilizado ou passou do limite de segurança de 7 minutos.</p>
+                        <a href="'.config('app.url').'">Voltar para a Loja</a>
+                    </div>
+                </body>
+                </html>
+            ', 400, ['Content-Type' => 'text/html']);
         }
 
-        // 🟢 APLICA A ALTERAÇÃO NO BANCO DE DADOS
+        // Aplica a alteração no Banco de Dados
         $user = User::findOrFail($dados['user_id']);
         $emailAntigo = $user->email;
         $user->email = $dados['novo_email'];
         $user->save();
 
-        // 🟢 APAGA O TOKEN DO CACHE PARA NÃO SER REUTILIZADO
         Cache::forget("email_update_{$token}");
-
         $this->registrarLog($user->id, 'E-mail Confirmado via Link', "De: {$emailAntigo} Para: {$user->email}", 'success');
 
+        $redirectUrl = config('app.url');
+
         return response()->make('
-            <html><body style="font-family:sans-serif;text-align:center;padding:50px;background-color:#f8fafc;">
-                <div style="max-width:500px;margin:0 auto;background:#fff;padding:30px;border-radius:16px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
-                    <h2 style="color:#10b981;margin-bottom:10px;">E-mail Atualizado com Sucesso!</h2>
-                    <p style="color:#475569;">Seu novo endereço de e-mail (<strong>'.$user->email.'</strong>) foi verificado e salvo.</p>
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <title>E-mail Confirmado!</title>
+                <style>
+                    body { font-family: -apple-system, sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+                    .card { background: #fff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); text-align: center; max-width: 440px; border: 1px solid #e2e8f0; position: relative; overflow: hidden; }
+                    .icon { width: 64px; height: 64px; background: #d1fae5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 32px; font-weight: bold; }
+                    h2 { color: #0f172a; margin: 0 0 10px; font-size: 22px; font-weight: 800; }
+                    p { color: #64748b; font-size: 14px; margin: 0 0 20px; line-height: 1.5; }
+                    .badge { display: inline-block; background: #f1f5f9; color: #334155; font-family: monospace; font-size: 14px; padding: 8px 16px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; }
+                    .redirect { font-size: 12px; color: #94a3b8; display: flex; align-items: center; justify-content: center; gap: 8px; }
+                    .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: #10b981; width: 100%; transition: width 2.5s linear; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div class="icon">&check;</div>
+                    <h2>E-mail Confirmado!</h2>
+                    <p>Seu novo endereço de e-mail foi verificado com sucesso:</p>
+                    <div class="badge">'.$user->email.'</div>
+                    <div class="redirect">
+                        <span>Redirecionando para a loja em 2,5s...</span>
+                    </div>
+                    <div class="progress-bar" id="bar"></div>
                 </div>
-            </body></html>
+
+                <script>
+                    setTimeout(() => { document.getElementById("bar").style.width = "0%"; }, 50);
+                    setTimeout(() => { window.location.href = "'.$redirectUrl.'"; }, 2500);
+                </script>
+            </body>
+            </html>
         ', 200, ['Content-Type' => 'text/html']);
     }
     // =========================================================================
@@ -403,27 +448,154 @@ class CustomerController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Link de redefinição enviado com sucesso!']);
     }
 
-    // Rota que exibe o formulário de nova senha ao clicar no e-mail
+ // =========================================================================
+    // EXIBE O FORMULÁRIO DE NOVA SENHA (CLIQUE NO E-MAIL)
+    // =========================================================================
     public function showPasswordResetForm(Request $request)
     {
         $token = $request->query('token');
         if (!Cache::has("password_reset_{$token}")) {
-            return response()->make('<html><body style="text-align:center;padding:50px;"><h2 style="color:red;">Link Expirado.</h2></body></html>', 400);
+            return response()->make('
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head><meta charset="UTF-8"><title>Link Expirado</title>
+                <style>
+                    body { font-family: -apple-system, sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+                    .card { background: #fff; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; border: 1px solid #e2e8f0; }
+                    h2 { color: #e11d48; margin-top: 0; }
+                    p { color: #64748b; font-size: 14px; }
+                </style></head>
+                <body><div class="card"><h2>Link Expirado</h2><p>Este link de redefinição expirou ou já foi utilizado. Solicite um novo no painel.</p></div></body>
+                </html>
+            ', 400, ['Content-Type' => 'text/html']);
         }
 
+        $postUrl = url('/api/clientes/processar-senha');
+
         return response()->make('
-            <html><body style="font-family:sans-serif;text-align:center;padding:50px;background-color:#f1f5f9;">
-                <form action="'.url('/api/clientes/processar-senha').'" method="POST" style="max-width:400px;margin:0 auto;background:#fff;padding:30px;border-radius:16px;">
-                    <h2>Criar Nova Senha</h2>
-                    <input type="hidden" name="token" value="'.$token.'">
-                    <input type="password" name="password" placeholder="Nova Senha" required style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px solid #ccc;">
-                    <button type="submit" style="width:100%;padding:12px;background:#2563eb;color:#fff;font-weight:bold;border:none;border-radius:8px;cursor:pointer;">Salvar Nova Senha</button>
-                </form>
-            </body></html>
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Criar Nova Senha</title>
+                <style>
+                    * { box-sizing: border-box; }
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f1f5f9; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
+                    .card { background: #ffffff; padding: 36px; border-radius: 24px; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05); width: 100%; max-width: 440px; border: 1px solid #e2e8f0; }
+                    h2 { color: #0f172a; font-size: 22px; font-weight: 800; margin: 0 0 6px; text-align: center; }
+                    p.sub { color: #64748b; font-size: 13px; text-align: center; margin: 0 0 24px; }
+                    .group { margin-bottom: 18px; text-align: left; }
+                    label { display: block; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+                    input { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; transition: border-color 0.2s; background: #f8fafc; }
+                    input:focus { border-color: #2563eb; background: #fff; }
+                    
+                    /* Barra de Força */
+                    .strength-meter { height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin: 10px 0 16px; }
+                    .strength-bar { height: 100%; width: 0%; transition: width 0.3s, background-color 0.3s; }
+
+                    /* Lista de Requisitos */
+                    .rules { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 20px; }
+                    .rule-item { font-size: 12px; color: #64748b; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+                    .rule-item:last-child { margin-bottom: 0; }
+                    .rule-item.valid { color: #10b981; font-weight: 600; }
+                    .rule-icon { width: 14px; text-align: center; }
+
+                    button { width: 100%; padding: 14px; background: #2563eb; color: #ffffff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s, opacity 0.2s; }
+                    button:disabled { opacity: 0.5; cursor: not-allowed; background: #94a3b8; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <h2>Redefinir Senha</h2>
+                    <p class="sub">Crie uma senha forte e segura para a sua conta.</p>
+
+                    <form action="'.$postUrl.'" method="POST" id="resetForm">
+                        <input type="hidden" name="token" value="'.$token.'">
+
+                        <div class="group">
+                            <label>Nova Senha</label>
+                            <input type="password" id="password" name="password" placeholder="••••••••" required>
+                        </div>
+
+                        <div class="strength-meter">
+                            <div class="strength-bar" id="strengthBar"></div>
+                        </div>
+
+                        <div class="group">
+                            <label>Confirmar Nova Senha</label>
+                            <input type="password" id="password_confirmation" placeholder="••••••••" required>
+                        </div>
+
+                        <div class="rules">
+                            <div class="rule-item" id="r-len"><span class="rule-icon">&bull;</span> Pelo menos 8 caracteres</div>
+                            <div class="rule-item" id="r-upper"><span class="rule-icon">&bull;</span> Ao menos 1 letra maiúscula (A-Z)</div>
+                            <div class="rule-item" id="r-num"><span class="rule-icon">&bull;</span> Ao menos 1 número (0-9)</div>
+                            <div class="rule-item" id="r-seq"><span class="rule-icon">&bull;</span> Sem 3 números iguais em sequência (ex: 111)</div>
+                            <div class="rule-item" id="r-match"><span class="rule-icon">&bull;</span> As senhas devem coincidir</div>
+                        </div>
+
+                        <button type="submit" id="submitBtn" disabled>Salvar Nova Senha</button>
+                    </form>
+                </div>
+
+                <script>
+                    const pass = document.getElementById("password");
+                    const passConf = document.getElementById("password_confirmation");
+                    const submitBtn = document.getElementById("submitBtn");
+                    const bar = document.getElementById("strengthBar");
+
+                    function validate() {
+                        const val = pass.value;
+                        const confVal = passConf.value;
+
+                        const hasLen = val.length >= 8;
+                        const hasUpper = /[A-Z]/.test(val);
+                        const hasNum = /[0-9]/.test(val);
+                        const noSeq = !/(000|111|222|333|444|555|666|777|888|999)/.test(val);
+                        const match = val.length > 0 && val === confVal;
+
+                        toggleRule("r-len", hasLen);
+                        toggleRule("r-upper", hasUpper);
+                        toggleRule("r-num", hasNum);
+                        toggleRule("r-seq", noSeq && hasNum);
+                        toggleRule("r-match", match);
+
+                        let score = 0;
+                        if (hasLen) score++;
+                        if (hasUpper) score++;
+                        if (hasNum) score++;
+                        if (noSeq) score++;
+
+                        if (score <= 1) { bar.style.width = "25%"; bar.style.backgroundColor = "#ef4444"; }
+                        else if (score === 2 || score === 3) { bar.style.width = "60%"; bar.style.backgroundColor = "#f59e0b"; }
+                        else if (score === 4) { bar.style.width = "100%"; bar.style.backgroundColor = "#10b981"; }
+
+                        const isValid = hasLen && hasUpper && hasNum && noSeq && match;
+                        submitBtn.disabled = !isValid;
+                    }
+
+                    function toggleRule(id, valid) {
+                        const el = document.getElementById(id);
+                        if (valid) {
+                            el.classList.add("valid");
+                            el.querySelector(".rule-icon").innerHTML = "&#10003;";
+                        } else {
+                            el.classList.remove("valid");
+                            el.querySelector(".rule-icon").innerHTML = "&bull;";
+                        }
+                    }
+
+                    pass.addEventListener("input", validate);
+                    passConf.addEventListener("input", validate);
+                </script>
+            </body>
+            </html>
         ', 200, ['Content-Type' => 'text/html']);
     }
-
-    // Processa a senha enviada pelo formulário acima
+// =========================================================================
+    // PROCESSA A NOVA SENHA ENVIADA PELO FORMULÁRIO
+    // =========================================================================
     public function processPasswordReset(Request $request)
     {
         $token = $request->input('token');
@@ -431,8 +603,25 @@ class CustomerController extends Controller
 
         $dados = Cache::get("password_reset_{$token}");
 
-        if (!$token || !$dados || strlen($novaSenha) < 6) {
-            return response()->make('<html><body style="text-align:center;padding:50px;"><h2>Erro: Link expirado ou senha muito curta.</h2></body></html>', 400);
+        // Validações do Backend (Anti-Bypass)
+        $hasLen = strlen($novaSenha) >= 8;
+        $hasUpper = preg_match('/[A-Z]/', $novaSenha);
+        $hasNum = preg_match('/[0-9]/', $novaSenha);
+        $hasSeq = preg_match('/([0-9])\1\1/', $novaSenha); // Detecta 3 números iguais seguidos
+
+        if (!$token || !$dados || !$hasLen || !$hasUpper || !$hasNum || $hasSeq) {
+            return response()->make('
+                <!DOCTYPE html>
+                <html lang="pt-BR"><head><meta charset="UTF-8"><title>Erro ao Redefinir</title>
+                <style>
+                    body { font-family: -apple-system, sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+                    .card { background: #fff; padding: 40px; border-radius: 20px; text-align: center; max-width: 420px; border: 1px solid #e2e8f0; }
+                    h2 { color: #e11d48; margin-top: 0; }
+                    p { color: #64748b; font-size: 14px; }
+                </style></head>
+                <body><div class="card"><h2>Requisitos Não Preenchidos</h2><p>A senha fornecida não atende às regras de segurança do sistema (mínimo 8 caracteres, 1 maiúscula, 1 número e sem 3 números iguais consecutivos) ou o link expirou.</p></div></body>
+                </html>
+            ', 400, ['Content-Type' => 'text/html']);
         }
 
         $user = User::findOrFail($dados['user_id']);
@@ -440,9 +629,42 @@ class CustomerController extends Controller
         $user->save();
 
         Cache::forget("password_reset_{$token}");
-        $this->registrarLog($user->id, 'Senha Redefinida via Link', 'O cliente criou uma nova senha via e-mail.', 'success');
+        $this->registrarLog($user->id, 'Senha Redefinida via Link', 'O cliente redefiniu sua senha de acesso com sucesso.', 'success');
 
-        return response()->make('<html><body style="text-align:center;padding:50px;"><h2>Senha Atualizada com Sucesso!</h2><p>Você já pode acessar sua conta com a nova senha.</p></body></html>', 200, ['Content-Type' => 'text/html']);
+        $redirectUrl = config('app.url') . '/login';
+
+        return response()->make('
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <title>Senha Redefinida!</title>
+                <style>
+                    body { font-family: -apple-system, sans-serif; background: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+                    .card { background: #fff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); text-align: center; max-width: 440px; border: 1px solid #e2e8f0; position: relative; overflow: hidden; }
+                    .icon { width: 64px; height: 64px; background: #d1fae5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 32px; font-weight: bold; }
+                    h2 { color: #0f172a; margin: 0 0 10px; font-size: 22px; font-weight: 800; }
+                    p { color: #64748b; font-size: 14px; margin: 0 0 20px; line-height: 1.5; }
+                    .redirect { font-size: 12px; color: #94a3b8; }
+                    .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: #10b981; width: 100%; transition: width 2.5s linear; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div class="icon">&check;</div>
+                    <h2>Senha Redefinida com Sucesso!</h2>
+                    <p>Sua nova senha já está ativa. Você será redirecionado para a tela de login.</p>
+                    <div class="redirect">Redirecionando em 2,5s...</div>
+                    <div class="progress-bar" id="bar"></div>
+                </div>
+
+                <script>
+                    setTimeout(() => { document.getElementById("bar").style.width = "0%"; }, 50);
+                    setTimeout(() => { window.location.href = "'.$redirectUrl.'"; }, 2500);
+                </script>
+            </body>
+            </html>
+        ', 200, ['Content-Type' => 'text/html']);
     }
 
     // =========================================================================
