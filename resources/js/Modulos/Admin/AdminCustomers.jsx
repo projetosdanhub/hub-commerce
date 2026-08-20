@@ -225,7 +225,7 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
         </span>
     </button>
 );
-
+// 4. Filtro de Data
 const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, isOpen, onClose }) => {
   const ref = useRef(null);
   useEffect(() => {

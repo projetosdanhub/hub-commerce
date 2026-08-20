@@ -109,6 +109,64 @@ const tabTransition = {
     animate: { opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
     exit: { opacity: 0, transition: { duration: 0.15, ease: "easeIn" } }
 };
+
+// Adicione o ícone de filtro caso não tenha na lista de Icons (pode colocar na const Icons lá em cima se preferir)
+Icons.Filter = ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>;
+
+// Botão com a barra de progresso no hover (Idêntico ao Painel)
+const HoverProgressRoundButton = ({ text, onClick, icon: Icon, loading, ariaLabel }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    return (
+        <motion.div 
+            layout
+            onHoverStart={() => setIsHovered(true)}
+            onHoverEnd={() => setIsHovered(false)}
+            className="relative flex items-center bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden h-[38px] cursor-pointer"
+            onClick={onClick}
+            aria-label={ariaLabel}
+        >
+            <motion.div 
+                className="absolute left-0 top-0 bottom-0 bg-blue-50 z-0"
+                initial={{ width: 0 }}
+                animate={{ width: isHovered ? '100%' : 0 }}
+                transition={{ duration: 0.3 }}
+            />
+            <div className="relative z-10 flex items-center px-3 h-full text-slate-600 hover:text-blue-600 transition-colors gap-2">
+                {loading ? <Icons.Spinner className="w-4 h-4" /> : (Icon && <Icon className="w-4 h-4" />)}
+                <span className="text-[11px] font-bold whitespace-nowrap">{text}</span>
+            </div>
+        </motion.div>
+    );
+};
+
+// Popup do Calendário
+const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, isOpen, onClose }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    function handleClickOutside(event) { if (ref.current && !ref.current.contains(event.target)) onClose(); }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [onClose]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} ref={ref} className="absolute left-0 mt-2 bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 w-80 z-[100]" role="dialog" aria-modal="true" aria-label="Filtrar Período">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Icons.Filter className="w-4 h-4"/> Filtrar Período</p>
+          <div className="space-y-4">
+            <div><label className="block text-xs font-bold text-slate-700 mb-1.5">Data Inicial</label><input type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all" /></div>
+            <div><label className="block text-xs font-bold text-slate-700 mb-1.5">Data Final</label><input type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all" /></div>
+            <div className="pt-2 flex gap-2">
+              <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors">Limpar</button>
+              <button type="button" onClick={onApply} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-2.5 rounded-xl shadow-sm transition-colors">{loading ? 'Aplicando...' : 'Aplicar Filtro'}</button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 export default function AdminPerfilCRM({ 
     clienteSelecionado, 
     setClienteSelecionado, 
@@ -160,16 +218,16 @@ export default function AdminPerfilCRM({
     const [timelinePage, setTimelinePage] = useState(1);
     const timelinePerPage = 6;
     
-    // 🟢 ESTADOS DO HISTÓRICO DE PEDIDOS (COM FILTRO ANIMADO)
+// 🟢 ESTADOS DO HISTÓRICO DE PEDIDOS (Com Popup)
     const [orderHistoryTab, setOrderHistoryTab] = useState('TODOS');
     const [orderHistoryPage, setOrderHistoryPage] = useState(1);
     const [orderHistoryPerPage, setOrderHistoryPerPage] = useState(5);
     const [navigatingOrder, setNavigatingOrder] = useState(null);
-
-    // Filtro Animado de Data
-    const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
-    const [isFilterExpanded, setIsFilterExpanded] = useState(false);
-    const [isFilterHovered, setIsFilterHovered] = useState(false);
+    
+    // Popup Animado do Período
+    const [dashDateOpen, setDashDateOpen] = useState(false);
+    const [dashDateRange, setDashDateRange] = useState({ start: '', end: '' });
+    const [dashFilterText, setDashFilterText] = useState('Todo o Período');
 
     // Cronômetros de Senha Temporária
     useEffect(() => {
@@ -488,26 +546,25 @@ export default function AdminPerfilCRM({
         else if (orderHistoryTab === 'REEMBOLSADOS') ped = ped.filter(p => p.status === 'REEMBOLSADO');
         else if (orderHistoryTab === 'CANCELADOS') ped = ped.filter(p => p.status === 'CANCELADO');
 
-        // Filtro de Data Inicial
-        if (dateFilter.start) {
-            const startD = new Date(dateFilter.start);
+        // Filtro de Data Inicial (Vinculado ao Popup)
+        if (dashDateRange.start) {
+            const startD = new Date(dashDateRange.start);
             startD.setHours(0, 0, 0, 0);
             ped = ped.filter(p => new Date(p.data_raw || p.data) >= startD);
         }
         
-        // Filtro de Data Final
-        if (dateFilter.end) {
-            const endD = new Date(dateFilter.end);
+        // Filtro de Data Final (Vinculado ao Popup)
+        if (dashDateRange.end) {
+            const endD = new Date(dashDateRange.end);
             endD.setHours(23, 59, 59, 999);
             ped = ped.filter(p => new Date(p.data_raw || p.data) <= endD);
         }
 
         return ped.sort((a,b) => new Date(b.data_raw).getTime() - new Date(a.data_raw).getTime());
-    }, [clienteSelecionado, orderHistoryTab, dateFilter]);
+    }, [clienteSelecionado, orderHistoryTab, dashDateRange]);
     
     const totalOrderHistoryPages = Math.ceil(historicoPedidosFiltrado.length / orderHistoryPerPage) || 1;
     const orderHistoryPaginados = historicoPedidosFiltrado.slice((orderHistoryPage - 1) * orderHistoryPerPage, orderHistoryPage * orderHistoryPerPage);
-
     const alertasDoCliente = clienteSelecionado?.alertasRisco || [
         { id: 1, titulo: 'Risco Chargeback', nivel: 'Baixo', item1: 'Produtos Reembolsados', valor1: `${safeNum(clienteSelecionado?.produtosReembolsados)} un.`, item2: 'Total Pago (Reembolsos)', valor2: formatCurrency(clienteSelecionado?.reembolsosPagos * 120) },
     ];
@@ -1213,63 +1270,34 @@ export default function AdminPerfilCRM({
                                     </div>
                                     <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
                                         
-                                        {/* 🟢 FILTRO DE PERÍODO ANIMADO */}
-                                        <motion.div 
-                                            layout
-                                            onHoverStart={() => setIsFilterHovered(true)}
-                                            onHoverEnd={() => setIsFilterHovered(false)}
-                                            className="relative flex items-center bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden h-[38px]"
-                                        >
-                                            <motion.div 
-                                                className="absolute left-0 top-0 bottom-0 bg-blue-50 z-0"
-                                                initial={{ width: 0 }}
-                                                animate={{ width: isFilterHovered && !isFilterExpanded ? '100%' : 0 }}
-                                                transition={{ duration: 0.3 }}
+                                        {/* 🟢 COMPONENTE DE FILTRO (IDÊNTICO AO DASHBOARD) */}
+                                        <div className="relative shrink-0 z-[50]">
+                                            <HoverProgressRoundButton 
+                                                text={dashFilterText}
+                                                onClick={() => setDashDateOpen(!dashDateOpen)} 
+                                                icon={Icons.Calendar} 
+                                                ariaLabel="Filtrar Período de Pedidos"
                                             />
-                                            
-                                            <motion.button 
-                                                whileTap={{ scale: 0.9 }}
-                                                onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-                                                className="relative z-10 flex items-center justify-center px-3 h-full text-slate-500 hover:text-blue-600 transition-colors"
-                                                title="Filtrar por Período"
-                                            >
-                                                <Icons.Calendar className="w-4 h-4" />
-                                            </motion.button>
-
-                                            <AnimatePresence>
-                                                {isFilterExpanded && (
-                                                    <motion.div 
-                                                        initial={{ width: 0, opacity: 0 }}
-                                                        animate={{ width: 'auto', opacity: 1 }}
-                                                        exit={{ width: 0, opacity: 0 }}
-                                                        className="relative z-10 flex items-center gap-2 pr-3 whitespace-nowrap overflow-hidden h-full"
-                                                    >
-                                                        <input 
-                                                            type="date" 
-                                                            value={dateFilter.start}
-                                                            onChange={e => { setDateFilter(prev => ({...prev, start: e.target.value})); setOrderHistoryPage(1); }}
-                                                            className="bg-transparent border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-700 outline-none focus:border-blue-500"
-                                                        />
-                                                        <span className="text-slate-400 text-[10px] font-bold">até</span>
-                                                        <input 
-                                                            type="date" 
-                                                            value={dateFilter.end}
-                                                            onChange={e => { setDateFilter(prev => ({...prev, end: e.target.value})); setOrderHistoryPage(1); }}
-                                                            className="bg-transparent border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-700 outline-none focus:border-blue-500"
-                                                        />
-                                                        {(dateFilter.start || dateFilter.end) && (
-                                                            <button 
-                                                                onClick={() => { setDateFilter({start: '', end: ''}); setOrderHistoryPage(1); setIsFilterExpanded(false); }}
-                                                                className="ml-1 p-1 text-rose-500 hover:bg-rose-50 rounded-md transition-colors"
-                                                                title="Limpar Filtro"
-                                                            >
-                                                                <Icons.Close className="w-3 h-3" />
-                                                            </button>
-                                                        )}
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </motion.div>
+                                            <DateFilterPopup 
+                                                isOpen={dashDateOpen} 
+                                                onClose={() => setDashDateOpen(false)} 
+                                                dateRange={dashDateRange} 
+                                                setDateRange={setDashDateRange} 
+                                                onClear={() => { 
+                                                    setDashDateRange({start:'',end:''}); 
+                                                    setDashFilterText('Todo o Período'); 
+                                                    setOrderHistoryPage(1); 
+                                                    setDashDateOpen(false); 
+                                                }}
+                                                onApply={() => { 
+                                                    if(dashDateRange.start && dashDateRange.end) {
+                                                        setDashFilterText(`${formatDateBR(dashDateRange.start)} até ${formatDateBR(dashDateRange.end)}`);
+                                                        setOrderHistoryPage(1);
+                                                        setDashDateOpen(false);
+                                                    }
+                                                }}
+                                            />
+                                        </div>
                                         
                                         {/* Select de Qtd por Página */}
                                         <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 h-[38px] shadow-sm transition-all focus-within:border-blue-500">
@@ -1287,7 +1315,7 @@ export default function AdminPerfilCRM({
                                             </select>
                                         </div>
 
-                                        <div className="bg-blue-50 border border-blue-100 px-4 py-1.5 rounded-xl text-center shrink-0 ml-auto flex items-center gap-2">
+                                        <div className="bg-blue-50 border border-blue-100 px-4 py-1.5 rounded-xl text-center shrink-0 ml-auto flex items-center gap-2 h-[38px]">
                                             <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Volume</span>
                                             <span className="text-lg font-black text-blue-700 leading-tight">{historicoPedidosFiltrado.length}</span>
                                         </div>
@@ -1324,22 +1352,23 @@ export default function AdminPerfilCRM({
                                             const isParcelado = pagParcelas > 1;
                                             const valorParcela = safeNum(pedido.installment_value || pedido.pagamento?.valor_parcela || (pedido.total / pagParcelas));
                                             
-                                            // Endereço e Logística Desestruturados e Seguros
+                                            // Endereço e Logística Desestruturados e Seguros (Sem ReferenceError)
                                             const totalVolumes = pedido.items?.length || pedido.itens?.length || pedido.qtd_produtos || 0;
                                             const end = pedido.endereco || pedido.address || {};
-                                            const rua = end.rua || end.street || end.logradouro || '-';
-                                            const num = end.numero || end.num || end.number || '-';
-                                            const bairro = end.bairro || end.neighborhood || '-';
-                                            const cidade = end.cidade || end.city || '-';
-                                            const uf = end.uf || end.estado || end.state || '-';
-                                            const cep = end.cep || end.zip_code || '-';
-                                            const complemento = end.complemento || end.complement || '';
-                                            const referencia = end.referencia || end.reference || '';
-                                            
+                                            const enderecoFormatado = {
+                                                rua: end.rua || end.street || end.logradouro || '-',
+                                                num: end.numero || end.num || end.number || '-',
+                                                bairro: end.bairro || end.neighborhood || '-',
+                                                cidade: end.cidade || end.city || '-',
+                                                uf: end.uf || end.estado || end.state || '-',
+                                                cep: end.cep || end.zip_code || '-',
+                                                comp: end.complemento || end.complement || '',
+                                                ref: end.referencia || end.reference || ''
+                                            };
                                             const rastreioCode = pedido.tracking_code;
                                             const carrier = pedido.carrier || 'Logística';
                                             
-                                            // Cupons Seguros
+                                            // Cupons
                                             const rawCoupons = pedido.applied_coupons || pedido.cupons || [];
                                             const cuponsUsados = typeof rawCoupons === 'string' ? JSON.parse(rawCoupons || '[]') : rawCoupons;
 
@@ -1433,9 +1462,6 @@ export default function AdminPerfilCRM({
                                                                         </div>
 
                                                                         <div className="mt-auto">
-                                                                            <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
-                                                                                <Icons.CreditCard className="w-3.5 h-3.5 text-blue-500"/> Detalhes do Pagamento
-                                                                            </h6>
                                                                             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                                                                                 <div className="space-y-3">
                                                                                     <div>
@@ -1478,15 +1504,12 @@ export default function AdminPerfilCRM({
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
                                                                                         <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${enderecoFormatado.rua}, ${enderecoFormatado.num}`}>{enderecoFormatado.rua}, {enderecoFormatado.num}</span>
                                                                                     </div>
-                                                                                    
-                                                                                    {/* 🟢 CORREÇÃO: Chamando enderecoFormatado.comp */}
                                                                                     {enderecoFormatado.comp && (
                                                                                         <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                             <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Complemento:</span> 
                                                                                             <span className="text-slate-800 text-right truncate max-w-[140px]" title={enderecoFormatado.comp}>{enderecoFormatado.comp}</span>
                                                                                         </div>
                                                                                     )}
-                                                                                    
                                                                                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Bairro:</span> 
                                                                                         <span className="text-slate-800 text-right truncate max-w-[140px]" title={enderecoFormatado.bairro}>{enderecoFormatado.bairro}</span>
@@ -1499,8 +1522,6 @@ export default function AdminPerfilCRM({
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CEP:</span> 
                                                                                         <span className="text-slate-800 font-mono text-right truncate">{enderecoFormatado.cep}</span>
                                                                                     </div>
-                                                                                    
-                                                                                    {/* 🟢 CORREÇÃO: Chamando enderecoFormatado.ref */}
                                                                                     {enderecoFormatado.ref && (
                                                                                         <div className="pt-1.5 border-t border-slate-200/60">
                                                                                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Referência:</span>
@@ -1510,25 +1531,11 @@ export default function AdminPerfilCRM({
                                                                                 </div>
                                                                             </div>
 
-                                                                            {rastreioCode ? (
-                                                                                <div className="pt-2 mt-auto">
-                                                                                    <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">
-                                                                                        Cód. Rastreio ({carrier}):
-                                                                                    </span>
-                                                                                    <div className="flex items-center justify-between bg-amber-50/50 border border-amber-200 p-2.5 rounded-xl">
-                                                                                        <span className="text-amber-700 font-mono font-bold tracking-widest">{rastreioCode}</span>
-                                                                                        <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(rastreioCode); }} title="Copiar">
-                                                                                            <Icons.Copy className="w-4 h-4 text-amber-500 hover:text-amber-700 transition-colors"/>
-                                                                                        </button>
-                                                                                    </div>
-                                                                                </div>
-                                                                            ) : (
-                                                                                <div className="pt-3 mt-auto">
-                                                                                    <span className={`text-[10px] ${statusColor} px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest`}>
-                                                                                        {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? 'Pedido Entregue (S/ Rastreio)' : statusNormalizado.replace(/_/g, ' ')}
-                                                                                    </span>
-                                                                                </div>
-                                                                            )}
+                                                                            <div className="pt-3 mt-auto">
+                                                                                <span className={`text-[10px] ${statusColor} px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest`}>
+                                                                                    {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? 'Pedido Entregue (S/ Rastreio)' : statusNormalizado.replace(/_/g, ' ')}
+                                                                                </span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
 
@@ -1616,7 +1623,7 @@ export default function AdminPerfilCRM({
                                                 <Icons.ShoppingBag className="w-8 h-8 text-slate-300" />
                                             </div>
                                             <h4 className="text-base font-black text-slate-700">Nenhum pedido encontrado</h4>
-                                            <p className="text-xs text-slate-500 font-medium mt-1">Não há transações para as datas informadas.</p>
+                                            <p className="text-xs text-slate-500 font-medium mt-1">Não há transações para os filtros selecionados.</p>
                                         </div>
                                     )}
                                 </div>
