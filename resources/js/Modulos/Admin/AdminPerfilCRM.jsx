@@ -1217,12 +1217,13 @@ export default function AdminPerfilCRM({
 
                                         // 🟢 LENDO DADOS DIRETAMENTE DA ESTRUTURA DO SEU ORDER.PHP
                                         
-                                        // Pagamento
-                                        const pagMetodo = pedido.payment_method || 'Não Informado';
-                                        const pagParcelas = safeNum(pedido.payment_installments || 1);
+                                        // Pagamento Seguro
+                                        const pagMetodo = pedido.payment_method || pedido.pagamento?.metodo || 'Não Informado';
+                                        const pagGateway = pedido.payment_gateway || pedido.pagamento?.gateway || 'Desconhecido'; // 🟢 ESTA É A LINHA QUE FALTAVA!
+                                        const pagParcelas = safeNum(pedido.payment_installments || pedido.pagamento?.parcelas || 1);
                                         const isParcelado = pagParcelas > 1;
-                                        const valorParcela = safeNum(pedido.installment_value || (pedido.total / pagParcelas));
-                                        const taxaGateway = safeNum(pedido.gateway_fee);
+                                        const valorParcela = safeNum(pedido.installment_value || pedido.pagamento?.valor_parcela || (pedido.total / pagParcelas));
+                                        const taxaGateway = safeNum(pedido.gateway_fee || pedido.pagamento?.juros);
                                         
                                         // Rastreio
                                         const rastreioCode = pedido.tracking_code;
