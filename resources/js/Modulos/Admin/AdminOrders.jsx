@@ -46,7 +46,7 @@ class ErrorBoundary extends Component {
 }
 
 // ==========================================
-// 1. DICIONÁRIO COMPLETO DE ÍCONES (Com Proteção de Tamanho)
+// 1. DICIONÁRIO COMPLETO DE ÍCONES
 // ==========================================
 const Icons = {
     Search: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
@@ -74,7 +74,7 @@ const Icons = {
     Printer: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>,
     Clock: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     Refresh: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
-    Upload: ({className="w-5 h-5 text-slate-400"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+    Upload: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
 };
 
 const statusConfig = {
@@ -125,6 +125,7 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
     </button>
 );
 
+// 🟢 BOTÃO ANIMADO DE FILTRO E POPUP (BLINDADO)
 const HoverProgressRoundButton = ({ text, onClick, loading, icon: Icon, ariaLabel, isActive }) => {
     const [isHovered, setIsHovered] = useState(false);
     const shouldExpand = isHovered || isActive;
@@ -133,18 +134,18 @@ const HoverProgressRoundButton = ({ text, onClick, loading, icon: Icon, ariaLabe
       <motion.button 
           onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} whileTap={loading ? {} : { scale: 0.95 }} 
           onClick={onClick} aria-label={ariaLabel} disabled={loading} animate={{ width: shouldExpand ? 'auto' : 48 }}
-          className={`relative overflow-hidden h-12 rounded-full bg-white border shadow-sm flex items-center pl-[14px] pr-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-80 transition-colors z-10 ${shouldExpand ? 'border-blue-300 bg-blue-50' : 'border-slate-200'}`}
+          className={`relative overflow-hidden h-[38px] rounded-full bg-white border shadow-sm flex items-center pl-[14px] pr-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-80 transition-colors z-10 ${shouldExpand ? 'border-blue-300 bg-blue-50' : 'border-slate-200'}`}
       >
           {loading && (
-             <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 48 48">
-                 <motion.circle cx="24" cy="24" r="22" fill="none" stroke="#3B82F6" strokeWidth="2" strokeDasharray="138" initial={{ strokeDashoffset: 138 }} animate={{ strokeDashoffset: 0 }} transition={{ duration: 1.5, ease: "linear" }} />
+             <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 38 38">
+                 <motion.circle cx="19" cy="19" r="17" fill="none" stroke="#3B82F6" strokeWidth="2" strokeDasharray="106" initial={{ strokeDashoffset: 106 }} animate={{ strokeDashoffset: 0 }} transition={{ duration: 1.5, ease: "linear" }} />
              </svg>
           )}
           <div className="relative z-10 flex items-center gap-2 whitespace-nowrap">
               {loading ? <Icons.Spinner className="w-5 h-5 text-blue-500 shrink-0" /> : <Icon className={`w-5 h-5 shrink-0 transition-colors ${shouldExpand ? 'text-blue-600' : 'text-slate-500'}`} />}
               <AnimatePresence>
                   {shouldExpand && !loading && (
-                      <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }} exit={{ opacity: 0, width: 0 }} className="text-xs font-bold text-slate-700 truncate pr-2 ml-2">
+                      <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }} exit={{ opacity: 0, width: 0 }} className="text-[11px] font-bold text-slate-700 truncate pr-2">
                           {text}
                       </motion.span>
                   )}
@@ -162,19 +163,19 @@ const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, i
         <>
           <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-hidden="true"></div>
           <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 top-full mt-2 origin-top-right bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 w-80 z-[100]" role="dialog" aria-modal="true" aria-label="Filtro de Data">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Icons.Calendar className="w-4 h-4"/> Filtrar Período</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Icons.Filter className="w-4 h-4"/> Filtrar Período</p>
             <div className="space-y-4">
               <div className="relative z-10">
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Inicial</label>
-                  <input type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 cursor-pointer transition-all" />
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" htmlFor="data-inicio">Data Inicial</label>
+                  <input id="data-inicio" type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
               </div>
               <div className="relative z-10">
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Final</label>
-                  <input type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 cursor-pointer transition-all" />
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" htmlFor="data-fim">Data Final</label>
+                  <input id="data-fim" type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
               </div>
               <div className="pt-2 flex gap-2 relative z-10">
-                <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors">Limpar</button>
-                <button type="button" onClick={onApply} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-2.5 rounded-xl shadow-sm transition-colors">{loading ? 'Aplicando...' : 'Aplicar Filtro'}</button>
+                <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors">Limpar</button>
+                <button type="button" onClick={onApply} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-sm transition-colors">{loading ? 'Aplicando...' : 'Aplicar Filtro'}</button>
               </div>
             </div>
           </motion.div>
@@ -283,6 +284,9 @@ const AdminOrdersContent = () => {
     const [timelinePage, setTimelinePage] = useState(1);
     const timelinePerPage = 5;
 
+    // Transportadora Manual Interna
+    const [transpManualInput, setTranspManualInput] = useState('');
+
     // ==========================================
     // API: BUSCA E MUTAÇÕES REAL TIME POLLING
     // ==========================================
@@ -296,7 +300,7 @@ const AdminOrdersContent = () => {
     const metricas = fetchResult.metrics || { conversao_pix: 0, total_pix_gerados: 0 };
 
     // =========================================================
-    // 🟢 2. AUTO-OPEN MODAL VIA URL (Com Proteção)
+    // 🟢 2. AUTO-OPEN MODAL VIA URL E MANUTENÇÃO DE ESTADO
     // =========================================================
     useEffect(() => {
         if (orderIdUrl && pedidosDaApi && pedidosDaApi.length > 0) {
@@ -319,7 +323,11 @@ const AdminOrdersContent = () => {
         }
     }, [pedidosDaApi]);
 
-    useEffect(() => { setTimelinePage(1); }, [pedidoSelecionado]);
+    // Reseta página da timeline e carrega o input de transportadora ao abrir novo pedido
+    useEffect(() => { 
+        setTimelinePage(1); 
+        setTranspManualInput(pedidoSelecionado?.carrier || '');
+    }, [pedidoSelecionado?.id]);
 
     // =========================================================
     // 🟢 3. FUNÇÕES DE AÇÃO E FECHAMENTO
@@ -353,6 +361,20 @@ const AdminOrdersContent = () => {
         }
     });
 
+    const mutacaoAtualizarTransportadora = useMutation({
+        mutationFn: async ({ id, carrier }) => await api.put(`/admin/orders/${id}/carrier`, { carrier }),
+        onSuccess: () => {
+            queryClientLocal.invalidateQueries({ queryKey: ['adminOrders'] });
+            setLoadingAcao(null);
+            showToast('Transportadora salva na auditoria!', 'success');
+        }
+    });
+
+    const salvarTransportadoraManual = () => {
+        setLoadingAcao('salvarTransportadora');
+        mutacaoAtualizarTransportadora.mutate({ id: pedidoSelecionado.id, carrier: transpManualInput });
+    };
+
     // --- FILTRAGEM GLOBAL & PAGINAÇÃO ---
     const pedidosFiltrados = useMemo(() => {
         let filtrados = pedidosDaApi;
@@ -376,8 +398,8 @@ const AdminOrdersContent = () => {
     }, [pedidosDaApi, abaAtiva, termoPesquisa, dashDateRange]);
 
     const timelineFiltrada = useMemo(() => {
-        if (!pedidoSelecionado || !pedidoSelecionado.audit) return [];
-        let logs = pedidoSelecionado.audit; // Lendo do audit baseado no seu mockup original
+        if (!pedidoSelecionado || !pedidoSelecionado.timeline) return [];
+        let logs = pedidoSelecionado.timeline;
         if (timelinePeriodo.start) {
             const s = new Date(timelinePeriodo.start); s.setHours(0,0,0,0);
             logs = logs.filter(log => new Date(log.data_raw || log.data) >= s);
@@ -399,6 +421,7 @@ const AdminOrdersContent = () => {
     const timelinePaginada = timelineFiltrada.slice(indexPrimeiroLog, indexUltimoLog);
     const totalPaginasTimeline = Math.ceil(timelineFiltrada.length / timelinePerPage) || 1;
 
+    // Métricas
     const ltvGlobalTotal = pedidosDaApi
         .filter(p => {
              if (dashDateRange.start && new Date(p.data_raw || p.created_at) < new Date(dashDateRange.start).setHours(0,0,0,0)) return false;
@@ -462,13 +485,16 @@ const AdminOrdersContent = () => {
     };
 
     const aplicarFiltroTimeline = () => {
-        setIsTimelineModalOpen(false);
         setLoadingTimeline(true);
-        setTimeout(() => setLoadingTimeline(false), 800);
+        setTimeout(() => { setLoadingTimeline(false); setIsTimelineModalOpen(false); }, 800);
     };
 
     // --- RENDER DO STEPPER ANIMADO (PROGRESSO) ---
+    // A trava "hasAnimated" impede que ele pisque a cada vez que o Real-Time Polling rodar
     const RenderStepper = ({ status }) => {
+        const [isInitialMount, setIsInitialMount] = useState(true);
+        useEffect(() => { setIsInitialMount(false); }, []);
+
         const steps = ['A_PAGAR', 'SEPARACAO', 'DESPACHADO', 'ENTREGUE'];
         const flowLabels = ['A Pagar', 'Em Separação', 'Enviado', 'Entregue'];
         
@@ -501,10 +527,12 @@ const AdminOrdersContent = () => {
         return (
             <div className="relative overflow-hidden p-6 sm:p-8 bg-slate-50/50 rounded-[24px] border border-slate-100 mb-6">
                 <div className="relative z-10 w-full max-w-2xl mx-auto flex items-center justify-between pb-6 pt-2">
+                    {/* Linha de fundo */}
                     <div className="absolute top-[22px] left-0 w-full h-1.5 bg-slate-200 rounded-full z-0" />
+                    {/* Linha Preenchida Animada (Só anima do 0 no primeiro mount) */}
                     <motion.div 
                         className="absolute top-[22px] left-0 h-1.5 bg-emerald-500 rounded-full z-0 shadow-[0_0_10px_rgba(16,185,129,0.4)]"
-                        initial={{ width: 0 }}
+                        initial={isInitialMount ? { width: 0 } : false}
                         animate={{ width: `${progressPercentage}%` }}
                         transition={{ duration: 1, ease: "easeOut" }}
                     />
@@ -515,7 +543,9 @@ const AdminOrdersContent = () => {
                         return (
                             <div key={step} className="relative z-10 flex flex-col items-center gap-3 px-2 bg-slate-50/50">
                                 <motion.div 
-                                    initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: idx * 0.2 }}
+                                    initial={isInitialMount ? { scale: 0.8, opacity: 0 } : false} 
+                                    animate={{ scale: 1, opacity: 1 }} 
+                                    transition={{ delay: idx * 0.2 }}
                                     className={`w-12 h-12 rounded-full border-4 flex items-center justify-center transition-colors duration-500 ${isCompleted ? 'bg-emerald-500 border-emerald-100 text-white shadow-lg shadow-emerald-500/30' : 'bg-white border-slate-200 text-slate-300'}`}
                                 >
                                     {isCompleted ? <Icons.Check className="w-5 h-5"/> : <Icons.Box className="w-5 h-5"/>}
@@ -652,7 +682,7 @@ const AdminOrdersContent = () => {
                                                 <span className="text-[10px] font-medium text-slate-500">{o.cliente?.email}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-center font-bold text-slate-700">{o.itens?.reduce((a, b) => a + b.qtd, 0) || 0} un</td>
+                                        <td className="px-6 py-4 text-center font-bold text-slate-700">{o.items?.reduce((a, b) => a + safeNum(b.quantidade || b.qtd), 0) || 0} un</td>
                                         <td className="px-6 py-4 text-right font-black text-emerald-600">{formatCurrency(o.total)}</td>
                                         <td className="px-6 py-4 text-center">
                                             <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg border shadow-sm ${statusConfig[o.status]?.cor || 'bg-slate-50 text-slate-500 border-slate-200'}`}>
@@ -731,7 +761,11 @@ const AdminOrdersContent = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button onClick={() => refetch()} className={`w-12 h-12 bg-white hover:bg-slate-50 rounded-xl flex items-center justify-center text-slate-600 border border-slate-200 transition-all shadow-sm ${isFetching ? 'animate-spin text-blue-500 border-blue-300' : ''}`} title="Atualizar Pedido">
+                            <Icons.Refresh className="w-5 h-5" />
+                        </button>
+
                         {o.status === 'A_PAGAR' && (
                             <ProgressButton onClick={() => avancarStatus(o.id, o.status)} loading={loadingAcao === 'avancar'} text="Confirmar Pagamento" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl text-sm shadow-sm transition-colors" />
                         )}
@@ -765,71 +799,77 @@ const AdminOrdersContent = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
                     {/* COLUNA ESQUERDA (Resumo, Personalizações, Valores) */}
-                    <div className="lg:col-span-2 space-y-6 flex flex-col">
+                    <div className="lg:col-span-2 space-y-6 flex flex-col h-fit">
                         
                         {/* RESUMO DO PEDIDO E PRODUTOS */}
-                        <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex-1">
+                        <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden h-fit">
                             <div className="p-6 border-b border-slate-100 bg-slate-50/50">
                                 <h3 className="text-lg font-black text-slate-800 flex items-center gap-2"><Icons.Package className="w-5 h-5 text-blue-500"/> Produtos do Pedido</h3>
                             </div>
                             <div className="p-6 space-y-6">
-                                {o.itens?.map((item, idx) => (
-                                    <div key={idx} className="flex flex-col sm:flex-row gap-5 pb-6 border-b border-slate-100 last:border-0 last:pb-0">
-                                        <div className="w-24 h-24 bg-slate-100 rounded-2xl border border-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden shadow-sm">
-                                            {item.imagem || item.img ? <img src={item.imagem || item.img} className="w-full h-full object-cover" alt="Produto" /> : <Icons.Box className="w-8 h-8 text-slate-300"/>}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <h4 className="font-bold text-slate-800 text-base leading-tight">{item.nome}</h4>
-                                                    <div className="flex flex-wrap gap-2 mt-2">
-                                                        <span className="text-[10px] font-black uppercase bg-slate-100 text-slate-500 px-2 py-1 rounded border border-slate-200 tracking-wider">SKU: {item.sku || item.variacaoSku}</span>
-                                                        {item.variacao && <span className="text-[10px] font-black uppercase bg-amber-50 text-amber-600 px-2 py-1 rounded border border-amber-100 tracking-wider">Variação: {item.variacao}</span>}
-                                                        {item.estoque !== undefined && <span className="text-[10px] font-black uppercase bg-slate-50 text-slate-500 px-2 py-1 rounded border border-slate-200 tracking-wider flex items-center gap-1"><Icons.Activity className="w-3 h-3"/> Estoque: {item.estoque}</span>}
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="font-black text-emerald-600 text-lg block">{formatCurrency(item.preco * item.qtd)}</span>
-                                                    <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded mt-1 inline-block">Qtd: {item.qtd} un.</span>
-                                                </div>
-                                            </div>
+                                {o.items?.map((item, idx) => {
+                                    const hasCustomization = item.personalizacao || item.is_customized || item.custom_text || item.custom_image;
+                                    const customText = item.personalizacao?.texto || item.custom_text;
+                                    const customImg = item.personalizacao?.imagem || item.custom_image;
 
-                                            {/* 🟢 DETALHES DE PERSONALIZAÇÃO */}
-                                            {item.is_customized && (
-                                                <div className="mt-4 p-4 bg-purple-50/50 border border-purple-100 rounded-xl shadow-sm">
-                                                    <p className="text-[10px] font-black text-purple-800 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Icons.Edit3 className="w-3.5 h-3.5 text-purple-500"/> Personalização do Cliente</p>
-                                                    <div className="space-y-4">
-                                                        {item.custom_text && (
-                                                            <div>
-                                                                <span className="text-[9px] font-bold text-purple-500 uppercase tracking-wider block mb-1">Texto para Gravação:</span>
-                                                                <p className="text-sm font-medium text-slate-800 italic bg-white p-3 rounded-lg border border-purple-100 shadow-sm">"{item.custom_text}"</p>
-                                                            </div>
-                                                        )}
-                                                        {item.custom_image && (
-                                                            <button onClick={() => window.open(item.custom_image, '_blank')} className="w-max flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm">
-                                                                <Icons.Download className="w-4 h-4" /> Baixar Arte / Imagem Anexada
-                                                            </button>
-                                                        )}
+                                    return (
+                                        <div key={idx} className="flex flex-col sm:flex-row gap-5 pb-6 border-b border-slate-100 last:border-0 last:pb-0">
+                                            <div className="w-24 h-24 bg-slate-100 rounded-2xl border border-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden shadow-sm">
+                                                {item.imagem || item.img ? <img src={item.imagem || item.img} className="w-full h-full object-cover" alt="Produto" /> : <Icons.Box className="w-8 h-8 text-slate-300"/>}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h4 className="font-bold text-slate-800 text-base leading-tight">{item.nome}</h4>
+                                                        <div className="flex flex-wrap gap-2 mt-2">
+                                                            <span className="text-[10px] font-black uppercase bg-slate-100 text-slate-500 px-2 py-1 rounded border border-slate-200 tracking-wider">SKU: {item.sku || item.variacaoSku}</span>
+                                                            {item.variacao && <span className="text-[10px] font-black uppercase bg-amber-50 text-amber-600 px-2 py-1 rounded border border-amber-100 tracking-wider">Variação: {item.variacao}</span>}
+                                                            {item.estoque !== undefined && <span className="text-[10px] font-black uppercase bg-slate-50 text-slate-500 px-2 py-1 rounded border border-slate-200 tracking-wider flex items-center gap-1"><Icons.Activity className="w-3 h-3"/> Estoque: {item.estoque}</span>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="font-black text-emerald-600 text-lg block">{formatCurrency(item.preco * (item.quantidade || item.qtd))}</span>
+                                                        <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded mt-1 inline-block">Qtd: {item.quantidade || item.qtd} un.</span>
                                                     </div>
                                                 </div>
-                                            )}
+
+                                                {/* 🟢 DETALHES DE PERSONALIZAÇÃO */}
+                                                {hasCustomization && (
+                                                    <div className="mt-4 p-4 bg-purple-50/50 border border-purple-100 rounded-xl shadow-sm">
+                                                        <p className="text-[10px] font-black text-purple-800 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Icons.Edit3 className="w-3.5 h-3.5 text-purple-500"/> Personalização do Cliente</p>
+                                                        <div className="space-y-4">
+                                                            {customText && (
+                                                                <div>
+                                                                    <span className="text-[9px] font-bold text-purple-500 uppercase tracking-wider block mb-1">Texto para Gravação:</span>
+                                                                    <p className="text-sm font-medium text-slate-800 italic bg-white p-3 rounded-lg border border-purple-100 shadow-sm">"{customText}"</p>
+                                                                </div>
+                                                            )}
+                                                            {customImg && (
+                                                                <button onClick={() => window.open(customImg, '_blank')} className="w-max flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors shadow-sm">
+                                                                    <Icons.Download className="w-4 h-4" /> Baixar Arte / Imagem Anexada
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
                         {/* COMPOSIÇÃO DOS VALORES E GATEWAY */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 h-fit">
                             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8 flex flex-col justify-between">
                                 <div>
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Gateway de Pagamento</span>
-                                    <span className="text-xl font-black text-slate-800 block uppercase mb-5">"{o.payment_gateway || 'Mercado Pago'}"</span>
+                                    <span className="text-xl font-black text-slate-800 block uppercase mb-5">"{o.pagamento?.gateway || o.payment_gateway || 'N/A'}"</span>
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Pagamento Via</span>
-                                    <span className="text-sm font-bold text-slate-700 block uppercase mb-1.5">{o.payment_method || 'Cartão de Crédito'}</span>
-                                    {o.payment_installments > 1 ? (
+                                    <span className="text-sm font-bold text-slate-700 block uppercase mb-1.5">{o.pagamento_metodo || o.pagamento?.metodo || o.payment_method || 'N/A'}</span>
+                                    {(o.pagamento_parcelas > 1 || o.pagamento?.parcelas > 1 || o.payment_installments > 1) ? (
                                         <span className="text-xs font-bold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 inline-block mt-1">
-                                            {o.payment_installments}x de {formatCurrency(o.installment_value || (o.total / o.payment_installments))} {safeNum(o.gateway_fee) > 0 ? `(Com Juros)` : '(Sem Juros)'}
+                                            {o.pagamento_parcelas || o.pagamento?.parcelas || o.payment_installments}x de {formatCurrency(o.pagamento?.valor_parcela || o.installment_value || (o.total / (o.pagamento_parcelas || o.pagamento?.parcelas || o.payment_installments)))} {safeNum(o.juros || o.pagamento?.juros || o.gateway_fee) > 0 ? `(Com Juros)` : '(Sem Juros)'}
                                         </span>
                                     ) : (
                                         <span className="text-xs font-bold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 inline-block mt-1">À vista / Único</span>
@@ -842,12 +882,24 @@ const AdminOrdersContent = () => {
                                 <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-5"><Icons.DollarSign className="w-4 h-4 text-emerald-500"/> Composição Financeira</h3>
                                 <div className="space-y-3.5 text-xs font-medium text-slate-600 flex-1">
                                     <div className="flex justify-between items-center pb-2.5 border-b border-slate-100"><span>Subtotal Produtos:</span><span className="text-slate-800 font-bold text-sm">{formatCurrency(o.subtotal)}</span></div>
-                                    <div className="flex justify-between items-center pb-2.5 border-b border-slate-100"><span>Frete Cobrado:</span><span className="text-slate-800 font-bold text-sm">{formatCurrency(o.frete)}</span></div>
+                                    <div className="flex justify-between items-center pb-2.5 border-b border-slate-100"><span>Frete Cobrado:</span><span className="text-slate-800 font-bold text-sm">{formatCurrency(o.frete_valor || o.frete)}</span></div>
                                     
-                                    {safeNum(o.desconto) > 0 && (
+                                    {safeNum(o.desconto_loja || o.desconto) > 0 && (
                                         <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 text-rose-500">
                                             <span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. Loja/Cupom:</span>
-                                            <span className="font-black text-sm">-{formatCurrency(o.desconto)}</span>
+                                            <span className="font-black text-sm">-{formatCurrency(o.desconto_loja || o.desconto)}</span>
+                                        </div>
+                                    )}
+                                    {safeNum(o.desconto_vip_produtos) > 0 && (
+                                        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 text-indigo-500">
+                                            <span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. VIP (Produtos):</span>
+                                            <span className="font-black text-sm">-{formatCurrency(o.desconto_vip_produtos)}</span>
+                                        </div>
+                                    )}
+                                    {safeNum(o.desconto_frete) > 0 && (
+                                        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 text-rose-500">
+                                            <span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. Frete:</span>
+                                            <span className="font-black text-sm">-{formatCurrency(o.desconto_frete)}</span>
                                         </div>
                                     )}
                                     
@@ -864,7 +916,7 @@ const AdminOrdersContent = () => {
                     {/* COLUNA DIREITA (Cliente, Endereço, Transportadora, Auditoria) */}
                     <div className="space-y-6">
                         
-                        {/* SOBRE O CLIENTE (Padrão CRM) */}
+                        {/* SOBRE O CLIENTE (Padrão CRM Sem Tags e Sem Botão Editar) */}
                         <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8">
                             <div className="flex justify-between items-start mb-6">
                                 <h3 className="font-black text-slate-800 flex items-center gap-2 text-base"><Icons.UserCircle className="w-5 h-5 text-blue-500"/> Sobre o Cliente</h3>
@@ -877,7 +929,7 @@ const AdminOrdersContent = () => {
                                 <div>
                                     <h4 className="font-bold text-slate-800 text-base leading-tight">{o.cliente?.nome}</h4>
                                     <div className="flex items-center gap-2 mt-2">
-                                        <span className="text-[10px] font-black bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-200 text-yellow-700 uppercase tracking-widest px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1.5"><Icons.Crown className="w-3.5 h-3.5"/> {o.cliente?.vip || 'Iniciante'}</span>
+                                        <span className="text-[10px] font-black bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-200 text-yellow-700 uppercase tracking-widest px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1.5"><Icons.Crown className="w-3.5 h-3.5"/> {o.cliente?.vip || o.cliente?.rank || 'Iniciante'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -897,8 +949,8 @@ const AdminOrdersContent = () => {
                         <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm">
                             <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icons.Tag className="w-4 h-4" /> Cupons e Vantagens</h4>
                             <div className="space-y-3">
-                                {parseCoupons(o.cupons).length > 0 ? (
-                                    parseCoupons(o.cupons).map((cupom, idx) => {
+                                {parseCoupons(o.coupons || o.cupons).length > 0 ? (
+                                    parseCoupons(o.coupons || o.cupons).map((cupom, idx) => {
                                         const isVip = cupom.tipo && String(cupom.tipo).toUpperCase().includes('VIP');
                                         const theme = isVip ? 'amber' : 'purple';
                                         const IconTitle = isVip ? Icons.Crown : Icons.Tag;
@@ -908,7 +960,7 @@ const AdminOrdersContent = () => {
                                                 <div className="flex items-center gap-2.5">
                                                     <div className={`w-8 h-8 rounded-full bg-${theme}-100 flex items-center justify-center shrink-0`}><IconTitle className={`w-4 h-4 text-${theme}-600`} /></div>
                                                     <div>
-                                                        <strong className={`text-[11px] font-black text-${theme}-900 block`}>{cupom.nome || 'Benefício Especial'}</strong>
+                                                        <strong className={`text-[11px] font-black text-${theme}-900 block`}>{cupom.nome || cupom.codigo || 'Benefício Especial'}</strong>
                                                         <span className={`text-[8px] font-black text-${theme}-600 uppercase tracking-widest block mt-0.5`}>{cupom.tipo || 'CUPOM / BENEFÍCIO'}</span>
                                                     </div>
                                                 </div>
@@ -946,8 +998,8 @@ const AdminOrdersContent = () => {
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Transportadora (Despacho Manual)</label>
                                 <div className="flex gap-2">
-                                    <input type="text" defaultValue={o.carrier} placeholder="Ex: Melhor Envio - Sedex" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:border-blue-500 shadow-sm transition-all" />
-                                    <button className="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-5 rounded-xl shadow-sm transition-colors">Salvar</button>
+                                    <input type="text" value={transpManualInput} onChange={(e) => setTranspManualInput(e.target.value)} placeholder="Ex: Correios Sedex" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:border-blue-500 shadow-sm transition-all" />
+                                    <ProgressButton onClick={salvarTransportadoraManual} loading={loadingAcao === 'salvarTransportadora'} text="Salvar" className="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-5 rounded-xl shadow-sm transition-colors" />
                                 </div>
                             </div>
                         </div>
@@ -959,7 +1011,7 @@ const AdminOrdersContent = () => {
                                     <h4 className="text-base font-black text-slate-800 flex items-center gap-2"><Icons.Shield className="w-5 h-5 text-emerald-500"/> Trilha de Auditoria</h4>
                                     <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Histórico Imutável do Pedido</p>
                                 </div>
-                                <div className="relative">
+                                <div className="relative z-50 flex justify-end">
                                     <HoverProgressRoundButton 
                                         text={(timelinePeriodo.start || timelinePeriodo.end) ? 'Filtrado' : 'Filtrar'} 
                                         onClick={() => setIsTimelineModalOpen(!isTimelineModalOpen)} 
@@ -977,7 +1029,7 @@ const AdminOrdersContent = () => {
                                 </div>
                             </div>
                             
-                            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-5 relative">
+                            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-5 relative min-h-0">
                                 <div className="absolute left-[9px] top-2 bottom-2 w-0.5 bg-slate-100 z-0"></div>
                                 {timelinePaginada?.map((log, idx) => (
                                     <div key={idx} className="relative z-10 flex gap-4 items-start">
@@ -995,7 +1047,7 @@ const AdminOrdersContent = () => {
 
                             {/* PAGINAÇÃO DA TIMELINE */}
                             {timelineFiltrada.length > timelinePerPage && (
-                                <div className="mt-auto pt-6 border-t border-slate-100 flex justify-between items-center text-xs font-bold text-slate-500 shrink-0">
+                                <div className="mt-4 pt-6 border-t border-slate-100 flex justify-between items-center text-xs font-bold text-slate-500 shrink-0">
                                     <span>Pág. {timelinePage} de {totalPaginasTimeline}</span>
                                     <div className="flex gap-2">
                                         <button onClick={() => setTimelinePage(p => Math.max(1, p - 1))} disabled={timelinePage === 1} className="w-8 h-8 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 disabled:opacity-50 transition-colors shadow-sm"><Icons.ChevronLeft className="w-4 h-4"/></button>
@@ -1008,7 +1060,7 @@ const AdminOrdersContent = () => {
                     </div>
                 </div>
 
-                {/* MODAL DE RASTREIO E CANCELAMENTO (RECUPERADOS DO SEU BACKUP) */}
+                {/* MODAL DE RASTREIO E CANCELAMENTO */}
                 <AnimatePresence>
                     {modalRastreio.isOpen && (
                         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
