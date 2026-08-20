@@ -1476,40 +1476,59 @@ export default function AdminPerfilCRM({
                                                                                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5">
                                                                                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
-                                                                                        <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${rua}, ${num}`}>{rua}, {num}</span>
+                                                                                        <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${enderecoFormatado.rua}, ${enderecoFormatado.num}`}>{enderecoFormatado.rua}, {enderecoFormatado.num}</span>
                                                                                     </div>
-                                                                                    {complemento && (
+                                                                                    
+                                                                                    {/* 🟢 CORREÇÃO: Chamando enderecoFormatado.comp */}
+                                                                                    {enderecoFormatado.comp && (
                                                                                         <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                             <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Complemento:</span> 
-                                                                                            <span className="text-slate-800 text-right truncate max-w-[140px]" title={complemento}>{complemento}</span>
+                                                                                            <span className="text-slate-800 text-right truncate max-w-[140px]" title={enderecoFormatado.comp}>{enderecoFormatado.comp}</span>
                                                                                         </div>
                                                                                     )}
+                                                                                    
                                                                                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Bairro:</span> 
-                                                                                        <span className="text-slate-800 text-right truncate max-w-[140px]" title={bairro}>{bairro}</span>
+                                                                                        <span className="text-slate-800 text-right truncate max-w-[140px]" title={enderecoFormatado.bairro}>{enderecoFormatado.bairro}</span>
                                                                                     </div>
                                                                                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Cidade/UF:</span> 
-                                                                                        <span className="text-slate-800 font-bold text-right truncate">{cidade} - {uf}</span>
+                                                                                        <span className="text-slate-800 font-bold text-right truncate">{enderecoFormatado.cidade} - {enderecoFormatado.uf}</span>
                                                                                     </div>
                                                                                     <div className="flex justify-between items-center pb-1">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CEP:</span> 
-                                                                                        <span className="text-slate-800 font-mono text-right truncate">{cep}</span>
+                                                                                        <span className="text-slate-800 font-mono text-right truncate">{enderecoFormatado.cep}</span>
                                                                                     </div>
-                                                                                    {referencia && (
+                                                                                    
+                                                                                    {/* 🟢 CORREÇÃO: Chamando enderecoFormatado.ref */}
+                                                                                    {enderecoFormatado.ref && (
                                                                                         <div className="pt-1.5 border-t border-slate-200/60">
                                                                                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Referência:</span>
-                                                                                            <p className="text-[10px] text-slate-600 italic leading-relaxed truncate" title={referencia}>{referencia}</p>
+                                                                                            <p className="text-[10px] text-slate-600 italic leading-relaxed truncate" title={enderecoFormatado.ref}>{enderecoFormatado.ref}</p>
                                                                                         </div>
                                                                                     )}
                                                                                 </div>
                                                                             </div>
 
-                                                                            <div className="pt-3 mt-auto">
-                                                                                <span className={`text-[10px] ${statusColor} px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest`}>
-                                                                                    {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? 'Pedido Entregue' : statusNormalizado.replace(/_/g, ' ')}
-                                                                                </span>
-                                                                            </div>
+                                                                            {rastreioCode ? (
+                                                                                <div className="pt-2 mt-auto">
+                                                                                    <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">
+                                                                                        Cód. Rastreio ({carrier}):
+                                                                                    </span>
+                                                                                    <div className="flex items-center justify-between bg-amber-50/50 border border-amber-200 p-2.5 rounded-xl">
+                                                                                        <span className="text-amber-700 font-mono font-bold tracking-widest">{rastreioCode}</span>
+                                                                                        <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(rastreioCode); }} title="Copiar">
+                                                                                            <Icons.Copy className="w-4 h-4 text-amber-500 hover:text-amber-700 transition-colors"/>
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="pt-3 mt-auto">
+                                                                                    <span className={`text-[10px] ${statusColor} px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest`}>
+                                                                                        {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? 'Pedido Entregue (S/ Rastreio)' : statusNormalizado.replace(/_/g, ' ')}
+                                                                                    </span>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     </div>
 
