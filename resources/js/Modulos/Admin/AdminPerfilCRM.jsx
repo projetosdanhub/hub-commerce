@@ -110,7 +110,7 @@ const tabTransition = {
     exit: { opacity: 0, transition: { duration: 0.15, ease: "easeIn" } }
 };
 
-// 🟢 COMPONENTES DE FILTRO DE DATA ANIMADOS (Corrigido: Trava Aberto e Não Vaza a Tela)
+// 🟢 COMPONENTES DE FILTRO DE DATA ANIMADOS (100% Blindados)
 const HoverProgressRoundButton = ({ text, onClick, loading, icon: Icon, ariaLabel, isActive }) => {
     const [isHovered, setIsHovered] = useState(false);
     
@@ -134,7 +134,9 @@ const HoverProgressRoundButton = ({ text, onClick, loading, icon: Icon, ariaLabe
              </svg>
           )}
           <div className="relative z-10 flex items-center gap-2 whitespace-nowrap">
-              {loading ? <Icons.Spinner className="w-5 h-5 text-blue-500 shrink-0" /> : <Icon className={`w-5 h-5 shrink-0 transition-colors ${shouldExpand ? 'text-blue-600' : 'text-slate-500'}`} />}
+              {loading ? (
+                  <svg className="w-5 h-5 text-blue-500 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              ) : (Icon && <Icon className={`w-5 h-5 shrink-0 transition-colors ${shouldExpand ? 'text-blue-600' : 'text-slate-500'}`} />)}
               <AnimatePresence>
                   {shouldExpand && !loading && (
                       <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }} exit={{ opacity: 0, width: 0 }} className="text-xs font-bold text-slate-700 truncate pr-2">
@@ -171,7 +173,10 @@ const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, i
              aria-modal="true" 
              aria-label="Filtrar Período"
           >
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Icons.Filter className="w-4 h-4"/> Filtrar Período</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+              Filtrar Período
+            </p>
             <div className="space-y-4">
               <div className="relative z-10">
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Inicial</label>
@@ -244,7 +249,7 @@ export default function AdminPerfilCRM({
     const [timelinePage, setTimelinePage] = useState(1);
     const timelinePerPage = 6;
     
-    // 🟢 ESTADOS DO HISTÓRICO DE PEDIDOS E POPUP
+// 🟢 ESTADOS DO HISTÓRICO DE PEDIDOS E POPUP
     const [orderHistoryTab, setOrderHistoryTab] = useState('TODOS');
     const [orderHistoryPage, setOrderHistoryPage] = useState(1);
     const [orderHistoryPerPage, setOrderHistoryPerPage] = useState(5);
@@ -253,6 +258,7 @@ export default function AdminPerfilCRM({
     // Filtros de Data Animado do Histórico
     const [historyDateOpen, setHistoryDateOpen] = useState(false);
     const [historyDateRange, setHistoryDateRange] = useState({ start: '', end: '' });
+    const [historyFilterText, setHistoryFilterText] = useState('Todo o Período');
 
     // Cronômetros de Senha Temporária
     useEffect(() => {
@@ -1279,7 +1285,7 @@ export default function AdminPerfilCRM({
                             </div>
                         </motion.section>
                         )}
-                       {/* ========================================================= */}
+                        {/* ========================================================= */}
                         {/* 🟢 ABA: HISTÓRICO DE PEDIDOS (COM EFEITO SANFONA)         */}
                         {/* ========================================================= */}
                         {crmSubTab === 'HISTÓRICO DE PEDIDOS' && !perfilEmEdicao && (
@@ -1295,18 +1301,17 @@ export default function AdminPerfilCRM({
                                     </div>
                                     <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
                                         
-                                            {/* 🟢 COMPONENTE DE FILTRO ANIMADO */}
-                                            <div className="relative shrink-0 z-[100] flex justify-end">
-                                                <HoverProgressRoundButton 
-                                                    text={historyFilterText}
-                                                    onClick={() => setHistoryDateOpen(!historyDateOpen)} 
-                                                    icon={Icons.Calendar} 
-                                                    ariaLabel="Filtrar Período de Pedidos"
-                                                    loading={savingState === 'filtroHistory'}
-                                                    isActive={historyDateOpen} // 🟢 ADICIONE ISTO!
-                                                />
-                                                <DateFilterPopup 
-                                                // ... resto do DateFilterPopup
+                                        {/* 🟢 COMPONENTE DE FILTRO (IDÊNTICO AO DASHBOARD) */}
+                                        <div className="relative shrink-0 z-[100] flex justify-end">
+                                            <HoverProgressRoundButton 
+                                                text={historyFilterText}
+                                                onClick={() => setHistoryDateOpen(!historyDateOpen)} 
+                                                icon={Icons.Calendar} 
+                                                ariaLabel="Filtrar Período de Pedidos"
+                                                loading={savingState === 'filtroHistory'}
+                                                isActive={historyDateOpen}
+                                            />
+                                            <DateFilterPopup 
                                                 isOpen={historyDateOpen} 
                                                 onClose={() => setHistoryDateOpen(false)} 
                                                 dateRange={historyDateRange} 
@@ -1314,6 +1319,7 @@ export default function AdminPerfilCRM({
                                                 loading={savingState === 'filtroHistory'}
                                                 onClear={() => { 
                                                     setHistoryDateRange({start:'',end:''}); 
+                                                    setHistoryFilterText('Todo o Período'); 
                                                     setOrderHistoryPage(1); 
                                                     setHistoryDateOpen(false); 
                                                 }}
@@ -1321,6 +1327,7 @@ export default function AdminPerfilCRM({
                                                     if(historyDateRange.start && historyDateRange.end) {
                                                         setSavingState('filtroHistory');
                                                         setTimeout(() => {
+                                                            setHistoryFilterText(`${formatDateBR(historyDateRange.start)} até ${formatDateBR(historyDateRange.end)}`);
                                                             setOrderHistoryPage(1);
                                                             setHistoryDateOpen(false);
                                                             setSavingState(null);
@@ -1386,11 +1393,10 @@ export default function AdminPerfilCRM({
                                             const isParcelado = pagParcelas > 1;
                                             const valorParcela = safeNum(pedido.installment_value || pedido.pagamento?.valor_parcela || (pedido.total / pagParcelas));
                                             
-                                            // Endereço e Logística Desestruturados e Seguros
+                                            // 🟢 Endereço e Logística Desestruturados (CORREÇÃO DO REFERENCE ERROR)
                                             const totalVolumes = pedido.items?.length || pedido.itens?.length || pedido.qtd_produtos || 0;
                                             const end = pedido.endereco || pedido.address || {};
                                             
-                                            // Variáveis independentes para evitar ReferenceError
                                             const rua = end.rua || end.street || end.logradouro || '-';
                                             const num = end.numero || end.num || end.number || '-';
                                             const bairro = end.bairro || end.neighborhood || '-';
@@ -1524,7 +1530,7 @@ export default function AdminPerfilCRM({
                                                                         </div>
                                                                     </div>
 
-                                                                   {/* BLOCO B: Logística & Transporte */}
+                                                                    {/* BLOCO B: Logística & Transporte */}
                                                                     <div className="space-y-3 flex flex-col h-full">
                                                                         <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
                                                                             <Icons.Truck className="w-3.5 h-3.5 text-blue-500"/> Logística & Transporte
@@ -1539,8 +1545,6 @@ export default function AdminPerfilCRM({
                                                                             <div className="pt-2 border-t border-slate-100">
                                                                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Destinatário & Endereço:</span>
                                                                                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5">
-                                                                                    
-                                                                                    {/* 🟢 Variáveis isoladas e 100% seguras contra ReferenceError */}
                                                                                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
                                                                                         <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${rua}, ${num}`}>{rua}, {num}</span>

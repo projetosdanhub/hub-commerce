@@ -185,8 +185,13 @@ const FadeIn = React.forwardRef(({ children, className = "", ...props }, ref) =>
 ));
 FadeIn.displayName = 'FadeIn';
 
-const HoverProgressRoundButton = ({ text, onClick, loading, icon: Icon, ariaLabel }) => {
+// 🟢 COMPONENTES DE FILTRO DE DATA ANIMADOS (100% Blindados e Travados Abertos)
+const HoverProgressRoundButton = ({ text, onClick, loading, icon: Icon, ariaLabel, isActive }) => {
     const [isHovered, setIsHovered] = useState(false);
+    
+    // O botão expande se o mouse estiver em cima OU se o modal estiver aberto
+    const shouldExpand = isHovered || isActive;
+
     return (
       <motion.button 
           onMouseEnter={() => setIsHovered(true)}
@@ -195,8 +200,8 @@ const HoverProgressRoundButton = ({ text, onClick, loading, icon: Icon, ariaLabe
           onClick={onClick} 
           aria-label={ariaLabel}
           disabled={loading}
-          animate={{ width: isHovered ? 'auto' : 48 }}
-          className={`relative overflow-hidden h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center pl-[14px] pr-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-80 transition-colors ${isHovered ? 'hover:border-blue-300 hover:bg-slate-50' : ''}`}
+          animate={{ width: shouldExpand ? 'auto' : 48 }}
+          className={`relative overflow-hidden h-12 rounded-full bg-white border shadow-sm flex items-center pl-[14px] pr-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-80 transition-colors z-10 ${shouldExpand ? 'border-blue-300 bg-slate-50' : 'border-slate-200'}`}
       >
           {loading && (
              <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 48 48">
@@ -204,9 +209,9 @@ const HoverProgressRoundButton = ({ text, onClick, loading, icon: Icon, ariaLabe
              </svg>
           )}
           <div className="relative z-10 flex items-center gap-2 whitespace-nowrap">
-              {loading ? <Icons.Spinner className="w-5 h-5 text-blue-500 shrink-0" /> : <Icon className="w-5 h-5 text-slate-500 group-hover:text-blue-600 shrink-0 transition-colors" />}
+              {loading ? <Icons.Spinner className="w-5 h-5 text-blue-500 shrink-0" /> : <Icon className={`w-5 h-5 shrink-0 transition-colors ${shouldExpand ? 'text-blue-600' : 'text-slate-500'}`} />}
               <AnimatePresence>
-                  {isHovered && !loading && (
+                  {shouldExpand && !loading && (
                       <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }} exit={{ opacity: 0, width: 0 }} className="text-xs font-bold text-slate-700 truncate pr-2">
                           {text}
                       </motion.span>
@@ -225,17 +230,14 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
         </span>
     </button>
 );
-// 🟢 COMPONENTE DE FILTRO DE DATA BLINDADO (Com Overlay Invisível)
 const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, isOpen, onClose }) => {
-  // Oculta o componente inteiro se não estiver aberto
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* 🟢 OVERLAY INVISÍVEL: Cobre a tela inteira atrás do popup. 
-              Captura o clique fora sem entrar em conflito com o calendário nativo */}
+          {/* Overlay invisível para fechar ao clicar fora (Corrige o bug do calendário nativo) */}
           <div 
              className="fixed inset-0 z-[90]" 
              onClick={(e) => { e.stopPropagation(); onClose(); }}
@@ -246,32 +248,20 @@ const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, i
              initial={{ opacity: 0, y: 10, scale: 0.95 }} 
              animate={{ opacity: 1, y: 0, scale: 1 }} 
              exit={{ opacity: 0, y: 10, scale: 0.95 }} 
-             className="absolute right-0 lg:left-0 mt-2 bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 w-80 z-[100]" 
+             className="absolute right-0 top-full mt-2 origin-top-right bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 w-80 z-[100]" 
              role="dialog" 
              aria-modal="true" 
              aria-label="Filtrar Período"
           >
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Icons.Filter className="w-4 h-4"/> Filtrar Período
-            </p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Icons.Filter className="w-4 h-4"/> Filtrar Período</p>
             <div className="space-y-4">
               <div className="relative z-10">
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Inicial</label>
-                <input 
-                    type="date" 
-                    value={dateRange.start} 
-                    onChange={(e) => setDateRange({...dateRange, start: e.target.value})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all cursor-pointer" 
-                />
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Inicial</label>
+                  <input type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all cursor-pointer" />
               </div>
               <div className="relative z-10">
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Final</label>
-                <input 
-                    type="date" 
-                    value={dateRange.end} 
-                    onChange={(e) => setDateRange({...dateRange, end: e.target.value})} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all cursor-pointer" 
-                />
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Final</label>
+                  <input type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all cursor-pointer" />
               </div>
               <div className="pt-2 flex gap-2 relative z-10">
                 <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors">Limpar</button>
