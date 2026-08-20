@@ -160,13 +160,13 @@ export default function AdminPerfilCRM({
     const [timelinePage, setTimelinePage] = useState(1);
     const timelinePerPage = 6;
     
-    // 🟢 ESTADOS DO HISTÓRICO DE PEDIDOS (COM NOVO FILTRO DE DATA ANIMADO)
+    // 🟢 ESTADOS DO HISTÓRICO DE PEDIDOS (COM FILTRO ANIMADO)
     const [orderHistoryTab, setOrderHistoryTab] = useState('TODOS');
     const [orderHistoryPage, setOrderHistoryPage] = useState(1);
     const [orderHistoryPerPage, setOrderHistoryPerPage] = useState(5);
     const [navigatingOrder, setNavigatingOrder] = useState(null);
 
-    // Filtro Animado
+    // Filtro Animado de Data
     const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
     const [isFilterExpanded, setIsFilterExpanded] = useState(false);
     const [isFilterHovered, setIsFilterHovered] = useState(false);
@@ -478,7 +478,7 @@ export default function AdminPerfilCRM({
     const totalTimelinePages = Math.ceil(auditLogsFiltrados.length / timelinePerPage) || 1;
     const auditLogsPaginados = auditLogsFiltrados.slice((timelinePage - 1) * timelinePerPage, timelinePage * timelinePerPage);
 
-    // 🟢 CÁLCULO INTELIGENTE DO HISTÓRICO DE PEDIDOS (COM DATA EXATA)
+    // 🟢 CÁLCULO INTELIGENTE DO HISTÓRICO DE PEDIDOS
     const historicoPedidosFiltrado = useMemo(() => {
         if(!clienteSelecionado || !clienteSelecionado.pedidos) return [];
         let ped = clienteSelecionado.pedidos;
@@ -1203,7 +1203,7 @@ export default function AdminPerfilCRM({
                         {crmSubTab === 'HISTÓRICO DE PEDIDOS' && !perfilEmEdicao && (
                             <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-6 flex flex-col h-full">
                                 
-                                {/* CABEÇALHO DA SEÇÃO (Com Filtro Animado e Qtd por Pág) */}
+                                {/* CABEÇALHO DA SEÇÃO */}
                                 <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm gap-4 shrink-0">
                                     <div>
                                         <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
@@ -1213,15 +1213,15 @@ export default function AdminPerfilCRM({
                                     </div>
                                     <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
                                         
-                                        {/* 🟢 FILTRO DE PERÍODO ANIMADO (Barra de Progresso no Hover) */}
+                                        {/* 🟢 FILTRO DE PERÍODO ANIMADO */}
                                         <motion.div 
                                             layout
                                             onHoverStart={() => setIsFilterHovered(true)}
                                             onHoverEnd={() => setIsFilterHovered(false)}
-                                            className="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+                                            className="relative flex items-center bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden h-[38px]"
                                         >
                                             <motion.div 
-                                                className="absolute left-0 top-0 bottom-0 bg-blue-100/60 z-0"
+                                                className="absolute left-0 top-0 bottom-0 bg-blue-50 z-0"
                                                 initial={{ width: 0 }}
                                                 animate={{ width: isFilterHovered && !isFilterExpanded ? '100%' : 0 }}
                                                 transition={{ duration: 0.3 }}
@@ -1230,7 +1230,7 @@ export default function AdminPerfilCRM({
                                             <motion.button 
                                                 whileTap={{ scale: 0.9 }}
                                                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-                                                className="relative z-10 flex items-center justify-center p-3 text-slate-500 hover:text-blue-600 transition-colors"
+                                                className="relative z-10 flex items-center justify-center px-3 h-full text-slate-500 hover:text-blue-600 transition-colors"
                                                 title="Filtrar por Período"
                                             >
                                                 <Icons.Calendar className="w-4 h-4" />
@@ -1242,20 +1242,20 @@ export default function AdminPerfilCRM({
                                                         initial={{ width: 0, opacity: 0 }}
                                                         animate={{ width: 'auto', opacity: 1 }}
                                                         exit={{ width: 0, opacity: 0 }}
-                                                        className="relative z-10 flex items-center gap-2 pr-3 whitespace-nowrap overflow-hidden"
+                                                        className="relative z-10 flex items-center gap-2 pr-3 whitespace-nowrap overflow-hidden h-full"
                                                     >
                                                         <input 
                                                             type="date" 
                                                             value={dateFilter.start}
                                                             onChange={e => { setDateFilter(prev => ({...prev, start: e.target.value})); setOrderHistoryPage(1); }}
-                                                            className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-700 outline-none focus:border-blue-500 shadow-sm"
+                                                            className="bg-transparent border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-700 outline-none focus:border-blue-500"
                                                         />
                                                         <span className="text-slate-400 text-[10px] font-bold">até</span>
                                                         <input 
                                                             type="date" 
                                                             value={dateFilter.end}
                                                             onChange={e => { setDateFilter(prev => ({...prev, end: e.target.value})); setOrderHistoryPage(1); }}
-                                                            className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-700 outline-none focus:border-blue-500 shadow-sm"
+                                                            className="bg-transparent border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-bold text-slate-700 outline-none focus:border-blue-500"
                                                         />
                                                         {(dateFilter.start || dateFilter.end) && (
                                                             <button 
@@ -1272,7 +1272,7 @@ export default function AdminPerfilCRM({
                                         </motion.div>
                                         
                                         {/* Select de Qtd por Página */}
-                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition-all focus-within:border-blue-500">
+                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 h-[38px] shadow-sm transition-all focus-within:border-blue-500">
                                             <Icons.Activity className="w-4 h-4 text-slate-400" />
                                             <select 
                                                 value={orderHistoryPerPage} 
@@ -1287,15 +1287,15 @@ export default function AdminPerfilCRM({
                                             </select>
                                         </div>
 
-                                        <div className="bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl text-center shrink-0 ml-auto">
-                                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block">Volume</span>
+                                        <div className="bg-blue-50 border border-blue-100 px-4 py-1.5 rounded-xl text-center shrink-0 ml-auto flex items-center gap-2">
+                                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Volume</span>
                                             <span className="text-lg font-black text-blue-700 leading-tight">{historicoPedidosFiltrado.length}</span>
                                         </div>
                                     </div>
                                 </header>
 
                                 {/* FEED VERTICAL DE PEDIDOS (ACORDEON PAGINADO) */}
-                                <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar pb-10">
                                     {orderHistoryPaginados.length > 0 ? (
                                         orderHistoryPaginados.map((pedido) => {
                                             
@@ -1324,23 +1324,22 @@ export default function AdminPerfilCRM({
                                             const isParcelado = pagParcelas > 1;
                                             const valorParcela = safeNum(pedido.installment_value || pedido.pagamento?.valor_parcela || (pedido.total / pagParcelas));
                                             
-                                            // Endereço e Logística Seguro contra ReferenceError
+                                            // Endereço e Logística Desestruturados e Seguros
                                             const totalVolumes = pedido.items?.length || pedido.itens?.length || pedido.qtd_produtos || 0;
                                             const end = pedido.endereco || pedido.address || {};
-                                            const enderecoFormatado = {
-                                                rua: end.rua || end.street || end.logradouro || '-',
-                                                num: end.numero || end.num || end.number || '-',
-                                                bairro: end.bairro || end.neighborhood || '-',
-                                                cidade: end.cidade || end.city || '-',
-                                                uf: end.uf || end.estado || end.state || '-',
-                                                cep: end.cep || end.zip_code || '-',
-                                                comp: end.complemento || end.complement || '',
-                                                ref: end.referencia || end.reference || ''
-                                            };
+                                            const rua = end.rua || end.street || end.logradouro || '-';
+                                            const num = end.numero || end.num || end.number || '-';
+                                            const bairro = end.bairro || end.neighborhood || '-';
+                                            const cidade = end.cidade || end.city || '-';
+                                            const uf = end.uf || end.estado || end.state || '-';
+                                            const cep = end.cep || end.zip_code || '-';
+                                            const complemento = end.complemento || end.complement || '';
+                                            const referencia = end.referencia || end.reference || '';
+                                            
                                             const rastreioCode = pedido.tracking_code;
                                             const carrier = pedido.carrier || 'Logística';
                                             
-                                            // Cupons
+                                            // Cupons Seguros
                                             const rawCoupons = pedido.applied_coupons || pedido.cupons || [];
                                             const cuponsUsados = typeof rawCoupons === 'string' ? JSON.parse(rawCoupons || '[]') : rawCoupons;
 
@@ -1370,7 +1369,7 @@ export default function AdminPerfilCRM({
                                                         </div>
 
                                                         <div className="flex items-center justify-between lg:justify-end gap-6 w-full lg:w-auto">
-                                                            <div className="text-right">
+                                                            <div className="text-right border-r border-slate-200 pr-6 hidden sm:block">
                                                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Líquido Recebido</span>
                                                                 <span className="text-xl font-black text-emerald-600 leading-none">{formatCurrency(pedido.total)}</span>
                                                             </div>
@@ -1434,21 +1433,26 @@ export default function AdminPerfilCRM({
                                                                         </div>
 
                                                                         <div className="mt-auto">
+                                                                            <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                                <Icons.CreditCard className="w-3.5 h-3.5 text-blue-500"/> Detalhes do Pagamento
+                                                                            </h6>
                                                                             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                                                                                <div>
-                                                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Gateway de Pagamento</span>
-                                                                                    <span className="text-sm font-black text-slate-800 block uppercase mb-3">"{pagGateway}"</span>
-                                                                                    
-                                                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Pagamento Via</span>
-                                                                                    <span className="text-xs font-bold text-slate-700 block uppercase mb-1">{pagMetodo}</span>
-                                                                                    
-                                                                                    {isParcelado ? (
-                                                                                        <span className="text-[10px] font-medium text-slate-500">
-                                                                                            Parcelado em {pagParcelas}x de {formatCurrency(valorParcela)}
-                                                                                        </span>
-                                                                                    ) : (
-                                                                                        <span className="text-[10px] font-medium text-slate-500">Pagamento à vista / Único</span>
-                                                                                    )}
+                                                                                <div className="space-y-3">
+                                                                                    <div>
+                                                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Gateway de Pagamento</span>
+                                                                                        <span className="text-sm font-black text-slate-800 block">"{pagGateway}"</span>
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Pagamento Via</span>
+                                                                                        <span className="text-xs font-bold text-slate-700 block uppercase mb-0.5">{pagMetodo}</span>
+                                                                                        {isParcelado ? (
+                                                                                            <span className="text-[10px] font-medium text-slate-500">
+                                                                                                Parcelado em {pagParcelas}x de {formatCurrency(valorParcela)}
+                                                                                            </span>
+                                                                                        ) : (
+                                                                                            <span className="text-[10px] font-medium text-slate-500">Pagamento à vista / Único</span>
+                                                                                        )}
+                                                                                    </div>
                                                                                 </div>
                                                                                 <Icons.CheckCircle className="w-6 h-6 text-emerald-500 opacity-60" />
                                                                             </div>
@@ -1472,54 +1476,40 @@ export default function AdminPerfilCRM({
                                                                                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5">
                                                                                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
-                                                                                        <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${enderecoFormatado.rua}, ${enderecoFormatado.num}`}>{enderecoFormatado.rua}, {enderecoFormatado.num}</span>
+                                                                                        <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${rua}, ${num}`}>{rua}, {num}</span>
                                                                                     </div>
-                                                                                    {enderecoFormatado.comp && (
+                                                                                    {complemento && (
                                                                                         <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                             <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Complemento:</span> 
-                                                                                            <span className="text-slate-800 text-right truncate max-w-[140px]" title={enderecoFormatado.comp}>{enderecoFormatado.comp}</span>
+                                                                                            <span className="text-slate-800 text-right truncate max-w-[140px]" title={complemento}>{complemento}</span>
                                                                                         </div>
                                                                                     )}
                                                                                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Bairro:</span> 
-                                                                                        <span className="text-slate-800 text-right truncate max-w-[140px]" title={enderecoFormatado.bairro}>{enderecoFormatado.bairro}</span>
+                                                                                        <span className="text-slate-800 text-right truncate max-w-[140px]" title={bairro}>{bairro}</span>
                                                                                     </div>
                                                                                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Cidade/UF:</span> 
-                                                                                        <span className="text-slate-800 font-bold text-right truncate">{enderecoFormatado.cidade} - {enderecoFormatado.uf}</span>
+                                                                                        <span className="text-slate-800 font-bold text-right truncate">{cidade} - {uf}</span>
                                                                                     </div>
                                                                                     <div className="flex justify-between items-center pb-1">
                                                                                         <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CEP:</span> 
-                                                                                        <span className="text-slate-800 font-mono text-right truncate">{enderecoFormatado.cep}</span>
+                                                                                        <span className="text-slate-800 font-mono text-right truncate">{cep}</span>
                                                                                     </div>
-                                                                                    {enderecoFormatado.ref && (
+                                                                                    {referencia && (
                                                                                         <div className="pt-1.5 border-t border-slate-200/60">
                                                                                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Referência:</span>
-                                                                                            <p className="text-[10px] text-slate-600 italic leading-relaxed truncate" title={enderecoFormatado.ref}>{enderecoFormatado.ref}</p>
+                                                                                            <p className="text-[10px] text-slate-600 italic leading-relaxed truncate" title={referencia}>{referencia}</p>
                                                                                         </div>
                                                                                     )}
                                                                                 </div>
                                                                             </div>
 
-                                                                            {rastreioCode ? (
-                                                                                <div className="pt-2 mt-auto">
-                                                                                    <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">
-                                                                                        Cód. Rastreio ({carrier}):
-                                                                                    </span>
-                                                                                    <div className="flex items-center justify-between bg-amber-50/50 border border-amber-200 p-2.5 rounded-xl">
-                                                                                        <span className="text-amber-700 font-mono font-bold tracking-widest">{rastreioCode}</span>
-                                                                                        <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(rastreioCode); }} title="Copiar">
-                                                                                            <Icons.Copy className="w-4 h-4 text-amber-500 hover:text-amber-700 transition-colors"/>
-                                                                                        </button>
-                                                                                    </div>
-                                                                                </div>
-                                                                            ) : (
-                                                                                <div className="pt-3 mt-auto">
-                                                                                    <span className={`text-[10px] ${statusColor} px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest`}>
-                                                                                        {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? 'Pedido Entregue (S/ Rastreio)' : statusNormalizado.replace(/_/g, ' ')}
-                                                                                    </span>
-                                                                                </div>
-                                                                            )}
+                                                                            <div className="pt-3 mt-auto">
+                                                                                <span className={`text-[10px] ${statusColor} px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest`}>
+                                                                                    {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? 'Pedido Entregue' : statusNormalizado.replace(/_/g, ' ')}
+                                                                                </span>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
 
@@ -1539,14 +1529,18 @@ export default function AdminPerfilCRM({
                                                                                         return (
                                                                                             <div key={idx} className={`bg-${themeColor}-50/30 border border-${themeColor}-100 p-3.5 rounded-xl flex flex-col gap-1.5 shadow-sm hover:bg-${themeColor}-50 transition-colors`}>
                                                                                                 <div className="flex justify-between items-start gap-2">
-                                                                                                    <div className="min-w-0">
-                                                                                                        <strong className={`text-[11px] font-black text-${themeColor}-900 block truncate flex items-center gap-1.5`} title={cupom.nome || cupom.codigo}>
-                                                                                                            <TitleIcon className={`w-3 h-3 text-${themeColor}-500`} />
-                                                                                                            {cupom.nome || cupom.codigo || 'Desconto Aplicado'}
-                                                                                                        </strong>
-                                                                                                        <span className={`text-[8px] font-black text-${themeColor}-600 uppercase tracking-widest bg-${themeColor}-100/60 px-1.5 py-0.5 rounded mt-1 inline-block`}>
-                                                                                                            {cupom.tipo || 'CUPOM'}
-                                                                                                        </span>
+                                                                                                    <div className="min-w-0 flex items-center gap-2">
+                                                                                                        <div className={`w-8 h-8 rounded-full bg-${themeColor}-100 flex items-center justify-center shrink-0`}>
+                                                                                                            <TitleIcon className={`w-4 h-4 text-${themeColor}-600`} />
+                                                                                                        </div>
+                                                                                                        <div>
+                                                                                                            <strong className={`text-[11px] font-black text-${themeColor}-900 block truncate`} title={cupom.nome || cupom.codigo}>
+                                                                                                                {cupom.nome || cupom.codigo || 'Benefício VIP'}
+                                                                                                            </strong>
+                                                                                                            <span className={`text-[8px] font-black text-${themeColor}-600 uppercase tracking-widest block mt-0.5`}>
+                                                                                                                {cupom.tipo || 'CUPOM / BENEFÍCIO'}
+                                                                                                            </span>
+                                                                                                        </div>
                                                                                                     </div>
                                                                                                     <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">
                                                                                                         -{formatCurrency(cupom.valor || cupom.desconto)}
@@ -1559,12 +1553,12 @@ export default function AdminPerfilCRM({
                                                                             ) : (
                                                                                 <div className="h-[120px] flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed p-4 text-center">
                                                                                     <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center mb-2"><Icons.Tag className="w-3.5 h-3.5 text-slate-300" /></div>
-                                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum cupom ou benefício</p>
+                                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum cupom ou benefício aplicado</p>
                                                                                 </div>
                                                                             )}
                                                                         </div>
 
-                                                                        {/* BOTÃO NAVEGAR PARA A TELA DE PEDIDOS */}
+                                                                        {/* BOTÃO NAVEGAR PARA A TELA DE PEDIDOS (COM ANIMAÇÃO DE PROGRESSO) */}
                                                                         <button 
                                                                             onClick={() => {
                                                                                 setNavigatingOrder(pedido.id);
@@ -1603,7 +1597,7 @@ export default function AdminPerfilCRM({
                                                 <Icons.ShoppingBag className="w-8 h-8 text-slate-300" />
                                             </div>
                                             <h4 className="text-base font-black text-slate-700">Nenhum pedido encontrado</h4>
-                                            <p className="text-xs text-slate-500 font-medium mt-1">Não há transações para os filtros selecionados.</p>
+                                            <p className="text-xs text-slate-500 font-medium mt-1">Não há transações para as datas informadas.</p>
                                         </div>
                                     )}
                                 </div>
