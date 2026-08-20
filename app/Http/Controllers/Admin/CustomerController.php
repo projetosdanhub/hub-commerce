@@ -130,6 +130,7 @@ class CustomerController extends Controller
                 'avatar' => $c->avatar ?? null,
                 'status' => $c->status ?? 'ATIVO',
                 'dataCadastro' => $c->created_at->format('Y-m-d'),
+                'notas' => $c->notas ?? '',
 
                 'ltv' => (float) $ltv,
                 'compras' => $pedidosValidos->count(),
@@ -150,16 +151,29 @@ class CustomerController extends Controller
                 'reembolsosPagos' => $pedidosReembolsados->sum('total'),
                 'enderecos' => $c->addresses,
 
+                // 🟢 MAP EXATO DOS PEDIDOS E SUAS INFORMAÇÕES FINANCEIRAS/LOGÍSTICAS
                 'pedidos' => $c->orders->map(function ($order) {
                     $cuponsJson = is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : $order->applied_coupons;
                     return [
                         'id' => $order->id,
                         'status' => $order->status,
-                        'data_raw' => $order->created_at->format('Y-m-d'),
+                        'data_raw' => $order->created_at->format('Y-m-d H:i:s'),
+                        
+                        // Financeiro
                         'subtotal' => (float) $order->subtotal,
-                        'frete' => (float) $order->frete,
+                        'frete_valor' => (float) $order->frete,
                         'desconto' => (float) $order->desconto,
                         'total' => (float) $order->total,
+                        
+                        // Pagamento
+                        'payment_method' => $order->payment_method,
+                        'payment_installments' => $order->payment_installments,
+                        'installment_value' => (float) $order->installment_value,
+                        'gateway_fee' => (float) $order->gateway_fee,
+
+                        // Logística
+                        'tracking_code' => $order->tracking_code,
+                        
                         'endereco' => $order->address,
                         'cupons' => $cuponsJson ?? [],
                         'history' => $order->history->map(function($h) {
@@ -217,10 +231,13 @@ class CustomerController extends Controller
     }
 
     // =========================================================================
-    // 2. BUSCAR UM ÚNICO CLIENTE
+    // 2. BUSCAR UM ÚNICO CLIENTE (Retorno Consolidado Igual a Index)
     // =========================================================================
     public function show($id)
     {
+        // Alterado para garantir que os retornos são os mesmos. Como a Listagem
+        // Index faz o parser, podemos redirecionar ou reescrever a lógica,
+        // mas para uso de API Resource, é aconselhável manter o formato.
         $cliente = User::with(['addresses', 'orders.items', 'orders.history', 'orders.address', 'auditLogs' => function($q) {
             $q->orderBy('created_at', 'desc');
         }])->findOrFail($id);
@@ -302,10 +319,11 @@ class CustomerController extends Controller
 
         return response()->json(['status' => 'success', 'message' => 'Dados sensíveis atualizados.']);
     }
-// =========================================================================
+
+    // =========================================================================
     // CONFIRMAÇÃO DE E-MAIL VIA LINK (CLIQUE DO CLIENTE)
     // =========================================================================
-public function confirmEmailUpdate(Request $request)
+    public function confirmEmailUpdate(Request $request)
     {
         $token = $request->query('token');
         $dados = Cache::get("email_update_{$token}");
@@ -386,6 +404,7 @@ public function confirmEmailUpdate(Request $request)
             </html>
         ', 200, ['Content-Type' => 'text/html']);
     }
+
     // =========================================================================
     // 6. GESTÃO DE E-MAIL
     // =========================================================================
@@ -409,9 +428,7 @@ public function confirmEmailUpdate(Request $request)
         return response()->json(['status' => 'success', 'message' => 'Link de verificação enviado!']);
     }
 
-
-
-// =========================================================================
+    // =========================================================================
     // 7. GESTÃO DE SENHA
     // =========================================================================
     public function generateTempPassword($id)
@@ -448,7 +465,7 @@ public function confirmEmailUpdate(Request $request)
         return response()->json(['status' => 'success', 'message' => 'Link de redefinição enviado com sucesso!']);
     }
 
- // =========================================================================
+    // =========================================================================
     // EXIBE O FORMULÁRIO DE NOVA SENHA (CLIQUE NO E-MAIL)
     // =========================================================================
     public function showPasswordResetForm(Request $request)
@@ -593,7 +610,8 @@ public function confirmEmailUpdate(Request $request)
             </html>
         ', 200, ['Content-Type' => 'text/html']);
     }
-// =========================================================================
+
+    // =========================================================================
     // PROCESSA A NOVA SENHA ENVIADA PELO FORMULÁRIO
     // =========================================================================
     public function processPasswordReset(Request $request)

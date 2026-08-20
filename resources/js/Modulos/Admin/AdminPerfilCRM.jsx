@@ -102,6 +102,7 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
 // COMPONENTE PRINCIPAL (O PERFIL DO CLIENTE ISOLADO)
 // ============================================================================
 
+
 // 🟢 ANIMAÇÕES SUAVES PADRONIZADAS PARA AS ABAS E TRANSIÇÕES
 const tabTransition = {
     initial: { opacity: 0 },
@@ -112,6 +113,7 @@ export default function AdminPerfilCRM({
     clienteSelecionado, 
     setClienteSelecionado, 
     onBack, 
+    onVoltar,
     niveisVIPDaApi, 
     refetchClients, 
     isFetchingClients,
@@ -121,7 +123,7 @@ export default function AdminPerfilCRM({
 
     const navigate = useNavigate();
     const queryClientLocal = useQueryClient();
-    
+
     // Estados Locais e Exclusivos deste Componente
     const [savingState, setSavingState] = useState(null);
     const [crmSubTab, setCrmSubTab] = useState('RESUMO');
@@ -141,6 +143,14 @@ export default function AdminPerfilCRM({
         nome: '', sexo: '', nascimento: '', cpf: '', telefone: '', email: '', motivo: '', arquivo: null
     });
 
+    // Form de edição
+    const [formPerfil, setFormPerfil] = useState({
+        name: clienteSelecionado?.nome || clienteSelecionado?.name || '',
+        email: clienteSelecionado?.email || '',
+        phone: clienteSelecionado?.telefone || clienteSelecionado?.phone || '',
+        status: clienteSelecionado?.status || 'Ativo',
+        rank: clienteSelecionado?.rank || 'Iniciante'
+    });
     const [modalStatusConta, setModalStatusConta] = useState({ isOpen: false, tipo: null, motivo: '' });
     const [walletFlow, setWalletFlow] = useState({ tipo: 'Hub Coins', valor: '', motivo: '' });
     const [senhaTemp, setSenhaTemp] = useState({ codigo: null, expiraEm: null });
@@ -372,9 +382,33 @@ export default function AdminPerfilCRM({
         mutacaoSenha.mutate(null, { onSettled: () => setSavingState(null) });
     };
 
-    const salvarNotasAPI = () => {
+// 🟢 COPIE E COLE ESTA FUNÇÃO AQUI:
+    const salvarNotasAPI = async () => {
+        if (!clienteSelecionado?.id) return;
         setSavingState('notas');
-        mutacaoNotas.mutate(clienteSelecionado.notas, { onSettled: () => setSavingState(null) });
+        
+        try {
+            // Requisição para a sua API Laravel atualizar as notas
+            await api.put(`/admin/customers/${clienteSelecionado.id}/notes`, { 
+                notas: clienteSelecionado.notas 
+            });
+            
+            // Tenta usar o Toast global, se não existir, usa alert nativo
+            if (showToastGlob) {
+                showToastGlob('Anotação salva com sucesso!', 'success');
+            } else {
+                alert('Anotação salva com sucesso!');
+            }
+        } catch (error) {
+            console.error("Erro ao salvar anotações:", error);
+            if (showToastGlob) {
+                showToastGlob('Erro ao salvar anotação.', 'error');
+            } else {
+                alert('Erro ao salvar a anotação. Verifique a conexão.');
+            }
+        } finally {
+            setSavingState(null);
+        }
     };
 
     const adicionarTag = () => {
@@ -825,12 +859,25 @@ export default function AdminPerfilCRM({
                                         </article>
                                     </div>
 
+                                    {/* 🟢 CARD DE ANOTAÇÕES INTERNAS */}
                                     <article className="bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm flex flex-col">
                                         <div className="flex justify-between items-center mb-4">
-                                            <h4 className="text-sm font-black text-slate-800 flex items-center gap-2"><Icons.FileText className="w-4 h-4 text-slate-400" /> Anotações Internas (Gestão)</h4>
-                                            <ProgressButton onClick={salvarNotasAPI} loading={savingState === 'notas'} text="Salvar Anotação" className="text-blue-600 hover:text-white font-bold bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-transparent px-4 py-2 rounded-xl transition-colors text-xs shadow-sm" />
+                                            <h4 className="text-sm font-black text-slate-800 flex items-center gap-2">
+                                                <Icons.FileText className="w-4 h-4 text-slate-400" /> Anotações Internas (Gestão)
+                                            </h4>
+                                            <ProgressButton 
+                                                onClick={salvarNotasAPI} 
+                                                loading={savingState === 'notas'} 
+                                                text="Salvar Anotação" 
+                                                className="text-blue-600 hover:text-white font-bold bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-transparent px-4 py-2 rounded-xl transition-colors text-xs shadow-sm" 
+                                            />
                                         </div>
-                                        <textarea className="w-full min-h-[120px] bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y shadow-inner" value={clienteSelecionado?.notas || ''} onChange={(e) => setClienteSelecionado({...clienteSelecionado, notas: e.target.value})} placeholder="Adicione observações estratégicas sobre este cliente. Visível apenas para gestores." />
+                                        <textarea 
+                                            className="w-full min-h-[120px] bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y shadow-inner" 
+                                            value={clienteSelecionado?.notas || ''} 
+                                            onChange={(e) => setClienteSelecionado({...clienteSelecionado, notas: e.target.value})} 
+                                            placeholder="Adicione observações estratégicas sobre este cliente. Visível apenas para gestores." 
+                                        />
                                     </article>
 
                                 </div>
@@ -1124,11 +1171,13 @@ export default function AdminPerfilCRM({
                             </div>
                         </motion.section>
                         )}
-                        {/* 🟢 PONTO DE REFERÊNCIA 3: DENTRO DE <AnimatePresence mode="wait"> */}
-                        {(crmSubTab === 'HISTÓRICO DE PEDIDOS' || crmSubTab === 'HISTORICO') && (
+ {/* ========================================================= */}
+                    {/* 🟢 ABA: HISTÓRICO DE PEDIDOS (COM EFEITO SANFONA)         */}
+                    {/* ========================================================= */}
+                    {crmSubTab === 'HISTÓRICO DE PEDIDOS' && !perfilEmEdicao && (
                         <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-6">
                             
-                            {/* Cabeçalho da Seção */}
+                            {/* CABEÇALHO DA SEÇÃO */}
                             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm gap-4">
                                 <div>
                                     <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
@@ -1142,207 +1191,295 @@ export default function AdminPerfilCRM({
                                 </div>
                             </header>
 
-                            {/* Feed Vertical de Pedidos */}
-                            <div className="space-y-6">
+                            {/* FEED VERTICAL DE PEDIDOS (ACORDEON) */}
+                            <div className="space-y-4">
                                 {clienteSelecionado?.pedidos && clienteSelecionado.pedidos.length > 0 ? (
                                     clienteSelecionado.pedidos.map((pedido) => {
+                                        
+                                        const isExpanded = pedidoExpandido === pedido.id;
                                         
                                         let statusColor = "bg-slate-50 text-slate-600 border-slate-200";
                                         let StatusIcon = Icons.Clock;
 
-                                        switch(pedido.status) {
+                                        const statusNormalizado = String(pedido.status).toUpperCase();
+
+                                        switch(statusNormalizado) {
                                             case 'ENTREGUE':
-                                            case 'CONCLUIDO':
-                                                statusColor = "bg-emerald-50 text-emerald-600 border-emerald-200";
-                                                StatusIcon = Icons.CheckCircle;
-                                                break;
+                                            case 'CONCLUIDO': statusColor = "bg-emerald-50 text-emerald-600 border-emerald-200"; StatusIcon = Icons.CheckCircle; break;
                                             case 'DESPACHADO':
-                                            case 'EM_TRANSITO':
-                                                statusColor = "bg-blue-50 text-blue-600 border-blue-200";
-                                                StatusIcon = Icons.Truck;
-                                                break;
+                                            case 'EM_TRANSITO': statusColor = "bg-blue-50 text-blue-600 border-blue-200"; StatusIcon = Icons.Truck; break;
                                             case 'SEPARACAO':
-                                            case 'PAGO':
-                                                statusColor = "bg-indigo-50 text-indigo-600 border-indigo-200";
-                                                StatusIcon = Icons.Package;
-                                                break;
-                                            case 'CANCELADO':
-                                                statusColor = "bg-rose-50 text-rose-600 border-rose-200";
-                                                StatusIcon = Icons.XCircle;
-                                                break;
-                                            default:
-                                                statusColor = "bg-amber-50 text-amber-600 border-amber-200";
-                                                StatusIcon = Icons.Clock;
-                                                break;
+                                            case 'PAGO': statusColor = "bg-indigo-50 text-indigo-600 border-indigo-200"; StatusIcon = Icons.Package; break;
+                                            case 'CANCELADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
+                                            case 'REEMBOLSADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
+                                            default: statusColor = "bg-amber-50 text-amber-600 border-amber-200"; StatusIcon = Icons.Clock; break;
                                         }
 
-                                        const cuponsUsados = typeof pedido.coupons === 'string' ? JSON.parse(pedido.coupons || '[]') : (pedido.coupons || []);
+                                        // 🟢 LENDO DADOS DIRETAMENTE DA ESTRUTURA DO SEU ORDER.PHP
+                                        
+                                        // Pagamento
+                                        const pagMetodo = pedido.payment_method || 'Não Informado';
+                                        const pagParcelas = safeNum(pedido.payment_installments || 1);
+                                        const isParcelado = pagParcelas > 1;
+                                        const valorParcela = safeNum(pedido.installment_value || (pedido.total / pagParcelas));
+                                        const taxaGateway = safeNum(pedido.gateway_fee);
+                                        
+                                        // Rastreio
+                                        const rastreioCode = pedido.tracking_code;
+
+                                        // Cupons (Já vem em array graças ao seu Cast do Laravel, mas garantimos a leitura se for string)
+                                        const rawCoupons = pedido.applied_coupons || pedido.cupons || [];
+                                        const cuponsUsados = typeof rawCoupons === 'string' ? JSON.parse(rawCoupons || '[]') : rawCoupons;
+
+                                        // Endereço (OrderAddress)
+                                        const end = pedido.endereco || pedido.address || {};
+                                        const rua = end.rua || end.street || end.logradouro || '-';
+                                        const num = end.numero || end.num || end.number || '-';
+                                        const bairro = end.bairro || end.neighborhood || '-';
+                                        const cidade = end.cidade || end.city || '-';
+                                        const uf = end.uf || end.estado || end.state || '-';
+                                        const cep = end.cep || end.zip_code || '-';
+                                        const complemento = end.complemento || end.complement || '';
+                                        const referencia = end.referencia || end.reference || '';
 
                                         return (
-                                            <article key={pedido.id} className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden transition-all duration-300 hover:border-blue-300 hover:shadow-md group cursor-default">
+                                            <article key={pedido.id} className={`bg-white rounded-[24px] border ${isExpanded ? 'border-blue-400 shadow-md ring-4 ring-blue-50/50' : 'border-slate-200 shadow-sm'} overflow-hidden transition-all duration-300`}>
                                                 
-                                                {/* Topo do Card do Pedido */}
-                                                <div className="p-5 sm:p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                                                    <div className="flex items-start gap-4">
-                                                        <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 shadow-sm group-hover:text-blue-500 group-hover:border-blue-200 transition-colors">
-                                                            <Icons.ShoppingBag className="w-6 h-6" />
+                                                {/* GATILHO DA SANFONA */}
+                                                <div 
+                                                    onClick={() => setPedidoExpandido(isExpanded ? null : pedido.id)}
+                                                    className={`p-5 sm:p-6 cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5 transition-colors ${isExpanded ? 'bg-blue-50/30' : 'bg-white hover:bg-slate-50'}`}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 transition-colors ${isExpanded ? 'bg-blue-100 border-blue-200 text-blue-600' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                                                            <Icons.ShoppingBag className="w-5 h-5" />
                                                         </div>
                                                         <div>
                                                             <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
                                                                 <h4 className="text-base font-black text-slate-800 tracking-tight">Pedido #{pedido.id}</h4>
-                                                                <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusColor}`}>
-                                                                    <StatusIcon className="w-3 h-3" /> {pedido.status?.replace(/_/g, ' ')}
+                                                                <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusColor}`}>
+                                                                    <StatusIcon className="w-3 h-3" /> {statusNormalizado.replace(/_/g, ' ')}
                                                                 </span>
                                                             </div>
-                                                            <p className="text-[11px] text-slate-500 font-medium">
-                                                                Efetuado em <strong className="text-slate-700">{formatDateTimeBR(pedido.created_at)}</strong>
+                                                            <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                                                                <Icons.Calendar className="w-3.5 h-3.5"/> Efetuado em <strong className="text-slate-700">{formatDateTimeBR(pedido.data_raw || pedido.created_at)}</strong>
                                                             </p>
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex items-center gap-6 lg:justify-end">
+                                                    <div className="flex items-center justify-between lg:justify-end gap-6 w-full lg:w-auto">
                                                         <div className="text-right border-r border-slate-200 pr-6 hidden sm:block">
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Pagamento via</span>
-                                                            <span className="text-xs font-black text-slate-700 uppercase">{pedido.pagamento_metodo || 'N/A'}</span>
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Metodo</span>
+                                                            <span className="text-xs font-black text-slate-700 uppercase">{pagMetodo}</span>
                                                         </div>
                                                         <div className="text-right">
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Total Pago</span>
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Líquido Recebido</span>
                                                             <span className="text-xl font-black text-emerald-600 leading-none">{formatCurrency(pedido.total)}</span>
                                                         </div>
-                                                        
-                                                        {/* Antes estava: onClick={() => window.location.href = ...} */}
-                                                        <button 
-                                                            onClick={() => navigate(`/admin/pedidos?id=${pedido.id}`)} 
-                                                            className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-4 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm shrink-0"
-                                                            title="Ver no Módulo de Pedidos"
-                                                        >
-                                                            Ver Pedido <Icons.ExternalLink className="w-3.5 h-3.5" />
-                                                        </button>
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-transform duration-300 shadow-sm shrink-0 ${isExpanded ? 'bg-blue-600 text-white border-blue-600 rotate-90' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'}`}>
+                                                            <Icons.ChevronRight className="w-4 h-4" />
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Detalhes Financeiros, Logística e Cupons */}
-                                                <div className="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-                                                    
-                                                    {/* 1. Composição do Valor */}
-                                                    <div className="space-y-3">
-                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
-                                                            <Icons.DollarSign className="w-3.5 h-3.5 text-emerald-500"/> Composição do Valor
-                                                        </h6>
-                                                        
-                                                        <div className="space-y-2.5 text-[11px] font-medium text-slate-600 bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
-                                                            <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60">
-                                                                <span className="text-slate-500">Subtotal Produtos:</span>
-                                                                <span className="text-slate-800 font-bold">{formatCurrency(pedido.subtotal)}</span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60">
-                                                                <span className="text-slate-500">Frete Cobrado:</span>
-                                                                <span className="text-slate-800 font-bold">{formatCurrency(pedido.frete_valor)}</span>
-                                                            </div>
+                                                {/* CONTEÚDO EXPANDIDO */}
+                                                <AnimatePresence>
+                                                    {isExpanded && (
+                                                        <motion.div 
+                                                            initial={{ height: 0, opacity: 0 }} 
+                                                            animate={{ height: 'auto', opacity: 1 }} 
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                            className="overflow-hidden"
+                                                        >
+                                                            <div className="p-5 sm:p-6 border-t border-slate-100 bg-slate-50/50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                                                                
+                                                                {/* BLOCO A: Composição & Pagamento */}
+                                                                <div className="space-y-6 flex flex-col h-full">
+                                                                    <div>
+                                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                            <Icons.DollarSign className="w-3.5 h-3.5 text-emerald-500"/> Composição do Valor
+                                                                        </h6>
+<div className="space-y-2 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                                                                            <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
+                                                                                <span>Subtotal Produtos:</span><span className="text-slate-800 font-bold">{formatCurrency(pedido.subtotal)}</span>
+                                                                            </div>
+                                                                            {/* 🟢 CORREÇÃO: Lendo 'frete_valor' que vem da sua API */}
+                                                                            <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
+                                                                                <span>Frete Cobrado:</span><span className="text-slate-800 font-bold">{formatCurrency(pedido.frete_valor || pedido.frete)}</span>
+                                                                            </div>
+                                                                            
+                                                                            {safeNum(pedido.desconto_loja || pedido.desconto) > 0 && (
+                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-rose-500">
+                                                                                    <span>(-) Desc. Cupons:</span><span className="font-bold">-{formatCurrency(pedido.desconto_loja || pedido.desconto)}</span>
+                                                                                </div>
+                                                                            )}
+                                                                            {safeNum(pedido.desconto_vip_produtos) > 0 && (
+                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-indigo-500">
+                                                                                    <span>(-) Desc. VIP Rank:</span><span className="font-bold">-{formatCurrency(pedido.desconto_vip_produtos)}</span>
+                                                                                </div>
+                                                                            )}
+                                                                            {safeNum(pedido.desconto_frete) > 0 && (
+                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-rose-500">
+                                                                                    <span>(-) Subsídio Frete:</span><span className="font-bold">-{formatCurrency(pedido.desconto_frete)}</span>
+                                                                                </div>
+                                                                            )}
+                                                                            
+                                                                            <div className="flex justify-between items-center pt-1 mt-1 text-xs">
+                                                                                <span className="text-slate-800 font-black">Líquido Recebido:</span><span className="text-emerald-600 font-black">{formatCurrency(pedido.total)}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
 
-                                                            {safeNum(pedido.desconto_loja) > 0 && (
-                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60 text-rose-500">
-                                                                    <span>(-) Desc. Loja/Cupom:</span>
-                                                                    <span className="font-bold">-{formatCurrency(pedido.desconto_loja)}</span>
-                                                                </div>
-                                                            )}
-                                                            {safeNum(pedido.desconto_vip_produtos) > 0 && (
-                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60 text-indigo-500">
-                                                                    <span>(-) Desc. VIP (Produtos):</span>
-                                                                    <span className="font-bold">-{formatCurrency(pedido.desconto_vip_produtos)}</span>
-                                                                </div>
-                                                            )}
-                                                            {safeNum(pedido.desconto_frete) > 0 && (
-                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-200/60 text-rose-500">
-                                                                    <span>(-) Desc. Frete:</span>
-                                                                    <span className="font-bold">-{formatCurrency(pedido.desconto_frete)}</span>
-                                                                </div>
-                                                            )}
-
-                                                            <div className="flex justify-between items-center pt-1 mt-1 text-xs">
-                                                                <span className="text-slate-800 font-black">Líquido Recebido:</span>
-                                                                <span className="text-emerald-600 font-black">{formatCurrency(pedido.total)}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* 2. Logística */}
-                                                    <div className="space-y-3">
-                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
-                                                            <Icons.MapPin className="w-3.5 h-3.5 text-blue-500"/> Logística & Transporte
-                                                        </h6>
-
-                                                        <div className="space-y-3 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm h-[calc(100%-32px)]">
-                                                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                                                                <span className="text-slate-400">Total de Volumes:</span>
-                                                                <span className="text-slate-800 font-black bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{pedido.items?.length || 0} un.</span>
-                                                            </div>
-                                                            
-                                                            {pedido.tracking_code ? (
-                                                                <div className="pt-1">
-                                                                    <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">
-                                                                        Cód. Rastreio ({pedido.carrier || 'Transportadora'}):
-                                                                    </span>
-                                                                    <div className="flex items-center justify-between bg-blue-50/50 border border-blue-100 p-2 rounded-lg">
-                                                                        <span className="text-blue-700 font-mono font-bold tracking-widest">
-                                                                            {pedido.tracking_code}
-                                                                        </span>
-                                                                        <Icons.Copy className="w-3.5 h-3.5 text-blue-400 cursor-pointer hover:text-blue-600 transition-colors" title="Copiar Rastreio"/>
+  <div className="mt-auto">
+                                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                            <Icons.CreditCard className="w-3.5 h-3.5 text-blue-500"/> Pagamento Via
+                                                                        </h6>
+                                                                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                                                            <div>
+                                                                                <span className="text-sm font-black text-slate-800 block uppercase">
+                                                                                    {pagMetodo} <span className="text-[10px] text-slate-400 font-bold tracking-wider ml-1">({pagGateway})</span>
+                                                                                </span>
+                                                                                
+                                                                                {isParcelado ? (
+                                                                                    <span className="text-[10px] font-medium text-slate-500">
+                                                                                        Parcelado em {pagParcelas}x de {formatCurrency(valorParcela)}
+                                                                                        {taxaGateway > 0 ? ` (+ Taxa Gateway)` : ' (S/ Juros)'}
+                                                                                    </span>
+                                                                                ) : (
+                                                                                    <span className="text-[10px] font-medium text-slate-500">Pagamento à vista / Único</span>
+                                                                                )}
+                                                                            </div>
+                                                                            <Icons.CheckCircle className="w-5 h-5 text-emerald-500 opacity-60" />
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            ) : (
-                                                                <div className="pt-2">
-                                                                    <span className="text-[10px] text-amber-500 bg-amber-50 border border-amber-100 px-2 py-1 rounded block text-center font-bold">
-                                                                        Aguardando Despacho / Sem Rastreio
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
 
-                                                    {/* 3. Cupons Utilizados */}
-                                                    <div className="space-y-3">
-                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
-                                                            <Icons.Tag className="w-3.5 h-3.5 text-amber-500"/> Cupons & Vantagens
-                                                        </h6>
-                                                        
-                                                        {cuponsUsados.length > 0 ? (
-                                                            <div className="space-y-3 max-h-[160px] overflow-y-auto custom-scrollbar pr-2">
-                                                                {cuponsUsados.map((cupom, idx) => (
-                                                                    <div key={idx} className="bg-amber-50/40 border border-amber-100/80 p-3.5 rounded-2xl flex flex-col gap-2 shadow-sm transition-colors hover:bg-amber-50">
-                                                                        <div className="flex justify-between items-start gap-2">
-                                                                            <div className="min-w-0">
-                                                                                <strong className="text-[11px] font-black text-slate-800 block truncate">
-                                                                                    {cupom.nome || cupom.codigo}
-                                                                                </strong>
-                                                                                <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest bg-amber-100/50 px-1.5 py-0.5 rounded mt-1 inline-block">
-                                                                                    {cupom.tipo || 'CUPOM'}
-                                                                                </span>
-                                                                            </div>
-                                                                            <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">
-                                                                                -{formatCurrency(cupom.valor || cupom.desconto)}
-                                                                            </span>
+                                                                {/* BLOCO B: Logística & Transporte */}
+                                                                <div className="space-y-3 flex flex-col h-full">
+                                                                    <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                        <Icons.Truck className="w-3.5 h-3.5 text-amber-500"/> Logística & Transporte
+                                                                    </h6>
+                                                                    <div className="space-y-4 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex-1">
+                                                                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                                                                            <span className="text-slate-400">Total de Volumes:</span>
+                                                                            <span className="text-slate-800 font-black bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{pedido.items?.length || pedido.itens?.length || 0} un.</span>
                                                                         </div>
-                                                                        {cupom.descricao && (
-                                                                            <p className="text-[10px] text-slate-500 font-medium leading-relaxed bg-white/70 p-2 rounded-xl border border-amber-100/50 italic">
-                                                                                "{cupom.descricao}"
-                                                                            </p>
+                                                                        
+                                                                        <div>
+                                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Destinatário & Endereço:</span>
+                                                                            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5">
+                                                                                <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
+                                                                                    <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${rua}, ${num}`}>{rua}, {num}</span>
+                                                                                </div>
+                                                                                {complemento && (
+                                                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Complemento:</span> 
+                                                                                        <span className="text-slate-800 text-right truncate max-w-[140px]" title={complemento}>{complemento}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Bairro:</span> 
+                                                                                    <span className="text-slate-800 text-right truncate max-w-[140px]" title={bairro}>{bairro}</span>
+                                                                                  </div>
+                                                                                <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Cidade/UF:</span> 
+                                                                                    <span className="text-slate-800 font-bold text-right truncate">{cidade} - {uf}</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between items-center pb-1">
+                                                                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CEP:</span> 
+                                                                                    <span className="text-slate-800 font-mono text-right truncate">{cep}</span>
+                                                                                </div>
+                                                                                {referencia && (
+                                                                                    <div className="pt-1.5 border-t border-slate-200/60">
+                                                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Ponto de Referência:</span>
+                                                                                        <p className="text-[10px] text-slate-600 italic leading-relaxed truncate" title={referencia}>{referencia}</p>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {/* Lógica Exata para Rastreio Baseada no Status Real */}
+                                                                        {rastreioCode ? (
+                                                                            <div className="pt-2">
+                                                                                <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">
+                                                                                    Cód. Rastreio Logístico:
+                                                                                </span>
+                                                                                <div className="flex items-center justify-between bg-amber-50/50 border border-amber-200 p-2.5 rounded-xl">
+                                                                                    <span className="text-amber-700 font-mono font-bold tracking-widest">{rastreioCode}</span>
+                                                                                    <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(rastreioCode); }} title="Copiar">
+                                                                                        <Icons.Copy className="w-4 h-4 text-amber-500 hover:text-amber-700 transition-colors"/>
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="pt-2">
+                                                                                {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? (
+                                                                                    <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest">
+                                                                                        Entregue S/ Rastreio
+                                                                                    </span>
+                                                                                ) : ['CANCELADO', 'REEMBOLSADO'].includes(statusNormalizado) ? (
+                                                                                    <span className="text-[10px] text-rose-600 bg-rose-50 border border-rose-200 px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest">
+                                                                                        Envio Cancelado
+                                                                                    </span>
+                                                                                ) : (
+                                                                                    <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest">
+                                                                                        Aguardando Despacho
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
                                                                         )}
                                                                     </div>
-                                                                ))}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="h-[calc(100%-32px)] min-h-[100px] flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-slate-200 border-dashed p-4 text-center">
-                                                                <div className="w-10 h-10 bg-white rounded-full shadow-sm border border-slate-100 flex items-center justify-center mb-2">
-                                                                    <Icons.Tag className="w-4 h-4 text-slate-300" />
                                                                 </div>
-                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum cupom</p>
-                                                                <p className="text-[9px] text-slate-400 font-medium mt-0.5">Compra com preço de catálogo.</p>
-                                                            </div>
-                                                        )}
-                                                    </div>
 
-                                                </div>
+                                                                {/* BLOCO C: Cupons e Ação Final */}
+                                                                <div className="space-y-6 flex flex-col h-full">
+                                                                    <div>
+                                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                            <Icons.Tag className="w-3.5 h-3.5 text-purple-500"/> Cupons & Vantagens Usadas
+                                                                        </h6>
+                                                                        {cuponsUsados.length > 0 ? (
+                                                                            <div className="space-y-3 max-h-[160px] overflow-y-auto custom-scrollbar pr-2">
+                                                                                {cuponsUsados.map((cupom, idx) => (
+                                                                                    <div key={idx} className="bg-purple-50/30 border border-purple-100 p-3 rounded-xl flex flex-col gap-1.5 shadow-sm hover:bg-purple-50 transition-colors">
+                                                                                        <div className="flex justify-between items-start gap-2">
+                                                                                            <div className="min-w-0">
+                                                                                                <strong className="text-[11px] font-black text-purple-900 block truncate" title={cupom.nome || cupom.codigo}>
+                                                                                                    {cupom.nome || cupom.codigo || 'Desconto Loja'}
+                                                                                                </strong>
+                                                                                                <span className="text-[8px] font-black text-purple-600 uppercase tracking-widest bg-purple-100/60 px-1.5 py-0.5 rounded mt-1 inline-block">
+                                                                                                    {cupom.tipo || 'CUPOM / BENEFÍCIO'}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">
+                                                                                                -{formatCurrency(cupom.valor || cupom.desconto)}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="h-[100px] flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed p-4 text-center">
+                                                                                <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center mb-2"><Icons.Tag className="w-3.5 h-3.5 text-slate-300" /></div>
+                                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum cupom</p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* BOTÃO NAVEGAR PARA A TELA DE PEDIDOS */}
+                                                                    <button 
+                                                                        onClick={() => navigate(`/admin/orders?id=${pedido.id}`)}
+                                                                        className="w-full mt-auto flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-colors shadow-md"
+                                                                    >
+                                                                        <Icons.ExternalLink className="w-4 h-4"/> Ver Todos os Detalhes do Pedido
+                                                                    </button>
+                                                                </div>
+
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                             </article>
                                         );
                                     })
@@ -1356,10 +1493,8 @@ export default function AdminPerfilCRM({
                                     </div>
                                 )}
                             </div>
-
                         </motion.section>
-                        )}
-
+                    )}
 
                         {/* 🟢 ABA: CARTEIRAS / LIVRO RAZÃO (Estilo Netflix Clean & Performático) */}
                         {crmSubTab === 'CARTEIRAS (LIVRO RAZÃO)' && (

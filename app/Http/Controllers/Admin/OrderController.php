@@ -34,21 +34,40 @@ class OrderController extends Controller
                 'status' => $order->status,
                 'data' => $order->created_at->format('d/m/Y'),
                 'hora' => $order->created_at->format('H:i'),
-                'data_raw' => $order->created_at->format('Y-m-d'),
+                'data_raw' => $order->created_at->format('Y-m-d H:i:s'), // 🟢 Importante para a Timeline do React
+                
+                // 🟢 MAPA FINANCEIRO ESTRITO
                 'subtotal' => (float) $order->subtotal,
-                'frete' => (float) $order->frete,
+                'frete_valor' => (float) $order->frete,
                 'desconto' => (float) $order->desconto,
                 'total' => (float) $order->total,
-                'rastreio' => $order->tracking_code,
+
+                // 🟢 🔴 AQUI: Se você tiver as colunas de VIP no Order.php, coloque elas aqui:
+                'desconto_loja' => (float) $order->desconto, // Temporário, caso não tenha a coluna específica
+                'desconto_vip_produtos' => 0, 
+                'desconto_vip_frete' => 0, 
+                'desconto_frete' => 0,
+
+                // 🟢 LOGÍSTICA E RASTREIO
+                'tracking_code' => $order->tracking_code,
+                'carrier' => 'Logística Padrão', // Opcional: Se tiver 'carrier' no bd, mude para $order->carrier
                 
                 // 🟢 MOTIVO DO CANCELAMENTO OU ABANDONO ENVIADO PARA O FRONT
                 'motivo_cancelamento' => $order->cancel_reason,
                 'comprovante_reembolso' => $order->refund_receipt ? asset('storage/' . $order->refund_receipt) : null,
                 
-                'cupons' => $order->applied_coupons ?? [],
+                // 🟢 CUPONS (Enviado cru, o React faz o parse para Array)
+                'coupons' => $order->applied_coupons ?? '[]',
                 
+                // 🟢 PAGAMENTO VIA
+                'pagamento_metodo' => $order->payment_method ?? 'A Vista',
+                'pagamento_parcelas' => (int) $order->payment_installments,
+                'juros' => (float) $order->gateway_fee > 0, // Boolean para a interface
+                
+                // (Manteve-se o nó 'pagamento' antigo por retrocompatibilidade se algo usar)
                 'pagamento' => [
                     'gateway' => $order->payment_gateway ?? 'N/A',
+                    'payment_gateway' => $order->payment_gateway,
                     'metodo' => $order->payment_method ?? 'A Vista',
                     'parcelas' => (int) $order->payment_installments,
                     'valor_parcela' => (float) $order->installment_value,
@@ -56,6 +75,7 @@ class OrderController extends Controller
                     'isPago' => !in_array($order->status, ['A_PAGAR', 'CANCELADO'])
                 ],
                 
+                // 🟢 CLIENTE
                 'cliente' => [
                     'id' => $order->user->id,
                     'nome' => $order->user->name,
@@ -72,8 +92,9 @@ class OrderController extends Controller
                     'rank' => $this->getRank($ltv, $historicoCliente->count())
                 ],
 
+                // 🟢 ENDEREÇO DE ENTREGA
                 'endereco' => $order->address ? [
-                    'logradouro' => $order->address->logradouro,
+                    'rua' => $order->address->logradouro,
                     'numero' => $order->address->numero,
                     'complemento' => $order->address->complemento,
                     'referencia' => $order->address->referencia,
@@ -83,7 +104,8 @@ class OrderController extends Controller
                     'cep' => $order->address->cep,
                 ] : null,
 
-                'itens' => $order->items->map(function ($item) {
+                // 🟢 ITENS
+                'items' => $order->items->map(function ($item) {
                     return [
                         'id' => $item->id,
                         'nome' => $item->product_name,
@@ -91,17 +113,19 @@ class OrderController extends Controller
                         'sku' => $item->sku,
                         'variacao' => $item->variation_name,
                         'variacaoSku' => $item->variation_sku,
-                        'qtd' => $item->quantity,
+                        'quantidade' => $item->quantity, // Alinhado com AdminOrders.jsx
+                        'qtd' => $item->quantity, // Alinhado com AdminPerfilCRM.jsx
                         'preco' => (float) $item->price,
                         'img' => $item->product_image,
                         'personalizacao' => $item->customization
                     ];
                 })->values(),
 
+                // 🟢 TIMELINE
                 'timeline' => $order->history->map(function ($log) {
                     return [
                         'data' => $log->created_at->format('d/m/Y H:i'),
-                        'data_raw' => $log->created_at->format('Y-m-d'),
+                        'data_raw' => $log->created_at->format('Y-m-d H:i:s'),
                         'evento' => $log->event,
                     ];
                 })->values()
