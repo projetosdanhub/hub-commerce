@@ -160,9 +160,12 @@ export default function AdminPerfilCRM({
     const [timelinePage, setTimelinePage] = useState(1);
     const timelinePerPage = 6;
     
+    // 🟢 ESTADOS DO HISTÓRICO DE PEDIDOS ATUALIZADOS
     const [orderHistoryTab, setOrderHistoryTab] = useState('TODOS');
+    const [orderPeriodFilter, setOrderPeriodFilter] = useState('TODOS'); // Filtro de Data
     const [orderHistoryPage, setOrderHistoryPage] = useState(1);
-    const orderHistoryPerPage = 5;
+    const [orderHistoryPerPage, setOrderHistoryPerPage] = useState(5); // Qtd por Página
+    const [navigatingOrder, setNavigatingOrder] = useState(null); // Animação do botão Ver Pedido
 
     // Cronômetros de Senha Temporária
     useEffect(() => {
@@ -471,14 +474,31 @@ export default function AdminPerfilCRM({
     const totalTimelinePages = Math.ceil(auditLogsFiltrados.length / timelinePerPage) || 1;
     const auditLogsPaginados = auditLogsFiltrados.slice((timelinePage - 1) * timelinePerPage, timelinePage * timelinePerPage);
 
+    // 🟢 CÁLCULO INTELIGENTE DO HISTÓRICO DE PEDIDOS (COM DATA E STATUS)
     const historicoPedidosFiltrado = useMemo(() => {
         if(!clienteSelecionado || !clienteSelecionado.pedidos) return [];
         let ped = clienteSelecionado.pedidos;
+        
+        // 1. Filtro por Aba/Status
         if (orderHistoryTab === 'CONCLUÍDOS') ped = ped.filter(p => ['ENTREGUE', 'DESPACHADO', 'SEPARACAO'].includes(p.status));
         else if (orderHistoryTab === 'REEMBOLSADOS') ped = ped.filter(p => p.status === 'REEMBOLSADO');
         else if (orderHistoryTab === 'CANCELADOS') ped = ped.filter(p => p.status === 'CANCELADO');
+
+        // 2. Filtro por Período (Data)
+        if (orderPeriodFilter !== 'TODOS') {
+            const limitDate = new Date();
+            if (orderPeriodFilter === '30D') limitDate.setDate(limitDate.getDate() - 30);
+            if (orderPeriodFilter === '6M') limitDate.setMonth(limitDate.getMonth() - 6);
+            if (orderPeriodFilter === '1A') limitDate.setFullYear(limitDate.getFullYear() - 1);
+            
+            ped = ped.filter(p => {
+                const dataPedido = new Date(p.data_raw || p.data);
+                return dataPedido >= limitDate;
+            });
+        }
+
         return ped.sort((a,b) => new Date(b.data_raw).getTime() - new Date(a.data_raw).getTime());
-    }, [clienteSelecionado, orderHistoryTab]);
+    }, [clienteSelecionado, orderHistoryTab, orderPeriodFilter]);
     const totalOrderHistoryPages = Math.ceil(historicoPedidosFiltrado.length / orderHistoryPerPage) || 1;
     const orderHistoryPaginados = historicoPedidosFiltrado.slice((orderHistoryPage - 1) * orderHistoryPerPage, orderHistoryPage * orderHistoryPerPage);
 
@@ -1171,332 +1191,372 @@ export default function AdminPerfilCRM({
                             </div>
                         </motion.section>
                         )}
- {/* ========================================================= */}
-                    {/* 🟢 ABA: HISTÓRICO DE PEDIDOS (COM EFEITO SANFONA)         */}
-                    {/* ========================================================= */}
-                    {crmSubTab === 'HISTÓRICO DE PEDIDOS' && !perfilEmEdicao && (
-                        <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-6">
-                            
-                            {/* CABEÇALHO DA SEÇÃO */}
-                            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm gap-4">
-                                <div>
-                                    <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
-                                        <Icons.ShoppingBag className="w-6 h-6 text-blue-500"/> Histórico de Transações
-                                    </h3>
-                                    <p className="text-xs text-slate-500 mt-1 font-medium">Registro imutável de compras, status logístico e benefícios aplicados por pedido.</p>
-                                </div>
-                                <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-center shrink-0">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Volume de Pedidos</span>
-                                    <span className="text-lg font-black text-slate-800 leading-tight">{clienteSelecionado?.pedidos?.length || 0}</span>
-                                </div>
-                            </header>
-
-                            {/* FEED VERTICAL DE PEDIDOS (ACORDEON) */}
-                            <div className="space-y-4">
-                                {clienteSelecionado?.pedidos && clienteSelecionado.pedidos.length > 0 ? (
-                                    clienteSelecionado.pedidos.map((pedido) => {
-                                        
-                                        const isExpanded = pedidoExpandido === pedido.id;
-                                        
-                                        let statusColor = "bg-slate-50 text-slate-600 border-slate-200";
-                                        let StatusIcon = Icons.Clock;
-
-                                        const statusNormalizado = String(pedido.status).toUpperCase();
-
-                                        switch(statusNormalizado) {
-                                            case 'ENTREGUE':
-                                            case 'CONCLUIDO': statusColor = "bg-emerald-50 text-emerald-600 border-emerald-200"; StatusIcon = Icons.CheckCircle; break;
-                                            case 'DESPACHADO':
-                                            case 'EM_TRANSITO': statusColor = "bg-blue-50 text-blue-600 border-blue-200"; StatusIcon = Icons.Truck; break;
-                                            case 'SEPARACAO':
-                                            case 'PAGO': statusColor = "bg-indigo-50 text-indigo-600 border-indigo-200"; StatusIcon = Icons.Package; break;
-                                            case 'CANCELADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
-                                            case 'REEMBOLSADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
-                                            default: statusColor = "bg-amber-50 text-amber-600 border-amber-200"; StatusIcon = Icons.Clock; break;
-                                        }
-
-                                        // 🟢 LENDO DADOS DIRETAMENTE DA ESTRUTURA DO SEU ORDER.PHP
-                                        
-                                        // Pagamento Seguro
-                                        const pagMetodo = pedido.payment_method || pedido.pagamento?.metodo || 'Não Informado';
-                                        const pagGateway = pedido.payment_gateway || pedido.pagamento?.gateway || 'Desconhecido'; // 🟢 ESTA É A LINHA QUE FALTAVA!
-                                        const pagParcelas = safeNum(pedido.payment_installments || pedido.pagamento?.parcelas || 1);
-                                        const isParcelado = pagParcelas > 1;
-                                        const valorParcela = safeNum(pedido.installment_value || pedido.pagamento?.valor_parcela || (pedido.total / pagParcelas));
-                                        const taxaGateway = safeNum(pedido.gateway_fee || pedido.pagamento?.juros);
-                                        
-                                        // Rastreio
-                                        const rastreioCode = pedido.tracking_code;
-
-                                        // Cupons (Já vem em array graças ao seu Cast do Laravel, mas garantimos a leitura se for string)
-                                        const rawCoupons = pedido.applied_coupons || pedido.cupons || [];
-                                        const cuponsUsados = typeof rawCoupons === 'string' ? JSON.parse(rawCoupons || '[]') : rawCoupons;
-
-                                        // Endereço (OrderAddress)
-                                        const end = pedido.endereco || pedido.address || {};
-                                        const rua = end.rua || end.street || end.logradouro || '-';
-                                        const num = end.numero || end.num || end.number || '-';
-                                        const bairro = end.bairro || end.neighborhood || '-';
-                                        const cidade = end.cidade || end.city || '-';
-                                        const uf = end.uf || end.estado || end.state || '-';
-                                        const cep = end.cep || end.zip_code || '-';
-                                        const complemento = end.complemento || end.complement || '';
-                                        const referencia = end.referencia || end.reference || '';
-
-                                        return (
-                                            <article key={pedido.id} className={`bg-white rounded-[24px] border ${isExpanded ? 'border-blue-400 shadow-md ring-4 ring-blue-50/50' : 'border-slate-200 shadow-sm'} overflow-hidden transition-all duration-300`}>
-                                                
-                                                {/* GATILHO DA SANFONA */}
-                                                <div 
-                                                    onClick={() => setPedidoExpandido(isExpanded ? null : pedido.id)}
-                                                    className={`p-5 sm:p-6 cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5 transition-colors ${isExpanded ? 'bg-blue-50/30' : 'bg-white hover:bg-slate-50'}`}
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 transition-colors ${isExpanded ? 'bg-blue-100 border-blue-200 text-blue-600' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-                                                            <Icons.ShoppingBag className="w-5 h-5" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
-                                                                <h4 className="text-base font-black text-slate-800 tracking-tight">Pedido #{pedido.id}</h4>
-                                                                <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusColor}`}>
-                                                                    <StatusIcon className="w-3 h-3" /> {statusNormalizado.replace(/_/g, ' ')}
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
-                                                                <Icons.Calendar className="w-3.5 h-3.5"/> Efetuado em <strong className="text-slate-700">{formatDateTimeBR(pedido.data_raw || pedido.created_at)}</strong>
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex items-center justify-between lg:justify-end gap-6 w-full lg:w-auto">
-                                                        <div className="text-right border-r border-slate-200 pr-6 hidden sm:block">
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Metodo</span>
-                                                            <span className="text-xs font-black text-slate-700 uppercase">{pagMetodo}</span>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Líquido Recebido</span>
-                                                            <span className="text-xl font-black text-emerald-600 leading-none">{formatCurrency(pedido.total)}</span>
-                                                        </div>
-                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-transform duration-300 shadow-sm shrink-0 ${isExpanded ? 'bg-blue-600 text-white border-blue-600 rotate-90' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'}`}>
-                                                            <Icons.ChevronRight className="w-4 h-4" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* CONTEÚDO EXPANDIDO */}
-                                                <AnimatePresence>
-                                                    {isExpanded && (
-                                                        <motion.div 
-                                                            initial={{ height: 0, opacity: 0 }} 
-                                                            animate={{ height: 'auto', opacity: 1 }} 
-                                                            exit={{ height: 0, opacity: 0 }}
-                                                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                                                            className="overflow-hidden"
-                                                        >
-                                                            <div className="p-5 sm:p-6 border-t border-slate-100 bg-slate-50/50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                                                                
-                                                                {/* BLOCO A: Composição & Pagamento */}
-                                                                <div className="space-y-6 flex flex-col h-full">
-                                                                    <div>
-                                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
-                                                                            <Icons.DollarSign className="w-3.5 h-3.5 text-emerald-500"/> Composição do Valor
-                                                                        </h6>
-<div className="space-y-2 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                                                                            <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
-                                                                                <span>Subtotal Produtos:</span><span className="text-slate-800 font-bold">{formatCurrency(pedido.subtotal)}</span>
-                                                                            </div>
-                                                                            {/* 🟢 CORREÇÃO: Lendo 'frete_valor' que vem da sua API */}
-                                                                            <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
-                                                                                <span>Frete Cobrado:</span><span className="text-slate-800 font-bold">{formatCurrency(pedido.frete_valor || pedido.frete)}</span>
-                                                                            </div>
-                                                                            
-                                                                            {safeNum(pedido.desconto_loja || pedido.desconto) > 0 && (
-                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-rose-500">
-                                                                                    <span>(-) Desc. Cupons:</span><span className="font-bold">-{formatCurrency(pedido.desconto_loja || pedido.desconto)}</span>
-                                                                                </div>
-                                                                            )}
-                                                                            {safeNum(pedido.desconto_vip_produtos) > 0 && (
-                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-indigo-500">
-                                                                                    <span>(-) Desc. VIP Rank:</span><span className="font-bold">-{formatCurrency(pedido.desconto_vip_produtos)}</span>
-                                                                                </div>
-                                                                            )}
-                                                                            {safeNum(pedido.desconto_frete) > 0 && (
-                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-rose-500">
-                                                                                    <span>(-) Subsídio Frete:</span><span className="font-bold">-{formatCurrency(pedido.desconto_frete)}</span>
-                                                                                </div>
-                                                                            )}
-                                                                            
-                                                                            <div className="flex justify-between items-center pt-1 mt-1 text-xs">
-                                                                                <span className="text-slate-800 font-black">Líquido Recebido:</span><span className="text-emerald-600 font-black">{formatCurrency(pedido.total)}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-
-  <div className="mt-auto">
-                                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
-                                                                            <Icons.CreditCard className="w-3.5 h-3.5 text-blue-500"/> Pagamento Via
-                                                                        </h6>
-                                                                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                                                                            <div>
-                                                                                <span className="text-sm font-black text-slate-800 block uppercase">
-                                                                                    {pagMetodo} <span className="text-[10px] text-slate-400 font-bold tracking-wider ml-1">({pagGateway})</span>
-                                                                                </span>
-                                                                                
-                                                                                {isParcelado ? (
-                                                                                    <span className="text-[10px] font-medium text-slate-500">
-                                                                                        Parcelado em {pagParcelas}x de {formatCurrency(valorParcela)}
-                                                                                        {taxaGateway > 0 ? ` (+ Taxa Gateway)` : ' (S/ Juros)'}
-                                                                                    </span>
-                                                                                ) : (
-                                                                                    <span className="text-[10px] font-medium text-slate-500">Pagamento à vista / Único</span>
-                                                                                )}
-                                                                            </div>
-                                                                            <Icons.CheckCircle className="w-5 h-5 text-emerald-500 opacity-60" />
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* BLOCO B: Logística & Transporte */}
-                                                                <div className="space-y-3 flex flex-col h-full">
-                                                                    <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
-                                                                        <Icons.Truck className="w-3.5 h-3.5 text-amber-500"/> Logística & Transporte
-                                                                    </h6>
-                                                                    <div className="space-y-4 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex-1">
-                                                                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                                                                            <span className="text-slate-400">Total de Volumes:</span>
-                                                                            <span className="text-slate-800 font-black bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{pedido.items?.length || pedido.itens?.length || 0} un.</span>
-                                                                        </div>
-                                                                        
-                                                                        <div>
-                                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Destinatário & Endereço:</span>
-                                                                            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5">
-                                                                                <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
-                                                                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
-                                                                                    <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${rua}, ${num}`}>{rua}, {num}</span>
-                                                                                </div>
-                                                                                {complemento && (
-                                                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
-                                                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Complemento:</span> 
-                                                                                        <span className="text-slate-800 text-right truncate max-w-[140px]" title={complemento}>{complemento}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
-                                                                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Bairro:</span> 
-                                                                                    <span className="text-slate-800 text-right truncate max-w-[140px]" title={bairro}>{bairro}</span>
-                                                                                  </div>
-                                                                                <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
-                                                                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Cidade/UF:</span> 
-                                                                                    <span className="text-slate-800 font-bold text-right truncate">{cidade} - {uf}</span>
-                                                                                </div>
-                                                                                <div className="flex justify-between items-center pb-1">
-                                                                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CEP:</span> 
-                                                                                    <span className="text-slate-800 font-mono text-right truncate">{cep}</span>
-                                                                                </div>
-                                                                                {referencia && (
-                                                                                    <div className="pt-1.5 border-t border-slate-200/60">
-                                                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Ponto de Referência:</span>
-                                                                                        <p className="text-[10px] text-slate-600 italic leading-relaxed truncate" title={referencia}>{referencia}</p>
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-
-                                                                        {/* Lógica Exata para Rastreio Baseada no Status Real */}
-                                                                        {rastreioCode ? (
-                                                                            <div className="pt-2">
-                                                                                <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">
-                                                                                    Cód. Rastreio Logístico:
-                                                                                </span>
-                                                                                <div className="flex items-center justify-between bg-amber-50/50 border border-amber-200 p-2.5 rounded-xl">
-                                                                                    <span className="text-amber-700 font-mono font-bold tracking-widest">{rastreioCode}</span>
-                                                                                    <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(rastreioCode); }} title="Copiar">
-                                                                                        <Icons.Copy className="w-4 h-4 text-amber-500 hover:text-amber-700 transition-colors"/>
-                                                                                    </button>
-                                                                                </div>
-                                                                            </div>
-                                                                        ) : (
-                                                                            <div className="pt-2">
-                                                                                {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? (
-                                                                                    <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest">
-                                                                                        Entregue S/ Rastreio
-                                                                                    </span>
-                                                                                ) : ['CANCELADO', 'REEMBOLSADO'].includes(statusNormalizado) ? (
-                                                                                    <span className="text-[10px] text-rose-600 bg-rose-50 border border-rose-200 px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest">
-                                                                                        Envio Cancelado
-                                                                                    </span>
-                                                                                ) : (
-                                                                                    <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest">
-                                                                                        Aguardando Despacho
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* BLOCO C: Cupons e Ação Final */}
-                                                                <div className="space-y-6 flex flex-col h-full">
-                                                                    <div>
-                                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
-                                                                            <Icons.Tag className="w-3.5 h-3.5 text-purple-500"/> Cupons & Vantagens Usadas
-                                                                        </h6>
-                                                                        {cuponsUsados.length > 0 ? (
-                                                                            <div className="space-y-3 max-h-[160px] overflow-y-auto custom-scrollbar pr-2">
-                                                                                {cuponsUsados.map((cupom, idx) => (
-                                                                                    <div key={idx} className="bg-purple-50/30 border border-purple-100 p-3 rounded-xl flex flex-col gap-1.5 shadow-sm hover:bg-purple-50 transition-colors">
-                                                                                        <div className="flex justify-between items-start gap-2">
-                                                                                            <div className="min-w-0">
-                                                                                                <strong className="text-[11px] font-black text-purple-900 block truncate" title={cupom.nome || cupom.codigo}>
-                                                                                                    {cupom.nome || cupom.codigo || 'Desconto Loja'}
-                                                                                                </strong>
-                                                                                                <span className="text-[8px] font-black text-purple-600 uppercase tracking-widest bg-purple-100/60 px-1.5 py-0.5 rounded mt-1 inline-block">
-                                                                                                    {cupom.tipo || 'CUPOM / BENEFÍCIO'}
-                                                                                                </span>
-                                                                                            </div>
-                                                                                            <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">
-                                                                                                -{formatCurrency(cupom.valor || cupom.desconto)}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                ))}
-                                                                            </div>
-                                                                        ) : (
-                                                                            <div className="h-[100px] flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed p-4 text-center">
-                                                                                <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center mb-2"><Icons.Tag className="w-3.5 h-3.5 text-slate-300" /></div>
-                                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum cupom</p>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-
-                                                                    {/* BOTÃO NAVEGAR PARA A TELA DE PEDIDOS */}
-                                                                    <button 
-                                                                        onClick={() => navigate(`/admin/orders?id=${pedido.id}`)}
-                                                                        className="w-full mt-auto flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-colors shadow-md"
-                                                                    >
-                                                                        <Icons.ExternalLink className="w-4 h-4"/> Ver Todos os Detalhes do Pedido
-                                                                    </button>
-                                                                </div>
-
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
-                                            </article>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="w-full flex flex-col items-center justify-center py-20 bg-white rounded-[24px] border-2 border-slate-200 border-dashed">
-                                        <div className="w-16 h-16 bg-slate-50 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
-                                            <Icons.ShoppingBag className="w-8 h-8 text-slate-300" />
-                                        </div>
-                                        <h4 className="text-base font-black text-slate-700">Histórico Limpo</h4>
-                                        <p className="text-xs text-slate-500 font-medium mt-1">Este cliente ainda não efetuou nenhuma compra.</p>
+                        {/* ========================================================= */}
+                        {/* 🟢 ABA: HISTÓRICO DE PEDIDOS (COM EFEITO SANFONA)         */}
+                        {/* ========================================================= */}
+                        {crmSubTab === 'HISTÓRICO DE PEDIDOS' && !perfilEmEdicao && (
+                            <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-6 flex flex-col h-full">
+                                
+                                {/* CABEÇALHO DA SEÇÃO (Com Filtros) */}
+                                <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm gap-4 shrink-0">
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
+                                            <Icons.ShoppingBag className="w-6 h-6 text-blue-500"/> Histórico de Transações
+                                        </h3>
+                                        <p className="text-xs text-slate-500 mt-1 font-medium">Registro imutável de compras, status logístico e benefícios aplicados.</p>
                                     </div>
-                                )}
-                            </div>
-                        </motion.section>
-                    )}
+                                    <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                                        {/* Select de Período */}
+                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition-all focus-within:border-blue-500">
+                                            <Icons.Calendar className="w-4 h-4 text-slate-400" />
+                                            <select 
+                                                value={orderPeriodFilter} 
+                                                onChange={(e) => { setOrderPeriodFilter(e.target.value); setOrderHistoryPage(1); }}
+                                                className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
+                                            >
+                                                <option value="TODOS">Todo o Período</option>
+                                                <option value="30D">Últimos 30 Dias</option>
+                                                <option value="6M">Últimos 6 Meses</option>
+                                                <option value="1A">Último Ano</option>
+                                            </select>
+                                        </div>
+                                        
+                                        {/* Select de Qtd por Página */}
+                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition-all focus-within:border-blue-500">
+                                            <Icons.Activity className="w-4 h-4 text-slate-400" />
+                                            <select 
+                                                value={orderHistoryPerPage} 
+                                                onChange={(e) => { setOrderHistoryPerPage(Number(e.target.value)); setOrderHistoryPage(1); }}
+                                                className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
+                                            >
+                                                <option value={5}>5 por pág.</option>
+                                                <option value={10}>10 por pág.</option>
+                                                <option value={20}>20 por pág.</option>
+                                                <option value={30}>30 por pág.</option>
+                                                <option value={50}>50 por pág.</option>
+                                            </select>
+                                        </div>
 
+                                        <div className="bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl text-center shrink-0 ml-auto">
+                                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block">Volume</span>
+                                            <span className="text-lg font-black text-blue-700 leading-tight">{historicoPedidosFiltrado.length}</span>
+                                        </div>
+                                    </div>
+                                </header>
+
+                                {/* FEED VERTICAL DE PEDIDOS (ACORDEON PAGINADO) */}
+                                <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                                    {orderHistoryPaginados.length > 0 ? (
+                                        orderHistoryPaginados.map((pedido) => {
+                                            
+                                            const isExpanded = pedidoExpandido === pedido.id;
+                                            
+                                            let statusColor = "bg-slate-50 text-slate-600 border-slate-200";
+                                            let StatusIcon = Icons.Clock;
+
+                                            const statusNormalizado = String(pedido.status).toUpperCase();
+
+                                            switch(statusNormalizado) {
+                                                case 'ENTREGUE':
+                                                case 'CONCLUIDO': statusColor = "bg-emerald-50 text-emerald-600 border-emerald-200"; StatusIcon = Icons.CheckCircle; break;
+                                                case 'DESPACHADO':
+                                                case 'EM_TRANSITO': statusColor = "bg-blue-50 text-blue-600 border-blue-200"; StatusIcon = Icons.Truck; break;
+                                                case 'SEPARACAO':
+                                                case 'PAGO': statusColor = "bg-indigo-50 text-indigo-600 border-indigo-200"; StatusIcon = Icons.Package; break;
+                                                case 'CANCELADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
+                                                case 'REEMBOLSADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
+                                                default: statusColor = "bg-amber-50 text-amber-600 border-amber-200"; StatusIcon = Icons.Clock; break;
+                                            }
+
+                                            // Pagamento Seguro
+                                            const pagMetodo = pedido.payment_method || pedido.pagamento?.metodo || 'Não Informado';
+                                            const pagGateway = pedido.payment_gateway || pedido.pagamento?.gateway || 'Desconhecido';
+                                            const pagParcelas = safeNum(pedido.payment_installments || pedido.pagamento?.parcelas || 1);
+                                            const isParcelado = pagParcelas > 1;
+                                            const valorParcela = safeNum(pedido.installment_value || pedido.pagamento?.valor_parcela || (pedido.total / pagParcelas));
+                                            
+                                            // Endereço e Logística
+                                            const totalVolumes = pedido.items?.length || pedido.itens?.length || pedido.qtd_produtos || 0;
+                                            const end = pedido.endereco || pedido.address || {};
+                                            const rua = end.rua || end.street || end.logradouro || '-';
+                                            const num = end.numero || end.num || end.number || '-';
+                                            const bairro = end.bairro || end.neighborhood || '-';
+                                            const cidade = end.cidade || end.city || '-';
+                                            const uf = end.uf || end.estado || end.state || '-';
+                                            
+                                            // Cupons
+                                            const rawCoupons = pedido.applied_coupons || pedido.cupons || [];
+                                            const cuponsUsados = typeof rawCoupons === 'string' ? JSON.parse(rawCoupons || '[]') : rawCoupons;
+
+                                            return (
+                                                <article key={pedido.id} className={`bg-white rounded-[24px] border ${isExpanded ? 'border-blue-400 shadow-md ring-4 ring-blue-50/50' : 'border-slate-200 shadow-sm'} overflow-hidden transition-all duration-300`}>
+                                                    
+                                                    {/* GATILHO DA SANFONA */}
+                                                    <div 
+                                                        onClick={() => setPedidoExpandido(isExpanded ? null : pedido.id)}
+                                                        className={`p-5 sm:p-6 cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5 transition-colors ${isExpanded ? 'bg-blue-50/30' : 'bg-white hover:bg-slate-50'}`}
+                                                    >
+                                                        <div className="flex items-center gap-4">
+                                                            <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 transition-colors ${isExpanded ? 'bg-blue-100 border-blue-200 text-blue-600' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                                                                <Icons.ShoppingBag className="w-5 h-5" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+                                                                    <h4 className="text-base font-black text-slate-800 tracking-tight">Pedido #{pedido.id}</h4>
+                                                                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusColor}`}>
+                                                                        <StatusIcon className="w-3 h-3" /> {statusNormalizado.replace(/_/g, ' ')}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                                                                    <Icons.Calendar className="w-3.5 h-3.5"/> Efetuado em <strong className="text-slate-700">{formatDateTimeBR(pedido.data_raw || pedido.created_at)}</strong>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center justify-between lg:justify-end gap-6 w-full lg:w-auto">
+                                                            <div className="text-right">
+                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Líquido Recebido</span>
+                                                                <span className="text-xl font-black text-emerald-600 leading-none">{formatCurrency(pedido.total)}</span>
+                                                            </div>
+                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-transform duration-300 shadow-sm shrink-0 ${isExpanded ? 'bg-blue-600 text-white border-blue-600 rotate-90' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'}`}>
+                                                                <Icons.ChevronRight className="w-4 h-4" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* CONTEÚDO EXPANDIDO */}
+                                                    <AnimatePresence>
+                                                        {isExpanded && (
+                                                            <motion.div 
+                                                                initial={{ height: 0, opacity: 0 }} 
+                                                                animate={{ height: 'auto', opacity: 1 }} 
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <div className="p-5 sm:p-6 border-t border-slate-100 bg-slate-50/50 grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
+                                                                    
+                                                                    {/* BLOCO A: Composição & Pagamento */}
+                                                                    <div className="space-y-6 flex flex-col h-full">
+                                                                        <div>
+                                                                            <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                                <Icons.DollarSign className="w-3.5 h-3.5 text-emerald-500"/> Composição do Valor
+                                                                            </h6>
+                                                                            <div className="space-y-2 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
+                                                                                    <span>Subtotal Produtos:</span><span className="text-slate-800 font-bold">{formatCurrency(pedido.subtotal)}</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
+                                                                                    <span>Frete Cobrado:</span><span className="text-slate-800 font-bold">{formatCurrency(pedido.frete_valor || pedido.frete)}</span>
+                                                                                </div>
+                                                                                
+                                                                                {safeNum(pedido.desconto_frete) > 0 && (
+                                                                                    <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-rose-500">
+                                                                                        <span>(-) Cupom Frete:</span><span className="font-bold">-{formatCurrency(pedido.desconto_frete)}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {safeNum(pedido.desconto_loja || pedido.desconto) > 0 && (
+                                                                                    <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-rose-500">
+                                                                                        <span>(-) Cupom Loja:</span><span className="font-bold">-{formatCurrency(pedido.desconto_loja || pedido.desconto)}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {safeNum(pedido.desconto_vip_frete) > 0 && (
+                                                                                    <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-indigo-500">
+                                                                                        <span>(-) Benefício VIP Frete:</span><span className="font-bold">-{formatCurrency(pedido.desconto_vip_frete)}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {safeNum(pedido.desconto_vip_produtos) > 0 && (
+                                                                                    <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-indigo-500">
+                                                                                        <span>(-) Benefício VIP Loja:</span><span className="font-bold">-{formatCurrency(pedido.desconto_vip_produtos)}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                
+                                                                                <div className="flex justify-between items-center pt-1 mt-1 text-xs">
+                                                                                    <span className="text-slate-800 font-black">Líquido Recebido:</span><span className="text-emerald-600 font-black">{formatCurrency(pedido.total)}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="mt-auto">
+                                                                            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                                                                <div>
+                                                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Gateway de Pagamento</span>
+                                                                                    <span className="text-sm font-black text-slate-800 block uppercase mb-3">"{pagGateway}"</span>
+                                                                                    
+                                                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Pagamento Via</span>
+                                                                                    <span className="text-xs font-bold text-slate-700 block uppercase mb-1">{pagMetodo}</span>
+                                                                                    
+                                                                                    {isParcelado ? (
+                                                                                        <span className="text-[10px] font-medium text-slate-500">
+                                                                                            Parcelado em {pagParcelas}x de {formatCurrency(valorParcela)}
+                                                                                        </span>
+                                                                                    ) : (
+                                                                                        <span className="text-[10px] font-medium text-slate-500">Pagamento à vista / Único</span>
+                                                                                    )}
+                                                                                </div>
+                                                                                <Icons.CheckCircle className="w-6 h-6 text-emerald-500 opacity-60" />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* BLOCO B: Logística & Transporte */}
+                                                                    <div className="space-y-3 flex flex-col h-full">
+                                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                            <Icons.Truck className="w-3.5 h-3.5 text-blue-500"/> Logística & Transporte
+                                                                        </h6>
+                                                                        <div className="space-y-4 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col">
+                                                                            
+                                                                            <div>
+                                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Total de Volumes:</span>
+                                                                                <span className="text-slate-800 font-bold">{totalVolumes} {totalVolumes === 1 ? 'produto enviado' : 'produtos enviados'}.</span>
+                                                                            </div>
+                                                                            
+                                                                            <div className="pt-2 border-t border-slate-100">
+                                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Destinatário & Endereço:</span>
+                                                                                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5">
+                                                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
+                                                                                        <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${rua}, ${num}`}>{rua}, {num}</span>
+                                                                                    </div>
+                                                                                    {complemento && (
+                                                                                        <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                            <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Complemento:</span> 
+                                                                                            <span className="text-slate-800 text-right truncate max-w-[140px]" title={complemento}>{complemento}</span>
+                                                                                        </div>
+                                                                                    )}
+                                                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Bairro:</span> 
+                                                                                        <span className="text-slate-800 text-right truncate max-w-[140px]" title={bairro}>{bairro}</span>
+                                                                                    </div>
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Cidade/UF:</span> 
+                                                                                        <span className="text-slate-800 font-bold text-right truncate">{cidade} - {uf}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <div className="pt-3 mt-auto">
+                                                                                <span className={`text-[10px] ${statusColor} px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest`}>
+                                                                                    {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? 'Pedido Entregue' : statusNormalizado.replace(/_/g, ' ')}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* BLOCO C: Cupons e Ação Final */}
+                                                                    <div className="space-y-6 flex flex-col h-full">
+                                                                        <div>
+                                                                            <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                                <Icons.Tag className="w-3.5 h-3.5 text-amber-500"/> Cupons & Vantagens Usadas
+                                                                            </h6>
+                                                                            {cuponsUsados.length > 0 ? (
+                                                                                <div className="space-y-3 max-h-[160px] overflow-y-auto custom-scrollbar pr-2">
+                                                                                    {cuponsUsados.map((cupom, idx) => {
+                                                                                        const isVip = cupom.tipo && String(cupom.tipo).toUpperCase().includes('VIP');
+                                                                                        const themeColor = isVip ? 'amber' : 'purple';
+                                                                                        const TitleIcon = isVip ? Icons.Crown : Icons.Tag;
+                                                                                        
+                                                                                        return (
+                                                                                            <div key={idx} className={`bg-${themeColor}-50/30 border border-${themeColor}-100 p-3.5 rounded-xl flex flex-col gap-1.5 shadow-sm hover:bg-${themeColor}-50 transition-colors`}>
+                                                                                                <div className="flex justify-between items-start gap-2">
+                                                                                                    <div className="min-w-0">
+                                                                                                        <strong className={`text-[11px] font-black text-${themeColor}-900 block truncate flex items-center gap-1.5`} title={cupom.nome || cupom.codigo}>
+                                                                                                            <TitleIcon className={`w-3 h-3 text-${themeColor}-500`} />
+                                                                                                            {cupom.nome || cupom.codigo || 'Desconto Aplicado'}
+                                                                                                        </strong>
+                                                                                                        <span className={`text-[8px] font-black text-${themeColor}-600 uppercase tracking-widest bg-${themeColor}-100/60 px-1.5 py-0.5 rounded mt-1 inline-block`}>
+                                                                                                            {cupom.tipo || 'CUPOM'}
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                    <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">
+                                                                                                        -{formatCurrency(cupom.valor || cupom.desconto)}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        );
+                                                                                    })}
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="h-[120px] flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed p-4 text-center">
+                                                                                    <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center mb-2"><Icons.Tag className="w-3.5 h-3.5 text-slate-300" /></div>
+                                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum cupom ou benefício aplicado</p>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+
+                                                                        {/* BOTÃO NAVEGAR PARA A TELA DE PEDIDOS (COM ANIMAÇÃO DE PROGRESSO) */}
+                                                                        <button 
+                                                                            onClick={() => {
+                                                                                setNavigatingOrder(pedido.id);
+                                                                                setTimeout(() => {
+                                                                                    window.open(`/admin/orders?id=${pedido.id}`, '_blank');
+                                                                                    setNavigatingOrder(null);
+                                                                                }, 600);
+                                                                            }}
+                                                                            className="relative overflow-hidden w-full mt-auto flex items-center justify-center gap-2 bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-colors shadow-md group"
+                                                                        >
+                                                                            {navigatingOrder === pedido.id && (
+                                                                                <motion.div 
+                                                                                    initial={{ width: 0 }} 
+                                                                                    animate={{ width: '100%' }} 
+                                                                                    transition={{ duration: 0.6, ease: 'easeOut' }} 
+                                                                                    className="absolute inset-0 bg-blue-600 z-0" 
+                                                                                />
+                                                                            )}
+                                                                            <span className="relative z-10 flex items-center gap-2">
+                                                                                <Icons.ExternalLink className="w-3.5 h-3.5 group-hover:scale-110 transition-transform"/> 
+                                                                                Ver Todos os Detalhes do Pedido
+                                                                            </span>
+                                                                        </button>
+                                                                    </div>
+
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </article>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="w-full flex flex-col items-center justify-center py-20 bg-white rounded-[24px] border-2 border-slate-200 border-dashed mt-4">
+                                            <div className="w-16 h-16 bg-slate-50 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
+                                                <Icons.ShoppingBag className="w-8 h-8 text-slate-300" />
+                                            </div>
+                                            <h4 className="text-base font-black text-slate-700">Nenhum pedido encontrado</h4>
+                                            <p className="text-xs text-slate-500 font-medium mt-1">Não há transações para os filtros selecionados.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* RODAPÉ E PAGINAÇÃO */}
+                                {totalOrderHistoryPages > 1 && (
+                                    <footer className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center text-xs font-bold text-slate-500 gap-3 shrink-0">
+                                        <span>Mostrando {orderHistoryPaginados.length} de {historicoPedidosFiltrado.length} pedidos</span>
+                                        <div className="flex items-center gap-3">
+                                            <span>Página {orderHistoryPage} de {totalOrderHistoryPages}</span>
+                                            <div className="flex gap-1.5">
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setOrderHistoryPage(p => Math.max(1, p - 1))} 
+                                                    disabled={orderHistoryPage === 1} 
+                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"
+                                                >
+                                                    <Icons.ChevronLeft className="w-4 h-4" />
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setOrderHistoryPage(p => Math.min(totalOrderHistoryPages, p + 1))} 
+                                                    disabled={orderHistoryPage === totalOrderHistoryPages} 
+                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"
+                                                >
+                                                    <Icons.ChevronRight className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                )}
+                            </motion.section>
+                        )}
                         {/* 🟢 ABA: CARTEIRAS / LIVRO RAZÃO (Estilo Netflix Clean & Performático) */}
                         {crmSubTab === 'CARTEIRAS (LIVRO RAZÃO)' && (
                         <motion.section key="CARTEIRAS" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-8">
