@@ -165,13 +165,12 @@ class CustomerController extends Controller
                         'desconto' => (float) $order->desconto,
                         'total' => (float) $order->total,
                         
-                        // Pagamento
+                        // 🟢 ADICIONE ESTAS 6 LINHAS AQUI NO SEU CUSTOMER CONTROLLER:
+                        'payment_gateway' => $order->payment_gateway,
                         'payment_method' => $order->payment_method,
                         'payment_installments' => $order->payment_installments,
                         'installment_value' => (float) $order->installment_value,
                         'gateway_fee' => (float) $order->gateway_fee,
-
-                        // Logística
                         'tracking_code' => $order->tracking_code,
                         
                         'endereco' => $order->address,

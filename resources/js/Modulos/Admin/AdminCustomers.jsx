@@ -225,29 +225,61 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
         </span>
     </button>
 );
-// 4. Filtro de Data
+// 🟢 COMPONENTE DE FILTRO DE DATA BLINDADO (Com Overlay Invisível)
 const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, isOpen, onClose }) => {
-  const ref = useRef(null);
-  useEffect(() => {
-    function handleClickOutside(event) { if (ref.current && !ref.current.contains(event.target)) onClose(); }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [onClose]);
+  // Oculta o componente inteiro se não estiver aberto
+  if (!isOpen) return null;
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} ref={ref} className="absolute right-0 mt-2 bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 w-80 z-[100]" role="dialog" aria-modal="true" aria-label="Filtrar Período">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Icons.Filter className="w-4 h-4"/> Filtrar Período</p>
-          <div className="space-y-4">
-            <div><label className="block text-xs font-bold text-slate-700 mb-1.5">Data Inicial</label><input type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all" /></div>
-            <div><label className="block text-xs font-bold text-slate-700 mb-1.5">Data Final</label><input type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all" /></div>
-            <div className="pt-2 flex gap-2">
-              <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors">Limpar</button>
-              <button type="button" onClick={onApply} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-2.5 rounded-xl shadow-sm transition-colors">{loading ? 'Aplicando...' : 'Aplicar Filtro'}</button>
+        <>
+          {/* 🟢 OVERLAY INVISÍVEL: Cobre a tela inteira atrás do popup. 
+              Captura o clique fora sem entrar em conflito com o calendário nativo */}
+          <div 
+             className="fixed inset-0 z-[90]" 
+             onClick={(e) => { e.stopPropagation(); onClose(); }}
+             aria-hidden="true"
+          ></div>
+          
+          <motion.div 
+             initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+             animate={{ opacity: 1, y: 0, scale: 1 }} 
+             exit={{ opacity: 0, y: 10, scale: 0.95 }} 
+             className="absolute right-0 lg:left-0 mt-2 bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 w-80 z-[100]" 
+             role="dialog" 
+             aria-modal="true" 
+             aria-label="Filtrar Período"
+          >
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Icons.Filter className="w-4 h-4"/> Filtrar Período
+            </p>
+            <div className="space-y-4">
+              <div className="relative z-10">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Inicial</label>
+                <input 
+                    type="date" 
+                    value={dateRange.start} 
+                    onChange={(e) => setDateRange({...dateRange, start: e.target.value})} 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all cursor-pointer" 
+                />
+              </div>
+              <div className="relative z-10">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Final</label>
+                <input 
+                    type="date" 
+                    value={dateRange.end} 
+                    onChange={(e) => setDateRange({...dateRange, end: e.target.value})} 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all cursor-pointer" 
+                />
+              </div>
+              <div className="pt-2 flex gap-2 relative z-10">
+                <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors">Limpar</button>
+                <button type="button" onClick={onApply} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-2.5 rounded-xl shadow-sm transition-colors">{loading ? 'Aplicando...' : 'Aplicar Filtro'}</button>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
@@ -686,6 +718,7 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
                 icon={Icons.Calendar} 
                 ariaLabel="Filtrar Período do Dashboard"
                 loading={savingState === 'filtroDash'}
+                isActive={dashDateOpen}
             />
             <DateFilterPopup 
                 isOpen={dashDateOpen} onClose={() => setDashDateOpen(false)} dateRange={dashDateRange} setDateRange={setDashDateRange} loading={savingState === 'filtroDash'}
@@ -806,7 +839,8 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
               <HoverProgressRoundButton 
                   text={recentDateRange.start ? `${formatDateBR(recentDateRange.start)} até ${formatDateBR(recentDateRange.end)}` : 'Filtrar Tabela'}
                   onClick={() => setRecentDateOpen(!recentDateOpen)} 
-                  icon={Icons.Calendar} ariaLabel="Filtrar Período Recentes" loading={savingState === 'filtroRecent'} 
+                  icon={Icons.Calendar} ariaLabel="Filtrar Período Recentes" loading={savingState === 'filtroRecent'}  
+                  isActive={recentDateOpen}
               />
               <DateFilterPopup 
                 isOpen={recentDateOpen} onClose={() => setRecentDateOpen(false)}
