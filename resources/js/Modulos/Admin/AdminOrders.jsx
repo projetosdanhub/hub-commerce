@@ -1,7 +1,7 @@
 // ============================================================================
 // FICHEIRO: resources/js/Modulos/Admin/AdminOrders.jsx
 // ARQUITETURA: Gestão de Pedidos 100% API (Real-Time Polling Silencioso)
-// UI/UX: Minimal SaaS Premium | Fluid Elements | Acessibilidade Maximizada
+// UI/UX: Minimal SaaS Premium | Fluid Elements | Skeleton Loader
 // ============================================================================
 
 import React, { useState, useMemo, useEffect, Component } from 'react';
@@ -31,7 +31,7 @@ class ErrorBoundary extends Component {
         if (this.state.hasError) return (
             <div className="p-8 m-8 bg-rose-50 border border-rose-200 rounded-[24px] shadow-sm" role="alert">
                 <h2 className="text-xl font-black text-rose-600 mb-4 flex items-center gap-2">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <Icons.AlertTriangle className="w-6 h-6" />
                     Erro de Renderização Contido
                 </h2>
                 <div className="bg-white p-4 rounded-xl border border-rose-100 overflow-auto text-[10px] font-mono text-slate-800 shadow-inner max-h-48 mb-4">
@@ -46,7 +46,7 @@ class ErrorBoundary extends Component {
 }
 
 // ==========================================
-// DICIONÁRIO COMPLETO DE ÍCONES BLINDADOS
+// ÍCONES BLINDADOS
 // ==========================================
 const Icons = {
     Search: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
@@ -75,7 +75,8 @@ const Icons = {
     Activity: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
     Truck: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>,
     Clock: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-    Info: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    Info: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    WhatsApp: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 };
 
 const statusConfig = {
@@ -110,8 +111,39 @@ const GlobalStyles = () => (
     `}} />
 );
 
-const ProgressButton = ({ onClick, loading, text, loadingText, className, disabled = false, icon: Icon }) => (
-    <button type="button" onClick={onClick} disabled={loading || disabled} className={`relative overflow-hidden ${className} disabled:opacity-90 disabled:cursor-not-allowed transition-all focus:ring-2 focus:ring-blue-500/20`}>
+// ============================================================================
+// COMPONENTE: SKELETON LOADER (Carregamento Elegante)
+// ============================================================================
+const OrdersSkeleton = () => (
+    <div className="animate-pulse flex flex-col min-h-[600px] w-full">
+        <div className="flex justify-between items-center mb-4">
+            <div className="h-6 w-64 bg-slate-200 rounded-lg"></div>
+            <div className="h-8 w-8 bg-slate-200 rounded-full"></div>
+        </div>
+        <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-slate-100 overflow-hidden mb-6 h-[100px]">
+            {[1,2,3,4,5,6].map(i => <div key={i} className="flex-1 bg-slate-100/50 p-5"></div>)}
+        </div>
+        <div className="bg-white rounded-[32px] shadow-sm border border-slate-200 flex flex-col flex-1 p-6">
+            <div className="h-12 bg-slate-100 rounded-xl mb-6 flex justify-between px-4 items-center">
+                <div className="h-6 w-1/3 bg-slate-200 rounded-lg"></div>
+                <div className="h-8 w-24 bg-slate-200 rounded-lg"></div>
+            </div>
+            <div className="space-y-4">
+                {[1,2,3,4,5].map(i => (
+                    <div key={i} className="h-16 bg-slate-50 rounded-xl border border-slate-100 flex items-center px-6 gap-6">
+                        <div className="h-10 w-10 bg-slate-200 rounded-full"></div>
+                        <div className="h-4 w-1/4 bg-slate-200 rounded"></div>
+                        <div className="h-4 w-1/4 bg-slate-200 rounded"></div>
+                        <div className="h-6 w-20 bg-slate-200 rounded-lg ml-auto"></div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+);
+
+const ProgressButton = ({ onClick, loading, text, loadingText, className, disabled = false, icon: Icon, ariaLabel }) => (
+    <button aria-label={ariaLabel || text} type="button" onClick={onClick} disabled={loading || disabled} className={`relative overflow-hidden ${className} disabled:opacity-90 disabled:cursor-not-allowed transition-all focus:ring-2 focus:ring-blue-500/20`}>
         {loading && <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1.5, ease: "linear" }} className="absolute left-0 top-0 h-full bg-black/10 z-0" />}
         <span className="relative z-10 flex items-center justify-center gap-2">{loading ? <><Icons.Spinner className="w-4 h-4" /> {loadingText || text}</> : <>{Icon && <Icon className="w-4 h-4" />} {text}</>}</span>
     </button>
@@ -153,16 +185,16 @@ const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, i
       {isOpen && (
         <>
           <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-hidden="true"></div>
-          <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 top-full mt-2 origin-top-right bg-white border border-slate-200 rounded-[24px] shadow-2xl p-5 w-80 z-[100]" role="dialog" aria-modal="true">
+          <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 top-full mt-2 origin-top-right bg-white border border-slate-200 rounded-[24px] shadow-2xl p-5 w-80 z-[100]" role="dialog" aria-modal="true" aria-label="Filtro de Data">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Icons.Calendar className="w-4 h-4"/> Filtrar Período</p>
             <div className="space-y-4">
               <div className="relative z-10">
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Data Inicial</label>
-                  <input type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" htmlFor="data-inicio">Data Inicial</label>
+                  <input id="data-inicio" type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
               </div>
               <div className="relative z-10">
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Data Final</label>
-                  <input type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" htmlFor="data-fim">Data Final</label>
+                  <input id="data-fim" type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
               </div>
               <div className="pt-2 flex gap-2 relative z-10">
                 <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors">Limpar</button>
@@ -201,6 +233,11 @@ const formatSmartCurrency = (value) => {
     if (num >= 1000000) return `R$ ${(num / 1000000).toFixed(2).replace('.', ',')}M`;
     if (num >= 1000) return `R$ ${(num / 1000).toFixed(1).replace('.', ',')}k`;
     return `R$ ${num.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+};
+const formatDateBR = (dateStr) => {
+    if(!dateStr || dateStr === '-') return '-';
+    try { const parts = safeStr(dateStr).split('-'); if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`; return safeStr(dateStr); } 
+    catch(e) { return '-'; }
 };
 const formatDateTimeBR = (dateStr) => {
     if(!dateStr) return '-';
@@ -277,7 +314,7 @@ const AdminOrdersContent = () => {
     const [isTimelineModalOpen, setIsTimelineModalOpen] = useState(false);
     const [loadingTimeline, setLoadingTimeline] = useState(false);
     const [timelinePage, setTimelinePage] = useState(1);
-    const timelinePerPage = 6; // Refinado layout CRM
+    const timelinePerPage = 6; 
 
     // Paginação interna de Produtos
     const [itemsPage, setItemsPage] = useState(1);
@@ -434,6 +471,21 @@ const AdminOrdersContent = () => {
         setTimeout(() => { setLoadingTimeline(false); setIsTimelineModalOpen(false); }, 800);
     };
 
+    // 🟢 SKELETON LOADER PREVINE A TELA BRANCA INICIAL
+    if (carregandoPedidos && pedidosDaApi.length === 0) {
+        return (
+            <div className="w-full min-h-screen pb-20 relative font-sans">
+                <header className="mb-6 pt-4 px-4 sm:px-8">
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Gestão de Pedidos</h1>
+                    <p className="text-sm font-medium text-slate-500 mt-1">Acompanhe transações, status logístico e fluxo de caixa.</p>
+                </header>
+                <div className="px-4 sm:px-8">
+                    <OrdersSkeleton />
+                </div>
+            </div>
+        );
+    }
+
     // ============================================================================
     // MODAL DE AÇÕES MANUAIS E FLUXOS ESPECÍFICOS
     // ============================================================================
@@ -453,7 +505,7 @@ const AdminOrdersContent = () => {
         if (isEntrega) { titulo = "Confirmar Entrega"; subtitulo = "Marque o pedido como entregue (Comprovante obrigatório)."; iconTitle = <Icons.Check className="w-5 h-5"/>; }
         if (isCancelar) { titulo = "Cancelar Pedido"; subtitulo = "O pedido será cancelado e a reserva de estoque será liberada."; iconTitle = <Icons.AlertTriangle className="text-rose-500 w-6 h-6"/>; confirmText = "Confirmar Cancelamento"; }
         if (isIniciaReembolso) { titulo = "Analisar Devolução"; subtitulo = "Mudar status para Em Análise de Reembolso."; iconTitle = <Icons.AlertTriangle className="text-amber-500 w-6 h-6"/>; confirmText = "Iniciar Análise"; }
-        if (isProcessaReembolso) { titulo = "Efetivar Reembolso"; subtitulo = "O reembolso será efetivado. Os itens irão para 'Produtos Devolvidos' para triagem, não voltando automaticamente ao estoque."; iconTitle = <Icons.DollarSign className="text-rose-500 w-6 h-6"/>; confirmText = "Finalizar Ciclo"; }
+        if (isProcessaReembolso) { titulo = "Efetivar Reembolso"; subtitulo = "Aprove e documente o estorno ou saldo gerado."; iconTitle = <Icons.DollarSign className="text-rose-500 w-6 h-6"/>; confirmText = "Finalizar Ciclo"; }
 
         return (
             <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
@@ -779,6 +831,7 @@ const AdminOrdersContent = () => {
                     </div>
                 </div>
 
+                {/* 🟢 STEPPER / TRILHA DE PROGRESSO */}
                 <RenderStepper status={o.status} pedido={o} />
 
                 {/* 🟢 SUBMENU DO PEDIDO */}
@@ -796,26 +849,6 @@ const AdminOrdersContent = () => {
                     {detailTab === 'RESUMO' && (
                         <motion.div key="RESUMO" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2 space-y-6 flex flex-col">
-                                
-                                {o.status === 'REEMBOLSADO' && (
-                                    <div className="bg-rose-50 border border-rose-100 rounded-[24px] p-6 sm:p-8">
-                                        <h3 className="text-xs font-black text-rose-500 uppercase tracking-widest flex items-center gap-2 mb-4">
-                                            <Icons.AlertTriangle className="w-4 h-4"/> Detalhes do Reembolso
-                                        </h3>
-                                        <div className="space-y-3 text-sm">
-                                            <div className="flex justify-between"><span className="text-rose-700 font-bold">Valor Reembolsado:</span> <span className="font-black text-rose-900">{formatCurrency(o.total)}</span></div>
-                                            <div className="flex justify-between"><span className="text-rose-700 font-bold">Motivo:</span> <span className="text-rose-900 font-medium text-right max-w-[60%]">{o.motivo_cancelamento}</span></div>
-                                            {o.comprovante_reembolso && (
-                                                <div className="pt-3 border-t border-rose-200/50 mt-3">
-                                                    <a href={o.comprovante_reembolso} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition-colors shadow-sm">
-                                                        <Icons.Download className="w-4 h-4"/> Ver Comprovante
-                                                    </a>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
                                 <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-fit">
                                     <div className="p-6 border-b border-slate-100 bg-slate-50/50">
                                         <h3 className="text-lg font-black text-slate-800 flex items-center gap-2"><Icons.Package className="w-5 h-5 text-blue-500"/> Produtos do Pedido</h3>
@@ -1159,7 +1192,10 @@ const AdminOrdersContent = () => {
     );
 };
 
-const RenderStepper = ({ status }) => {
+// ============================================================================
+// COMPONENTE STEPPER BLINDADO E REFINADO
+// ============================================================================
+const RenderStepper = ({ status, pedido }) => {
     const [isInitialMount, setIsInitialMount] = useState(true);
     useEffect(() => { setIsInitialMount(false); }, []);
 
@@ -1173,12 +1209,74 @@ const RenderStepper = ({ status }) => {
     
     const progressPercentage = currentIndex === -1 ? 0 : (currentIndex / (steps.length - 1)) * 100;
 
+    const getLogDate = (statusKeyword) => {
+        if (!pedido || !pedido.timeline) return null;
+        const log = pedido.timeline.slice().reverse().find(l => l.evento.toUpperCase().includes(statusKeyword));
+        return log ? (log.data || formatDateTimeBR(log.data_raw)) : null;
+    }
+
+    if (status === 'EM_ANALISE_REEMBOLSO') return (
+        <div className="text-amber-700 font-bold text-sm bg-amber-50 p-6 rounded-[24px] border border-amber-200 text-center shadow-sm mb-6">
+            <span className="text-amber-600 font-black uppercase text-xs tracking-widest block mb-2 flex items-center justify-center gap-2"><Icons.AlertTriangle className="w-5 h-5"/> Reembolso / Devolução Em Análise</span>
+            Motivo Solicitado: {pedido?.motivo_cancelamento || 'Aguardando justificativa do cliente.'}
+        </div>
+    );
+
+    if (['CANCELADO', 'REEMBOLSADO'].includes(status)) {
+        const isReembolsado = status === 'REEMBOLSADO';
+        const metodo = pedido?.metodo_reembolso === 'CASHBACK' ? 'CASHBACK' : 'TRANSFERÊNCIA';
+        const isCashback = pedido?.metodo_reembolso === 'CASHBACK';
+
+        let dataAcao = '-';
+        let horaAcao = '-';
+        if (pedido?.timeline) {
+            const logEvent = pedido.timeline.slice().reverse().find(l =>
+                l.evento.toLowerCase().includes('reembolso') || l.evento.toLowerCase().includes('cancelado')
+            );
+            if (logEvent) {
+                const dateParts = (logEvent.data || '').split(' ');
+                dataAcao = dateParts[0] || '-';
+                horaAcao = dateParts[1] || '-';
+            }
+        }
+
+        return (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-rose-50 border border-rose-200 rounded-[24px] p-6 sm:p-8 mb-6 shadow-sm flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4 text-rose-500 shadow-sm">
+                    <Icons.AlertTriangle className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-black text-rose-700 mb-2">Pedido Cancelado / Devolvido</h3>
+                <p className="text-sm font-medium text-rose-600 max-w-2xl leading-relaxed mb-6">
+                    O pedido foi cancelado e o pagamento aprovado. Confira os produtos na área de devoluções, pois eles não voltam ao estoque automaticamente.
+                </p>
+
+                {(isReembolsado || pedido?.comprovante_reembolso) && (
+                    <div className="bg-white p-5 rounded-2xl border border-rose-100 w-full max-w-3xl flex flex-col sm:flex-row items-center justify-between gap-6 text-left shadow-sm">
+                        <div className="flex-1">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Detalhes do Reembolso</span>
+                            <p className="text-sm font-bold text-slate-700 leading-relaxed">
+                                O valor do reembolso foi realizado no dia <span className="text-slate-900">{dataAcao}</span> horário <span className="text-slate-900">{horaAcao}</span><br/>
+                                POR MEIO DE <span className="text-blue-600 font-black uppercase">{metodo}</span> NO VALOR DE <span className="text-emerald-600 font-black">{formatCurrency(pedido?.total)}</span>
+                                {isCashback && <span className="text-amber-600 font-bold"> na conta para compras na loja</span>}.
+                            </p>
+                        </div>
+                        {pedido?.comprovante_reembolso && (
+                            <a href={pedido.comprovante_reembolso} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-5 py-3.5 rounded-xl font-bold text-xs transition-colors shadow-sm shrink-0">
+                                <Icons.Download className="w-4 h-4" /> Baixar Comprovante
+                            </a>
+                        )}
+                    </div>
+                )}
+            </motion.div>
+        );
+    }
+
     return (
         <div className="relative overflow-hidden p-6 sm:p-8 bg-slate-50/50 rounded-[24px] border border-slate-100 mb-6">
-            <div className="relative z-10 w-full max-w-2xl mx-auto flex items-center justify-between pb-6 pt-2">
-                <div className="absolute top-[22px] left-0 w-full h-1.5 bg-slate-200 rounded-full z-0" />
+            <div className="relative z-10 w-full max-w-2xl mx-auto flex items-start justify-between pb-8 pt-2">
+                <div className="absolute top-[18px] left-0 w-full h-1 bg-slate-200 rounded-full z-0" />
                 <motion.div 
-                    className="absolute top-[22px] left-0 h-1.5 bg-sky-400 rounded-full z-0 shadow-[0_0_10px_rgba(56,189,248,0.4)]"
+                    className="absolute top-[18px] left-0 h-1 bg-sky-400 rounded-full z-0 shadow-[0_0_10px_rgba(56,189,248,0.4)]"
                     initial={isInitialMount ? { width: 0 } : false}
                     animate={{ width: `${progressPercentage}%` }}
                     transition={{ duration: 1, ease: "easeOut" }}
@@ -1187,6 +1285,15 @@ const RenderStepper = ({ status }) => {
                 {steps.map((step, idx) => {
                     const isCompleted = idx <= currentIndex;
                     const isCurrent = idx === currentIndex;
+                    
+                    let dateStr = null;
+                    if (isCompleted) {
+                        if (idx === 0) dateStr = formatDateBR(pedido?.data_raw || pedido?.created_at);
+                        if (idx === 1) dateStr = getLogDate('PAGAMENTO') || getLogDate('SEPARAÇÃO');
+                        if (idx === 2) dateStr = getLogDate('DESPACHADO');
+                        if (idx === 3) dateStr = getLogDate('ENTREGUE');
+                    }
+
                     return (
                         <div key={step} className="relative z-10 flex flex-col items-center px-2 bg-slate-50/50 w-24">
                             <motion.div 
@@ -1200,6 +1307,11 @@ const RenderStepper = ({ status }) => {
                             <span className={`text-[10px] font-black uppercase tracking-widest text-center leading-tight mb-1 ${isCurrent ? 'text-sky-600' : isCompleted ? 'text-slate-700' : 'text-slate-400'}`}>
                                 {flowLabels[idx]}
                             </span>
+                            {dateStr && (
+                                <span className="text-[9px] font-bold text-slate-400 text-center">
+                                    {dateStr}
+                                </span>
+                            )}
                         </div>
                     );
                 })}
