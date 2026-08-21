@@ -27,137 +27,141 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ==========================================
-        // 2. CRIAR CLIENTE COMPLETO
+        // 2. CRIAR CLIENTE COMPLETO (TESTE DE UI)
         // ==========================================
         $cliente = User::create([
-            'name' => 'Ana Beatriz Costa',
-            'email' => 'ana.beatriz@exemplo.com',
+            'name' => 'Gemini Inteligência Artificial',
+            'email' => 'gemini@hubcommerce.com',
             'password' => Hash::make('senha123'),
             'role' => 'cliente',
-            'cpf' => '123.456.789-00',
-            'telefone' => '5511977778888',
-            'nascimento' => '1995-08-20',
-            'sexo' => 'Feminino',
-            'origem' => 'Instagram Ads',
-            'tags' => ['VIP Potencial', 'Black Friday', 'Recorrente'],
-            'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-            'coins' => 150,
-            'cashback' => 25.50
+            'cpf' => '999.888.777-66',
+            'telefone' => '5511999999999',
+            'nascimento' => '1999-12-31',
+            'sexo' => 'Não Binário',
+            'origem' => 'Busca Orgânica',
+            'tags' => ['Tech Lover', 'VIP Diamante', 'Early Adopter', 'Reviewer'],
+            'avatar' => 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=200&q=80',
+            'coins' => 12500,
+            'cashback' => 345.50
         ]);
 
         // ==========================================
-        // 3. CRIAR AGENDA DE ENDEREÇOS DO CLIENTE (Global)
+        // 3. CRIAR AGENDA DE ENDEREÇOS DO CLIENTE
         // ==========================================
         Address::create([
             'user_id' => $cliente->id,
-            'titulo' => 'Meu Apartamento',
+            'titulo' => 'Meu Servidor Principal',
             'cep' => '01310-100',
             'rua' => 'Avenida Paulista',
             'num' => '1000',
-            'complemento' => 'Apto 45',
-            'referencia' => 'Em frente ao MASP',
+            'complemento' => 'Data Center, Rack 42',
+            'referencia' => 'Prédio espelhado ao lado do parque',
             'bairro' => 'Bela Vista',
             'cidade' => 'São Paulo',
             'uf' => 'SP',
             'padrao' => true
         ]);
 
-        // ==========================================
-        // 4. CRIAR PEDIDO 1 (COMPLEXO - A_PAGAR)
-        // ==========================================
-        // Subtotal: 585.00 | Frete: 50.00 | Desconto: 100.00 | Total: 535.00
+        // =========================================================
+        // 4. PEDIDO 1: O TESTE MÁXIMO (COMPLEXO - EM SEPARAÇÃO)
+        // Possui: Variações, Personalização (Texto+Img), Cupons, VIP
+        // =========================================================
         $pedido1 = Order::create([
             'user_id' => $cliente->id,
-            'subtotal' => 585.00,
-            'frete' => 50.00,
-            'desconto' => 100.00,
-            'total' => 535.00,
-            'status' => 'A_PAGAR', 
-            'payment_gateway' => 'Mercado Pago',
+            'subtotal' => 950.00,
+            'frete' => 65.00,
+            'desconto' => 115.00, // 50 do cupom loja + 65 do frete grátis VIP
+            'total' => 900.00,
+            'status' => 'SEPARACAO', 
+            'payment_gateway' => 'Stripe',
             'payment_method' => 'Cartão de Crédito',
-            'payment_installments' => 5,
-            'installment_value' => 107.00, 
+            'payment_installments' => 10,
+            'installment_value' => 90.00, 
             'gateway_fee' => 0.00,
             'applied_coupons' => [
-                ['nome' => 'BEMVINDA50', 'tipo' => 'Loja', 'valor' => 50.00],
-                ['nome' => 'FRETEFREE', 'tipo' => 'Frete', 'valor' => 50.00]
+                ['nome' => 'BEMVINDO50', 'tipo' => 'Loja', 'valor' => 50.00],
+                ['nome' => 'VIP DIAMANTE', 'tipo' => 'Frete VIP', 'valor' => 65.00]
             ],
-            'created_at' => Carbon::now()->subHours(2) 
+            'created_at' => Carbon::now()->subDays(1) 
         ]);
 
-        // PRODUTO 1: 2 Variações + 1 Imagem + 1 Texto (Qtd: 2)
+        // Item 1: Com Variação + Imagem e Texto Personalizado
         OrderItem::create([
             'order_id' => $pedido1->id,
-            'sku' => 'CANECA-MAGICA',
-            'variation_sku' => 'CANECA-MAGICA-BCA-FOSCA',
-            'product_name' => 'Caneca Mágica Personalizada',
-            'short_description' => 'Caneca de cerâmica que revela foto com calor.',
-            'variation_name' => 'Cor: Branca | Acabamento: Fosco',
-            'quantity' => 2,
-            'price' => 175.00,
-            'product_image' => 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=200&q=80',
-            'customization' => [
-                'Texto da Caneca' => 'Feliz dia das Mães! Te amo muito!', 
-                'Foto Estampada' => 'https://images.unsplash.com/photo-1596813362035-3edcff0cfa43?auto=format&fit=crop&w=500&q=80' 
-            ]
-        ]);
-
-        // PRODUTO 2: 2 Variações + 1 Imagem + 1 Texto (Qtd: 1)
-        OrderItem::create([
-            'order_id' => $pedido1->id,
-            'sku' => 'CAM-ALG-01',
-            'variation_sku' => 'CAM-ALG-PRETA-M',
-            'product_name' => 'Camiseta Premium 100% Algodão',
-            'short_description' => 'Camiseta com estampa frontal em DTG.',
-            'variation_name' => 'Cor: Preta | Tamanho: M', 
+            'sku' => 'MOLETOM-DEV',
+            'variation_sku' => 'MOLETOM-DEV-PRETO-GG',
+            'product_name' => 'Moletom para Desenvolvedores',
+            'short_description' => 'Moletom felpado com estampa personalizada nas costas.',
+            'variation_name' => 'Cor: Preto | Tamanho: GG',
             'quantity' => 1,
-            'price' => 89.00,
-            'product_image' => 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=200&q=80',
+            'price' => 350.00,
+            'product_image' => 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=200&q=80',
             'customization' => [
-                'Nome nas Costas' => 'Ana Beatriz', 
-                'Arte Frontal' => 'https://images.unsplash.com/photo-1618557161833-21b98a3b56f8?auto=format&fit=crop&w=500&q=80' 
+                'Nome ou Nickname' => '<Gemini_AI />', 
+                'Logo da Empresa' => 'https://images.unsplash.com/photo-1618557161833-21b98a3b56f8?auto=format&fit=crop&w=500&q=80' 
             ]
         ]);
 
-        // PRODUTO 3: 1 Variação + Apenas Texto (Qtd: 3)
+        // Item 2: Sem Variação + Apenas Imagem Personalizada
         OrderItem::create([
             'order_id' => $pedido1->id,
-            'sku' => 'CHAV-METAL',
-            'variation_sku' => 'CHAV-METAL-PRATA',
-            'product_name' => 'Chaveiro de Metal Gravado a Laser',
-            'short_description' => 'Chaveiro durável com argola italiana.',
-            'variation_name' => 'Acabamento: Prata',
-            'quantity' => 3,
-            'price' => 48.66, // 3x de ~16.22 = 146.00
-            'product_image' => 'https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?auto=format&fit=crop&w=200&q=80',
+            'sku' => 'QUADRO-CANVAS',
+            'variation_sku' => null,
+            'product_name' => 'Quadro Decorativo Canvas Premium',
+            'short_description' => 'Impressão em alta definição 60x90cm.',
+            'variation_name' => null, 
+            'quantity' => 2,
+            'price' => 250.00, // 2x 250 = 500
+            'product_image' => 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=200&q=80',
             'customization' => [
-                'Iniciais Gravadas' => 'A.B.C'
+                'Arte Enviada' => 'https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=500&q=80' 
             ]
         ]);
 
-        // ENDEREÇO DO PEDIDO 1 (OrderAddress)
+        // Item 3: Com Variação + Apenas Texto Personalizado
+        OrderItem::create([
+            'order_id' => $pedido1->id,
+            'sku' => 'GARRAFA-TERM',
+            'variation_sku' => 'GARRAFA-TERM-AZUL',
+            'product_name' => 'Garrafa Térmica Inox',
+            'short_description' => 'Mantém gelado por 24h. Gravação a laser.',
+            'variation_name' => 'Cor: Azul Metálico',
+            'quantity' => 1,
+            'price' => 100.00, 
+            'product_image' => 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=200&q=80',
+            'customization' => [
+                'Iniciais' => 'G.A.I'
+            ]
+        ]);
+
+        // Endereço Pedido 1
         OrderAddress::create([
             'order_id' => $pedido1->id,
             'rua' => 'Avenida Paulista',
             'num' => '1000',
-            'complemento' => 'Apto 45',
-            'referencia' => 'Em frente ao museu',
+            'complemento' => 'Data Center, Rack 42',
+            'referencia' => 'Prédio espelhado ao lado do parque',
             'bairro' => 'Bela Vista',
             'cidade' => 'São Paulo',
             'uf' => 'SP',
             'cep' => '01310-100'
         ]);
 
-        // TIMELINE DO PEDIDO 1
+        // Timeline Pedido 1
         OrderHistory::create([
             'order_id' => $pedido1->id,
-            'event' => 'Pedido realizado com sucesso. Aguardando pagamento via Cartão de Crédito.',
-            'created_at' => Carbon::now()->subHours(2)
+            'event' => 'Pedido recebido. Aguardando processamento da operadora de cartão.',
+            'created_at' => Carbon::now()->subDays(1)->subHours(2)
+        ]);
+        OrderHistory::create([
+            'order_id' => $pedido1->id,
+            'event' => 'Pagamento aprovado via Stripe. Pedido enviado para produção e separação.',
+            'created_at' => Carbon::now()->subDays(1)
         ]);
 
 
         // ==========================================
-        // 5. CRIAR PEDIDO 2 (SIMPLES - A_PAGAR)
+        // 5. PEDIDO 2: SIMPLES E ENTREGUE (SEM NADA EXTRA)
         // ==========================================
         $pedido2 = Order::create([
             'user_id' => $cliente->id,
@@ -165,26 +169,27 @@ class DatabaseSeeder extends Seeder
             'frete' => 20.00,
             'desconto' => 0.00,
             'total' => 140.00,
-            'status' => 'A_PAGAR', 
-            'payment_gateway' => 'Pix',
-            'payment_method' => 'Pix Copia e Cola',
+            'status' => 'ENTREGUE', 
+            'payment_gateway' => 'Mercado Pago',
+            'payment_method' => 'Pix',
             'payment_installments' => 1,
             'installment_value' => 140.00, 
             'gateway_fee' => 0.00,
             'applied_coupons' => null,
-            'created_at' => Carbon::now()->subMinutes(30) 
+            'tracking_code' => 'BR987654321PT',
+            'created_at' => Carbon::now()->subDays(15) 
         ]);
 
         OrderItem::create([
             'order_id' => $pedido2->id,
-            'sku' => 'QUADRO-CV-A3',
-            'variation_sku' => 'QUADRO-CV-A3-MOLD-PRETA',
-            'product_name' => 'Quadro Canvas Fosco (Pronta Entrega)',
-            'short_description' => 'Impressão em tela canvas com moldura canaleta.',
-            'variation_name' => 'Moldura: Preta | Tamanho: A3',
+            'sku' => 'MOUSE-PAD-RGB',
+            'variation_sku' => null,
+            'product_name' => 'Mousepad Gamer RGB Extended',
+            'short_description' => 'Superfície speed com LEDs.',
+            'variation_name' => null,
             'quantity' => 1,
             'price' => 120.00,
-            'product_image' => 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=200&q=80',
+            'product_image' => 'https://images.unsplash.com/photo-1615663245857-ac1eeb5304ba?auto=format&fit=crop&w=200&q=80',
             'customization' => null
         ]);
 
@@ -193,7 +198,7 @@ class DatabaseSeeder extends Seeder
             'rua' => 'Avenida Paulista',
             'num' => '1000',
             'complemento' => 'Apto 45',
-            'referencia' => 'Em frente ao museu',
+            'referencia' => 'Em frente ao MASP',
             'bairro' => 'Bela Vista',
             'cidade' => 'São Paulo',
             'uf' => 'SP',
@@ -202,8 +207,58 @@ class DatabaseSeeder extends Seeder
 
         OrderHistory::create([
             'order_id' => $pedido2->id,
-            'event' => 'Pedido realizado via PIX. Aguardando confirmação do banco.',
-            'created_at' => Carbon::now()->subMinutes(30)
+            'event' => 'Pedido entregue ao destinatário.',
+            'created_at' => Carbon::now()->subDays(10)
+        ]);
+
+
+        // ==========================================
+        // 6. PEDIDO 3: CANCELADO / REEMBOLSADO
+        // ==========================================
+        $pedido3 = Order::create([
+            'user_id' => $cliente->id,
+            'subtotal' => 450.00,
+            'frete' => 0.00,
+            'desconto' => 0.00,
+            'total' => 450.00,
+            'status' => 'CANCELADO', 
+            'payment_gateway' => 'Pagar.me',
+            'payment_method' => 'Boleto Bancário',
+            'payment_installments' => 1,
+            'installment_value' => 450.00, 
+            'gateway_fee' => 0.00,
+            'applied_coupons' => null,
+            'cancel_reason' => 'Boleto não pago após o vencimento.',
+            'created_at' => Carbon::now()->subDays(5) 
+        ]);
+
+        OrderItem::create([
+            'order_id' => $pedido3->id,
+            'sku' => 'TECLADO-MEC',
+            'variation_sku' => 'TECLADO-MEC-RED',
+            'product_name' => 'Teclado Mecânico Custom',
+            'short_description' => 'Switches red lineares.',
+            'variation_name' => 'Switch: Red',
+            'quantity' => 1,
+            'price' => 450.00,
+            'product_image' => 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=200&q=80',
+            'customization' => null
+        ]);
+
+        OrderAddress::create([
+            'order_id' => $pedido3->id,
+            'rua' => 'Avenida Paulista',
+            'num' => '1000',
+            'bairro' => 'Bela Vista',
+            'cidade' => 'São Paulo',
+            'uf' => 'SP',
+            'cep' => '01310-100'
+        ]);
+
+        OrderHistory::create([
+            'order_id' => $pedido3->id,
+            'event' => 'Pedido cancelado pelo sistema. Motivo: Vencimento do Boleto Bancário.',
+            'created_at' => Carbon::now()->subDays(2)
         ]);
     }
 }

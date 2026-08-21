@@ -11,6 +11,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'carrier_id',        // <-- ADICIONADO AQUI
         'subtotal',
         'frete',
         'desconto',
@@ -24,7 +25,8 @@ class Order extends Model
         'tracking_code',
         'applied_coupons',    // Guarda os múltiplos cupons em formato JSON
         'cancel_reason',
-        'refund_receipt'
+        'refund_receipt',
+        'refund_method'
     ];
 
     // Blindagem de Tipos para o React receber os números e listas perfeitos
@@ -49,6 +51,11 @@ class Order extends Model
     // 1 Pedido PERTENCE a 1 Cliente
     public function user() {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    // 1 Pedido PERTENCE a 1 Transportadora
+    public function carrier() {
+        return $this->belongsTo(Carrier::class, 'carrier_id');
     }
 
     // 1 Pedido TEM MUITOS Itens (Carrinho)

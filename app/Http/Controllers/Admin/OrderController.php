@@ -21,12 +21,16 @@ class OrderController extends Controller
 
     public function index()
     {
-        $orders = Order::with(['user', 'items', 'address', 'history' => function($q) {
+        // 🟢 ADICIONADO: Relacionamento 'carrier' para puxar o nome da transportadora oficial do banco
+        $orders = Order::with(['user', 'items', 'address', 'carrier', 'history' => function($q) {
             $q->orderBy('created_at', 'desc');
         }])->orderBy('id', 'desc')->get();
 
         $formatted = $orders->map(function ($order) {
-            $historicoCliente = Order::where('user_id', $order->user_id)->where('status', '!=', 'CANCELADO');
+            // 🟢 CORREÇÃO: Ignora CANCELADO e REEMBOLSADO para não inflar as métricas do CRM
+            $historicoCliente = Order::where('user_id', $order->user_id)
+                                     ->whereNotIn('status', ['CANCELADO', 'REEMBOLSADO']);
+            
             $ltv = (float) $historicoCliente->sum('total');
             
             return [
@@ -34,37 +38,36 @@ class OrderController extends Controller
                 'status' => $order->status,
                 'data' => $order->created_at->format('d/m/Y'),
                 'hora' => $order->created_at->format('H:i'),
-                'data_raw' => $order->created_at->format('Y-m-d H:i:s'), // 🟢 Importante para a Timeline do React
+                'data_raw' => $order->created_at->format('Y-m-d\TH:i:s'), 
                 
-                // 🟢 MAPA FINANCEIRO ESTRITO
+                // MAPA FINANCEIRO ESTRITO
                 'subtotal' => (float) $order->subtotal,
                 'frete_valor' => (float) $order->frete,
                 'desconto' => (float) $order->desconto,
                 'total' => (float) $order->total,
 
-                // 🟢 🔴 AQUI: Se você tiver as colunas de VIP no Order.php, coloque elas aqui:
-                'desconto_loja' => (float) $order->desconto, // Temporário, caso não tenha a coluna específica
+                'desconto_loja' => (float) $order->desconto, 
                 'desconto_vip_produtos' => 0, 
                 'desconto_vip_frete' => 0, 
                 'desconto_frete' => 0,
 
-                // 🟢 LOGÍSTICA E RASTREIO
+                // LOGÍSTICA E RASTREIO
                 'tracking_code' => $order->tracking_code,
-                'carrier' => 'Logística Padrão', // Opcional: Se tiver 'carrier' no bd, mude para $order->carrier
+                // 🟢 Puxa o nome real da transportadora do banco ou exibe status default
+                'carrier' => $order->carrier ? $order->carrier->nome : 'Aguardando Despacho', 
                 
-                // 🟢 MOTIVO DO CANCELAMENTO OU ABANDONO ENVIADO PARA O FRONT
+                // DETALHES DE CANCELAMENTO / REEMBOLSO
                 'motivo_cancelamento' => $order->cancel_reason,
                 'comprovante_reembolso' => $order->refund_receipt ? asset('storage/' . $order->refund_receipt) : null,
+                'metodo_reembolso' => $order->refund_method ?? 'Estorno/Transferência',
                 
-                // 🟢 CUPONS (Enviado cru, o React faz o parse para Array)
-                'coupons' => $order->applied_coupons ?? '[]',
+                'coupons' => $order->applied_coupons ?? [],
                 
-                // 🟢 PAGAMENTO VIA
+                // PAGAMENTO VIA
                 'pagamento_metodo' => $order->payment_method ?? 'A Vista',
                 'pagamento_parcelas' => (int) $order->payment_installments,
-                'juros' => (float) $order->gateway_fee > 0, // Boolean para a interface
+                'juros' => (float) $order->gateway_fee > 0, 
                 
-                // (Manteve-se o nó 'pagamento' antigo por retrocompatibilidade se algo usar)
                 'pagamento' => [
                     'gateway' => $order->payment_gateway ?? 'N/A',
                     'payment_gateway' => $order->payment_gateway,
@@ -75,11 +78,11 @@ class OrderController extends Controller
                     'isPago' => !in_array($order->status, ['A_PAGAR', 'CANCELADO'])
                 ],
                 
-                // 🟢 CLIENTE
+                // CLIENTE
                 'cliente' => [
-                    'id' => $order->user->id,
-                    'nome' => $order->user->name,
-                    'email' => $order->user->email,
+                    'id' => $order->user ? $order->user->id : 0,
+                    'nome' => $order->user ? $order->user->name : 'Cliente Excluído',
+                    'email' => $order->user ? $order->user->email : '-',
                     'cpf' => $order->user->cpf ?? '-',
                     'telefone' => $order->user->telefone ?? '-',
                     'nascimento' => $order->user->nascimento ?? '-',
@@ -92,19 +95,17 @@ class OrderController extends Controller
                     'rank' => $this->getRank($ltv, $historicoCliente->count())
                 ],
 
-                // 🟢 ENDEREÇO DE ENTREGA
                 'endereco' => $order->address ? [
-                    'rua' => $order->address->logradouro,
-                    'numero' => $order->address->numero,
+                    'rua' => $order->address->rua, 
+                    'numero' => $order->address->num, 
                     'complemento' => $order->address->complemento,
                     'referencia' => $order->address->referencia,
                     'bairro' => $order->address->bairro,
                     'cidade' => $order->address->cidade,
-                    'uf' => $order->address->uf,
+                    'uf' => $order->address->uf, 
                     'cep' => $order->address->cep,
                 ] : null,
 
-                // 🟢 ITENS
                 'items' => $order->items->map(function ($item) {
                     return [
                         'id' => $item->id,
@@ -113,28 +114,28 @@ class OrderController extends Controller
                         'sku' => $item->sku,
                         'variacao' => $item->variation_name,
                         'variacaoSku' => $item->variation_sku,
-                        'quantidade' => $item->quantity, // Alinhado com AdminOrders.jsx
-                        'qtd' => $item->quantity, // Alinhado com AdminPerfilCRM.jsx
+                        'quantidade' => $item->quantity, 
+                        'qtd' => $item->quantity, 
                         'preco' => (float) $item->price,
                         'img' => $item->product_image,
                         'personalizacao' => $item->customization
                     ];
                 })->values(),
 
-                // 🟢 TIMELINE
                 'timeline' => $order->history->map(function ($log) {
                     return [
                         'data' => $log->created_at->format('d/m/Y H:i'),
-                        'data_raw' => $log->created_at->format('Y-m-d H:i:s'),
+                        'data_raw' => $log->created_at->format('Y-m-d\TH:i:s'), 
                         'evento' => $log->event,
+                        'autor' => $log->author ?? 'Sistema'
                     ];
                 })->values()
             ];
         });
 
-        // 🟢 CÁLCULO DAS MÉTRICAS DE PIX E ABANDONO
-        $pixTotal = $orders->where('payment_method', 'PIX')->count();
-        $pixPagos = $orders->where('payment_method', 'PIX')->whereNotIn('status', ['A_PAGAR', 'CANCELADO'])->count();
+        // CÁLCULO DAS MÉTRICAS DE PIX
+        $pixTotal = $orders->filter(function($q){ return stripos($q->payment_method, 'pix') !== false; })->count();
+        $pixPagos = $orders->filter(function($q){ return stripos($q->payment_method, 'pix') !== false; })->whereNotIn('status', ['A_PAGAR', 'CANCELADO'])->count();
         $conversaoPix = $pixTotal > 0 ? round(($pixPagos / $pixTotal) * 100, 1) : 0;
         
         return response()->json([
@@ -150,7 +151,6 @@ class OrderController extends Controller
     public function updateStatus(Request $request, $id) {
         $order = Order::findOrFail($id);
         $order->status = $request->status;
-        // Se mudou para despachado, aqui no futuro entrará a lógica: $produto->decrementarEstoqueReservado();
         $order->save();
         OrderHistory::create(['order_id' => $order->id, 'event' => "Status atualizado para: " . str_replace('_', ' ', $request->status)]);
         return response()->json(['status' => 'success', 'message' => 'Status do pedido atualizado.']);
@@ -178,26 +178,147 @@ class OrderController extends Controller
             
             $order->status = 'REEMBOLSADO';
             $order->refund_receipt = $caminhoComprovante;
-            $order->cancel_reason = $request->motivo; // Salva o motivo
+            $order->cancel_reason = $request->motivo;
             $msg = "Reembolso Aprovado. Motivo: {$request->motivo}";
         
         } elseif ($request->tipo === 'SOLICITACAO_REEMBOLSO') {
             $order->status = 'EM_ANALISE_REEMBOLSO';
-            $order->cancel_reason = $request->motivo; // Salva o motivo temporário
+            $order->cancel_reason = $request->motivo; 
             $msg = "Análise de Reembolso Iniciada. Motivo: {$request->motivo}";
         
         } else {
-            // Cancelamento Puro (Abandono, Boleto não pago, Gestor)
             $order->status = 'CANCELADO';
-            $order->cancel_reason = $request->motivo; // Salva o motivo oficial
+            $order->cancel_reason = $request->motivo; 
             $msg = "Pedido Cancelado. Motivo: {$request->motivo}";
-            
-            // Lógica Futura: Aqui o estoque reservado volta para o estoque disponível
         }
         
         $order->save();
         OrderHistory::create(['order_id' => $order->id, 'event' => $msg]);
 
         return response()->json(['status' => 'success', 'message' => 'Fluxo processado com sucesso.']);
+    }
+
+    // =========================================================================
+    // 🟢 MÁQUINA DE ESTADOS UNIFICADA: AÇÕES MANUAIS COM COMPROVANTES E ESTORNO
+    // =========================================================================
+    public function updateStatusManual(Request $request, $id) 
+    {
+        $order = Order::findOrFail($id);
+        $acao = $request->input('acao'); 
+        $motivo = $request->input('motivo');
+        $carrierId = $request->input('carrier_id');
+        $trackingCode = $request->input('tracking_code');
+        $refundMethod = $request->input('refund_method');
+        
+        $msg = "";
+        $caminhoComprovante = null;
+
+        if ($request->hasFile('arquivo')) {
+            $request->validate(['arquivo' => 'file|mimes:jpeg,png,jpg,pdf|max:5120']);
+            $pasta = $acao === 'ENTREGAR' ? 'comprovantes_entrega' : 'reembolsos';
+            $caminhoComprovante = $request->file('arquivo')->store($pasta, 'public');
+        }
+
+        switch ($acao) {
+            case 'PAGAR':
+                $request->validate(['motivo' => 'required|string']);
+                $order->status = 'SEPARACAO';
+                $msg = "Pagamento Aprovado Manualmente. Motivo/Parecer: {$motivo}";
+                break;
+
+            case 'DESPACHAR':
+                $request->validate(['carrier_id' => 'required']);
+                $order->status = 'DESPACHADO';
+                $order->tracking_code = $trackingCode;
+                $order->carrier_id = $carrierId; // Associa a Transportadora
+                
+                $textoRastreio = $trackingCode ? "Rastreio: {$trackingCode}" : "Sem rastreio.";
+                $msg = "Pedido Despachado. {$textoRastreio}";
+                break;
+
+            case 'ENTREGAR':
+                $request->validate(['arquivo' => 'required|file']);
+                $order->status = 'ENTREGUE';
+                $msg = "Entrega Confirmada. Comprovante de entrega anexado aos arquivos da ordem.";
+                break;
+
+            case 'CANCELAR':
+                $request->validate(['motivo' => 'required|string']);
+                $order->status = 'CANCELADO';
+                $order->cancel_reason = $motivo;
+                $msg = "Pedido Cancelado pelo Gestor. Motivo: {$motivo}";
+                break;
+
+            case 'INICIAR_REEMBOLSO':
+                $request->validate(['motivo' => 'required|string']);
+                $order->status = 'EM_ANALISE_REEMBOLSO';
+                $order->cancel_reason = $motivo;
+                $msg = "Análise de Devolução/Reembolso Iniciada. Parecer: {$motivo}";
+                break;
+
+            case 'PROCESSAR_REEMBOLSO':
+                $request->validate([
+                    'motivo' => 'required|string', 
+                    'arquivo' => 'required|file'
+                ]);
+                
+                $order->status = 'REEMBOLSADO';
+                $order->cancel_reason = $motivo;
+                $order->refund_receipt = $caminhoComprovante;
+                
+                // ATENÇÃO: Garanta que você criou a coluna "refund_method" na migration da tabela de Orders
+                $order->refund_method = $refundMethod; 
+                
+                $textoMetodo = $refundMethod === 'CASHBACK' ? 'Crédito em Loja (Cashback)' : 'Estorno/Transferência Bancária';
+                $msg = "Reembolso Efetivado via {$textoMetodo}. Valor: R$ " . number_format($order->total, 2, ',', '.') . ". Parecer final: {$motivo}. Comprovante anexado.";
+                
+                // ==============================================================
+                // 1. ESTORNO EM CASHBACK (TEMPO REAL)
+                // ==============================================================
+                if ($refundMethod === 'CASHBACK' && $order->user) {
+                    $cliente = $order->user;
+                    $cliente->cashback = ($cliente->cashback ?? 0) + $order->total;
+                    $cliente->save();
+
+                    // Registra o extrato financeiro na carteira do cliente
+                    \App\Models\WalletTransaction::create([
+                        'user_id'   => $cliente->id,
+                        'tipo'      => 'entrada',
+                        'valor'     => $order->total,
+                        'descricao' => "Estorno do Pedido #HUB-{$order->id} revertido em saldo Cashback. Parecer: {$motivo}"
+                    ]);
+                }
+
+                // ==============================================================
+                // 2. DEVOLUÇÃO DO LIMITE DE CUPONS
+                // ==============================================================
+                if (!empty($order->applied_coupons)) {
+                    $cuponsUsados = is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : $order->applied_coupons;
+                    
+                    if (is_array($cuponsUsados)) {
+                        foreach ($cuponsUsados as $cupomAplicado) {
+                            $nomeCupom = $cupomAplicado['nome'] ?? $cupomAplicado['codigo'] ?? null;
+                            
+                            if ($nomeCupom && class_exists('\App\Models\Cupom')) {
+                                $cupomBd = \App\Models\Cupom::where('codigo', $nomeCupom)->first();
+                                
+                                if ($cupomBd && $cupomBd->vezes_usado > 0) {
+                                    $cupomBd->vezes_usado -= 1;
+                                    $cupomBd->save();
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+
+            default:
+                return response()->json(['status' => 'error', 'message' => 'Ação inválida não reconhecida.'], 400);
+        }
+
+        $order->save();
+        OrderHistory::create(['order_id' => $order->id, 'event' => $msg]);
+
+        return response()->json(['status' => 'success', 'message' => 'Operação processada e auditada com sucesso.']);
     }
 }

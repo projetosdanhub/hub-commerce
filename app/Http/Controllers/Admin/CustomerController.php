@@ -30,7 +30,6 @@ class CustomerController extends Controller
      */
     private function registrarLog($customerId, $acao, $detalhes, $tipo = 'info')
     {
-        // 🟢 CORRIGIDO: Retornado para as colunas exatas do seu banco de dados
         CustomerAuditLog::create([
             'cliente_id' => $customerId,
             'admin_id'   => Auth::id() ?? 1,
@@ -96,7 +95,8 @@ class CustomerController extends Controller
             $qtdProdutosComprados = 0;
 
             foreach ($c->orders as $pedido) {
-                if ($pedido->status !== 'CANCELADO') {
+                // 🟢 CORREÇÃO: Ignora Cancelados E Reembolsados para não inflar métricas no CRM
+                if (!in_array($pedido->status, ['CANCELADO', 'REEMBOLSADO'])) {
                     $qtdProdutosComprados += $pedido->items->sum('quantity');
 
                     if (!empty($pedido->applied_coupons)) {
@@ -151,7 +151,6 @@ class CustomerController extends Controller
                 'reembolsosPagos' => $pedidosReembolsados->sum('total'),
                 'enderecos' => $c->addresses,
 
-                // 🟢 MAP EXATO DOS PEDIDOS E SUAS INFORMAÇÕES FINANCEIRAS/LOGÍSTICAS
                 'pedidos' => $c->orders->map(function ($order) {
                     $cuponsJson = is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : $order->applied_coupons;
                     return [
@@ -159,13 +158,11 @@ class CustomerController extends Controller
                         'status' => $order->status,
                         'data_raw' => $order->created_at->format('Y-m-d H:i:s'),
                         
-                        // Financeiro
                         'subtotal' => (float) $order->subtotal,
                         'frete_valor' => (float) $order->frete,
                         'desconto' => (float) $order->desconto,
                         'total' => (float) $order->total,
                         
-                        // 🟢 ADICIONE ESTAS 6 LINHAS AQUI NO SEU CUSTOMER CONTROLLER:
                         'payment_gateway' => $order->payment_gateway,
                         'payment_method' => $order->payment_method,
                         'payment_installments' => $order->payment_installments,
@@ -193,7 +190,6 @@ class CustomerController extends Controller
                     ];
                 })->values(),
 
-                // 🟢 TIMELINE AUTOMÁTICA
                 'auditLogs' => $c->orders->flatMap(function ($order) {
                     return $order->history->map(function ($log) use ($order) {
                         return [
@@ -205,8 +201,6 @@ class CustomerController extends Controller
                         ];
                     });
                 })->merge($c->auditLogs->map(function($log) {
-                    
-                    // 🟢 Inteligência de Cores para a Timeline (Baseada no texto)
                     $tipoCor = 'info';
                     $acaoLower = strtolower($log->acao);
                     if (str_contains($acaoLower, 'forçado') || str_contains($acaoLower, 'senha') || str_contains($acaoLower, 'sensíveis') || str_contains($acaoLower, 'telefone') || str_contains($acaoLower, 'suspensa')) {
@@ -234,9 +228,6 @@ class CustomerController extends Controller
     // =========================================================================
     public function show($id)
     {
-        // Alterado para garantir que os retornos são os mesmos. Como a Listagem
-        // Index faz o parser, podemos redirecionar ou reescrever a lógica,
-        // mas para uso de API Resource, é aconselhável manter o formato.
         $cliente = User::with(['addresses', 'orders.items', 'orders.history', 'orders.address', 'auditLogs' => function($q) {
             $q->orderBy('created_at', 'desc');
         }])->findOrFail($id);
@@ -758,16 +749,19 @@ class CustomerController extends Controller
     // =========================================================================
     public function getDashboardMetrics()
     {
-        $receitaBruta = \App\Models\Order::where('status', '!=', 'CANCELADO')->sum('total');
-        $totalPedidos = \App\Models\Order::where('status', '!=', 'CANCELADO')->count();
+        // 🟢 CORREÇÃO: Ignora CANCELADOS e REEMBOLSADOS no Dashboard principal
+        $pedidosValidos = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO']);
+        
+        $receitaBruta = $pedidosValidos->sum('total');
+        $totalPedidos = $pedidosValidos->count();
         $ticketMedio  = $totalPedidos > 0 ? ($receitaBruta / $totalPedidos) : 0;
 
-        $receitaMesAtual = \App\Models\Order::where('status', '!=', 'CANCELADO')
+        $receitaMesAtual = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
                                  ->whereMonth('created_at', now()->month)
                                  ->whereYear('created_at', now()->year)
                                  ->sum('total');
 
-        $receitaMesAnterior = \App\Models\Order::where('status', '!=', 'CANCELADO')
+        $receitaMesAnterior = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
                                     ->whereMonth('created_at', now()->subMonth()->month)
                                     ->whereYear('created_at', now()->subMonth()->year)
                                     ->sum('total');
@@ -787,12 +781,12 @@ class CustomerController extends Controller
         
         $crescimentoClientes = $clientesTotais > 0 ? ($clientesMesAtual / $clientesTotais) * 100 : 0;
 
-        $pedidosMesAtualCount = \App\Models\Order::where('status', '!=', 'CANCELADO')
+        $pedidosMesAtualCount = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
                                  ->whereMonth('created_at', now()->month)
                                  ->whereYear('created_at', now()->year)
                                  ->count();
         
-        $pedidosMesAnteriorCount = \App\Models\Order::where('status', '!=', 'CANCELADO')
+        $pedidosMesAnteriorCount = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
                                     ->whereMonth('created_at', now()->subMonth()->month)
                                     ->whereYear('created_at', now()->subMonth()->year)
                                     ->count();

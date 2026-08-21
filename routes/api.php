@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CustomerController as ApiCustomerController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\CarrierController; // 🟢 NOVO: Importação do Controller de Transportadoras
 
 /*
 |--------------------------------------------------------------------------
@@ -92,9 +93,17 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::get('/', [OrderController::class, 'index']);
         Route::put('/{id}/status', [OrderController::class, 'updateStatus']);
         Route::post('/{id}/dispatch', [OrderController::class, 'dispatchOrder']);
-        
-        // Rota de Cancelamento e Reembolso
         Route::post('/{id}/cancel', [OrderController::class, 'cancelOrder']);
+        
+        // 🟢 Fluxo Manual de Atualização com Comprovantes e Transportadoras
+        Route::post('/{id}/status-manual', [OrderController::class, 'updateStatusManual']);
+    });
+
+    // --- MÓDULO: TRANSPORTADORAS ---
+    Route::prefix('carriers')->group(function () {
+        Route::get('/', [CarrierController::class, 'index']);
+        Route::post('/', [CarrierController::class, 'store']); // Salva e Edita (processando Logomarca)
+        Route::delete('/{id}', [CarrierController::class, 'destroy']);
     });
 
 });

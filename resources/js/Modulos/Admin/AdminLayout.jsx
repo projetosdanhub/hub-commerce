@@ -35,6 +35,7 @@ const Icons = {
     ChevronLeft: ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>,
     ChevronRight: ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>,
     UserCircle: ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    Truck: ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>,
 };
 
 // CSS Customizado para a Scrollbar do Menu (Sem setas, cinza claro, azul no hover)
@@ -94,7 +95,7 @@ const AdminLayout = ({ children }) => {
             items: [
                 { label: 'Produtos', path: '/admin/produtos', icon: Icons.Products },
                 { label: 'Categorias', path: '/admin/categorias', icon: Icons.Categorias },
-                { label: 'Precificadora', path: '/admin/precificadora', icon: Icons.Calculator }, // NOVO ITEM AQUI
+                { label: 'Precificadora', path: '/admin/precificadora', icon: Icons.Calculator }, 
                 { label: 'Estoque', path: '/admin/estoque', icon: Icons.Estoque },
             ]
         },
@@ -111,6 +112,12 @@ const AdminLayout = ({ children }) => {
             items: [
                 { label: 'Campanhas', path: '/admin/marketing', icon: Icons.Marketing },
                 { label: 'Vitrine da Loja', path: '/admin/vitrine', icon: Icons.Vitrine },
+            ]
+        },
+        {
+            title: "Logística",
+            items: [
+                { label: 'Transportadoras', path: '/admin/transportadoras', icon: Icons.Truck },
             ]
         },
         {
