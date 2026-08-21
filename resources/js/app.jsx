@@ -36,6 +36,7 @@ import AdminVitrine from './Modulos/Admin/AdminVitrine';
 import AdminConfig from './Modulos/Admin/AdminConfig';
 import AdminAvaliacoes from './Modulos/Admin/AdminAvaliacoes';
 import AdminLogin from './Modulos/Admin/AdminLogin';
+import AdminCarriers from './Modulos/Admin/AdminCarriers';
 
 // Mocks Temporários
 const CategoryPage = () => <div className="p-20 text-center text-2xl font-bold">Página de Categoria / Departamentos</div>;
@@ -181,6 +182,7 @@ const AppContent = () => {
                         <Route path="vitrine" element={<AdminVitrine />} />
                         <Route path="configuracoes" element={<AdminConfig />} />
                         <Route path="avaliacoes" element={<AdminAvaliacoes />} />
+                        <Route path="transportadoras" element={<AdminCarriers />} />
                     </Route>
                     
                     {/* Login do Admin (Fica fora do Layout) */}

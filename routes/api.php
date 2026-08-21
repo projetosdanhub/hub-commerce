@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CarrierController; // 🟢 NOVO: Importação do Controller de Transportadoras
 
+use App\Http\Controllers\Admin\MelhorEnvioController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -106,4 +108,11 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::delete('/{id}', [CarrierController::class, 'destroy']);
     });
 
+    // --- MÓDULO: MELHOR ENVIO (Configurações API) ---
+    Route::prefix('melhorenvio')->group(function () {
+        Route::get('/settings', [MelhorEnvioController::class, 'getSettings']);
+        Route::post('/settings', [MelhorEnvioController::class, 'saveCredentials']);
+        Route::get('/auth-url', [MelhorEnvioController::class, 'getAuthUrl']);
+        Route::post('/disconnect', [MelhorEnvioController::class, 'disconnect']);
+    });
 });

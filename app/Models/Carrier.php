@@ -13,10 +13,18 @@ class Carrier extends Model
         'nome',
         'tempo_entrega',
         'status',
-        'imagem'
+        'imagem',
+        // 🟢 Novos campos de endereço adicionados
+        'cep',
+        'rua',
+        'numero',
+        'complemento',
+        'bairro',
+        'cidade',
+        'uf',
+        'referencia'
     ];
 
-    // 1 Transportadora TEM MUITOS Pedidos
     public function orders()
     {
         return $this->hasMany(Order::class, 'carrier_id');
