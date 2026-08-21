@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CarrierController; // 🟢 NOVO: Importação do Controller de Transportadoras
 
 use App\Http\Controllers\Admin\MelhorEnvioController;
+use App\Http\Controllers\Admin\ShippingPackageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -108,11 +109,19 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::delete('/{id}', [CarrierController::class, 'destroy']);
     });
 
-    // --- MÓDULO: MELHOR ENVIO (Configurações API) ---
+    // --- MÓDULO: EMBALAGENS / VOLUMES PADRÃO ---
+    Route::prefix('shipping-packages')->group(function () {
+        Route::get('/', [ShippingPackageController::class, 'index']);
+        Route::post('/', [ShippingPackageController::class, 'store']);
+        Route::delete('/{id}', [ShippingPackageController::class, 'destroy']);
+    });
+
+// --- MÓDULO: MELHOR ENVIO (Configurações API + Remetente) ---
     Route::prefix('melhorenvio')->group(function () {
         Route::get('/settings', [MelhorEnvioController::class, 'getSettings']);
         Route::post('/verify-token', [MelhorEnvioController::class, 'verifyToken']);
         Route::post('/carriers', [MelhorEnvioController::class, 'saveCarriers']);
+        Route::post('/sender', [MelhorEnvioController::class, 'saveSender']); // <-- ADICIONADO AQUI
         Route::post('/disconnect', [MelhorEnvioController::class, 'disconnect']);
     });
 });
