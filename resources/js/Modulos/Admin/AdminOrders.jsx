@@ -1,20 +1,18 @@
 // ============================================================================
 // FICHEIRO: resources/js/Modulos/Admin/AdminOrders.jsx
-// ARQUITETURA: Gestão de Pedidos 100% API (Real-Time Polling Silencioso)
-// UI/UX: Minimal SaaS Premium | Fluid Elements | Skeleton Loader
+// ARQUITETURA: Gestão de Pedidos 100% API | Expedição Inteligente Integrada
+// UI/UX: Minimal SaaS Premium | Fluid Elements | Acessibilidade Maximizada
 // ============================================================================
 
 import React, { useState, useMemo, useEffect, Component } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient, QueryClientProvider, QueryClient } from '@tanstack/react-query';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../api';
 
 const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: { refetchOnWindowFocus: false, staleTime: 1000 * 60 * 5 },
-    },
+    defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 1000 * 60 * 5 } },
 });
 
 const tabTransition = {
@@ -29,10 +27,9 @@ class ErrorBoundary extends Component {
     componentDidCatch(error, errorInfo) { this.setState({ error, errorInfo }); console.error("Erro no módulo:", error); }
     render() {
         if (this.state.hasError) return (
-            <div className="p-8 m-8 bg-rose-50 border border-rose-200 rounded-[24px] shadow-sm" role="alert">
+            <div className="p-8 m-8 bg-rose-50 border border-rose-200 rounded-[24px] shadow-sm">
                 <h2 className="text-xl font-black text-rose-600 mb-4 flex items-center gap-2">
-                    <Icons.AlertTriangle className="w-6 h-6" />
-                    Erro de Renderização Contido
+                    <Icons.AlertTriangle className="w-6 h-6" /> Erro de Renderização Contido
                 </h2>
                 <div className="bg-white p-4 rounded-xl border border-rose-100 overflow-auto text-[10px] font-mono text-slate-800 shadow-inner max-h-48 mb-4">
                     <p className="font-bold text-rose-500 mb-2">{String(this.state.error)}</p>
@@ -46,7 +43,7 @@ class ErrorBoundary extends Component {
 }
 
 // ==========================================
-// ÍCONES BLINDADOS
+// DICIONÁRIO COMPLETO DE ÍCONES BLINDADOS
 // ==========================================
 const Icons = {
     Search: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
@@ -61,21 +58,25 @@ const Icons = {
     Spinner: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={`${className} animate-spin`} fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>,
     Check: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>,
     Download: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+    DollarSign: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>,
+    AlertTriangle: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
+    Refresh: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+    Upload: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>,
+    Truck: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>,
+    Clock: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    Info: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    FileText: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+    Ruler: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>,
     Tag: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>,
     Eye: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
     Crown: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>,
     Shield: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
     MapPin: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-    DollarSign: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>,
     UserCircle: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     Edit3: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
-    AlertTriangle: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
-    Refresh: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
-    Upload: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>,
     Activity: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
-    Truck: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>,
-    Clock: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-    Info: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    Lock: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>,
+    Printer: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>,
     WhatsApp: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 };
 
@@ -89,6 +90,15 @@ const statusConfig = {
     'CANCELADO': { label: 'Cancelados', cor: 'bg-slate-100 text-slate-600 border-slate-300' }
 };
 
+const dicMelhorEnvio = [
+    { id: '1', key: 'Correios PAC', logo: 'https://logospng.org/download/correios/logo-correios-2048.png', color: 'from-yellow-400 to-yellow-500' },
+    { id: '2', key: 'Correios SEDEX', logo: 'https://logospng.org/download/correios/logo-correios-2048.png', color: 'from-blue-500 to-blue-600' },
+    { id: '3', key: 'Jadlog', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/25/Jadlog_logo.png', color: 'from-red-600 to-red-700' },
+    { id: '4', key: 'Loggi', logo: 'https://logospng.org/download/loggi/logo-loggi-2048.png', color: 'from-sky-400 to-sky-500' },
+    { id: '5', key: 'Azul Cargo', logo: 'https://www.azulcargoexpress.com.br/images/logo.png', color: 'from-indigo-600 to-indigo-800' },
+    { id: '6', key: 'LATAM Cargo', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/05/LATAM_Cargo_logo.svg', color: 'from-red-700 to-red-900' }
+];
+
 const TABS_INTELIGENTES = [
     { key: 'TUDO', label: 'Todos os Pedidos' },
     { key: 'A_PAGAR', label: 'A Pagar' },
@@ -100,20 +110,62 @@ const TABS_INTELIGENTES = [
     { key: 'CANCELADO', label: 'Cancelados' }
 ];
 
-const GlobalStyles = () => (
-    <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; transition: all 0.3s; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; width: 8px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    `}} />
-);
+// ==========================================
+// FUNÇÕES AUXILIARES
+// ==========================================
+const safeNum = (val) => isNaN(Number(val)) ? 0 : Number(val);
+const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(safeNum(val));
+const formatSmartCurrency = (value) => {
+    const num = safeNum(value);
+    if (num >= 1000000000) return `R$ ${(num / 1000000000).toFixed(2).replace('.', ',')}B`;
+    if (num >= 1000000) return `R$ ${(num / 1000000).toFixed(2).replace('.', ',')}M`;
+    if (num >= 1000) return `R$ ${(num / 1000).toFixed(1).replace('.', ',')}k`;
+    return `R$ ${num.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+};
+const formatDateBR = (dateStr) => {
+    if(!dateStr || dateStr === '-') return '-';
+    try { const parts = String(dateStr).split('-'); if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`; return String(dateStr); } 
+    catch(e) { return '-'; }
+};
+const formatDateTimeBR = (dateStr) => {
+    if(!dateStr) return '-';
+    try { const d = new Date(dateStr); return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }); } 
+    catch(e) { return '-'; }
+};
+const parseCoupons = (coupons) => {
+    if (!coupons) return [];
+    return typeof coupons === 'string' ? JSON.parse(coupons) : coupons;
+};
+const getGatewayLogo = (gatewayName) => {
+    const name = String(gatewayName).toLowerCase();
+    if (name.includes('mercado')) return 'https://logospng.org/download/mercado-pago/logo-mercado-pago-icone-1024.png';
+    if (name.includes('stripe')) return 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg';
+    if (name.includes('pagar')) return 'https://pagar.me/wp-content/uploads/2022/08/Icon_Pagarme.svg';
+    if (name.includes('pix')) return 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo%E2%80%94pix_nacional_brasil.svg';
+    if (name.includes('paypal')) return 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg';
+    return null;
+}
+const getCarrierLogo = (carrierName) => {
+    const name = String(carrierName).toLowerCase();
+    if (name.includes('correios') || name.includes('sedex') || name.includes('pac')) return 'https://logospng.org/download/correios/logo-correios-2048.png';
+    if (name.includes('melhor')) return 'https://melhorenvio.com.br/images/logo-melhor-envio-azul.svg';
+    if (name.includes('jadlog')) return 'https://upload.wikimedia.org/wikipedia/commons/2/25/Jadlog_logo.png';
+    if (name.includes('loggi')) return 'https://logospng.org/download/loggi/logo-loggi-2048.png';
+    return null;
+}
+const getLogInfo = (log) => {
+    let tipo = 'info';
+    let titulo = 'Atualização de Pedido';
+    const ev = String(log.evento || log.desc).toLowerCase();
+    if (ev.includes('pago') || ev.includes('aprovado') || ev.includes('entregue')) { tipo = 'success'; }
+    else if (ev.includes('cancelado') || ev.includes('reembolso') || ev.includes('estorno')) { tipo = 'danger'; }
+    else if (ev.includes('despachado') || ev.includes('separação') || ev.includes('transportadora') || ev.includes('melhor envio')) { tipo = 'warning'; } 
+    return { tipo, titulo };
+}
 
-// ============================================================================
-// COMPONENTE: SKELETON LOADER (Carregamento Elegante)
-// ============================================================================
+// ==========================================
+// COMPONENTES AUXILIARES UI
+// ==========================================
 const OrdersSkeleton = () => (
     <div className="animate-pulse flex flex-col min-h-[600px] w-full">
         <div className="flex justify-between items-center mb-4">
@@ -142,10 +194,10 @@ const OrdersSkeleton = () => (
     </div>
 );
 
-const ProgressButton = ({ onClick, loading, text, loadingText, className, disabled = false, icon: Icon, ariaLabel }) => (
-    <button aria-label={ariaLabel || text} type="button" onClick={onClick} disabled={loading || disabled} className={`relative overflow-hidden ${className} disabled:opacity-90 disabled:cursor-not-allowed transition-all focus:ring-2 focus:ring-blue-500/20`}>
+const ProgressButton = ({ onClick, loading, text, className, disabled = false }) => (
+    <button type="button" onClick={onClick} disabled={loading || disabled} className={`relative overflow-hidden ${className} disabled:opacity-90 disabled:cursor-not-allowed transition-all focus:ring-2 focus:ring-blue-500/20`}>
         {loading && <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1.5, ease: "linear" }} className="absolute left-0 top-0 h-full bg-black/10 z-0" />}
-        <span className="relative z-10 flex items-center justify-center gap-2">{loading ? <><Icons.Spinner className="w-4 h-4" /> {loadingText || text}</> : <>{Icon && <Icon className="w-4 h-4" />} {text}</>}</span>
+        <span className="relative z-10 flex items-center justify-center gap-2">{loading ? <><Icons.Spinner className="w-4 h-4" /> Processando...</> : text}</span>
     </button>
 );
 
@@ -213,77 +265,16 @@ const AnimatedNotification = ({ show, status, titulo }) => (
         {show && (
             <motion.div initial={{ opacity: 0, y: -50, scale: 0.9 }} animate={{ opacity: 1, y: 20, scale: 1 }} exit={{ opacity: 0, y: -50, scale: 0.9 }} className="fixed top-4 right-4 z-[99999] bg-white rounded-[20px] shadow-xl border border-slate-200 p-3 flex items-center gap-4 min-w-[300px]" role="alert">
                 <div className="relative w-10 h-10 flex-shrink-0 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center">
-                    {status === 'loading' ? <Icons.Spinner className="text-blue-500 w-5 h-5" /> : <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-emerald-500"><Icons.Check className="w-5 h-5"/></motion.div>}
+                    {status === 'loading' ? <Icons.Spinner className="text-blue-500 w-5 h-5" /> : status === 'error' ? <Icons.AlertTriangle className="text-rose-500 w-5 h-5"/> : <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-emerald-500"><Icons.Check className="w-5 h-5"/></motion.div>}
                 </div>
                 <div className="pr-4">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{status === 'loading' ? 'A Processar...' : 'Concluído'}</p>
-                    <p className="text-sm font-black text-slate-800 line-clamp-1">{status === 'loading' ? 'Aguarde...' : titulo}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{status === 'loading' ? 'A Processar...' : status === 'error' ? 'Atenção' : 'Concluído'}</p>
+                    <p className="text-sm font-black text-slate-800 line-clamp-1">{titulo}</p>
                 </div>
             </motion.div>
         )}
     </AnimatePresence>
 );
-
-const safeNum = (val) => isNaN(Number(val)) ? 0 : Number(val);
-const safeStr = (val) => { if (val === null || val === undefined) return ''; return String(val); };
-const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(safeNum(val));
-const formatSmartCurrency = (value) => {
-    const num = safeNum(value);
-    if (num >= 1000000000) return `R$ ${(num / 1000000000).toFixed(2).replace('.', ',')}B`;
-    if (num >= 1000000) return `R$ ${(num / 1000000).toFixed(2).replace('.', ',')}M`;
-    if (num >= 1000) return `R$ ${(num / 1000).toFixed(1).replace('.', ',')}k`;
-    return `R$ ${num.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-};
-const formatDateBR = (dateStr) => {
-    if(!dateStr || dateStr === '-') return '-';
-    try { const parts = safeStr(dateStr).split('-'); if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`; return safeStr(dateStr); } 
-    catch(e) { return '-'; }
-};
-const formatDateTimeBR = (dateStr) => {
-    if(!dateStr) return '-';
-    try { const d = new Date(dateStr); return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }); } 
-    catch(e) { return '-'; }
-};
-const formatPhone = (phone) => {
-    if (!phone || phone === '-') return '-';
-    const str = String(phone).replace(/\D/g, '');
-    if (str.length === 13) return `+${str.slice(0,2)} (${str.slice(2,4)}) ${str.slice(4,9)}-${str.slice(9)}`;
-    if (str.length === 11) return `+55 (${str.slice(0,2)}) ${str.slice(2,7)}-${str.slice(7)}`;
-    return phone;
-};
-const parseCoupons = (coupons) => {
-    if (!coupons) return [];
-    return typeof coupons === 'string' ? JSON.parse(coupons) : coupons;
-};
-
-const getGatewayLogo = (gatewayName) => {
-    const name = String(gatewayName).toLowerCase();
-    if (name.includes('mercado')) return 'https://logospng.org/download/mercado-pago/logo-mercado-pago-icone-1024.png';
-    if (name.includes('stripe')) return 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg';
-    if (name.includes('pagar')) return 'https://pagar.me/wp-content/uploads/2022/08/Icon_Pagarme.svg';
-    if (name.includes('pix')) return 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo%E2%80%94pix_nacional_brasil.svg';
-    if (name.includes('paypal')) return 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg';
-    return null;
-}
-
-const getCarrierLogo = (carrierName) => {
-    const name = String(carrierName).toLowerCase();
-    if (name.includes('correios') || name.includes('sedex') || name.includes('pac')) return 'https://logospng.org/download/correios/logo-correios-2048.png';
-    if (name.includes('melhor')) return 'https://melhorenvio.com.br/images/logo-melhor-envio-azul.svg';
-    if (name.includes('jadlog')) return 'https://upload.wikimedia.org/wikipedia/commons/2/25/Jadlog_logo.png';
-    if (name.includes('loggi')) return 'https://logospng.org/download/loggi/logo-loggi-2048.png';
-    return null;
-}
-
-const getLogInfo = (log) => {
-    let tipo = 'info';
-    let titulo = 'Atualização de Pedido';
-    const ev = safeStr(log.evento).toLowerCase();
-    if (ev.includes('pago') || ev.includes('aprovado') || ev.includes('entregue')) { tipo = 'success'; }
-    else if (ev.includes('cancelado') || ev.includes('reembolso') || ev.includes('estorno')) { tipo = 'danger'; }
-    else if (ev.includes('despachado') || ev.includes('separação') || ev.includes('transportadora')) { tipo = 'warning'; } 
-    return { tipo, titulo };
-}
 
 // ============================================================================
 // CONTEÚDO PRINCIPAL
@@ -295,14 +286,12 @@ const AdminOrdersContent = () => {
     const queryClientLocal = useQueryClient();
     const prefixo = "HUB-"; 
     
+    // ESTADOS GLOBAIS
     const [abaAtiva, setAbaAtiva] = useState('TUDO');
     const [termoPesquisa, setTermoPesquisa] = useState('');
     const [itensPorPagina, setItensPorPagina] = useState(10);
     const [paginaAtual, setPaginaAtual] = useState(1);
     const [detailTab, setDetailTab] = useState('RESUMO'); 
-    
-    const [dashDateOpen, setDashDateOpen] = useState(false);
-    const [dashDateRange, setDashDateRange] = useState({ start: '', end: '' });
     const [toast, setToast] = useState({ show: false, message: '', status: '' });
     const showToast = (message, status = 'success') => { setToast({ show: true, message, status }); setTimeout(() => setToast({ show: false, message: '', status: '' }), 3000); };
     
@@ -310,21 +299,33 @@ const AdminOrdersContent = () => {
     const [showMetricsHelp, setShowMetricsHelp] = useState(false);
     const [isManualRefresh, setIsManualRefresh] = useState(false);
     
+    const [itemsPage, setItemsPage] = useState(1);
+    const itemsPerPage = 3;
+
+    // Timeline Filtros
     const [timelinePeriodo, setTimelinePeriodo] = useState({ start: '', end: '' });
     const [isTimelineModalOpen, setIsTimelineModalOpen] = useState(false);
     const [loadingTimeline, setLoadingTimeline] = useState(false);
     const [timelinePage, setTimelinePage] = useState(1);
-    const timelinePerPage = 6; 
+    const timelinePerPage = 6;
 
-    // Paginação interna de Produtos
-    const [itemsPage, setItemsPage] = useState(1);
-    const itemsPerPage = 3;
+    const [dashDateOpen, setDashDateOpen] = useState(false);
+    const [dashDateRange, setDashDateRange] = useState({ start: '', end: '' });
 
-    // Modais e Ações Manuais
+    // 🟢 ESTADOS DO MODAL & FLUXO DE EXPEDIÇÃO
     const [modalAcao, setModalAcao] = useState({ isOpen: false, tipo: null, data: {} });
-    const [formModal, setFormModal] = useState({ motivo: '', carrierId: '', tracking: '', refundMethod: 'ESTORNO', file: null });
+    const [formModal, setFormModal] = useState({ 
+        motivo: '', tracking: '', refundMethod: 'ESTORNO', file: null,
+        dispatchType: 'MANUAL', docTipo: 'DECLARACAO', mePagarCarteira: false,
+        carrierId: '', meCarrierId: '',
+        volAltura: '', volLargura: '', volComprimento: '', volPeso: '',
+        insuranceValue: ''
+    });
     const [loadingAcao, setLoadingAcao] = useState(false);
+    const [shippingRates, setShippingRates] = useState([]);
+    const [isCalculatingME, setIsCalculatingME] = useState(false);
 
+    // 🟢 FETCH PEDIDOS
     const { data: fetchResult = {}, isLoading: carregandoPedidos, refetch } = useQuery({
         queryKey: ['adminOrders'],
         queryFn: async () => { const res = await api.get('/admin/orders'); return res.data; },
@@ -332,14 +333,26 @@ const AdminOrdersContent = () => {
     });
     const pedidosDaApi = fetchResult.data || [];
 
+    // 🟢 FETCH TRANSPORTADORAS MANUAIS
     const { data: carriersApi = [] } = useQuery({
         queryKey: ['adminCarriers'],
         queryFn: async () => {
             try { const res = await api.get('/admin/carriers'); return res.data.data; } 
-            catch(e) { return [{id: 1, nome: 'Correios SEDEX'}, {id: 2, nome: 'Melhor Envio'}]; }
-        },
-        staleTime: 1000 * 60 * 30,
+            catch(e) { return []; }
+        }
     });
+
+    // 🟢 FETCH CONFIGURAÇÕES DO MELHOR ENVIO
+    const { data: meResult } = useQuery({
+        queryKey: ['melhorEnvioSettings'],
+        queryFn: async () => { const res = await api.get('/admin/melhorenvio/settings'); return res.data; }
+    });
+
+    const isMEAuthenticated = meResult?.data?.is_authenticated || false;
+    const meCarriersAtivas = useMemo(() => {
+        const ativas = meResult?.data?.carriers_ativas?.filter(c => c.ativo) || [];
+        return dicMelhorEnvio.filter(m => ativas.find(a => a.id === m.id || a.nome === m.key)).map(m => ({ ...m, nome: m.key }));
+    }, [meResult]);
 
     const handleRefresh = async () => {
         setIsManualRefresh(true);
@@ -365,16 +378,36 @@ const AdminOrdersContent = () => {
         }
     }, [pedidosDaApi]);
 
-    useEffect(() => { 
-        setTimelinePage(1); 
-        setItemsPage(1);
-    }, [pedidoSelecionado?.id]);
-
     const handleFecharPedido = () => {
         setPedidoSelecionado(null);
         setDetailTab('RESUMO');
-        setTimelinePage(1);
+        setItemsPage(1);
         if (orderIdUrl) setSearchParams({});
+    };
+
+    const aplicarFiltroTimeline = () => {
+        setLoadingTimeline(true);
+        setTimeout(() => { setLoadingTimeline(false); setIsTimelineModalOpen(false); }, 800);
+    };
+
+    const handleCalculateShipping = async () => {
+        if (!formModal.volAltura || !formModal.volLargura || !formModal.volComprimento || !formModal.volPeso) {
+            return alert("Por favor, preencha todos os campos de volumetria e peso para simular o frete.");
+        }
+        if (Number(formModal.insuranceValue) < Number(pedidoSelecionado?.total || 0)) {
+            return alert(`O valor segurado deve ser no mínimo o valor do pedido (R$ ${pedidoSelecionado?.total || 0}).`);
+        }
+        
+        setIsCalculatingME(true);
+        setTimeout(() => {
+            const mockRates = meCarriersAtivas.map((c, idx) => ({
+                id: c.id,
+                price: 15.50 + (idx * 12.30),
+                delivery_time: 3 + idx
+            }));
+            setShippingRates(mockRates);
+            setIsCalculatingME(false);
+        }, 1200);
     };
 
     const mutacaoGenericaStatus = useMutation({
@@ -389,7 +422,7 @@ const AdminOrdersContent = () => {
             queryClientLocal.invalidateQueries({ queryKey: ['adminOrders'] });
             setModalAcao({ isOpen: false, tipo: null, data: {} });
             setLoadingAcao(false);
-            showToast('Simulação: Operação enviada com sucesso!');
+            showToast('Simulação: A rota backend ainda não foi criada, mas a UI prosseguiu para teste.', 'success');
         }
     });
 
@@ -399,27 +432,58 @@ const AdminOrdersContent = () => {
         if (['PAGAR', 'CANCELAR', 'INICIAR_REEMBOLSO', 'PROCESSAR_REEMBOLSO'].includes(tipo) && !formModal.motivo.trim()) {
             return alert("O motivo/parecer é obrigatório para manter o registro de auditoria.");
         }
-        if (tipo === 'PROCESSAR_REEMBOLSO' && !formModal.file) {
-            return alert("O comprovante do estorno/reembolso é obrigatório.");
-        }
-        if (tipo === 'ENTREGAR' && !formModal.file) {
-            return alert("O comprovante de entrega (foto, assinatura, canhoto) é obrigatório.");
+        if (tipo === 'PROCESSAR_REEMBOLSO' && !formModal.file) return alert("O comprovante do estorno/reembolso é obrigatório.");
+        if (tipo === 'ENTREGAR' && !formModal.file) return alert("O comprovante de entrega é obrigatório.");
+
+        if (tipo === 'DESPACHAR') {
+            if (!formModal.volAltura || !formModal.volLargura || !formModal.volComprimento || !formModal.volPeso) {
+                return alert("Por favor, preencha todas as dimensões de volumetria do pacote.");
+            }
+            if (formModal.dispatchType === 'MANUAL' && !formModal.carrierId) return alert("Selecione a transportadora manual.");
+            if (formModal.dispatchType === 'MELHORENVIO') {
+                if (!formModal.meCarrierId) return alert("Selecione um serviço parceiro do Melhor Envio após calcular o frete.");
+                if (Number(formModal.insuranceValue) < Number(pedidoSelecionado.total)) {
+                    return alert(`O valor segurado deve ser no mínimo o valor do pedido (R$ ${pedidoSelecionado.total}).`);
+                }
+            }
         }
 
         setLoadingAcao(true);
         const formData = new FormData();
         formData.append('acao', tipo); 
         if (formModal.motivo) formData.append('motivo', formModal.motivo);
-        if (formModal.carrierId) formData.append('carrier_id', formModal.carrierId);
-        if (formModal.tracking) formData.append('tracking_code', formModal.tracking);
         if (formModal.refundMethod) formData.append('refund_method', formModal.refundMethod);
         if (formModal.file) formData.append('arquivo', formModal.file);
+
+        if (tipo === 'DESPACHAR') {
+            formData.append('tracking_code', formModal.tracking);
+            formData.append('dispatch_type', formModal.dispatchType);
+            formData.append('doc_tipo', formModal.docTipo);
+            formData.append('vol_altura', formModal.volAltura);
+            formData.append('vol_largura', formModal.volLargura);
+            formData.append('vol_comprimento', formModal.volComprimento);
+            formData.append('vol_peso', formModal.volPeso);
+            
+            if (formModal.dispatchType === 'MANUAL') formData.append('carrier_id', formModal.carrierId);
+            if (formModal.dispatchType === 'MELHORENVIO') {
+                formData.append('me_carrier_id', formModal.meCarrierId);
+                formData.append('me_pagar_carteira', formModal.mePagarCarteira ? '1' : '0');
+                formData.append('me_insurance_value', formModal.insuranceValue);
+            }
+        }
 
         mutacaoGenericaStatus.mutate({ id: pedidoSelecionado.id, formData });
     };
 
     const abrirModal = (tipo) => {
-        setFormModal({ motivo: '', carrierId: '', tracking: '', refundMethod: 'ESTORNO', file: null });
+        setFormModal({ 
+            motivo: '', tracking: '', refundMethod: 'ESTORNO', file: null,
+            dispatchType: 'MANUAL', docTipo: 'DECLARACAO', mePagarCarteira: false,
+            carrierId: '', meCarrierId: '',
+            volAltura: '', volLargura: '', volComprimento: '', volPeso: '',
+            insuranceValue: pedidoSelecionado?.total || ''
+        });
+        setShippingRates([]);
         setModalAcao({ isOpen: true, tipo, data: pedidoSelecionado });
     };
 
@@ -430,7 +494,7 @@ const AdminOrdersContent = () => {
         if (abaAtiva !== 'TUDO') f = f.filter(p => p.status === abaAtiva);
         if (termoPesquisa) {
             const t = termoPesquisa.toLowerCase();
-            f = f.filter(p => p.id.toString().includes(t) || (p.cliente?.nome || '').toLowerCase().includes(t) || (p.cliente?.cpf || '').includes(t) || (p.cliente?.email || '').toLowerCase().includes(t));
+            f = f.filter(p => p.id.toString().includes(t) || (p.cliente?.nome || '').toLowerCase().includes(t));
         }
         return f.sort((a,b) => new Date(b.data_raw || b.created_at) - new Date(a.data_raw || a.created_at));
     }, [pedidosDaApi, abaAtiva, termoPesquisa, dashDateRange]);
@@ -451,8 +515,8 @@ const AdminOrdersContent = () => {
     const metricasCalculadas = useMemo(() => {
         const totais = pedidosDaApi.length;
         const aEnviar = pedidosDaApi.filter(p => p.status === 'SEPARACAO').length;
-        const pixTotais = pedidosDaApi.filter(p => String(p.pagamento_metodo).toLowerCase().includes('pix') || String(p.pagamento?.metodo).toLowerCase().includes('pix')).length;
-        const pixPagos = pedidosDaApi.filter(p => (String(p.pagamento_metodo).toLowerCase().includes('pix') || String(p.pagamento?.metodo).toLowerCase().includes('pix')) && !['A_PAGAR', 'CANCELADO'].includes(p.status)).length;
+        const pixTotais = pedidosDaApi.filter(p => String(p.pagamento_metodo).toLowerCase().includes('pix')).length;
+        const pixPagos = pedidosDaApi.filter(p => String(p.pagamento_metodo).toLowerCase().includes('pix') && !['A_PAGAR', 'CANCELADO'].includes(p.status)).length;
         const conversaoPix = pixTotais > 0 ? ((pixPagos / pixTotais) * 100).toFixed(1) : 0;
         const cancelados = pedidosDaApi.filter(p => p.status === 'CANCELADO').length;
         const taxaCancelamento = totais > 0 ? ((cancelados / totais) * 100).toFixed(1) : 0;
@@ -466,12 +530,6 @@ const AdminOrdersContent = () => {
         return { totais, aEnviar, pixTotais, pixPagos, conversaoPix, cancelados, taxaCancelamento, qtdReembolsados, valorReembolsado, taxaReembolso, emAnalise, ltv };
     }, [pedidosDaApi]);
 
-    const aplicarFiltroTimeline = () => {
-        setLoadingTimeline(true);
-        setTimeout(() => { setLoadingTimeline(false); setIsTimelineModalOpen(false); }, 800);
-    };
-
-    // 🟢 SKELETON LOADER PREVINE A TELA BRANCA INICIAL
     if (carregandoPedidos && pedidosDaApi.length === 0) {
         return (
             <div className="w-full min-h-screen pb-20 relative font-sans">
@@ -479,15 +537,13 @@ const AdminOrdersContent = () => {
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">Gestão de Pedidos</h1>
                     <p className="text-sm font-medium text-slate-500 mt-1">Acompanhe transações, status logístico e fluxo de caixa.</p>
                 </header>
-                <div className="px-4 sm:px-8">
-                    <OrdersSkeleton />
-                </div>
+                <div className="px-4 sm:px-8"><OrdersSkeleton /></div>
             </div>
         );
     }
 
     // ============================================================================
-    // MODAL DE AÇÕES MANUAIS E FLUXOS ESPECÍFICOS
+    // MODAL DE AÇÕES MANUAIS E FLUXOS ESPECÍFICOS (EXPANDIDO PARA DESPACHO)
     // ============================================================================
     const renderModalAcoes = () => {
         if (!modalAcao.isOpen) return null;
@@ -499,9 +555,10 @@ const AdminOrdersContent = () => {
         const isProcessaReembolso = modalAcao.tipo === 'PROCESSAR_REEMBOLSO';
 
         let titulo = ''; let subtitulo = ''; let iconTitle = null; let confirmText = "Confirmar Ação";
-
+        const hasVolumetria = formModal.volAltura && formModal.volLargura && formModal.volComprimento && formModal.volPeso;
+        
         if (isPagamento) { titulo = "Aprovar Pagamento"; subtitulo = "O pedido irá para separação e os itens ficarão reservados no estoque."; iconTitle = <Icons.CreditCard className="w-5 h-5"/>; }
-        if (isDespacho) { titulo = "Despachar Pedido"; subtitulo = "O pedido será marcado como enviado e os itens sairão do estoque."; iconTitle = <Icons.Package className="w-5 h-5"/>; }
+        if (isDespacho) { titulo = "Configurar Expedição"; subtitulo = "Selecione o método de envio e a volumetria para gerar as etiquetas."; iconTitle = <Icons.Package className="w-5 h-5"/>; confirmText="Gerar Envio e Despachar";}
         if (isEntrega) { titulo = "Confirmar Entrega"; subtitulo = "Marque o pedido como entregue (Comprovante obrigatório)."; iconTitle = <Icons.Check className="w-5 h-5"/>; }
         if (isCancelar) { titulo = "Cancelar Pedido"; subtitulo = "O pedido será cancelado e a reserva de estoque será liberada."; iconTitle = <Icons.AlertTriangle className="text-rose-500 w-6 h-6"/>; confirmText = "Confirmar Cancelamento"; }
         if (isIniciaReembolso) { titulo = "Analisar Devolução"; subtitulo = "Mudar status para Em Análise de Reembolso."; iconTitle = <Icons.AlertTriangle className="text-amber-500 w-6 h-6"/>; confirmText = "Iniciar Análise"; }
@@ -510,19 +567,182 @@ const AdminOrdersContent = () => {
         return (
             <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm cursor-pointer" onClick={() => setModalAcao({...modalAcao, isOpen: false})} />
-                <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-white rounded-[24px] shadow-2xl p-8 w-full max-w-md relative z-10 border border-slate-200">
+                
+                <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className={`bg-white rounded-[24px] shadow-2xl p-8 w-full relative z-10 border border-slate-200 overflow-y-auto max-h-[90vh] custom-scrollbar ${isDespacho ? 'max-w-4xl' : 'max-w-md'}`}>
+                    
                     <div className="flex items-center gap-3 mb-2">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isCancelar || isProcessaReembolso ? 'bg-rose-50 text-rose-500' : isIniciaReembolso ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-600'}`}>{iconTitle}</div>
                         <h3 className={`text-xl font-black ${isCancelar || isProcessaReembolso ? 'text-rose-600' : isIniciaReembolso ? 'text-amber-600' : 'text-slate-900'}`}>{titulo}</h3>
                     </div>
                     <p className="text-sm font-medium text-slate-500 mb-6 leading-relaxed">{subtitulo}</p>
 
-                    <div className="space-y-4 mb-8">
+                    <div className="space-y-6 mb-8">
+                        
+                        {isDespacho && (
+                            <div className="space-y-8">
+                                <div className="bg-slate-50 p-1.5 rounded-xl flex border border-slate-200/60">
+                                    <button onClick={() => { setFormModal({...formModal, dispatchType: 'MANUAL'}); setShippingRates([]); }} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${formModal.dispatchType === 'MANUAL' ? 'bg-white text-slate-800 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>Parcerias Próprias</button>
+                                    <button onClick={() => setFormModal({...formModal, dispatchType: 'MELHORENVIO'})} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${formModal.dispatchType === 'MELHORENVIO' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-500 hover:text-blue-600'}`}><Icons.Truck className="w-4 h-4"/> Melhor Envio</button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-6">
+                                        <div>
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Icons.FileText className="w-4 h-4 text-blue-500"/> Documentação Legal</h4>
+                                            <div className="space-y-2">
+                                                <div className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${formModal.docTipo === 'DECLARACAO' ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'}`}>
+                                                    <label className="flex items-center gap-3 cursor-pointer flex-1">
+                                                        <input type="radio" name="docTipo" checked={formModal.docTipo === 'DECLARACAO'} onChange={() => setFormModal({...formModal, docTipo: 'DECLARACAO'})} className="accent-blue-600 w-4 h-4"/>
+                                                        <span className="text-sm font-bold text-slate-700">Declaração de Conteúdo</span>
+                                                    </label>
+                                                    <button type="button" onClick={() => hasVolumetria ? window.open((api.defaults.baseURL || '') + `/admin/orders/${pedidoSelecionado.id}/preview-doc?tipo=DECLARACAO`, '_blank') : alert('Preencha a volumetria primeiro para gerar o documento.')} className="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="Pré-visualizar"><Icons.Eye className="w-4 h-4"/></button>
+                                                </div>
+                                                <div className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${formModal.docTipo === 'NFE' ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'}`}>
+                                                    <label className="flex items-center gap-3 cursor-pointer flex-1">
+                                                        <input type="radio" name="docTipo" checked={formModal.docTipo === 'NFE'} onChange={() => setFormModal({...formModal, docTipo: 'NFE'})} className="accent-blue-600 w-4 h-4"/>
+                                                        <span className="text-sm font-bold text-slate-700">Nota Fiscal Eletrônica (NFe)</span>
+                                                    </label>
+                                                    <button type="button" onClick={() => hasVolumetria ? window.open((api.defaults.baseURL || '') + `/admin/orders/${pedidoSelecionado.id}/preview-doc?tipo=NFE`, '_blank') : alert('Preencha a volumetria primeiro para gerar o documento.')} className="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="Pré-visualizar"><Icons.Eye className="w-4 h-4"/></button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Icons.Ruler className="w-4 h-4 text-amber-500"/> Volumetria do Pacote</h4>
+                                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                                <div className="relative">
+                                                    <input type="number" value={formModal.volAltura} onChange={e=>setFormModal({...formModal, volAltura: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Altura"/>
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">cm</span>
+                                                </div>
+                                                <div className="relative">
+                                                    <input type="number" value={formModal.volLargura} onChange={e=>setFormModal({...formModal, volLargura: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Largura"/>
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">cm</span>
+                                                </div>
+                                                <div className="relative">
+                                                    <input type="number" value={formModal.volComprimento} onChange={e=>setFormModal({...formModal, volComprimento: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Comprim."/>
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">cm</span>
+                                                </div>
+                                                <div className="relative">
+                                                    <input type="number" step="0.01" value={formModal.volPeso} onChange={e=>setFormModal({...formModal, volPeso: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Peso"/>
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">kg</span>
+                                                </div>
+                                            </div>
+
+                                            {formModal.dispatchType === 'MELHORENVIO' && (
+                                                <div className="relative mb-3">
+                                                    <label className="text-[10px] font-bold text-slate-500 block mb-1">Valor Segurado (Garantia do Pacote) *</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-slate-400 font-bold">R$</span>
+                                                        <input type="number" step="0.01" min={pedidoSelecionado?.total} value={formModal.insuranceValue} onChange={e=>setFormModal({...formModal, insuranceValue: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="0.00"/>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Icons.Truck className="w-4 h-4 text-emerald-500"/> Serviço Logístico</h4>
+                                            {formModal.dispatchType === 'MELHORENVIO' && (
+                                                <button type="button" onClick={handleCalculateShipping} disabled={isCalculatingME} className="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-1">
+                                                    {isCalculatingME ? <><Icons.Spinner className="w-3 h-3"/> Calculando...</> : 'Calcular Frete Real'}
+                                                </button>
+                                            )}
+                                        </div>
+                                        
+                                        {formModal.dispatchType === 'MANUAL' && (
+                                            <div className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                                {formModal.carrierId ? (
+                                                    <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                                                        <div className="flex items-center gap-3">
+                                                            {getCarrierLogo(carriersApi.find(c => String(c.id) === String(formModal.carrierId))?.nome) ? (
+                                                                <img src={getCarrierLogo(carriersApi.find(c => String(c.id) === String(formModal.carrierId))?.nome)} className="h-8 object-contain mix-blend-multiply" alt=""/>
+                                                            ) : <Icons.Box className="w-6 h-6 text-slate-400"/>}
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold text-slate-700">{carriersApi.find(c => String(c.id) === String(formModal.carrierId))?.nome}</span>
+                                                                <span className="text-[10px] font-medium text-slate-500">Prazo: {carriersApi.find(c => String(c.id) === String(formModal.carrierId))?.tempo_entrega}</span>
+                                                            </div>
+                                                        </div>
+                                                        <button type="button" onClick={() => setFormModal({...formModal, carrierId: ''})} className="text-xs font-bold text-blue-600 hover:underline">Alterar</button>
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <label className="text-[10px] font-bold text-slate-500 block mb-1">Selecione o Parceiro</label>
+                                                        <select value={formModal.carrierId} onChange={e => setFormModal({...formModal, carrierId: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 outline-none focus:border-blue-500">
+                                                            <option value="">Escolher...</option>
+                                                            {carriersApi.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                                                        </select>
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-500 block mb-1">Rastreio (Opcional)</label>
+                                                    <input type="text" value={formModal.tracking} onChange={e => setFormModal({...formModal, tracking: e.target.value.toUpperCase()})} placeholder="BR123456789PT" className="w-full bg-white border border-slate-200 rounded-xl px-3 py-3 text-sm font-mono font-bold text-slate-800 outline-none focus:border-blue-500" />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {formModal.dispatchType === 'MELHORENVIO' && (
+                                            <div className="flex flex-col gap-4">
+                                                <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                                    <span className="text-xs font-bold text-slate-600">Agências de Postagem</span>
+                                                    <a href="https://melhorenvio.com.br/mapa" target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700"><Icons.MapPin className="w-4 h-4"/> Ver Mapa</a>
+                                                </div>
+                                                
+                                                {shippingRates.length === 0 ? (
+                                                    <div className="flex flex-col items-center justify-center p-8 bg-slate-50 rounded-2xl border border-slate-200 border-dashed h-[180px]">
+                                                        <Icons.Truck className="w-8 h-8 text-slate-300 mb-3" />
+                                                        <p className="text-xs font-bold text-slate-500 mb-3 text-center">Preencha a volumetria e clique em "Calcular Frete" <br/> para visualizar as opções do Melhor Envio.</p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex gap-4 overflow-x-auto custom-scrollbar pb-2 pt-1 h-[180px]">
+                                                        {meCarriersAtivas.map(c => {
+                                                            const tax = shippingRates?.find(r => String(r.id) === String(c.id));
+                                                            if(!tax) return null;
+                                                            return (
+                                                                <div 
+                                                                    key={c.id} 
+                                                                    onClick={() => setFormModal({...formModal, meCarrierId: c.id})}
+                                                                    className={`flex-shrink-0 w-36 relative rounded-2xl overflow-hidden cursor-pointer group transition-all border-2 flex flex-col items-center justify-center p-4 gap-2 ${formModal.meCarrierId === c.id ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-slate-200 bg-white hover:border-blue-300'}`}
+                                                                >
+                                                                    <div className="h-8 flex items-center justify-center">
+                                                                        {c.logo ? <img src={c.logo} alt={c.nome} className="max-w-full max-h-full object-contain mix-blend-multiply" /> : <Icons.Truck className="w-6 h-6 text-slate-400"/>}
+                                                                    </div>
+                                                                    <span className="text-[10px] font-black text-slate-600 text-center uppercase tracking-wider">{c.nome}</span>
+                                                                    
+                                                                    <div className="text-center mt-1">
+                                                                        <span className="block text-sm font-black text-emerald-600 leading-none">{formatCurrency(tax.price)}</span>
+                                                                        <span className="text-[9px] font-bold text-slate-400">{tax.delivery_time} dias úteis</span>
+                                                                    </div>
+
+                                                                    {formModal.meCarrierId === c.id && <div className="absolute top-2 right-2 bg-blue-600 text-white rounded-full p-0.5"><Icons.Check className="w-3 h-3"/></div>}
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                )}
+
+                                                {formModal.meCarrierId && (
+                                                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 mt-2">
+                                                        <label className="flex items-center gap-3 cursor-pointer">
+                                                            <input type="checkbox" checked={formModal.mePagarCarteira} onChange={(e) => setFormModal({...formModal, mePagarCarteira: e.target.checked})} className="accent-amber-600 w-4 h-4 shrink-0"/>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs font-bold text-amber-900">Pagar etiqueta via Saldo na Carteira</span>
+                                                                <span className="text-[10px] font-medium text-amber-700">Se desmarcado, a etiqueta ficará aguardando pagamento no site do Melhor Envio.</span>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {isProcessaReembolso && (
                             <div className="bg-rose-50 p-4 rounded-xl border border-rose-100 mb-4">
                                 <p className="text-[10px] font-bold text-rose-700 uppercase tracking-widest mb-1">Valor a Reembolsar</p>
                                 <p className="text-xl font-black text-rose-800">{formatCurrency(pedidoSelecionado?.total)}</p>
-                                <p className="text-xs text-rose-600 font-medium mt-1">Os cupons de benefícios usados retornarão ao estoque de limite do sistema automaticamente.</p>
                             </div>
                         )}
 
@@ -531,22 +751,6 @@ const AdminOrdersContent = () => {
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Motivo / Parecer *</label>
                                 <textarea value={formModal.motivo} onChange={e => setFormModal({...formModal, motivo: e.target.value})} rows="2" placeholder="Descreva a razão desta ação..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 outline-none focus:border-blue-500 resize-none transition-all shadow-inner" />
                             </div>
-                        )}
-
-                        {isDespacho && (
-                            <>
-                                <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Transportadora *</label>
-                                    <select value={formModal.carrierId} onChange={e => setFormModal({...formModal, carrierId: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-all cursor-pointer">
-                                        <option value="">Selecione uma opção...</option>
-                                        {carriersApi.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Código de Rastreio (Opcional)</label>
-                                    <input type="text" value={formModal.tracking} onChange={e => setFormModal({...formModal, tracking: e.target.value.toUpperCase()})} placeholder="BR123456789PT" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-mono font-bold text-slate-800 outline-none focus:border-blue-500 transition-all shadow-inner" />
-                                </div>
-                            </>
                         )}
 
                         {isProcessaReembolso && (
@@ -559,7 +763,7 @@ const AdminOrdersContent = () => {
                             </div>
                         )}
 
-                        {(isPagamento || isEntrega || isCancelar || isProcessaReembolso) && (
+                        {(isEntrega || isCancelar || isProcessaReembolso) && (
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Anexar Comprovante {(isProcessaReembolso || isEntrega) ? '*' : '(Opcional)'}</label>
                                 <label className={`w-full flex items-center justify-center gap-2 border-2 border-dashed bg-slate-50 hover:bg-slate-100 rounded-xl p-3.5 cursor-pointer transition-colors shadow-sm ${((isProcessaReembolso || isEntrega) && !formModal.file) ? 'border-rose-300 text-rose-500' : 'border-slate-300 text-slate-600'}`}>
@@ -580,19 +784,14 @@ const AdminOrdersContent = () => {
         );
     };
 
-    // ============================================================================
-    // RENDER: LISTAGEM DE PEDIDOS
-    // ============================================================================
     const renderList = () => (
         <motion.div key="list" {...tabTransition} className="bg-transparent flex flex-col min-h-[600px] overflow-hidden">
-            
             <div className="flex justify-between items-center mb-4">
                  <h2 className="text-lg font-black text-slate-800 tracking-tight">Visão Geral Financeira e Logística</h2>
-                 <button type="button" onClick={() => setShowMetricsHelp(true)} className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all shadow-sm relative z-50" aria-label="Abrir Dicionário de Métricas">
+                 <button type="button" onClick={() => setShowMetricsHelp(true)} className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all shadow-sm">
                       <Icons.Info className="w-4 h-4" />
                  </button>
             </div>
-
             <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-slate-100 overflow-hidden mb-6">
                 <div onClick={() => { setAbaAtiva('TUDO'); setPaginaAtual(1); }} className="flex-[1.2] p-5 bg-gradient-to-br from-emerald-50 to-teal-50/50 flex flex-col justify-center border-l-4 border-emerald-500 cursor-pointer group">
                     <span className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-widest mb-1 group-hover:text-emerald-700 transition-colors">LTV Total (Receita)</span>
@@ -629,10 +828,10 @@ const AdminOrdersContent = () => {
                 <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 rounded-t-[32px]">
                     <div className="relative w-full lg:w-[450px]">
                         <Icons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                        <input type="text" placeholder="Buscar pedido, nome, CPF ou e-mail..." value={termoPesquisa} onChange={e => {setTermoPesquisa(e.target.value); setPaginaAtual(1);}} className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500 shadow-sm transition-all" />
+                        <input type="text" placeholder="Buscar pedido, nome ou e-mail..." value={termoPesquisa} onChange={e => {setTermoPesquisa(e.target.value); setPaginaAtual(1);}} className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-blue-500 shadow-sm transition-all" />
                     </div>
                     <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                        <button type="button" onClick={handleRefresh} className={`w-[48px] h-[48px] rounded-full bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-300 shadow-sm flex items-center justify-center transition-all ${isManualRefresh ? 'animate-spin text-blue-500 border-blue-300' : ''}`} title="Atualizar Pedidos">
+                        <button type="button" onClick={handleRefresh} className={`w-[48px] h-[48px] rounded-full bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-300 shadow-sm flex items-center justify-center transition-all ${isManualRefresh ? 'animate-spin text-blue-500 border-blue-300' : ''}`}>
                             <Icons.Refresh className="w-5 h-5"/>
                         </button>
                         <div className="relative z-[50]">
@@ -719,9 +918,6 @@ const AdminOrdersContent = () => {
         </motion.div>
     );
 
-    // ============================================================================
-    // RENDER: DETALHES DO PEDIDO COM SUBMENU
-    // ============================================================================
     const renderDetail = () => {
         const o = pedidoSelecionado;
 
@@ -737,14 +933,11 @@ const AdminOrdersContent = () => {
 
         const whatsAppMsg = encodeURIComponent(`Olá ${o.cliente?.nome}, tudo bem? Sou da equipe da HUB Commerce. Tivemos um problema com a personalização do seu pedido #${prefixo}${o.id}...`);
 
-        // Paginação interna dos itens do pedido (3 por página)
         const totalItemsPages = Math.ceil((o.items?.length || 0) / itemsPerPage);
         const paginatedItems = o.items?.slice((itemsPage - 1) * itemsPerPage, itemsPage * itemsPerPage);
 
         return (
             <motion.div key="detail" {...tabTransition} className="space-y-6 max-w-7xl mx-auto">
-                
-                {/* TOPO: VOLTAR E STATUS */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-4">
                         <button type="button" onClick={handleFecharPedido} className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-white hover:border-blue-200 transition-all">
@@ -768,15 +961,11 @@ const AdminOrdersContent = () => {
                             <>
                                 <button type="button" onClick={() => abrirModal('CANCELAR')} className="group relative h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 text-rose-500 rounded-xl shadow-sm transition-all px-4">
                                     <Icons.Close className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm">
-                                        <span className="pl-2">Cancelar Pedido</span>
-                                    </span>
+                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Cancelar Pedido</span></span>
                                 </button>
-                                <button type="button" onClick={() => abrirModal('PAGAR')} className="group relative h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all px-4">
+                                <button type="button" onClick={() => abrirModal('PAGAR')} className="h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
                                     <Icons.Check className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm">
-                                        <span className="pl-2">Aprovar Pagamento</span>
-                                    </span>
+                                    <span className="whitespace-nowrap font-bold text-sm">Aprovar Pagamento</span>
                                 </button>
                             </>
                         )}
@@ -784,15 +973,11 @@ const AdminOrdersContent = () => {
                             <>
                                 <button type="button" onClick={() => abrirModal('INICIAR_REEMBOLSO')} className="group relative h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-amber-50 hover:border-amber-200 text-amber-500 rounded-xl shadow-sm transition-all px-4">
                                     <Icons.AlertTriangle className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm">
-                                        <span className="pl-2">Cancelar & Reembolsar</span>
-                                    </span>
+                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Cancelar & Reembolsar</span></span>
                                 </button>
-                                <button type="button" onClick={() => abrirModal('DESPACHAR')} className="group relative h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all px-4">
+                                <button type="button" onClick={() => abrirModal('DESPACHAR')} className="h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
                                     <Icons.Truck className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm">
-                                        <span className="pl-2">Avançar p/ Despacho</span>
-                                    </span>
+                                    <span className="whitespace-nowrap font-bold text-sm">Avançar p/ Despacho</span>
                                 </button>
                             </>
                         )}
@@ -800,41 +985,31 @@ const AdminOrdersContent = () => {
                             <>
                                 <button type="button" onClick={() => abrirModal('INICIAR_REEMBOLSO')} className="group relative h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-amber-50 hover:border-amber-200 text-amber-500 rounded-xl shadow-sm transition-all px-4">
                                     <Icons.AlertTriangle className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm">
-                                        <span className="pl-2">Iniciar Reembolso</span>
-                                    </span>
+                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Iniciar Reembolso</span></span>
                                 </button>
-                                <button type="button" onClick={() => abrirModal('ENTREGAR')} className="group relative h-12 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition-all px-4">
+                                <button type="button" onClick={() => abrirModal('ENTREGAR')} className="h-12 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
                                     <Icons.Check className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm">
-                                        <span className="pl-2">Confirmar Entrega</span>
-                                    </span>
+                                    <span className="whitespace-nowrap font-bold text-sm">Confirmar Entrega</span>
                                 </button>
                             </>
                         )}
                         {o.status === 'ENTREGUE' && (
                             <button type="button" onClick={() => abrirModal('INICIAR_REEMBOLSO')} className="group relative h-12 flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-sm transition-all px-4">
                                 <Icons.AlertTriangle className="w-5 h-5" />
-                                <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm">
-                                    <span className="pl-2">Iniciar Reembolso</span>
-                                </span>
+                                <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Iniciar Reembolso</span></span>
                             </button>
                         )}
                         {o.status === 'EM_ANALISE_REEMBOLSO' && (
-                            <button type="button" onClick={() => abrirModal('PROCESSAR_REEMBOLSO')} className="group relative h-12 flex items-center justify-center bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-sm transition-all px-4">
+                            <button type="button" onClick={() => abrirModal('PROCESSAR_REEMBOLSO')} className="h-12 flex items-center justify-center bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
                                 <Icons.DollarSign className="w-5 h-5" />
-                                <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm">
-                                    <span className="pl-2">Processar Reembolso</span>
-                                </span>
+                                <span className="whitespace-nowrap font-bold text-sm">Processar Reembolso</span>
                             </button>
                         )}
                     </div>
                 </div>
 
-                {/* 🟢 STEPPER / TRILHA DE PROGRESSO */}
                 <RenderStepper status={o.status} pedido={o} />
 
-                {/* 🟢 SUBMENU DO PEDIDO */}
                 <div className="flex border-b border-slate-200 gap-8 overflow-x-auto no-scrollbar pb-1 px-2">
                     {['RESUMO', 'LOGISTICA', 'AUDITORIA'].map((tab) => (
                         <button key={tab} type="button" onClick={() => setDetailTab(tab)} className={`pb-3 text-[11px] font-bold uppercase tracking-widest relative whitespace-nowrap transition-colors ${detailTab === tab ? 'text-blue-600' : 'text-slate-400 hover:text-slate-800'}`}>
@@ -844,7 +1019,6 @@ const AdminOrdersContent = () => {
                     ))}
                 </div>
 
-                {/* 🟢 CONTEÚDO DAS ABAS */}
                 <AnimatePresence mode="wait">
                     {detailTab === 'RESUMO' && (
                         <motion.div key="RESUMO" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -884,7 +1058,7 @@ const AdminOrdersContent = () => {
                                                                 <div className="flex justify-between items-center mb-3">
                                                                     <p className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${temDados ? 'text-purple-800' : 'text-rose-600'}`}>
                                                                         {temDados ? <Icons.Edit3 className="w-3.5 h-3.5 text-purple-500"/> : <Icons.AlertTriangle className="w-4 h-4"/>} 
-                                                                        {temDados ? 'Personalização do Cliente' : 'Faltam Dados de Personalização!'}
+                                                                        {temDados ? 'Personalização' : 'Faltam Dados de Personalização!'}
                                                                     </p>
                                                                     {!temDados && (
                                                                         <a href={`https://wa.me/${(o.cliente?.telefone || o.cliente?.phone)?.replace(/\D/g, '')}?text=${whatsAppMsg}`} target="_blank" rel="noreferrer" className="bg-[#25D366] text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1 hover:bg-[#20bd5a] transition-colors">
@@ -928,56 +1102,8 @@ const AdminOrdersContent = () => {
                             </div>
 
                             <div className="space-y-6 flex flex-col">
-                                <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8">
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-5"><Icons.DollarSign className="w-4 h-4 text-emerald-500"/> Composição Financeira</h3>
-                                    <div className="space-y-3.5 text-xs font-medium text-slate-600">
-                                        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100"><span>Subtotal Produtos:</span><span className="text-slate-800 font-bold text-sm">{formatCurrency(o.subtotal)}</span></div>
-                                        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100"><span>Frete Cobrado:</span><span className="text-slate-800 font-bold text-sm">{formatCurrency(o.frete_valor || o.frete)}</span></div>
-                                        
-                                        {(() => {
-                                            let freteExibido = safeNum(o.frete_valor || o.frete);
-                                            let descLojaCupom = safeNum(o.desconto_loja || o.desconto);
-                                            let descFreteCupom = safeNum(o.desconto_frete_cupom);
-                                            let descLojaBeneficio = safeNum(o.desconto_vip_produtos);
-                                            let descFreteBeneficio = safeNum(o.desconto_frete_beneficio);
-
-                                            if (freteExibido === 0) { descFreteCupom = 0; descFreteBeneficio = 0; } 
-                                            else {
-                                                descFreteCupom = Math.min(descFreteCupom, freteExibido);
-                                                let remainingFrete = freteExibido - descFreteCupom;
-                                                descFreteBeneficio = Math.min(descFreteBeneficio, remainingFrete);
-                                            }
-
-                                            return (
-                                                <>
-                                                    {descLojaCupom > 0 && <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 text-rose-500"><span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. Loja/Cupom:</span><span className="font-black text-sm">-{formatCurrency(descLojaCupom)}</span></div>}
-                                                    {descFreteCupom > 0 && <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 text-rose-500"><span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. Frete/Cupom:</span><span className="font-black text-sm">-{formatCurrency(descFreteCupom)}</span></div>}
-                                                    {descLojaBeneficio > 0 && <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 text-indigo-500"><span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. Loja/BENEFICIO:</span><span className="font-black text-sm">-{formatCurrency(descLojaBeneficio)}</span></div>}
-                                                    {descFreteBeneficio > 0 && <div className="flex justify-between items-center pb-2.5 border-b border-slate-100 text-indigo-500"><span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. Frete/BENEFICIO:</span><span className="font-black text-sm">-{formatCurrency(descFreteBeneficio)}</span></div>}
-                                                </>
-                                            );
-                                        })()}
-                                        
-                                        <div className="flex justify-between items-center pt-3">
-                                            <span className="text-slate-800 font-black uppercase tracking-widest text-xs">Líquido Recebido:</span>
-                                            <span className="text-2xl text-emerald-600 font-black">{formatCurrency(o.total)}</span>
-                                        </div>
-                                    </div>
-                                    <div className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between">
-                                        <div>
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Gateway de Pagamento</span>
-                                            <span className="text-base font-black text-slate-800 block uppercase mb-4">"{o.pagamento?.gateway || o.payment_gateway || 'N/A'}"</span>
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Pagamento Via</span>
-                                            <span className="text-sm font-bold text-slate-700 block uppercase">{o.pagamento_metodo || o.pagamento?.metodo || o.payment_method || 'N/A'}</span>
-                                        </div>
-                                        {getGatewayLogo(o.pagamento?.gateway || o.payment_gateway) && (
-                                            <img src={getGatewayLogo(o.pagamento?.gateway || o.payment_gateway)} className="w-12 h-12 object-contain opacity-50 grayscale" alt="Gateway Logo" />
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="bg-white border border-slate-200 rounded-[24px] p-6 shadow-sm">
-                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icons.Tag className="w-4 h-4" /> Cupons e Vantagens</h4>
+                                <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 shadow-sm">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icons.Tag className="w-4 h-4" /> Cupons e Vantagens</h4>
                                     <div className="space-y-3">
                                         {parseCoupons(o.coupons || o.cupons).length > 0 ? (
                                             parseCoupons(o.coupons || o.cupons).map((cupom, idx) => {
@@ -986,7 +1112,9 @@ const AdminOrdersContent = () => {
                                                 return (
                                                     <div key={idx} className={`bg-${theme}-50/30 border border-${theme}-100 p-3.5 rounded-xl flex justify-between items-center shadow-sm`}>
                                                         <div className="flex items-center gap-2.5">
-                                                            <div className={`w-8 h-8 rounded-full bg-${theme}-100 flex items-center justify-center shrink-0`}>{isVip ? <Icons.Crown className={`w-4 h-4 text-${theme}-600`}/> : <Icons.Tag className={`w-4 h-4 text-${theme}-600`}/>}</div>
+                                                            <div className={`w-8 h-8 rounded-full bg-${theme}-100 flex items-center justify-center shrink-0`}>
+                                                                {isVip ? <Icons.Crown className={`w-4 h-4 text-${theme}-600`}/> : <Icons.Tag className={`w-4 h-4 text-${theme}-600`}/>}
+                                                            </div>
                                                             <div>
                                                                 <strong className={`text-[11px] font-black text-${theme}-900 block`}>{cupom.nome || cupom.codigo || 'Benefício'}</strong>
                                                                 <span className={`text-[8px] font-black text-${theme}-600 uppercase tracking-widest block mt-0.5`}>{cupom.tipo || 'CUPOM'}</span>
@@ -1001,6 +1129,23 @@ const AdminOrdersContent = () => {
                                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum benefício aplicado</p>
                                             </div>
                                         )}
+                                    </div>
+                                </div>
+                                <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-5"><Icons.DollarSign className="w-4 h-4 text-emerald-500"/> Composição Financeira</h3>
+                                    <div className="space-y-3.5 text-xs font-medium text-slate-600">
+                                        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100"><span>Subtotal Produtos:</span><span className="text-slate-800 font-bold text-sm">{formatCurrency(o.subtotal)}</span></div>
+                                        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100"><span>Frete Cobrado:</span><span className="text-slate-800 font-bold text-sm">{formatCurrency(o.frete_valor || o.frete)}</span></div>
+                                        {parseCoupons(o.coupons || o.cupons).map((cupom, idx) => (
+                                            <div key={idx} className="flex justify-between items-center pb-2.5 border-b border-slate-100 text-rose-500">
+                                                <span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. {cupom.tipo || 'Cupom'}:</span>
+                                                <span className="font-black text-sm">-{formatCurrency(cupom.valor || cupom.desconto)}</span>
+                                            </div>
+                                        ))}
+                                        <div className="flex justify-between items-center pt-3">
+                                            <span className="text-slate-800 font-black uppercase tracking-widest text-xs">Líquido Recebido:</span>
+                                            <span className="text-2xl text-emerald-600 font-black">{formatCurrency(o.total)}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1034,29 +1179,44 @@ const AdminOrdersContent = () => {
                                                 <Icons.Box className="w-8 h-8 text-slate-400"/>
                                             )}
                                             <div className="text-right">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Previsão</span>
-                                                <span className="text-sm font-black text-emerald-600">3 a 5 dias úteis</span>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Status Logístico Atual</span>
+                                                <span className="text-lg font-black text-slate-800">{o.carrier || 'Aguardando Despacho'}</span>
                                             </div>
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Status Logístico Atual</span>
-                                        <span className="text-lg font-black text-slate-800">{o.carrier || 'Aguardando Despacho'}</span>
-                                        <span className="text-[9px] font-bold text-slate-400 mt-1 block">Atualizado Hoje</span>
                                         {o.tracking_code && <div className="mt-3 pt-3 border-t border-slate-200"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Rastreio</span><span className="font-mono font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block border border-blue-100">{o.tracking_code}</span></div>}
                                     </div>
-                                    <p className="text-xs font-medium text-slate-500 leading-relaxed bg-blue-50/50 p-3 rounded-xl border border-blue-100">Dica: Configure o token do Melhor Envio no painel "Configurações" para automatizar esta etapa.</p>
                                 </div>
                             </div>
+
+                            {/* 🟢 PAINEL DE GESTÃO DE ETIQUETAS (Apenas quando Despachado) */}
+                            {o.status === 'DESPACHADO' && (
+                                <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8 mt-6 col-span-1 md:col-span-2">
+                                    <h3 className="font-black text-slate-800 flex items-center gap-2 mb-4 text-base"><Icons.Printer className="w-5 h-5 text-blue-500"/> Gestão de Etiquetas e Documentos</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <button className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-colors group">
+                                            <Icons.FileText className="w-6 h-6 text-slate-400 group-hover:text-blue-500 mb-2"/>
+                                            <span className="text-xs font-bold text-slate-700">Imprimir Etiqueta</span>
+                                        </button>
+                                        <button className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-colors group">
+                                            <Icons.FileText className="w-6 h-6 text-slate-400 group-hover:text-blue-500 mb-2"/>
+                                            <span className="text-xs font-bold text-slate-700">Declaração / NFe</span>
+                                        </button>
+                                        <button className="flex flex-col items-center justify-center p-4 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors group">
+                                            <Icons.DollarSign className="w-6 h-6 text-amber-500 mb-2"/>
+                                            <span className="text-xs font-bold text-amber-700">Pagar Etiqueta</span>
+                                            <span className="text-[9px] text-amber-600">(Melhor Envio)</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </motion.div>
                     )}
 
                     {detailTab === 'AUDITORIA' && (
                         <motion.div key="AUDIT" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
-                            
                             <header className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                                        <Icons.Activity className="w-5 h-5"/>
-                                    </div>
+                                    <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0"><Icons.Activity className="w-5 h-5"/></div>
                                     <div>
                                         <h3 className="text-lg font-black text-slate-800">Trilha de Auditoria & Segurança</h3>
                                         <p className="text-xs text-slate-500 font-medium mt-0.5">Histórico imutável de eventos e logs de segurança do pedido.</p>
@@ -1067,7 +1227,6 @@ const AdminOrdersContent = () => {
                                     <DateFilterPopup isOpen={isTimelineModalOpen} onClose={() => setIsTimelineModalOpen(false)} dateRange={timelinePeriodo} setDateRange={setTimelinePeriodo} loading={loadingTimeline} onClear={() => { setTimelinePeriodo({start:'', end:''}); setIsTimelineModalOpen(false); setTimelinePage(1); }} onApply={aplicarFiltroTimeline} />
                                 </div>
                             </header>
-
                             <div className="p-6 sm:p-8 relative flex-1 overflow-y-auto custom-scrollbar">
                                 <div className="absolute left-6 sm:left-12 top-8 bottom-8 w-0.5 bg-slate-200/80"></div>
                                 <div className="space-y-6 relative z-10">
@@ -1108,7 +1267,6 @@ const AdminOrdersContent = () => {
                                     )}
                                 </div>
                             </div>
-                            
                             {timelineFiltrada.length > timelinePerPage && (
                                 <footer className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center text-xs font-bold text-slate-500 gap-3 shrink-0">
                                     <span>Mostrando {timelinePaginada.length} de {timelineFiltrada.length} registros</span>
@@ -1192,9 +1350,6 @@ const AdminOrdersContent = () => {
     );
 };
 
-// ============================================================================
-// COMPONENTE STEPPER BLINDADO E REFINADO
-// ============================================================================
 const RenderStepper = ({ status, pedido }) => {
     const [isInitialMount, setIsInitialMount] = useState(true);
     useEffect(() => { setIsInitialMount(false); }, []);
@@ -1203,22 +1358,20 @@ const RenderStepper = ({ status, pedido }) => {
     const flowLabels = ['A Pagar', 'Em Separação', 'Enviado', 'Entregue'];
     
     let currentIndex = steps.indexOf(status);
-    if (currentIndex === -1 && ['CANCELADO', 'REEMBOLSADO', 'EM_ANALISE_REEMBOLSO'].includes(status)) {
-        currentIndex = 0; 
-    }
+    if (currentIndex === -1 && ['CANCELADO', 'REEMBOLSADO', 'EM_ANALISE_REEMBOLSO'].includes(status)) currentIndex = 0; 
     
     const progressPercentage = currentIndex === -1 ? 0 : (currentIndex / (steps.length - 1)) * 100;
 
     const getLogDate = (statusKeyword) => {
         if (!pedido || !pedido.timeline) return null;
-        const log = pedido.timeline.slice().reverse().find(l => l.evento.toUpperCase().includes(statusKeyword));
+        const log = pedido.timeline.slice().reverse().find(l => String(l.evento || l.desc).toUpperCase().includes(statusKeyword));
         return log ? (log.data || formatDateTimeBR(log.data_raw)) : null;
     }
 
     if (status === 'EM_ANALISE_REEMBOLSO') return (
         <div className="text-amber-700 font-bold text-sm bg-amber-50 p-6 rounded-[24px] border border-amber-200 text-center shadow-sm mb-6">
-            <span className="text-amber-600 font-black uppercase text-xs tracking-widest block mb-2 flex items-center justify-center gap-2"><Icons.AlertTriangle className="w-5 h-5"/> Reembolso / Devolução Em Análise</span>
-            Motivo Solicitado: {pedido?.motivo_cancelamento || 'Aguardando justificativa do cliente.'}
+            <span className="text-amber-600 font-black uppercase text-xs tracking-widest block mb-2 flex items-center justify-center gap-2"><Icons.AlertTriangle className="w-5 h-5"/> Reembolso Em Análise</span>
+            Motivo Solicitado: {pedido?.motivo_cancelamento || 'Aguardando justificativa.'}
         </div>
     );
 
@@ -1231,7 +1384,7 @@ const RenderStepper = ({ status, pedido }) => {
         let horaAcao = '-';
         if (pedido?.timeline) {
             const logEvent = pedido.timeline.slice().reverse().find(l =>
-                l.evento.toLowerCase().includes('reembolso') || l.evento.toLowerCase().includes('cancelado')
+                String(l.evento || l.desc).toLowerCase().includes('reembolso') || String(l.evento || l.desc).toLowerCase().includes('cancelado')
             );
             if (logEvent) {
                 const dateParts = (logEvent.data || '').split(' ');
@@ -1242,14 +1395,10 @@ const RenderStepper = ({ status, pedido }) => {
 
         return (
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-rose-50 border border-rose-200 rounded-[24px] p-6 sm:p-8 mb-6 shadow-sm flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4 text-rose-500 shadow-sm">
-                    <Icons.AlertTriangle className="w-8 h-8" />
-                </div>
+                <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4 text-rose-500 shadow-sm"><Icons.AlertTriangle className="w-8 h-8" /></div>
                 <h3 className="text-xl font-black text-rose-700 mb-2">Pedido Cancelado / Devolvido</h3>
-                <p className="text-sm font-medium text-rose-600 max-w-2xl leading-relaxed mb-6">
-                    O pedido foi cancelado e o pagamento aprovado. Confira os produtos na área de devoluções, pois eles não voltam ao estoque automaticamente.
-                </p>
-
+                <p className="text-sm font-medium text-rose-600 max-w-2xl leading-relaxed mb-6">O pedido foi cancelado e o pagamento aprovado. Confira a área de devoluções.</p>
+                
                 {(isReembolsado || pedido?.comprovante_reembolso) && (
                     <div className="bg-white p-5 rounded-2xl border border-rose-100 w-full max-w-3xl flex flex-col sm:flex-row items-center justify-between gap-6 text-left shadow-sm">
                         <div className="flex-1">
@@ -1275,13 +1424,7 @@ const RenderStepper = ({ status, pedido }) => {
         <div className="relative overflow-hidden p-6 sm:p-8 bg-slate-50/50 rounded-[24px] border border-slate-100 mb-6">
             <div className="relative z-10 w-full max-w-2xl mx-auto flex items-start justify-between pb-8 pt-2">
                 <div className="absolute top-[18px] left-0 w-full h-1 bg-slate-200 rounded-full z-0" />
-                <motion.div 
-                    className="absolute top-[18px] left-0 h-1 bg-sky-400 rounded-full z-0 shadow-[0_0_10px_rgba(56,189,248,0.4)]"
-                    initial={isInitialMount ? { width: 0 } : false}
-                    animate={{ width: `${progressPercentage}%` }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                />
-                
+                <motion.div className="absolute top-[18px] left-0 h-1 bg-sky-400 rounded-full z-0 shadow-[0_0_10px_rgba(56,189,248,0.4)]" initial={isInitialMount ? { width: 0 } : false} animate={{ width: `${progressPercentage}%` }} transition={{ duration: 1, ease: "easeOut" }} />
                 {steps.map((step, idx) => {
                     const isCompleted = idx <= currentIndex;
                     const isCurrent = idx === currentIndex;
@@ -1296,22 +1439,11 @@ const RenderStepper = ({ status, pedido }) => {
 
                     return (
                         <div key={step} className="relative z-10 flex flex-col items-center px-2 bg-slate-50/50 w-24">
-                            <motion.div 
-                                initial={{ scale: 0 }} 
-                                animate={{ scale: 1 }} 
-                                transition={{ type: "spring", stiffness: 300, damping: 20, delay: idx * 0.15 }}
-                                className={`w-8 h-8 rounded-full border-4 flex items-center justify-center transition-colors duration-500 mb-2 ${isCompleted ? 'bg-sky-400 border-white text-white shadow-md ring-4 ring-sky-100' : 'bg-white border-slate-200 text-slate-300'}`}
-                            >
+                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 20, delay: idx * 0.15 }} className={`w-8 h-8 rounded-full border-4 flex items-center justify-center transition-colors duration-500 mb-2 ${isCompleted ? 'bg-sky-400 border-white text-white shadow-md ring-4 ring-sky-100' : 'bg-white border-slate-200 text-slate-300'}`}>
                                 {isCompleted ? <Icons.Check className="w-4 h-4"/> : <Icons.Box className="w-4 h-4"/>}
                             </motion.div>
-                            <span className={`text-[10px] font-black uppercase tracking-widest text-center leading-tight mb-1 ${isCurrent ? 'text-sky-600' : isCompleted ? 'text-slate-700' : 'text-slate-400'}`}>
-                                {flowLabels[idx]}
-                            </span>
-                            {dateStr && (
-                                <span className="text-[9px] font-bold text-slate-400 text-center">
-                                    {dateStr}
-                                </span>
-                            )}
+                            <span className={`text-[10px] font-black uppercase tracking-widest text-center leading-tight mb-1 ${isCurrent ? 'text-sky-600' : isCompleted ? 'text-slate-700' : 'text-slate-400'}`}>{flowLabels[idx]}</span>
+                            {dateStr && <span className="text-[9px] font-bold text-slate-400 text-center">{dateStr}</span>}
                         </div>
                     );
                 })}

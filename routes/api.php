@@ -111,8 +111,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // --- MÓDULO: MELHOR ENVIO (Configurações API) ---
     Route::prefix('melhorenvio')->group(function () {
         Route::get('/settings', [MelhorEnvioController::class, 'getSettings']);
-        Route::post('/settings', [MelhorEnvioController::class, 'saveCredentials']);
-        Route::get('/auth-url', [MelhorEnvioController::class, 'getAuthUrl']);
+        Route::post('/verify-token', [MelhorEnvioController::class, 'verifyToken']);
+        Route::post('/carriers', [MelhorEnvioController::class, 'saveCarriers']);
         Route::post('/disconnect', [MelhorEnvioController::class, 'disconnect']);
     });
 });

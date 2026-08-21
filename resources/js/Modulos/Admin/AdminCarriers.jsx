@@ -1,22 +1,19 @@
 // ============================================================================
 // FICHEIRO: resources/js/Modulos/Admin/AdminCarriers.jsx
-// ARQUITETURA: SaaS Premium In-Screen Forms | Auto-CEP | Melhor Envio OAuth2
+// ARQUITETURA: SaaS Premium In-Screen Forms | Token Sync | Netflix Cards
 // ============================================================================
 
 import React, { useState, useEffect, Component } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient, QueryClientProvider, QueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
 import api from '../../api';
 
 // =========================================================
 // CONFIGURAÇÃO REACT QUERY & ERROR BOUNDARY
 // =========================================================
 const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: { refetchOnWindowFocus: false, staleTime: 1000 * 60 * 5 },
-    },
+    defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 1000 * 60 * 5 } },
 });
 
 class ErrorBoundary extends Component {
@@ -46,11 +43,12 @@ const Icons = {
     MapPin: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
     Lock: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>,
     CheckCircle: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-    PowerOff: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636a9 9 0 11-12.728 0M12 3v9" /></svg>
+    PowerOff: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636a9 9 0 11-12.728 0M12 3v9" /></svg>,
+    Key: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
 };
 
 // =========================================================
-// SKELETON LOADER
+// COMPONENTES AUXILIARES DE ANIMAÇÃO
 // =========================================================
 const CarriersSkeleton = () => (
     <div className="animate-pulse space-y-6 w-full">
@@ -67,7 +65,6 @@ const CarriersSkeleton = () => (
     </div>
 );
 
-// Transições In-Screen Premium
 const screenTransition = {
     initial: { opacity: 0, x: 20, scale: 0.98 },
     animate: { opacity: 1, x: 0, scale: 1 },
@@ -75,30 +72,38 @@ const screenTransition = {
     transition: { type: "spring", stiffness: 300, damping: 25 }
 };
 
+// =========================================================
+// COMPONENTE PRINCIPAL
+// =========================================================
 const AdminCarriersContent = () => {
     const queryClientLocal = useQueryClient();
-    const [searchParams, setSearchParams] = useSearchParams();
     
     // VIEWS: 'LIST' | 'FORM_MANUAL'
     const [currentView, setCurrentView] = useState('LIST');
     const [activeTab, setActiveTab] = useState('MANUAIS'); // MANUAIS ou MELHOR_ENVIO
     const [isManualRefresh, setIsManualRefresh] = useState(false);
 
-    // Remove parâmetros de sucesso da URL se voltarmos do Melhor Envio
-    useEffect(() => {
-        if (searchParams.get('me_auth') === 'success') {
-            setActiveTab('MELHOR_ENVIO');
-            setSearchParams({}); // Limpa a URL
-        }
-    }, [searchParams]);
+    // Overlay de Sucesso 2.5s
+    const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
 
     // Estado do Formulário da Transportadora Manual
     const defaultCarrier = { id: null, nome: '', tempo_entrega: '', status: 'ATIVA', imagemUrl: null, file: null, cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '', referencia: '' };
     const [carrierForm, setCarrierForm] = useState(defaultCarrier);
     const [isFetchingCep, setIsFetchingCep] = useState(false);
 
+    // Dicionário Visual Master do Melhor Envio (Logos e Cores Estilo Netflix)
+    const dicMelhorEnvio = [
+        { id: '1', key: 'Correios PAC', logo: 'https://logospng.org/download/correios/logo-correios-2048.png', color: 'from-yellow-400 to-yellow-500' },
+        { id: '2', key: 'Correios SEDEX', logo: 'https://logospng.org/download/correios/logo-correios-2048.png', color: 'from-blue-500 to-blue-600' },
+        { id: '3', key: 'Jadlog', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/25/Jadlog_logo.png', color: 'from-red-600 to-red-700' },
+        { id: '4', key: 'Loggi', logo: 'https://logospng.org/download/loggi/logo-loggi-2048.png', color: 'from-sky-400 to-sky-500' },
+        { id: '5', key: 'Azul Cargo', logo: 'https://www.azulcargoexpress.com.br/images/logo.png', color: 'from-indigo-600 to-indigo-800' },
+        { id: '6', key: 'LATAM Cargo', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/05/LATAM_Cargo_logo.svg', color: 'from-red-700 to-red-900' }
+    ];
+
     // Estado do Melhor Envio
-    const [meForm, setMeForm] = useState({ client_id: '', client_secret: '', carriers_ativas: [] });
+    const [meTokenInput, setMeTokenInput] = useState('');
+    const [meCarriersAtivas, setMeCarriersAtivas] = useState([]);
     const [isAuthenticatedME, setIsAuthenticatedME] = useState(false);
     const [isAuthenticatingME, setIsAuthenticatingME] = useState(false);
 
@@ -118,12 +123,18 @@ const AdminCarriersContent = () => {
 
     useEffect(() => {
         if (meResult?.data) {
-            setMeForm({
-                client_id: meResult.data.client_id || '',
-                client_secret: meResult.data.client_secret || '',
-                carriers_ativas: meResult.data.carriers_ativas || []
+            // Mescla as configurações do banco com o nosso Dicionário Visual Master
+            const carriersAtivasBanco = meResult.data.carriers_ativas || [];
+            const mergedCarriers = dicMelhorEnvio.map(masterItem => {
+                const found = carriersAtivasBanco.find(c => c.id === masterItem.id || c.nome === masterItem.key);
+                return { id: masterItem.id, nome: masterItem.key, ativo: found ? found.ativo : false, logo: masterItem.logo, color: masterItem.color };
             });
+
+            setMeCarriersAtivas(mergedCarriers);
             setIsAuthenticatedME(meResult.data.is_authenticated);
+            setMeTokenInput(''); // Limpa o input se já estiver autenticado
+        } else {
+            setMeCarriersAtivas(dicMelhorEnvio.map(m => ({ id: m.id, nome: m.key, ativo: false, logo: m.logo, color: m.color })));
         }
     }, [meResult]);
 
@@ -134,32 +145,13 @@ const AdminCarriersContent = () => {
         setTimeout(() => setIsManualRefresh(false), 800);
     };
 
-    // 🟢 VIA CEP
-    const handleCepChange = async (e) => {
-        const novoCep = e.target.value.replace(/\D/g, '');
-        setCarrierForm(prev => ({ ...prev, cep: novoCep }));
-        if (novoCep.length === 8) {
-            setIsFetchingCep(true);
-            try {
-                const response = await fetch(`https://viacep.com.br/ws/${novoCep}/json/`);
-                const data = await response.json();
-                if (!data.erro) {
-                    setCarrierForm(prev => ({ ...prev, rua: data.logradouro, bairro: data.bairro, cidade: data.localidade, uf: data.uf }));
-                } else { alert("CEP não encontrado."); }
-            } catch (error) { console.error("Erro CEP", error); } 
-            finally { setIsFetchingCep(false); }
-        }
-    };
-
     // 🟢 MUTAÇÕES MANUAIS
     const mutacaoSalvar = useMutation({
         mutationFn: async (formData) => await api.post('/admin/carriers', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
         onSuccess: () => {
             queryClientLocal.invalidateQueries({ queryKey: ['adminCarriers'] });
             setCurrentView('LIST');
-            alert("Transportadora salva com sucesso!");
-        },
-        onError: (err) => alert("Erro ao salvar: " + (err.response?.data?.message || err.message))
+        }
     });
 
     const mutacaoDeletar = useMutation({
@@ -168,17 +160,34 @@ const AdminCarriersContent = () => {
     });
 
     // 🟢 MUTAÇÕES MELHOR ENVIO
-    const mutacaoSalvarME = useMutation({
-        mutationFn: async (data) => await api.post('/admin/melhorenvio/settings', data),
-        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); },
-        onError: (err) => alert("Erro ao salvar: " + (err.response?.data?.message || err.message))
+    const mutacaoVerifyToken = useMutation({
+        mutationFn: async (token) => await api.post('/admin/melhorenvio/verify-token', { access_token: token }),
+        onSuccess: () => {
+            // Exibe o Overlay FullScreen animado de Sucesso por 2.5s
+            setShowSuccessOverlay(true);
+            setTimeout(() => {
+                setShowSuccessOverlay(false);
+                queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] });
+                setIsAuthenticatedME(true);
+            }, 2500);
+        },
+        onError: (err) => {
+            alert(err.response?.data?.message || "Token inválido.");
+            setIsAuthenticatingME(false);
+        }
+    });
+
+    const mutacaoSaveCarriersME = useMutation({
+        mutationFn: async (carriers) => await api.post('/admin/melhorenvio/carriers', { carriers_ativas: carriers }),
+        onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); }
     });
 
     const mutacaoDesconectarME = useMutation({
         mutationFn: async () => await api.post('/admin/melhorenvio/disconnect'),
         onSuccess: () => { 
             queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); 
-            alert("Conta do Melhor Envio desconectada com sucesso.");
+            setIsAuthenticatedME(false);
+            setMeTokenInput('');
         }
     });
 
@@ -201,68 +210,102 @@ const AdminCarriersContent = () => {
         mutacaoSalvar.mutate(formData);
     };
 
-    const handleMelhorEnvioAuth = async () => {
-        if (!meForm.client_id || !meForm.client_secret) return alert("Preencha as credenciais da API do Melhor Envio.");
+    const handleSincronizarME = () => {
+        if (!meTokenInput) return alert("Cole o seu Personal Access Token gerado no Melhor Envio.");
         setIsAuthenticatingME(true);
-        
-        try {
-            // Primeiro, salva as credenciais digitadas
-            await api.post('/admin/melhorenvio/settings', meForm);
-            
-            // Depois, pega a URL de autorização
-            const res = await api.get('/admin/melhorenvio/auth-url');
-            
-            // Redireciona o usuário para o Melhor Envio
-            window.location.href = res.data.url;
-        } catch (error) {
-            setIsAuthenticatingME(false);
-            alert("Falha ao gerar link de autenticação.");
-        }
+        mutacaoVerifyToken.mutate(meTokenInput);
     };
 
     const handleDesconectarME = () => {
-        if (window.confirm("Deseja realmente desconectar sua conta do Melhor Envio? As cotações automáticas pararão de funcionar.")) {
+        if (window.confirm("Deseja realmente desconectar sua conta do Melhor Envio? As cotações automáticas pararão de funcionar imediatamente.")) {
             mutacaoDesconectarME.mutate();
         }
     };
 
     const toggleMeCarrier = (id) => {
-        const novosCarriers = meForm.carriers_ativas.map(c => c.id === id ? { ...c, ativo: !c.ativo } : c);
-        setMeForm({ ...meForm, carriers_ativas: novosCarriers });
-        
-        // Salva silenciosamente em background
-        mutacaoSalvarME.mutate({ ...meForm, carriers_ativas: novosCarriers });
+        const novosCarriers = meCarriersAtivas.map(c => c.id === id ? { ...c, ativo: !c.ativo } : c);
+        setMeCarriersAtivas(novosCarriers);
+        mutacaoSaveCarriersME.mutate(novosCarriers); // Salva silenciosamente em background
     };
+
+    const handleCepChange = async (e) => {
+        const novoCep = e.target.value.replace(/\D/g, '');
+        setCarrierForm(prev => ({ ...prev, cep: novoCep }));
+        if (novoCep.length === 8) {
+            setIsFetchingCep(true);
+            try {
+                const response = await fetch(`https://viacep.com.br/ws/${novoCep}/json/`);
+                const data = await response.json();
+                if (!data.erro) { setCarrierForm(prev => ({ ...prev, rua: data.logradouro, bairro: data.bairro, cidade: data.localidade, uf: data.uf })); } 
+            } catch (error) { console.error("Erro CEP", error); } 
+            finally { setIsFetchingCep(false); }
+        }
+    };
+
+    // ============================================================================
+    // RENDER: OVERLAY DE SUCESSO (2.5 Segundos)
+    // ============================================================================
+    const renderSuccessOverlay = () => (
+        <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+            <motion.div 
+                initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="bg-white rounded-[32px] p-10 max-w-md w-full text-center shadow-2xl flex flex-col items-center relative overflow-hidden"
+            >
+                <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6">
+                    <Icons.CheckCircle className="w-10 h-10" />
+                </div>
+                <h2 className="text-2xl font-black text-slate-800 mb-2">Conectado com Sucesso!</h2>
+                <p className="text-sm font-medium text-slate-500 mb-8 leading-relaxed">
+                    A sua loja virtual já está sincronizada e autorizada a realizar cotações e gerar etiquetas de forma automatizada.
+                </p>
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <motion.div initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: 2.2, ease: "linear" }} className="h-full bg-emerald-500" />
+                </div>
+            </motion.div>
+        </motion.div>
+    );
 
     // ============================================================================
     // RENDER: LISTA E ABAS
     // ============================================================================
     const renderListaTabs = () => (
         <motion.div key="LIST" {...screenTransition} className="w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner w-full sm:w-auto">
-                    <button onClick={() => setActiveTab('MANUAIS')} className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'MANUAIS' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+            
+            {/* Abas e Filtros */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <div className="flex bg-slate-100 p-1.5 rounded-2xl shadow-inner w-full sm:w-auto border border-slate-200/60">
+                    <button onClick={() => setActiveTab('MANUAIS')} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-black tracking-wide transition-all ${activeTab === 'MANUAIS' ? 'bg-white text-slate-800 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}>
                         Parceiros Manuais
                     </button>
-                    <button onClick={() => setActiveTab('MELHOR_ENVIO')} className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'MELHOR_ENVIO' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-blue-500'}`}>
-                        <Icons.Truck className="w-4 h-4" /> Melhor Envio
+                    <button onClick={() => setActiveTab('MELHOR_ENVIO')} className={`flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-black tracking-wide transition-all flex items-center justify-center gap-2 ${activeTab === 'MELHOR_ENVIO' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-500 hover:text-blue-600'}`}>
+                        <Icons.Truck className="w-5 h-5" /> Melhor Envio
                     </button>
                 </div>
                 
                 {activeTab === 'MANUAIS' && (
-                    <button onClick={abrirNovo} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl flex items-center gap-2 shadow-sm transition-colors w-full sm:w-auto justify-center">
+                    <button onClick={abrirNovo} className="bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-xl flex items-center gap-2 shadow-sm transition-colors w-full sm:w-auto justify-center">
                         <Icons.Plus /> Nova Transportadora
                     </button>
                 )}
             </div>
 
             <AnimatePresence mode="wait">
+                {/* ========================================================= */}
+                {/* ABA: PARCEIROS MANUAIS */}
+                {/* ========================================================= */}
                 {activeTab === 'MANUAIS' && (
                     <motion.div key="TAB_MANUAIS" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white border border-slate-200 rounded-[24px] shadow-sm overflow-hidden">
+                        <div className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50">
+                            <h2 className="text-xl font-black text-slate-800">Cotação Própria</h2>
+                            <p className="text-sm font-medium text-slate-500 mt-1">Configure tabelas de prazo e frete para motoboys ou transportadoras avulsas.</p>
+                        </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse min-w-[800px]">
                                 <thead>
-                                    <tr className="bg-slate-50/50 border-b border-slate-200 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                                    <tr className="bg-white border-b border-slate-200 text-[10px] text-slate-500 uppercase tracking-widest font-black">
                                         <th className="p-5 pl-8">Logo & Detalhes</th>
                                         <th className="p-5 text-center">Tempo Médio</th>
                                         <th className="p-5 text-center">Status</th>
@@ -277,24 +320,24 @@ const AdminCarriersContent = () => {
                                     ) : transportadoras.map(t => (
                                         <tr key={t.id} className="hover:bg-slate-50 transition-colors group">
                                             <td className="p-5 pl-8 flex items-center gap-4">
-                                                <div className="w-14 h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-2 shadow-sm">
+                                                <div className="w-14 h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-2 shadow-sm shrink-0">
                                                     {t.imagem ? <img src={t.imagem} className="w-full h-full object-contain mix-blend-multiply" alt=""/> : <Icons.Truck className="w-6 h-6 text-slate-300"/>}
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-slate-800 text-sm">{t.nome}</span>
-                                                    {t.cidade && <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-0.5"><Icons.MapPin className="w-3 h-3"/> {t.cidade} - {t.uf}</span>}
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="font-black text-slate-800 text-sm truncate">{t.nome}</span>
+                                                    {t.cidade && <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-0.5 truncate"><Icons.MapPin className="w-3 h-3"/> {t.cidade} - {t.uf}</span>}
                                                 </div>
                                             </td>
                                             <td className="p-5 text-center font-bold text-slate-600">{t.tempo_entrega}</td>
                                             <td className="p-5 text-center">
-                                                <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${t.status === 'ATIVA' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                                                <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${t.status === 'ATIVA' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 shadow-sm' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                                                     {t.status}
                                                 </span>
                                             </td>
                                             <td className="p-5 pr-8 text-right">
                                                 <div className="flex justify-end gap-2">
-                                                    <button onClick={() => abrirEdicao(t)} className="w-9 h-9 flex items-center justify-center bg-sky-50 text-sky-600 rounded-xl hover:bg-sky-100 transition-colors border border-sky-100 shadow-sm" title="Editar"><Icons.Edit /></button>
-                                                    <button onClick={() => window.confirm('Deseja excluir?') && mutacaoDeletar.mutate(t.id)} className="w-9 h-9 flex items-center justify-center bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-100 transition-colors border border-rose-100 shadow-sm" title="Excluir"><Icons.Trash /></button>
+                                                    <button onClick={() => abrirEdicao(t)} className="w-10 h-10 flex items-center justify-center bg-sky-50 text-sky-600 rounded-xl hover:bg-sky-100 transition-colors border border-sky-100 shadow-sm" title="Editar"><Icons.Edit /></button>
+                                                    <button onClick={() => window.confirm('Deseja excluir?') && mutacaoDeletar.mutate(t.id)} className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-100 transition-colors border border-rose-100 shadow-sm" title="Excluir"><Icons.Trash /></button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -305,65 +348,102 @@ const AdminCarriersContent = () => {
                     </motion.div>
                 )}
 
+                {/* ========================================================= */}
+                {/* ABA: MELHOR ENVIO (Token Único & Netflix Cards) */}
+                {/* ========================================================= */}
                 {activeTab === 'MELHOR_ENVIO' && (
                     <motion.div key="TAB_MELHOR_ENVIO" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                         
-                        {/* Auth Card */}
-                        <div className="bg-gradient-to-br from-slate-900 to-blue-900 rounded-[24px] p-8 shadow-xl text-white relative overflow-hidden">
-                            <div className="absolute top-0 right-0 -mr-8 -mt-8 opacity-10"><Icons.Truck className="w-64 h-64" /></div>
-                            <div className="relative z-10">
-                                
-                                <div className="flex items-center justify-between mb-2">
-                                    <h2 className="text-2xl font-black flex items-center gap-3"><Icons.Lock className="w-6 h-6 text-blue-400"/> Autenticação Melhor Envio</h2>
-                                    {isAuthenticatedME && (
-                                        <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
-                                            <Icons.CheckCircle className="w-4 h-4"/> Conectado via OAuth2
-                                        </span>
-                                    )}
+                        {/* Se NÃO estiver autenticado */}
+                        {!isAuthenticatedME ? (
+                            <div className="bg-slate-900 rounded-[32px] p-8 sm:p-10 shadow-xl text-white relative overflow-hidden">
+                                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-96 h-96 bg-blue-500 opacity-20 blur-[100px] rounded-full pointer-events-none"></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-2xl sm:text-3xl font-black flex items-center gap-3"><Icons.Lock className="w-8 h-8 text-blue-400"/> Integração Melhor Envio</h2>
+                                    </div>
+                                    <p className="text-sm text-slate-300 mb-8 max-w-3xl leading-relaxed">
+                                        Gere o seu <strong>Token de Acesso Pessoal (Bearer Token)</strong> no painel de controle do Melhor Envio e cole-o abaixo. Esta integração elimina redirecionamentos complexos e estabelece uma comunicação robusta e permanente em 1 clique.
+                                    </p>
+                                    
+                                    <div className="mb-8">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 flex items-center gap-2"><Icons.Key className="w-4 h-4"/> Personal Access Token</label>
+                                        <input 
+                                            type="text" 
+                                            autoComplete="off"
+                                            value={meTokenInput} 
+                                            onChange={e=>setMeTokenInput(e.target.value)} 
+                                            className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl px-5 py-4 text-sm font-mono outline-none focus:border-blue-400 focus:bg-slate-800 transition-all placeholder-slate-600 shadow-inner" 
+                                            placeholder="eyJ0eXAiOiJKV1QiLCJhbGci..." 
+                                        />
+                                    </div>
+
+                                    <button onClick={handleSincronizarME} disabled={isAuthenticatingME} className="bg-blue-600 hover:bg-blue-500 text-white font-bold h-14 px-10 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 w-full md:w-auto">
+                                        {isAuthenticatingME ? <><Icons.Spinner className="text-white"/> Validando Token...</> : 'Sincronizar Melhor Envio'}
+                                    </button>
                                 </div>
-                                <p className="text-sm text-blue-200 mb-8 max-w-2xl">Configure o seu Client ID e Secret obtidos no painel do Melhor Envio para gerar as etiquetas de frete diretamente pelo nosso sistema.</p>
+                            </div>
+                        ) : (
+                            /* Painel Conectado (Netflix Cards) */
+                            <div className="space-y-6">
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                    <div>
-                                        <label className="text-[10px] font-bold text-blue-300 uppercase tracking-widest block mb-1.5">Client ID</label>
-                                        <input type="text" value={meForm.client_id} onChange={e=>setMeForm({...meForm, client_id: e.target.value})} disabled={isAuthenticatedME} className="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 h-12 text-sm font-mono outline-none focus:border-blue-400 focus:bg-white/20 transition-all placeholder-white/30 disabled:opacity-50" placeholder="Ex: 1234" />
+                                {/* Header Conectado */}
+                                <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
+                                    <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-50 rounded-full blur-3xl opacity-50 -mr-10 -mt-10"></div>
+                                    <div className="relative z-10">
+                                        <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
+                                            Transportadoras Parceiras
+                                            <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] uppercase tracking-widest px-2.5 py-1 rounded shadow-sm flex items-center gap-1.5 ml-2">
+                                                <Icons.CheckCircle className="w-3.5 h-3.5"/> Conectado e Sincronizado
+                                            </span>
+                                        </h2>
+                                        <p className="text-sm font-medium text-slate-500 mt-1">Ative as transportadoras que deseja disponibilizar no checkout da loja.</p>
                                     </div>
-                                    <div>
-                                        <label className="text-[10px] font-bold text-blue-300 uppercase tracking-widest block mb-1.5">Client Secret</label>
-                                        <input type="password" value={meForm.client_secret} onChange={e=>setMeForm({...meForm, client_secret: e.target.value})} disabled={isAuthenticatedME} className="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 h-12 text-sm font-mono outline-none focus:border-blue-400 focus:bg-white/20 transition-all placeholder-white/30 disabled:opacity-50" placeholder="****************" />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="text-[10px] font-bold text-blue-300 uppercase tracking-widest block mb-1.5">URL de Callback (Insira isso no Painel do Melhor Envio)</label>
-                                        <input type="text" readOnly value={window.location.origin + '/admin/melhorenvio/callback'} className="w-full bg-black/20 border border-black/30 text-blue-200 rounded-xl px-4 h-12 text-sm font-mono outline-none cursor-not-allowed" />
-                                    </div>
+                                    <button onClick={handleDesconectarME} disabled={mutacaoDesconectarME.isPending} className="relative z-10 flex items-center gap-2 bg-white hover:bg-rose-50 text-rose-500 font-bold px-6 py-3.5 rounded-xl transition-colors border border-rose-200 shadow-sm shrink-0">
+                                        {mutacaoDesconectarME.isPending ? <Icons.Spinner className="w-4 h-4"/> : <Icons.PowerOff className="w-4 h-4"/>} Desconectar Conta
+                                    </button>
                                 </div>
 
-                                {isAuthenticatedME ? (
-                                    <button onClick={handleDesconectarME} disabled={mutacaoDesconectarME.isPending} className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 font-bold h-12 px-8 rounded-xl transition-all flex items-center justify-center gap-2">
-                                        {mutacaoDesconectarME.isPending ? <Icons.Spinner className="text-rose-300"/> : <Icons.PowerOff className="w-4 h-4"/>} Desconectar Conta
-                                    </button>
-                                ) : (
-                                    <button onClick={handleMelhorEnvioAuth} disabled={isAuthenticatingME} className="bg-blue-500 hover:bg-blue-400 text-white font-bold h-12 px-8 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
-                                        {isAuthenticatingME ? <><Icons.Spinner className="text-white"/> Conectando...</> : 'Autenticar (OAuth2)'}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
+                                {/* Grelha Netflix */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {meCarriersAtivas.map(c => (
+                                        <div 
+                                            key={c.id} 
+                                            onClick={() => toggleMeCarrier(c.id)}
+                                            className={`relative aspect-[16/9] rounded-[24px] overflow-hidden cursor-pointer group transition-all duration-500 border-4 shadow-sm hover:shadow-xl ${c.ativo ? 'border-blue-500' : 'border-transparent bg-white'}`}
+                                        >
+                                            {/* Fundo Gradiente ou Branco */}
+                                            <div className={`absolute inset-0 transition-opacity duration-500 ${c.ativo ? `bg-gradient-to-br ${c.color}` : 'bg-slate-100 group-hover:bg-slate-200'}`}></div>
+                                            
+                                            {/* Logo Centralizada */}
+                                            <div className="absolute inset-0 flex items-center justify-center p-8 z-10 mix-blend-multiply">
+                                                {c.logo ? (
+                                                    <img src={c.logo} alt={c.nome} className={`max-w-full max-h-full object-contain transition-all duration-500 ${c.ativo ? 'scale-110 filter brightness-0 invert opacity-90' : 'grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105'}`} />
+                                                ) : (
+                                                    <span className={`text-2xl font-black ${c.ativo ? 'text-white' : 'text-slate-400'}`}>{c.nome}</span>
+                                                )}
+                                            </div>
 
-                        {/* Serviços Ativos Toggles */}
-                        <div className="bg-white border border-slate-200 rounded-[24px] p-8 shadow-sm">
-                            <h3 className="text-lg font-black text-slate-800 mb-6 border-b border-slate-100 pb-4">Serviços Habilitados na Vitrine</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {meForm.carriers_ativas.map(c => (
-                                    <div key={c.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${c.ativo ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50 border-slate-200'}`}>
-                                        <span className={`text-sm font-bold ${c.ativo ? 'text-blue-800' : 'text-slate-500'}`}>{c.nome}</span>
-                                        <button onClick={() => toggleMeCarrier(c.id)} className={`relative w-12 h-6 rounded-full transition-colors ${c.ativo ? 'bg-blue-500' : 'bg-slate-300'}`}>
-                                            <motion.div layout className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm ${c.ativo ? 'right-1' : 'left-1'}`} />
-                                        </button>
-                                    </div>
-                                ))}
+                                            {/* Overlay Dark Escurecendo a base para ler o texto */}
+                                            <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 transition-opacity duration-500 ${c.ativo ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'}`}></div>
+
+                                            {/* Barra Inferior com Toggle */}
+                                            <div className="absolute bottom-0 left-0 right-0 p-5 z-20 flex justify-between items-end transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                                                <div>
+                                                    <span className={`block text-[10px] uppercase tracking-widest font-bold mb-0.5 ${c.ativo ? 'text-white/70' : 'text-slate-400'}`}>Transportadora</span>
+                                                    <span className={`block text-lg font-black leading-tight ${c.ativo ? 'text-white' : 'text-slate-800'}`}>{c.nome}</span>
+                                                </div>
+                                                
+                                                {/* Toggle Switch */}
+                                                <div className={`relative w-12 h-6 rounded-full transition-colors duration-300 shadow-inner border border-transparent ${c.ativo ? 'bg-white border-white/20' : 'bg-slate-300'}`}>
+                                                    <motion.div layout className={`absolute top-1 w-4 h-4 rounded-full shadow-sm ${c.ativo ? 'bg-blue-600 right-1' : 'bg-white left-1'}`} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                     </motion.div>
                 )}
@@ -375,15 +455,15 @@ const AdminCarriersContent = () => {
     // RENDER: FORMULÁRIO IN-SCREEN PREMIUM (MANUAL)
     // ============================================================================
     const renderFormManual = () => (
-        <motion.div key="FORM" {...screenTransition} className="w-full bg-white border border-slate-200 rounded-[24px] shadow-2xl overflow-hidden flex flex-col min-h-[600px]">
+        <motion.div key="FORM" {...screenTransition} className="w-full bg-white border border-slate-200 rounded-[32px] shadow-2xl overflow-hidden flex flex-col min-h-[600px] absolute inset-x-0 top-0 z-50">
             {/* Header Form */}
             <header className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-20">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => setCurrentView('LIST')} className="w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-sm">
+                    <button onClick={() => setCurrentView('LIST')} className="w-12 h-12 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-sm">
                         <Icons.ArrowLeft />
                     </button>
                     <div>
-                        <h2 className="text-xl font-black text-slate-800">{carrierForm.id ? 'Editar Parceiro Logístico' : 'Novo Parceiro Logístico'}</h2>
+                        <h2 className="text-xl sm:text-2xl font-black text-slate-800">{carrierForm.id ? 'Editar Parceiro Logístico' : 'Novo Parceiro Logístico'}</h2>
                         <p className="text-xs font-medium text-slate-500 mt-1">Configuração de transportadora e rotas manuais.</p>
                     </div>
                 </div>
@@ -391,36 +471,37 @@ const AdminCarriersContent = () => {
 
             {/* Body Form */}
             <div className="p-6 sm:p-8 flex-1 overflow-y-auto custom-scrollbar">
-                <div className="max-w-4xl mx-auto space-y-8">
+                <div className="max-w-4xl mx-auto space-y-8 pb-10">
                     
                     {/* Bloco 1: Identificação */}
-                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest mb-6 flex items-center gap-2"><Icons.Truck className="w-4 h-4 text-blue-500"/> Identificação</h3>
-                        <div className="flex flex-col sm:flex-row gap-6">
-                            <label className="w-24 h-24 sm:w-28 sm:h-28 bg-white border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors relative overflow-hidden group shadow-sm shrink-0">
+                    <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-slate-100 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 opacity-50 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest mb-8 flex items-center gap-2 relative z-10"><Icons.Truck className="w-5 h-5 text-blue-500"/> Identificação Principal</h3>
+                        <div className="flex flex-col sm:flex-row gap-8 relative z-10">
+                            <label className="w-32 h-32 bg-slate-50 border-2 border-dashed border-slate-300 rounded-[20px] flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors relative overflow-hidden group shadow-sm shrink-0">
                                 <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files[0]; if(f) setCarrierForm({...carrierForm, file: f, imagemUrl: URL.createObjectURL(f)}); }} />
                                 {carrierForm.imagemUrl ? (
-                                    <><img src={carrierForm.imagemUrl} className="w-full h-full object-contain p-2 mix-blend-multiply absolute inset-0" alt=""/><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><span className="text-[10px] text-white font-bold uppercase">Trocar</span></div></>
+                                    <><img src={carrierForm.imagemUrl} className="w-full h-full object-contain p-3 mix-blend-multiply absolute inset-0" alt=""/><div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><span className="text-[10px] text-white font-bold uppercase tracking-widest">Trocar</span></div></>
                                 ) : (
-                                    <><Icons.Upload className="w-6 h-6 text-slate-400 mb-1"/><span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Logo</span></>
+                                    <><Icons.Upload className="w-8 h-8 text-slate-400 mb-2"/><span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Subir Logo</span></>
                                 )}
                             </label>
-                            <div className="flex-1 space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex-1 space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Nome da Transportadora *</label>
-                                        <input type="text" value={carrierForm.nome} onChange={e => setCarrierForm({...carrierForm, nome: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all shadow-sm" placeholder="Ex: Transportes Rápidos Lda" />
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Nome da Transportadora *</label>
+                                        <input type="text" value={carrierForm.nome} onChange={e => setCarrierForm({...carrierForm, nome: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all shadow-inner" placeholder="Ex: Transportes Rápidos Lda" />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Prazo Médio Simulado *</label>
-                                        <input type="text" value={carrierForm.tempo_entrega} onChange={e => setCarrierForm({...carrierForm, tempo_entrega: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all shadow-sm" placeholder="Ex: 2 a 4 dias úteis" />
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Prazo Médio Simulado *</label>
+                                        <input type="text" value={carrierForm.tempo_entrega} onChange={e => setCarrierForm({...carrierForm, tempo_entrega: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all shadow-inner" placeholder="Ex: 2 a 4 dias úteis" />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Status no Checkout</label>
-                                    <select value={carrierForm.status} onChange={e => setCarrierForm({...carrierForm, status: e.target.value})} className="w-full sm:w-1/2 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-all cursor-pointer shadow-sm">
-                                        <option value="ATIVA">Transportadora Ativa</option>
-                                        <option value="INATIVA">Desativada / Oculta</option>
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Status no Checkout</label>
+                                    <select value={carrierForm.status} onChange={e => setCarrierForm({...carrierForm, status: e.target.value})} className="w-full sm:w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer shadow-inner">
+                                        <option value="ATIVA">Transportadora Ativa (Visível)</option>
+                                        <option value="INATIVA">Desativada (Oculta)</option>
                                     </select>
                                 </div>
                             </div>
@@ -428,39 +509,40 @@ const AdminCarriersContent = () => {
                     </div>
 
                     {/* Bloco 2: Endereço Sede (Auto-CEP) */}
-                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest mb-6 flex items-center gap-2"><Icons.MapPin className="w-4 h-4 text-emerald-500"/> Sede / Endereço de Coleta</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-slate-100 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 opacity-50 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest mb-8 flex items-center gap-2 relative z-10"><Icons.MapPin className="w-5 h-5 text-emerald-500"/> Sede / Endereço de Coleta</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 relative z-10">
                             <div className="md:col-span-2 relative">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">CEP</label>
-                                <input type="text" maxLength={8} value={carrierForm.cep} onChange={handleCepChange} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono font-bold text-slate-800 outline-none focus:border-emerald-500 transition-all shadow-sm" placeholder="00000000" />
-                                {isFetchingCep && <div className="absolute right-3 top-9"><Icons.Spinner className="text-emerald-500 w-4 h-4"/></div>}
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">CEP (Automático)</label>
+                                <input type="text" maxLength={8} value={carrierForm.cep} onChange={handleCepChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-mono font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="00000000" />
+                                {isFetchingCep && <div className="absolute right-4 top-10"><Icons.Spinner className="text-emerald-500 w-5 h-5"/></div>}
                             </div>
                             <div className="md:col-span-3">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Rua / Nº</label>
-                                <div className="flex gap-2">
-                                    <input type="text" value={carrierForm.rua} onChange={e => setCarrierForm({...carrierForm, rua: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 transition-all shadow-sm" placeholder="Nome da Rua" />
-                                    <input type="text" value={carrierForm.numero} onChange={e => setCarrierForm({...carrierForm, numero: e.target.value})} className="w-24 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 transition-all shadow-sm" placeholder="Nº" />
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Rua / Logradouro</label>
+                                <div className="flex gap-3">
+                                    <input type="text" value={carrierForm.rua} onChange={e => setCarrierForm({...carrierForm, rua: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="Nome da Rua" />
+                                    <input type="text" value={carrierForm.numero} onChange={e => setCarrierForm({...carrierForm, numero: e.target.value})} className="w-28 bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner text-center" placeholder="Nº" />
                                 </div>
                             </div>
                             <div className="md:col-span-3">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Complemento</label>
-                                <input type="text" value={carrierForm.complemento} onChange={e => setCarrierForm({...carrierForm, complemento: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 transition-all shadow-sm" placeholder="Galpão 3, Sala 2..." />
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Complemento</label>
+                                <input type="text" value={carrierForm.complemento} onChange={e => setCarrierForm({...carrierForm, complemento: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="Galpão 3, Sala 2..." />
                             </div>
                             <div className="md:col-span-3">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Bairro</label>
-                                <input type="text" value={carrierForm.bairro} onChange={e => setCarrierForm({...carrierForm, bairro: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 transition-all shadow-sm" />
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Bairro</label>
+                                <input type="text" value={carrierForm.bairro} onChange={e => setCarrierForm({...carrierForm, bairro: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" />
                             </div>
                             <div className="md:col-span-3">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Cidade / UF</label>
-                                <div className="flex gap-2">
-                                    <input type="text" value={carrierForm.cidade} onChange={e => setCarrierForm({...carrierForm, cidade: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 transition-all shadow-sm" placeholder="Cidade" />
-                                    <input type="text" value={carrierForm.uf} maxLength={2} onChange={e => setCarrierForm({...carrierForm, uf: e.target.value.toUpperCase()})} className="w-20 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 transition-all shadow-sm uppercase text-center" placeholder="UF" />
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Cidade / Estado (UF)</label>
+                                <div className="flex gap-3">
+                                    <input type="text" value={carrierForm.cidade} onChange={e => setCarrierForm({...carrierForm, cidade: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="Cidade" />
+                                    <input type="text" value={carrierForm.uf} maxLength={2} onChange={e => setCarrierForm({...carrierForm, uf: e.target.value.toUpperCase()})} className="w-24 bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner uppercase text-center" placeholder="UF" />
                                 </div>
                             </div>
                             <div className="md:col-span-6">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Ponto de Referência</label>
-                                <input type="text" value={carrierForm.referencia} onChange={e => setCarrierForm({...carrierForm, referencia: e.target.value})} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 transition-all shadow-sm" placeholder="Próximo ao viaduto..." />
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Ponto de Referência</label>
+                                <input type="text" value={carrierForm.referencia} onChange={e => setCarrierForm({...carrierForm, referencia: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="Próximo ao viaduto..." />
                             </div>
                         </div>
                     </div>
@@ -468,11 +550,11 @@ const AdminCarriersContent = () => {
             </div>
 
             {/* Footer Form */}
-            <footer className="p-6 border-t border-slate-100 bg-white flex justify-end gap-3 sticky bottom-0 z-20">
-                <button onClick={() => setCurrentView('LIST')} className="px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors shadow-sm">Cancelar</button>
-                <button onClick={salvarManual} disabled={mutacaoSalvar.isPending} className="px-8 py-3.5 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-colors shadow-md disabled:opacity-70">
-                    {mutacaoSalvar.isPending ? <Icons.Spinner className="text-white w-4 h-4"/> : <Icons.CheckCircle className="w-4 h-4"/>}
-                    {carrierForm.id ? 'Atualizar Dados' : 'Registrar Transportadora'}
+            <footer className="p-6 sm:p-8 border-t border-slate-100 bg-white flex justify-end gap-4 sticky bottom-0 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
+                <button onClick={() => setCurrentView('LIST')} className="px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors shadow-sm">Cancelar</button>
+                <button onClick={salvarManual} disabled={mutacaoSalvar.isPending} className="px-10 py-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-colors shadow-md disabled:opacity-70">
+                    {mutacaoSalvar.isPending ? <Icons.Spinner className="text-white w-5 h-5"/> : <Icons.CheckCircle className="w-5 h-5"/>}
+                    {carrierForm.id ? 'Atualizar Transportadora' : 'Registrar Transportadora'}
                 </button>
             </footer>
         </motion.div>
@@ -482,19 +564,23 @@ const AdminCarriersContent = () => {
         <div className="w-full min-h-screen pb-20 font-sans relative">
             <Helmet><title>Transportadoras | HUB ADMIN</title></Helmet>
             
-            <header className="mb-6 pt-4 px-4 sm:px-8 flex justify-between items-end">
+            <AnimatePresence>
+                {showSuccessOverlay && renderSuccessOverlay()}
+            </AnimatePresence>
+
+            <header className="mb-8 pt-4 px-4 sm:px-8 flex justify-between items-end relative z-10">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">Logística & Envios</h1>
                     <p className="text-slate-500 text-sm mt-1">Gerencie transportadoras próprias ou configure a integração Melhor Envio.</p>
                 </div>
                 {currentView === 'LIST' && (
-                    <button onClick={handleRefresh} className={`w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-blue-600 shadow-sm transition-all ${isManualRefresh ? 'animate-spin border-blue-400 text-blue-500' : ''}`} title="Atualizar Dados">
-                        <Icons.Refresh className="w-4 h-4" />
+                    <button onClick={handleRefresh} className={`w-12 h-12 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-blue-600 shadow-sm transition-all ${isManualRefresh ? 'animate-spin border-blue-400 text-blue-500' : ''}`} title="Atualizar Dados">
+                        <Icons.Refresh className="w-5 h-5" />
                     </button>
                 )}
             </header>
 
-            <div className="px-4 sm:px-8">
+            <div className="px-4 sm:px-8 relative">
                 <AnimatePresence mode="wait">
                     {currentView === 'LIST' && renderListaTabs()}
                     {currentView === 'FORM_MANUAL' && renderFormManual()}
