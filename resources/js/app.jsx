@@ -1,13 +1,17 @@
 // ============================================================================
 // FICHEIRO: resources/js/app.jsx
-// ARQUITETURA DEFINITIVA: Global Layout com Modais Sobrepostos Corretamente
+// ARQUITETURA DEFINITIVA: Global Layout com Modais, Tracking e UTMs
 // ============================================================================
 
 import './bootstrap';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
+
+// --- IMPORTAÇÃO DO MOTOR DE TRACKING E API ---
+import { initTracking, trackPageView } from './tracking';
+import api from './api';
 
 // --- IMPORTAÇÃO DOS COMPONENTES DA LOJA ---
 import Header from './Modulos/Loja/Header';
@@ -37,11 +41,11 @@ import AdminConfig from './Modulos/Admin/AdminConfig';
 import AdminAvaliacoes from './Modulos/Admin/AdminAvaliacoes';
 import AdminLogin from './Modulos/Admin/AdminLogin';
 import AdminCarriers from './Modulos/Admin/AdminCarriers';
+import AdminPixels from './Modulos/Admin/AdminPixels';
 
 // Mocks Temporários
 const CategoryPage = () => <div className="p-20 text-center text-2xl font-bold">Página de Categoria / Departamentos</div>;
 const CheckoutPage = () => <div className="p-20 text-center text-2xl font-bold">Página de Checkout Oficial (Em Breve)</div>;
-
 
 // ============================================================================
 // O ESTRUTURADOR MESTRE: AppContent (Gerencia Layout Global e Estado)
@@ -53,6 +57,36 @@ const AppContent = () => {
     const isAdmin = location.pathname.startsWith('/admin');
     const isLoginStore = location.pathname === '/login';
     const hideLayout = isAdmin || isLoginStore;
+
+    // --- 0. INICIALIZAÇÃO E RASTREAMENTO GLOBAL (PIXEL / GA4 / UTMS) ---
+    useEffect(() => {
+        const setupTracking = async () => {
+            try {
+                const response = await api.get('/tracking');
+                if (response.data && response.data.data) {
+                    initTracking(response.data.data);
+                }
+            } catch (error) {
+                console.warn("[Tracking] Bloqueado por AdBlock ou falha de rede.");
+            }
+        };
+        
+        // Só inicializa o rastreamento se o usuário estiver na loja pública
+        if (!isAdmin) {
+            setupTracking();
+        }
+    }, [isAdmin]);
+
+    // Ouvinte de Mudança de Página (Dispara PageView dinâmico do React)
+    useEffect(() => {
+        if (!isAdmin) {
+            // Pequeno delay para garantir que o React montou o DOM (melhora a precisão do GA4)
+            const timeoutId = setTimeout(() => {
+                trackPageView();
+            }, 300);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [location.pathname, location.search, isAdmin]);
 
     // --- 1. ESTADO GLOBAL DO CARRINHO (MEMÓRIA LOCALSTORAGE) ---
     const [cartItems, setCartItems] = useState(() => {
@@ -177,6 +211,7 @@ const AppContent = () => {
                         <Route path="categorias" element={<AdminCategories />} />
                         <Route path="produtos" element={<AdminProducts />} />
                         <Route path="marketing" element={<AdminMarketing />} />
+                        <Route path="pixels" element={<AdminPixels />} />
                         <Route path="clientes" element={<AdminCustomers />} />
                         <Route path="afiliados" element={<AdminAfiliados />} />
                         <Route path="vitrine" element={<AdminVitrine />} />

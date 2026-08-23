@@ -7,11 +7,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Api\CustomerController as ApiCustomerController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\TrackingCollectorController; // 🟢 IMPORTAÇÃO ATUALIZADA
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CarrierController; 
 use App\Http\Controllers\Admin\ShippingPackageController;
 use App\Http\Controllers\Admin\MelhorEnvioController;
+use App\Http\Controllers\Admin\StorefrontController;
+use App\Http\Controllers\Admin\TrackingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,9 +39,17 @@ Route::get('/clientes/redefinir-senha', [AdminCustomerController::class, 'showPa
 Route::post('/clientes/processar-senha', [AdminCustomerController::class, 'processPasswordReset']);
 
 // ==========================================
-// ROTAS DO FRONT-END (VITRINE / REACT)
+// ROTAS DO FRONT-END (VITRINE PÚBLICA / REACT)
 // ==========================================
 Route::get('/customers', [ApiCustomerController::class, 'index']);
+
+// 🟢 LEITURA PÚBLICA: O React carrega a vitrine e as configs do Pixel sem precisar de login
+Route::get('/storefront', [StorefrontController::class, 'getVitrine']);
+Route::get('/tracking', [TrackingController::class, 'getSettings']);
+
+// 🟢 INGESTÃO DE DADOS (DATA LAYER): Recebe os eventos de conversão da loja pública
+Route::post('/tracking/collect', [TrackingCollectorController::class, 'collect']); // 🟢 ROTA ATUALIZADA
+
 
 // ==========================================
 // ROTAS DO HUB COMMERCE: ADMIN (PROTEGIDAS)
@@ -90,12 +101,12 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::post('/{id}/dispatch', [OrderController::class, 'dispatchOrder']);
         Route::post('/{id}/cancel', [OrderController::class, 'cancelOrder']);
         
-        // 🟢 Fluxo Manual e Integração Melhor Envio
+        // Fluxo Manual e Integração Melhor Envio
         Route::post('/{id}/status-manual', [OrderController::class, 'updateStatusManual']);
-        // 🟢 Rota Oficial de Emissão Fiscal e Documentos
+        // Rota Oficial de Emissão Fiscal e Documentos
         Route::get('/{id}/preview-doc', [OrderController::class, 'previewDoc']); 
         
-        // 🟢 Cancelar Etiqueta no Carrinho do Melhor Envio
+        // Cancelar Etiqueta no Carrinho do Melhor Envio
         Route::post('/{id}/cancel-me-cart', [OrderController::class, 'cancelMelhorEnvioCart']);
     });
 
@@ -122,4 +133,19 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::post('/disconnect', [MelhorEnvioController::class, 'disconnect']);
         Route::post('/calculate', [MelhorEnvioController::class, 'calculate']); 
     });
+
+    // --- MÓDULO: RASTREAMENTO & PIXELS (ÁREA DO PAINEL) ---
+    Route::prefix('tracking')->group(function () {
+        Route::get('/settings', [TrackingController::class, 'getSettings']);
+        Route::post('/settings', [TrackingController::class, 'updateSettings']);
+        
+        Route::get('/dashboard', [TrackingController::class, 'getDashboardData']);
+        
+        Route::get('/triggers', [TrackingController::class, 'getTriggers']);
+        Route::post('/triggers', [TrackingController::class, 'storeTrigger']);
+        Route::delete('/triggers/{id}', [TrackingController::class, 'deleteTrigger']);
+    });
+
+    // --- MÓDULO: CONSTRUTOR DE VITRINE ---
+    Route::post('/storefront/publish', [StorefrontController::class, 'publishVitrine']);
 });
