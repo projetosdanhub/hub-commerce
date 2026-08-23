@@ -22,15 +22,22 @@ const Icons = {
     AlertTriangle: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
     MapPin: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
     Activity: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+    TrendingUp: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+    TrendingDown: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" /></svg>,
     CreditCard: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
     Info: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    SettingsIcon: ({className="w-6 h-6 text-slate-400"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
     Spinner: ({className="w-4 h-4"}) => <svg className={`${className} animate-spin`} fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>,
+    Star: ({className="w-5 h-5"}) => <svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
     Check: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>,
+    Coin: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08-.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     Tag: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>,
     FileText: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
     Edit3: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
+    Trash: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
     Plus: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>,
     Upload: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>,
+    HelpCircle: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093V14m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     Repeat: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
     Mail: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
     Key: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>,
@@ -39,18 +46,14 @@ const Icons = {
     Refresh: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
     UserCircle: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     Shield: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
-    ShoppingBag: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>,
-    Clock: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>,
-    CheckCircle: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>,
-    Truck: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>,
-    Package: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>,
-    XCircle: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>,
-    ExternalLink: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>,
-    DollarSign: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>,
-    MapPin: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>,
-    Copy: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>,
-    Tag: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-    // Você também pode manter os outros ícones que já tinha.
+    ShoppingBag: ({ className = "w-4 h-4" }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>,
+    Clock: ({ className = "w-4 h-4" }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>,
+    CheckCircle: ({ className = "w-4 h-4" }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>,
+    Truck: ({ className = "w-4 h-4" }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>,
+    XCircle: ({ className = "w-4 h-4" }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>,
+    ExternalLink: ({ className = "w-4 h-4" }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>,
+    DollarSign: ({ className = "w-4 h-4" }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>,
+    Copy: ({ className = "w-4 h-4" }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
 };
 
 const safeNum = (val) => { const n = Number(val); return isNaN(n) ? 0 : n; };
@@ -97,11 +100,58 @@ const ProgressButton = ({ onClick, loading, text, loadingText, className, disabl
         </span>
     </button>
 );
+// 🟢 COLE ESTA FUNÇÃO AQUI:
+const parseCoupons = (coupons) => {
+    if (!coupons) return [];
+    return typeof coupons === 'string' ? JSON.parse(coupons) : coupons;
+};
+const calcularDescontosReais = (subtotal, frete, cuponsBrutos) => {
+    let saldoLoja = safeNum(subtotal);
+    let saldoFrete = safeNum(frete);
+    const aplicados = [];
 
+    const cupons = parseCoupons(cuponsBrutos || []);
+
+    // Separa em prioridades de cascata (1º Cupons Normais, 2º Cupons VIP)
+    const cLoja = cupons.filter(c => String(c.tipo).toUpperCase() === 'LOJA');
+    const cVipLoja = cupons.filter(c => String(c.tipo).toUpperCase().includes('LOJA VIP') || (String(c.tipo).toUpperCase().includes('VIP') && !String(c.tipo).toUpperCase().includes('FRETE')));
+    
+    const cFrete = cupons.filter(c => String(c.tipo).toUpperCase() === 'FRETE');
+    const cVipFrete = cupons.filter(c => String(c.tipo).toUpperCase().includes('FRETE VIP') || (String(c.tipo).toUpperCase().includes('VIP') && String(c.tipo).toUpperCase().includes('FRETE')));
+
+    const processar = (lista, isFrete) => {
+        lista.forEach(c => {
+            const valNominal = safeNum(c.valor || c.desconto);
+            let valReal = 0;
+            if (isFrete) {
+                valReal = Math.min(valNominal, saldoFrete); // Trava o desconto no limite do saldo do frete
+                saldoFrete -= valReal;
+            } else {
+                valReal = Math.min(valNominal, saldoLoja); // Trava o desconto no limite do saldo dos produtos
+                saldoLoja -= valReal;
+            }
+            
+            // Só adicionamos à lista visual se realmente abateu algum valor (> 0)
+            if (valReal > 0) {
+                aplicados.push({ ...c, valorAplicado: valReal });
+            }
+        });
+    };
+
+    // A ordem de execução (Cascata) importa!
+    processar(cLoja, false);
+    processar(cVipLoja, false);
+    processar(cFrete, true);
+    processar(cVipFrete, true);
+
+    return {
+        cuponsReais: aplicados,
+        liquidoRecebido: saldoLoja + saldoFrete
+    };
+};
 // ============================================================================
 // COMPONENTE PRINCIPAL (O PERFIL DO CLIENTE ISOLADO)
 // ============================================================================
-
 
 // 🟢 ANIMAÇÕES SUAVES PADRONIZADAS PARA AS ABAS E TRANSIÇÕES
 const tabTransition = {
@@ -722,14 +772,23 @@ export default function AdminPerfilCRM({
                     </div>
                 </header>
 
-                {/* NAVEGAÇÃO DE ABAS */}
-                <nav className="flex px-8 border-t border-slate-100 bg-slate-50/50 shrink-0 overflow-x-auto custom-scrollbar relative z-10">
-                    {['RESUMO', 'CARTEIRAS (LIVRO RAZÃO)', 'ENDEREÇOS','HISTÓRICO DE PEDIDOS','TIMELINE (AUDIT)'].map((tab) => (
-                        <button key={tab} onClick={() => { setCrmSubTab(tab); refetchClients(); }} className={`relative px-6 py-5 text-xs font-bold tracking-wider whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${crmSubTab === tab ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}>
-                        {tab}
-                        {crmSubTab === tab && <motion.div layoutId="crmActiveTab" className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-500 rounded-t-full" />}
-                        </button>
-                    ))}
+                {/* NAVEGAÇÃO DE ABAS (Estilo Pill Tabs Enterprise) */}
+                <nav className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 overflow-hidden flex items-center justify-start md:justify-center shrink-0 z-10" aria-label="Navegação do Perfil">
+                    <div className="flex overflow-x-auto no-scrollbar bg-slate-100/80 p-1.5 rounded-2xl shadow-inner border border-slate-200/60 w-max max-w-full">
+                        {['RESUMO', 'CARTEIRAS (LIVRO RAZÃO)', 'ENDEREÇOS','HISTÓRICO DE PEDIDOS','TIMELINE (AUDIT)'].map((tab) => {
+                            const isActive = crmSubTab === tab;
+                            return (
+                                <button 
+                                    type="button"
+                                    key={tab} 
+                                    onClick={() => { setCrmSubTab(tab); refetchClients(); }} 
+                                    className={`px-5 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all focus:outline-none ${isActive ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800'}`}
+                                >
+                                    {tab}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </nav>
 
                 {/* O SEGREDO ESTÁ AQUI: scrollbarGutter: 'stable' reserva o espaço da barra de rolagem */}
@@ -1286,440 +1345,8 @@ export default function AdminPerfilCRM({
                         </motion.section>
                         )}
                         {/* ========================================================= */}
-                        {/* 🟢 ABA: HISTÓRICO DE PEDIDOS (COM EFEITO SANFONA)         */}
+                        {/* 🟢 ABA: CARTEIRAS / LIVRO RAZÃO                           */}
                         {/* ========================================================= */}
-                        {crmSubTab === 'HISTÓRICO DE PEDIDOS' && !perfilEmEdicao && (
-                            <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-6 flex flex-col h-full">
-                                
-                                {/* CABEÇALHO DA SEÇÃO */}
-                                <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm gap-4 shrink-0">
-                                    <div>
-                                        <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
-                                            <Icons.ShoppingBag className="w-6 h-6 text-blue-500"/> Histórico de Transações
-                                        </h3>
-                                        <p className="text-xs text-slate-500 mt-1 font-medium">Registro imutável de compras, status logístico e benefícios aplicados.</p>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-                                        
-                                        {/* 🟢 COMPONENTE DE FILTRO (IDÊNTICO AO DASHBOARD) */}
-                                        <div className="relative shrink-0 z-[100] flex justify-end">
-                                            <HoverProgressRoundButton 
-                                                text={historyFilterText}
-                                                onClick={() => setHistoryDateOpen(!historyDateOpen)} 
-                                                icon={Icons.Calendar} 
-                                                ariaLabel="Filtrar Período de Pedidos"
-                                                loading={savingState === 'filtroHistory'}
-                                                isActive={historyDateOpen}
-                                            />
-                                            <DateFilterPopup 
-                                                isOpen={historyDateOpen} 
-                                                onClose={() => setHistoryDateOpen(false)} 
-                                                dateRange={historyDateRange} 
-                                                setDateRange={setHistoryDateRange} 
-                                                loading={savingState === 'filtroHistory'}
-                                                onClear={() => { 
-                                                    setHistoryDateRange({start:'',end:''}); 
-                                                    setHistoryFilterText('Todo o Período'); 
-                                                    setOrderHistoryPage(1); 
-                                                    setHistoryDateOpen(false); 
-                                                }}
-                                                onApply={() => { 
-                                                    if(historyDateRange.start && historyDateRange.end) {
-                                                        setSavingState('filtroHistory');
-                                                        setTimeout(() => {
-                                                            setHistoryFilterText(`${formatDateBR(historyDateRange.start)} até ${formatDateBR(historyDateRange.end)}`);
-                                                            setOrderHistoryPage(1);
-                                                            setHistoryDateOpen(false);
-                                                            setSavingState(null);
-                                                            if(showToastGlob) showToastGlob('Filtro aplicado com sucesso!', 'success');
-                                                        }, 800);
-                                                    } else {
-                                                        alert('Preencha a data inicial e final.');
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        
-                                        {/* Select de Qtd por Página */}
-                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 h-[48px] shadow-sm transition-all focus-within:border-blue-500">
-                                            <Icons.Activity className="w-4 h-4 text-slate-400" />
-                                            <select 
-                                                value={orderHistoryPerPage} 
-                                                onChange={(e) => { setOrderHistoryPerPage(Number(e.target.value)); setOrderHistoryPage(1); }}
-                                                className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
-                                            >
-                                                <option value={5}>Exibir 5</option>
-                                                <option value={10}>Exibir 10</option>
-                                                <option value={20}>Exibir 20</option>
-                                                <option value={30}>Exibir 30</option>
-                                                <option value={50}>Exibir 50</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="bg-blue-50 border border-blue-100 px-4 py-1.5 rounded-xl text-center shrink-0 ml-auto flex items-center gap-2 h-[48px]">
-                                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Volume</span>
-                                            <span className="text-xl font-black text-blue-700 leading-tight">{historicoPedidosFiltrado.length}</span>
-                                        </div>
-                                    </div>
-                                </header>
-
-                                {/* FEED VERTICAL DE PEDIDOS (ACORDEON PAGINADO) */}
-                                <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar pb-10">
-                                    {orderHistoryPaginados.length > 0 ? (
-                                        orderHistoryPaginados.map((pedido) => {
-                                            
-                                            const isExpanded = pedidoExpandido === pedido.id;
-                                            let statusColor = "bg-slate-50 text-slate-600 border-slate-200";
-                                            let StatusIcon = Icons.Clock;
-
-                                            const statusNormalizado = String(pedido.status).toUpperCase();
-
-                                            switch(statusNormalizado) {
-                                                case 'ENTREGUE':
-                                                case 'CONCLUIDO': statusColor = "bg-emerald-50 text-emerald-600 border-emerald-200"; StatusIcon = Icons.CheckCircle; break;
-                                                case 'DESPACHADO':
-                                                case 'EM_TRANSITO': statusColor = "bg-blue-50 text-blue-600 border-blue-200"; StatusIcon = Icons.Truck; break;
-                                                case 'SEPARACAO':
-                                                case 'PAGO': statusColor = "bg-indigo-50 text-indigo-600 border-indigo-200"; StatusIcon = Icons.Package; break;
-                                                case 'CANCELADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
-                                                case 'REEMBOLSADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
-                                                default: statusColor = "bg-amber-50 text-amber-600 border-amber-200"; StatusIcon = Icons.Clock; break;
-                                            }
-
-                                            // Pagamento Seguro
-                                            const pagMetodo = pedido.payment_method || pedido.pagamento?.metodo || 'Não Informado';
-                                            const pagGateway = pedido.payment_gateway || pedido.pagamento?.gateway || 'Desconhecido';
-                                            const pagParcelas = safeNum(pedido.payment_installments || pedido.pagamento?.parcelas || 1);
-                                            const isParcelado = pagParcelas > 1;
-                                            const valorParcela = safeNum(pedido.installment_value || pedido.pagamento?.valor_parcela || (pedido.total / pagParcelas));
-                                            
-                                            // 🟢 Endereço e Logística Desestruturados (CORREÇÃO DO REFERENCE ERROR)
-                                            const totalVolumes = pedido.items?.length || pedido.itens?.length || pedido.qtd_produtos || 0;
-                                            const end = pedido.endereco || pedido.address || {};
-                                            
-                                            const rua = end.rua || end.street || end.logradouro || '-';
-                                            const num = end.numero || end.num || end.number || '-';
-                                            const bairro = end.bairro || end.neighborhood || '-';
-                                            const cidade = end.cidade || end.city || '-';
-                                            const uf = end.uf || end.estado || end.state || '-';
-                                            const cep = end.cep || end.zip_code || '-';
-                                            const complemento = end.complemento || end.complement || '';
-                                            const referencia = end.referencia || end.reference || '';
-                                            
-                                            const rastreioCode = pedido.tracking_code;
-                                            const carrier = pedido.carrier || 'Logística';
-                                            
-                                            // Cupons
-                                            const rawCoupons = pedido.applied_coupons || pedido.cupons || [];
-                                            const cuponsUsados = typeof rawCoupons === 'string' ? JSON.parse(rawCoupons || '[]') : rawCoupons;
-
-                                            return (
-                                                <article key={pedido.id} className={`bg-white rounded-[24px] border ${isExpanded ? 'border-blue-400 shadow-md ring-4 ring-blue-50/50' : 'border-slate-200 shadow-sm'} overflow-hidden transition-all duration-300`}>
-                                                    
-                                                    {/* GATILHO DA SANFONA */}
-                                                    <div 
-                                                        onClick={() => setPedidoExpandido(isExpanded ? null : pedido.id)}
-                                                        className={`p-5 sm:p-6 cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5 transition-colors ${isExpanded ? 'bg-blue-50/30' : 'bg-white hover:bg-slate-50'}`}
-                                                    >
-                                                        <div className="flex items-center gap-4">
-                                                            <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 transition-colors ${isExpanded ? 'bg-blue-100 border-blue-200 text-blue-600' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-                                                                <Icons.ShoppingBag className="w-5 h-5" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
-                                                                    <h4 className="text-base font-black text-slate-800 tracking-tight">Pedido #{pedido.id}</h4>
-                                                                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusColor}`}>
-                                                                        <StatusIcon className="w-3 h-3" /> {statusNormalizado.replace(/_/g, ' ')}
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
-                                                                    <Icons.Calendar className="w-3.5 h-3.5"/> Efetuado em <strong className="text-slate-700">{formatDateTimeBR(pedido.data_raw || pedido.created_at)}</strong>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex items-center justify-between lg:justify-end gap-6 w-full lg:w-auto">
-                                                            <div className="text-right border-r border-slate-200 pr-6 hidden sm:block">
-                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Pagamento via</span>
-                                                                <span className="text-xs font-black text-slate-700 uppercase">{pagMetodo}</span>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Líquido Recebido</span>
-                                                                <span className="text-xl font-black text-emerald-600 leading-none">{formatCurrency(pedido.total)}</span>
-                                                            </div>
-                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-transform duration-300 shadow-sm shrink-0 ${isExpanded ? 'bg-blue-600 text-white border-blue-600 rotate-90' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'}`}>
-                                                                <Icons.ChevronRight className="w-4 h-4" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* CONTEÚDO EXPANDIDO */}
-                                                    <AnimatePresence>
-                                                        {isExpanded && (
-                                                            <motion.div 
-                                                                initial={{ height: 0, opacity: 0 }} 
-                                                                animate={{ height: 'auto', opacity: 1 }} 
-                                                                exit={{ height: 0, opacity: 0 }}
-                                                                transition={{ duration: 0.3, ease: "easeInOut" }}
-                                                                className="overflow-hidden"
-                                                            >
-                                                                <div className="p-5 sm:p-6 border-t border-slate-100 bg-slate-50/50 grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
-                                                                    
-                                                                    {/* BLOCO A: Composição & Pagamento */}
-                                                                    <div className="space-y-6 flex flex-col h-full">
-                                                                        <div>
-                                                                            <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
-                                                                                <Icons.DollarSign className="w-3.5 h-3.5 text-emerald-500"/> Composição do Valor
-                                                                            </h6>
-                                                                            <div className="space-y-2 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
-                                                                                    <span>Subtotal Produtos:</span><span className="text-slate-800 font-bold">{formatCurrency(pedido.subtotal)}</span>
-                                                                                </div>
-                                                                                <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
-                                                                                    <span>Frete Cobrado:</span><span className="text-slate-800 font-bold">{formatCurrency(pedido.frete_valor || pedido.frete)}</span>
-                                                                                </div>
-                                                                                
-                                                                                {safeNum(pedido.desconto_frete) > 0 && (
-                                                                                    <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-rose-500">
-                                                                                        <span>(-) Cupom Frete:</span><span className="font-bold">-{formatCurrency(pedido.desconto_frete)}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                {safeNum(pedido.desconto_loja || pedido.desconto) > 0 && (
-                                                                                    <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-rose-500">
-                                                                                        <span>(-) Cupom Loja:</span><span className="font-bold">-{formatCurrency(pedido.desconto_loja || pedido.desconto)}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                {safeNum(pedido.desconto_vip_frete) > 0 && (
-                                                                                    <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-indigo-500">
-                                                                                        <span>(-) Benefício VIP Frete:</span><span className="font-bold">-{formatCurrency(pedido.desconto_vip_frete)}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                {safeNum(pedido.desconto_vip_produtos) > 0 && (
-                                                                                    <div className="flex justify-between items-center pb-1.5 border-b border-slate-100 text-indigo-500">
-                                                                                        <span>(-) Benefício VIP Loja:</span><span className="font-bold">-{formatCurrency(pedido.desconto_vip_produtos)}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                
-                                                                                <div className="flex justify-between items-center pt-1 mt-1 text-xs">
-                                                                                    <span className="text-slate-800 font-black">Líquido Recebido:</span><span className="text-emerald-600 font-black">{formatCurrency(pedido.total)}</span>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        <div className="mt-auto">
-                                                                            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-                                                                                <div className="space-y-3">
-                                                                                    <div>
-                                                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Gateway de Pagamento</span>
-                                                                                        <span className="text-sm font-black text-slate-800 block">"{pagGateway}"</span>
-                                                                                    </div>
-                                                                                    <div>
-                                                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Pagamento Via</span>
-                                                                                        <span className="text-xs font-bold text-slate-700 block uppercase mb-0.5">{pagMetodo}</span>
-                                                                                        {isParcelado ? (
-                                                                                            <span className="text-[10px] font-medium text-slate-500">
-                                                                                                Parcelado em {pagParcelas}x de {formatCurrency(valorParcela)}
-                                                                                            </span>
-                                                                                        ) : (
-                                                                                            <span className="text-[10px] font-medium text-slate-500">Pagamento à vista / Único</span>
-                                                                                        )}
-                                                                                    </div>
-                                                                                </div>
-                                                                                <Icons.CheckCircle className="w-6 h-6 text-emerald-500 opacity-60" />
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* BLOCO B: Logística & Transporte */}
-                                                                    <div className="space-y-3 flex flex-col h-full">
-                                                                        <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
-                                                                            <Icons.Truck className="w-3.5 h-3.5 text-blue-500"/> Logística & Transporte
-                                                                        </h6>
-                                                                        <div className="space-y-4 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col">
-                                                                            
-                                                                            <div>
-                                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Total de Volumes:</span>
-                                                                                <span className="text-slate-800 font-bold">{totalVolumes} {totalVolumes === 1 ? 'produto enviado' : 'produtos enviados'}.</span>
-                                                                            </div>
-                                                                            
-                                                                            <div className="pt-2 border-t border-slate-100">
-                                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Destinatário & Endereço:</span>
-                                                                                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5">
-                                                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
-                                                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
-                                                                                        <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${rua}, ${num}`}>{rua}, {num}</span>
-                                                                                    </div>
-                                                                                    
-                                                                                    {complemento && (
-                                                                                        <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
-                                                                                            <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Complemento:</span> 
-                                                                                            <span className="text-slate-800 text-right truncate max-w-[140px]" title={complemento}>{complemento}</span>
-                                                                                        </div>
-                                                                                    )}
-                                                                                    
-                                                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
-                                                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Bairro:</span> 
-                                                                                        <span className="text-slate-800 text-right truncate max-w-[140px]" title={bairro}>{bairro}</span>
-                                                                                    </div>
-                                                                                    <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
-                                                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Cidade/UF:</span> 
-                                                                                        <span className="text-slate-800 font-bold text-right truncate">{cidade} - {uf}</span>
-                                                                                    </div>
-                                                                                    <div className="flex justify-between items-center pb-1">
-                                                                                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CEP:</span> 
-                                                                                        <span className="text-slate-800 font-mono text-right truncate">{cep}</span>
-                                                                                    </div>
-                                                                                    
-                                                                                    {referencia && (
-                                                                                        <div className="pt-1.5 border-t border-slate-200/60">
-                                                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Referência:</span>
-                                                                                            <p className="text-[10px] text-slate-600 italic leading-relaxed truncate" title={referencia}>{referencia}</p>
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
-
-                                                                            <div className="pt-3 mt-auto">
-                                                                                {rastreioCode ? (
-                                                                                    <div className="mt-auto">
-                                                                                        <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">
-                                                                                            Cód. Rastreio ({carrier}):
-                                                                                        </span>
-                                                                                        <div className="flex items-center justify-between bg-amber-50/50 border border-amber-200 p-2.5 rounded-xl">
-                                                                                            <span className="text-amber-700 font-mono font-bold tracking-widest">{rastreioCode}</span>
-                                                                                            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(rastreioCode); }} title="Copiar">
-                                                                                                <Icons.Copy className="w-4 h-4 text-amber-500 hover:text-amber-700 transition-colors"/>
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    <span className={`text-[10px] ${statusColor} px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest`}>
-                                                                                        {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? 'Entregue (S/ Rastreio)' : statusNormalizado.replace(/_/g, ' ')}
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* BLOCO C: Cupons e Ação Final */}
-                                                                    <div className="space-y-6 flex flex-col h-full">
-                                                                        <div>
-                                                                            <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
-                                                                                <Icons.Tag className="w-3.5 h-3.5 text-amber-500"/> Cupons & Vantagens Usadas
-                                                                            </h6>
-                                                                            {cuponsUsados.length > 0 ? (
-                                                                                <div className="space-y-3 max-h-[160px] overflow-y-auto custom-scrollbar pr-2">
-                                                                                    {cuponsUsados.map((cupom, idx) => {
-                                                                                        const isVip = cupom.tipo && String(cupom.tipo).toUpperCase().includes('VIP');
-                                                                                        const themeColor = isVip ? 'amber' : 'purple';
-                                                                                        const TitleIcon = isVip ? Icons.Crown : Icons.Tag;
-                                                                                        
-                                                                                        return (
-                                                                                            <div key={idx} className={`bg-${themeColor}-50/30 border border-${themeColor}-100 p-3.5 rounded-xl flex flex-col gap-1.5 shadow-sm hover:bg-${themeColor}-50 transition-colors`}>
-                                                                                                <div className="flex justify-between items-start gap-2">
-                                                                                                    <div className="min-w-0 flex items-center gap-2">
-                                                                                                        <div className={`w-8 h-8 rounded-full bg-${themeColor}-100 flex items-center justify-center shrink-0`}>
-                                                                                                            <TitleIcon className={`w-4 h-4 text-${themeColor}-600`} />
-                                                                                                        </div>
-                                                                                                        <div>
-                                                                                                            <strong className={`text-[11px] font-black text-${themeColor}-900 block truncate`} title={cupom.nome || cupom.codigo}>
-                                                                                                                {cupom.nome || cupom.codigo || 'Benefício Especial'}
-                                                                                                            </strong>
-                                                                                                            <span className={`text-[8px] font-black text-${themeColor}-600 uppercase tracking-widest block mt-0.5`}>
-                                                                                                                {cupom.tipo || 'CUPOM / BENEFÍCIO'}
-                                                                                                            </span>
-                                                                                                        </div>
-                                                                                                    </div>
-                                                                                                    <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">
-                                                                                                        -{formatCurrency(cupom.valor || cupom.desconto)}
-                                                                                                    </span>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        );
-                                                                                    })}
-                                                                                </div>
-                                                                            ) : (
-                                                                                <div className="h-[120px] flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed p-4 text-center">
-                                                                                    <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center mb-2"><Icons.Tag className="w-3.5 h-3.5 text-slate-300" /></div>
-                                                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum cupom ou benefício aplicado</p>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-
-                                                                        {/* BOTÃO NAVEGAR PARA A TELA DE PEDIDOS (COM ANIMAÇÃO DE PROGRESSO) */}
-                                                                        <button 
-                                                                            onClick={() => {
-                                                                                setNavigatingOrder(pedido.id);
-                                                                                setTimeout(() => {
-                                                                                    window.open(`/admin/orders?id=${pedido.id}`, '_blank');
-                                                                                    setNavigatingOrder(null);
-                                                                                }, 600);
-                                                                            }}
-                                                                            className="relative overflow-hidden w-full mt-auto flex items-center justify-center gap-2 bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-colors shadow-md group"
-                                                                        >
-                                                                            {navigatingOrder === pedido.id && (
-                                                                                <motion.div 
-                                                                                    initial={{ width: 0 }} 
-                                                                                    animate={{ width: '100%' }} 
-                                                                                    transition={{ duration: 0.6, ease: 'easeOut' }} 
-                                                                                    className="absolute inset-0 bg-blue-600 z-0" 
-                                                                                />
-                                                                            )}
-                                                                            <span className="relative z-10 flex items-center gap-2">
-                                                                                <Icons.ExternalLink className="w-3.5 h-3.5 group-hover:scale-110 transition-transform"/> 
-                                                                                Ver Todos os Detalhes do Pedido
-                                                                            </span>
-                                                                        </button>
-                                                                    </div>
-
-                                                                </div>
-                                                            </motion.div>
-                                                        )}
-                                                    </AnimatePresence>
-                                                </article>
-                                            );
-                                        })
-                                    ) : (
-                                        <div className="w-full flex flex-col items-center justify-center py-20 bg-white rounded-[24px] border-2 border-slate-200 border-dashed mt-4">
-                                            <div className="w-16 h-16 bg-slate-50 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
-                                                <Icons.ShoppingBag className="w-8 h-8 text-slate-300" />
-                                            </div>
-                                            <h4 className="text-base font-black text-slate-700">Nenhum pedido encontrado</h4>
-                                            <p className="text-xs text-slate-500 font-medium mt-1">Não há transações para os filtros selecionados.</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* RODAPÉ E PAGINAÇÃO */}
-                                {totalOrderHistoryPages > 1 && (
-                                    <footer className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center text-xs font-bold text-slate-500 gap-3 shrink-0">
-                                        <span>Mostrando {orderHistoryPaginados.length} de {historicoPedidosFiltrado.length} pedidos</span>
-                                        <div className="flex items-center gap-3">
-                                            <span>Página {orderHistoryPage} de {totalOrderHistoryPages}</span>
-                                            <div className="flex gap-1.5">
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => setOrderHistoryPage(p => Math.max(1, p - 1))} 
-                                                    disabled={orderHistoryPage === 1} 
-                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"
-                                                >
-                                                    <Icons.ChevronLeft className="w-4 h-4" />
-                                                </button>
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => setOrderHistoryPage(p => Math.min(totalOrderHistoryPages, p + 1))} 
-                                                    disabled={orderHistoryPage === totalOrderHistoryPages} 
-                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"
-                                                >
-                                                    <Icons.ChevronRight className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </footer>
-                                )}
-                            </motion.section>
-                        )}
-                        {/* 🟢 ABA: CARTEIRAS / LIVRO RAZÃO (Estilo Netflix Clean & Performático) */}
                         {crmSubTab === 'CARTEIRAS (LIVRO RAZÃO)' && (
                         <motion.section key="CARTEIRAS" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-8">
                             
@@ -1864,6 +1491,508 @@ export default function AdminPerfilCRM({
                                 </div>
                             </article>
                         </motion.section>
+                        )}
+                        {/* ========================================================= */}
+                        {/* 🟢 ABA: HISTÓRICO DE PEDIDOS (COM EFEITO SANFONA)         */}
+                        {/* ========================================================= */}
+                        {crmSubTab === 'HISTÓRICO DE PEDIDOS' && !perfilEmEdicao && (
+                            <motion.section key="HISTORICO" {...tabTransition} className="max-w-6xl mx-auto w-full p-6 space-y-6 flex flex-col h-full">
+                                
+                                {/* CABEÇALHO DA SEÇÃO */}
+                                <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm gap-4 shrink-0">
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
+                                            <Icons.ShoppingBag className="w-6 h-6 text-blue-500"/> Histórico de Transações
+                                        </h3>
+                                        <p className="text-xs text-slate-500 mt-1 font-medium">Registro imutável de compras, status logístico e benefícios aplicados.</p>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                                        
+                                        {/* 🟢 COMPONENTE DE FILTRO (IDÊNTICO AO DASHBOARD) */}
+                                        <div className="relative shrink-0 z-[100] flex justify-end">
+                                            <HoverProgressRoundButton 
+                                                text={historyFilterText}
+                                                onClick={() => setHistoryDateOpen(!historyDateOpen)} 
+                                                icon={Icons.Calendar} 
+                                                ariaLabel="Filtrar Período de Pedidos"
+                                                loading={savingState === 'filtroHistory'}
+                                                isActive={historyDateOpen}
+                                            />
+                                            <DateFilterPopup 
+                                                isOpen={historyDateOpen} 
+                                                onClose={() => setHistoryDateOpen(false)} 
+                                                dateRange={historyDateRange} 
+                                                setDateRange={setHistoryDateRange} 
+                                                loading={savingState === 'filtroHistory'}
+                                                onClear={() => { 
+                                                    setHistoryDateRange({start:'',end:''}); 
+                                                    setHistoryFilterText('Todo o Período'); 
+                                                    setOrderHistoryPage(1); 
+                                                    setHistoryDateOpen(false); 
+                                                }}
+                                                onApply={() => { 
+                                                    if(historyDateRange.start && historyDateRange.end) {
+                                                        setSavingState('filtroHistory');
+                                                        setTimeout(() => {
+                                                            setHistoryFilterText(`${formatDateBR(historyDateRange.start)} até ${formatDateBR(historyDateRange.end)}`);
+                                                            setOrderHistoryPage(1);
+                                                            setHistoryDateOpen(false);
+                                                            setSavingState(null);
+                                                            if(showToastGlob) showToastGlob('Filtro aplicado com sucesso!', 'success');
+                                                        }, 800);
+                                                    } else {
+                                                        alert('Preencha a data inicial e final.');
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                        
+                                        {/* Select de Qtd por Página */}
+                                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 h-[48px] shadow-sm transition-all focus-within:border-blue-500">
+                                            <Icons.Activity className="w-4 h-4 text-slate-400" />
+                                            <select 
+                                                value={orderHistoryPerPage} 
+                                                onChange={(e) => { setOrderHistoryPerPage(Number(e.target.value)); setOrderHistoryPage(1); }}
+                                                className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
+                                            >
+                                                <option value={5}>Exibir 5</option>
+                                                <option value={10}>Exibir 10</option>
+                                                <option value={20}>Exibir 20</option>
+                                                <option value={30}>Exibir 30</option>
+                                                <option value={50}>Exibir 50</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="bg-blue-50 border border-blue-100 px-4 py-1.5 rounded-xl text-center shrink-0 ml-auto flex items-center gap-2 h-[48px]">
+                                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Volume</span>
+                                            <span className="text-xl font-black text-blue-700 leading-tight">{historicoPedidosFiltrado.length}</span>
+                                        </div>
+                                    </div>
+                                </header>
+
+                                {/* FEED VERTICAL DE PEDIDOS (ACORDEON PAGINADO) */}
+                                <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar pb-10">
+                                    {orderHistoryPaginados.length > 0 ? (
+                                        orderHistoryPaginados.map((pedido) => {
+                                            
+                                            const descReal = calcularDescontosReais(pedido.subtotal, pedido.frete_valor || pedido.frete, pedido.coupons || pedido.cupons || pedido.applied_coupons);
+                                            const isExpanded = pedidoExpandido === pedido.id;
+                                            let statusColor = "bg-slate-50 text-slate-600 border-slate-200";
+                                            let StatusIcon = Icons.Clock;
+
+                                            const statusNormalizado = String(pedido.status).toUpperCase();
+
+                                            switch(statusNormalizado) {
+                                                case 'ENTREGUE':
+                                                case 'CONCLUIDO': statusColor = "bg-emerald-50 text-emerald-600 border-emerald-200"; StatusIcon = Icons.CheckCircle; break;
+                                                case 'DESPACHADO':
+                                                case 'EM_TRANSITO': statusColor = "bg-blue-50 text-blue-600 border-blue-200"; StatusIcon = Icons.Truck; break;
+                                                case 'SEPARACAO':
+                                                case 'PAGO': statusColor = "bg-indigo-50 text-indigo-600 border-indigo-200"; StatusIcon = Icons.Package; break;
+                                                case 'CANCELADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
+                                                case 'REEMBOLSADO': statusColor = "bg-rose-50 text-rose-600 border-rose-200"; StatusIcon = Icons.XCircle; break;
+                                                default: statusColor = "bg-amber-50 text-amber-600 border-amber-200"; StatusIcon = Icons.Clock; break;
+                                            }
+
+                                            // Pagamento Seguro
+                                            const pagMetodo = pedido.payment_method || pedido.pagamento?.metodo || 'Não Informado';
+                                            const pagGateway = pedido.payment_gateway || pedido.pagamento?.gateway || 'Desconhecido';
+                                            const pagParcelas = safeNum(pedido.payment_installments || pedido.pagamento?.parcelas || 1);
+                                            const isParcelado = pagParcelas > 1;
+                                            const valorParcela = safeNum(pedido.installment_value || pedido.pagamento?.valor_parcela || (pedido.total / pagParcelas));
+                                            
+                                            // 🟢 Endereço e Logística Desestruturados (CORREÇÃO DO REFERENCE ERROR)
+                                            const totalVolumes = pedido.items?.length || pedido.itens?.length || pedido.qtd_produtos || 0;
+                                            const end = pedido.endereco || pedido.address || {};
+                                            
+                                            const rua = end.rua || end.street || end.logradouro || '-';
+                                            const num = end.numero || end.num || end.number || '-';
+                                            const bairro = end.bairro || end.neighborhood || '-';
+                                            const cidade = end.cidade || end.city || '-';
+                                            const uf = end.uf || end.estado || end.state || '-';
+                                            const cep = end.cep || end.zip_code || '-';
+                                            const complemento = end.complemento || end.complement || '';
+                                            const referencia = end.referencia || end.reference || '';
+                                            
+                                            const rastreioCode = pedido.tracking_code;
+                                            const carrier = pedido.carrier || 'Logística';
+                                            
+                                            // Cupons
+                                            const rawCoupons = pedido.applied_coupons || pedido.cupons || [];
+                                            const cuponsUsados = typeof rawCoupons === 'string' ? JSON.parse(rawCoupons || '[]') : rawCoupons;
+
+                                            return (
+                                                <article key={pedido.id} className={`bg-white rounded-[24px] border ${isExpanded ? 'border-blue-400 shadow-md ring-4 ring-blue-50/50' : 'border-slate-200 shadow-sm'} overflow-hidden transition-all duration-300`}>
+                                                    
+                                                    {/* GATILHO DA SANFONA */}
+                                                    <div 
+                                                        onClick={() => setPedidoExpandido(isExpanded ? null : pedido.id)}
+                                                        className={`p-5 sm:p-6 cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5 transition-colors ${isExpanded ? 'bg-blue-50/30' : 'bg-white hover:bg-slate-50'}`}
+                                                    >
+                                                        <div className="flex items-center gap-4">
+                                                            <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 transition-colors ${isExpanded ? 'bg-blue-100 border-blue-200 text-blue-600' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+                                                                <Icons.ShoppingBag className="w-5 h-5" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+                                                                    <h4 className="text-base font-black text-slate-800 tracking-tight">Pedido #{pedido.id}</h4>
+                                                                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusColor}`}>
+                                                                        <StatusIcon className="w-3 h-3" /> {statusNormalizado.replace(/_/g, ' ')}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                                                                    <Icons.Calendar className="w-3.5 h-3.5"/> Efetuado em <strong className="text-slate-700">{formatDateTimeBR(pedido.data_raw || pedido.created_at)}</strong>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center justify-between lg:justify-end gap-6 w-full lg:w-auto">
+                                                            <div className="text-right border-r border-slate-200 pr-6 hidden sm:block">
+                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Pagamento via</span>
+                                                                <span className="text-xs font-black text-slate-700 uppercase">{pagMetodo}</span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Líquido Recebido</span>
+                                                                <span className="text-xl font-black text-emerald-600 leading-none">{formatCurrency(pedido.total)}</span>
+                                                            </div>
+                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-transform duration-300 shadow-sm shrink-0 ${isExpanded ? 'bg-blue-600 text-white border-blue-600 rotate-90' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'}`}>
+                                                                <Icons.ChevronRight className="w-4 h-4" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* CONTEÚDO EXPANDIDO */}
+                                                    <AnimatePresence>
+                                                        {isExpanded && (
+                                                            <motion.div 
+                                                                initial={{ height: 0, opacity: 0 }} 
+                                                                animate={{ height: 'auto', opacity: 1 }} 
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                {(() => {
+                                                                    // 1. Extrai os valores originais do pedido
+                                                                    const subtotalBruto = safeNum(pedido.subtotal);
+                                                                    const freteBruto = safeNum(pedido.frete_valor || pedido.frete);
+                                                                    const totalBruto = subtotalBruto + freteBruto;
+
+                                                                    // 2. Captura todos os cupons/benefícios do banco
+                                                                    const cuponsLista = parseCoupons(pedido.coupons || pedido.cupons || pedido.applied_coupons);
+                                                                    let reqCupomLoja = 0, reqCupomFrete = 0, reqVipLoja = 0, reqVipFrete = 0;
+
+                                                                    // 3. Separa os valores solicitados por categoria
+                                                                    cuponsLista.forEach(c => {
+                                                                        const tipo = String(c.tipo).toUpperCase();
+                                                                        const val = safeNum(c.valor || c.desconto);
+                                                                        if (tipo === 'LOJA') reqCupomLoja += val;
+                                                                        else if (tipo === 'FRETE') reqCupomFrete += val;
+                                                                        else if (tipo === 'LOJA VIP' || (tipo.includes('VIP') && !tipo.includes('FRETE'))) reqVipLoja += val;
+                                                                        else if (tipo === 'FRETE VIP' || (tipo.includes('VIP') && tipo.includes('FRETE'))) reqVipFrete += val;
+                                                                    });
+
+                                                                    // 4. LÓGICA ANTI-FRAUDE: CÁLCULO EM CASCATA COM CAP EM ZERO
+                                                                    // --- SILO: FRETE ---
+                                                                    let saldoFrete = freteBruto;
+                                                                    const descontoFreteReal = Math.min(reqCupomFrete, saldoFrete);
+                                                                    saldoFrete -= descontoFreteReal;
+                                                                    const descontoVipFreteReal = Math.min(reqVipFrete, saldoFrete);
+                                                                    saldoFrete -= descontoVipFreteReal;
+
+                                                                    // --- SILO: PRODUTOS (LOJA) ---
+                                                                    let saldoLoja = subtotalBruto;
+                                                                    const descontoLojaReal = Math.min(reqCupomLoja, saldoLoja);
+                                                                    saldoLoja -= descontoLojaReal;
+                                                                    const descontoVipLojaReal = Math.min(reqVipLoja, saldoLoja);
+                                                                    saldoLoja -= descontoVipLojaReal;
+
+                                                                    // 5. Total Final Realmente Cobrado
+                                                                    const totalLiquidoAuditoria = saldoLoja + saldoFrete;
+
+                                                                    // 6. Lista os cupons que realmente tiveram impacto matemático
+                                                                    const cuponsReaisAplicados = [];
+                                                                    cuponsLista.forEach(c => {
+                                                                        const tipo = String(c.tipo).toUpperCase();
+                                                                        let valorAplicado = 0;
+                                                                        if (tipo === 'LOJA' && descontoLojaReal > 0) valorAplicado = Math.min(safeNum(c.valor || c.desconto), descontoLojaReal);
+                                                                        else if (tipo === 'FRETE' && descontoFreteReal > 0) valorAplicado = Math.min(safeNum(c.valor || c.desconto), descontoFreteReal);
+                                                                        else if ((tipo === 'LOJA VIP' || (tipo.includes('VIP') && !tipo.includes('FRETE'))) && descontoVipLojaReal > 0) valorAplicado = Math.min(safeNum(c.valor || c.desconto), descontoVipLojaReal);
+                                                                        else if ((tipo === 'FRETE VIP' || (tipo.includes('VIP') && tipo.includes('FRETE'))) && descontoVipFreteReal > 0) valorAplicado = Math.min(safeNum(c.valor || c.desconto), descontoVipFreteReal);
+                                                                        
+                                                                        if (valorAplicado > 0) {
+                                                                            cuponsReaisAplicados.push({ ...c, valorAplicado });
+                                                                        }
+                                                                    });
+
+                                                                    return (
+                                                                        <div className="p-5 sm:p-6 border-t border-slate-100 bg-slate-50/50 grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
+                                                                            
+                                                                            {/* BLOCO A: Composição & Pagamento */}
+                                                                            <div className="space-y-6 flex flex-col h-full">
+                                                                                <div>
+                                                                                    <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                                        <Icons.DollarSign className="w-3.5 h-3.5 text-emerald-500"/> Composição do Valor
+                                                                                    </h6>
+                                                                                    <div className="space-y-2 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                                                                                        <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
+                                                                                            <span>Subtotal Produtos:</span><span className="text-slate-800 font-bold">{formatCurrency(subtotalBruto)}</span>
+                                                                                        </div>
+                                                                                        <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
+                                                                                            <span>Frete Cobrado:</span><span className="text-slate-800 font-bold">{formatCurrency(freteBruto)}</span>
+                                                                                        </div>
+                                                                                        <div className="flex justify-between items-center pb-3 border-b-2 border-slate-800 border-dashed">
+                                                                                            <span className="font-bold uppercase tracking-wider text-[10px]">Total Bruto:</span>
+                                                                                            <span className="text-slate-900 font-black">{formatCurrency(totalBruto)}</span>
+                                                                                        </div>
+                                                                                        
+                                                                                        {descontoLojaReal > 0 && (
+                                                                                            <div className="flex justify-between items-center text-rose-500">
+                                                                                                <span className="font-bold uppercase tracking-wider text-[10px]">(-) Cupom Loja:</span>
+                                                                                                <span className="font-black">-{formatCurrency(descontoLojaReal)}</span>
+                                                                                            </div>
+                                                                                        )}
+                                                                                        {descontoFreteReal > 0 && (
+                                                                                            <div className="flex justify-between items-center text-rose-500">
+                                                                                                <span className="font-bold uppercase tracking-wider text-[10px]">(-) Cupom Frete:</span>
+                                                                                                <span className="font-black">-{formatCurrency(descontoFreteReal)}</span>
+                                                                                            </div>
+                                                                                        )}
+                                                                                        {descontoVipLojaReal > 0 && (
+                                                                                            <div className="flex justify-between items-center text-indigo-500">
+                                                                                                <span className="font-bold uppercase tracking-wider text-[10px]">(-) Benefício VIP (Loja):</span>
+                                                                                                <span className="font-black">-{formatCurrency(descontoVipLojaReal)}</span>
+                                                                                            </div>
+                                                                                        )}
+                                                                                        {descontoVipFreteReal > 0 && (
+                                                                                            <div className="flex justify-between items-center text-indigo-500">
+                                                                                                <span className="font-bold uppercase tracking-wider text-[10px]">(-) Benefício VIP (Frete):</span>
+                                                                                                <span className="font-black">-{formatCurrency(descontoVipFreteReal)}</span>
+                                                                                            </div>
+                                                                                        )}
+                                                                                        
+                                                                                        <div className="flex justify-between items-end pt-3 mt-3 border-t border-slate-100">
+                                                                                            <div className="flex flex-col">
+                                                                                                <span className="text-slate-800 font-black uppercase tracking-widest text-xs">Líquido Recebido:</span>
+                                                                                                {safeNum(pedido.total) !== totalLiquidoAuditoria && (
+                                                                                                    <span className="text-[9px] text-rose-500 mt-1" title="O valor cobrado pelo Gateway foi diferente da matemática real da loja!">
+                                                                                                        *Divergência Banco: {formatCurrency(pedido.total)}
+                                                                                                    </span>
+                                                                                                )}
+                                                                                            </div>
+                                                                                            <span className="text-2xl text-emerald-600 font-black">{formatCurrency(totalLiquidoAuditoria)}</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div className="mt-auto">
+                                                                                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                                                                                        <div className="space-y-3">
+                                                                                            <div>
+                                                                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Gateway de Pagamento</span>
+                                                                                                <span className="text-sm font-black text-slate-800 block">"{pagGateway}"</span>
+                                                                                            </div>
+                                                                                            <div>
+                                                                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Pagamento Via</span>
+                                                                                                <span className="text-xs font-bold text-slate-700 block uppercase mb-0.5">{pagMetodo}</span>
+                                                                                                {isParcelado ? (
+                                                                                                    <span className="text-[10px] font-medium text-slate-500">
+                                                                                                        Parcelado em {pagParcelas}x de {formatCurrency(valorParcela)}
+                                                                                                    </span>
+                                                                                                ) : (
+                                                                                                    <span className="text-[10px] font-medium text-slate-500">Pagamento à vista / Único</span>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <Icons.CheckCircle className="w-6 h-6 text-emerald-500 opacity-60" />
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* BLOCO B: Logística & Transporte */}
+                                                                            <div className="space-y-3 flex flex-col h-full">
+                                                                                <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3">
+                                                                                    <Icons.Truck className="w-3.5 h-3.5 text-blue-500"/> Logística & Transporte
+                                                                                </h6>
+                                                                                <div className="space-y-4 text-[11px] font-medium text-slate-600 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col">
+                                                                                    <div>
+                                                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Total de Volumes:</span>
+                                                                                        <span className="text-slate-800 font-bold">{totalVolumes} {totalVolumes === 1 ? 'produto enviado' : 'produtos enviados'}.</span>
+                                                                                    </div>
+                                                                                    <div className="pt-2 border-t border-slate-100">
+                                                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1.5">Destinatário & Endereço:</span>
+                                                                                        <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5">
+                                                                                            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Rua/Nº:</span> 
+                                                                                                <span className="text-slate-800 font-bold text-right truncate max-w-[140px]" title={`${rua}, ${num}`}>{rua}, {num}</span>
+                                                                                            </div>
+                                                                                            {complemento && (
+                                                                                                <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Complemento:</span> 
+                                                                                                    <span className="text-slate-800 text-right truncate max-w-[170px]" title={complemento}>{complemento}</span>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Bairro:</span> 
+                                                                                                <span className="text-slate-800 text-right truncate max-w-[140px]" title={bairro}>{bairro}</span>
+                                                                                            </div>
+                                                                                            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5">
+                                                                                                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Cidade/UF:</span> 
+                                                                                                <span className="text-slate-800 font-bold text-right truncate">{cidade} - {uf}</span>
+                                                                                            </div>
+                                                                                            <div className="flex justify-between items-center pb-1">
+                                                                                                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">CEP:</span> 
+                                                                                                <span className="text-slate-800 font-mono text-right truncate">{cep}</span>
+                                                                                            </div>
+                                                                                            {referencia && (
+                                                                                                <div className="pt-1.5 border-t border-slate-200/60">
+                                                                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Referência:</span>
+                                                                                                    <p className="text-[10px] text-slate-600 italic leading-relaxed truncate" title={referencia}>{referencia}</p>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </div>
+
+                                                                                    <div className="pt-3 mt-auto">
+                                                                                        {rastreioCode ? (
+                                                                                            <div className="mt-auto">
+                                                                                                <span className="text-[10px] text-slate-400 block mb-1.5 font-bold uppercase tracking-wider">
+                                                                                                    Cód. Rastreio ({carrier}):
+                                                                                                </span>
+                                                                                                <div className="flex items-center justify-between bg-amber-50/50 border border-amber-200 p-2.5 rounded-xl">
+                                                                                                    <span className="text-amber-700 font-mono font-bold tracking-widest">{rastreioCode}</span>
+                                                                                                    <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(rastreioCode); }} title="Copiar">
+                                                                                                        <Icons.Copy className="w-4 h-4 text-amber-500 hover:text-amber-700 transition-colors"/>
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        ) : (
+                                                                                            <span className={`text-[10px] ${statusColor} px-2 py-2 rounded-lg block text-center font-bold uppercase tracking-widest`}>
+                                                                                                {['ENTREGUE', 'CONCLUIDO'].includes(statusNormalizado) ? 'Entregue (S/ Rastreio)' : statusNormalizado.replace(/_/g, ' ')}
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* BLOCO C: Cupons e Ação Final */}
+                                                                        <div className="space-y-6 flex flex-col h-full">
+                                                                            <div className="flex flex-col min-h-0 flex-1">
+                                                                                <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-200 pb-2 mb-3 shrink-0">
+                                                                                    <Icons.Tag className="w-3.5 h-3.5 text-amber-500"/> Cupons & Vantagens Usadas
+                                                                                </h6>
+                                                                                {descReal.cuponsReais.length > 0 ? (
+                                                                                    <div className="space-y-3 max-h-[340px] overflow-y-auto custom-scrollbar pr-2 mb-2">
+                                                                                        {descReal.cuponsReais.map((cupom, idx) => {
+                                                                                            const isVip = cupom.tipo && String(cupom.tipo).toUpperCase().includes('VIP');
+                                                                                            const themeColor = isVip ? 'amber' : 'purple';
+                                                                                            const TitleIcon = isVip ? Icons.Crown : Icons.Tag;
+                                                                                            
+                                                                                            return (
+                                                                                                <div key={idx} className={`bg-${themeColor}-50/30 border border-${themeColor}-100 p-3.5 rounded-xl flex flex-col gap-1.5 shadow-sm hover:bg-${themeColor}-50 transition-colors`}>
+                                                                                                    <div className="flex justify-between items-start gap-2">
+                                                                                                        <div className="min-w-0 flex items-center gap-2">
+                                                                                                            <div className={`w-8 h-8 rounded-full bg-${themeColor}-100 flex items-center justify-center shrink-0`}>
+                                                                                                                <TitleIcon className={`w-4 h-4 text-${themeColor}-600`} />
+                                                                                                            </div>
+                                                                                                            <div>
+                                                                                                                <strong className={`text-[11px] font-black text-${themeColor}-900 block truncate`} title={cupom.nome || cupom.codigo}>
+                                                                                                                    {cupom.nome || cupom.codigo || 'Benefício Especial'}
+                                                                                                                </strong>
+                                                                                                                <span className={`text-[8px] font-black text-${themeColor}-600 uppercase tracking-widest block mt-0.5`}>
+                                                                                                                    {cupom.tipo || 'CUPOM / BENEFÍCIO'}
+                                                                                                                </span>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                        <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">
+                                                                                                            -{formatCurrency(cupom.valorAplicado)}
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            );
+                                                                                        })}
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <div className="h-[120px] flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 border-dashed p-4 text-center mb-2">
+                                                                                        <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center mb-2"><Icons.Tag className="w-3.5 h-3.5 text-slate-300" /></div>
+                                                                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum cupom ou benefício aplicado</p>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+
+                                                                            {/* BOTÃO NAVEGAR PARA A TELA DE PEDIDOS */}
+                                                                            <button 
+                                                                                onClick={() => {
+                                                                                    setNavigatingOrder(pedido.id);
+                                                                                    setTimeout(() => {
+                                                                                        window.open(`/admin/orders?id=${pedido.id}`, '_blank');
+                                                                                        setNavigatingOrder(null);
+                                                                                    }, 600);
+                                                                                }}
+                                                                                className="relative overflow-hidden w-full mt-auto flex items-center justify-center gap-2 bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-colors shadow-md group shrink-0"
+                                                                            >
+                                                                                {navigatingOrder === pedido.id && (
+                                                                                    <motion.div 
+                                                                                        initial={{ width: 0 }} 
+                                                                                        animate={{ width: '100%' }} 
+                                                                                        transition={{ duration: 0.6, ease: 'easeOut' }} 
+                                                                                        className="absolute inset-0 bg-blue-600 z-0" 
+                                                                                    />
+                                                                                )}
+                                                                                <span className="relative z-10 flex items-center gap-2">
+                                                                                    <Icons.ExternalLink className="w-3.5 h-3.5 group-hover:scale-110 transition-transform"/> 
+                                                                                    Ver Todos os Detalhes do Pedido
+                                                                                </span>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    );
+                                                                })()}
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </article>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="w-full flex flex-col items-center justify-center py-20 bg-white rounded-[24px] border-2 border-slate-200 border-dashed mt-4">
+                                            <div className="w-16 h-16 bg-slate-50 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
+                                                <Icons.ShoppingBag className="w-8 h-8 text-slate-300" />
+                                            </div>
+                                            <h4 className="text-base font-black text-slate-700">Nenhum pedido encontrado</h4>
+                                            <p className="text-xs text-slate-500 font-medium mt-1">Não há transações para os filtros selecionados.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* RODAPÉ E PAGINAÇÃO */}
+                                {totalOrderHistoryPages > 1 && (
+                                    <footer className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center text-xs font-bold text-slate-500 gap-3 shrink-0">
+                                        <span>Mostrando {orderHistoryPaginados.length} de {historicoPedidosFiltrado.length} pedidos</span>
+                                        <div className="flex items-center gap-3">
+                                            <span>Página {orderHistoryPage} de {totalOrderHistoryPages}</span>
+                                            <div className="flex gap-1.5">
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setOrderHistoryPage(p => Math.max(1, p - 1))} 
+                                                    disabled={orderHistoryPage === 1} 
+                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"
+                                                >
+                                                    <Icons.ChevronLeft className="w-4 h-4" />
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => setOrderHistoryPage(p => Math.min(totalOrderHistoryPages, p + 1))} 
+                                                    disabled={orderHistoryPage === totalOrderHistoryPages} 
+                                                    className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors shadow-sm"
+                                                >
+                                                    <Icons.ChevronRight className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                )}
+                            </motion.section>
                         )}
                         {/* 🟢 ABA: TIMELINE / AUDITORIA (Log Feed Moderno & Elegante) */}
                         {crmSubTab === 'TIMELINE (AUDIT)' && (

@@ -11,7 +11,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
-        'carrier_id',        // <-- ADICIONADO AQUI
+        'carrier_id',
         'subtotal',
         'frete',
         'desconto',
@@ -26,7 +26,9 @@ class Order extends Model
         'applied_coupons',    // Guarda os múltiplos cupons em formato JSON
         'cancel_reason',
         'refund_receipt',
-        'refund_method'
+        'refund_method',
+        'payment_receipt',    // 🟢 ADICIONADO: Comprovante de Pagamento Manual
+        'delivery_receipt'    // 🟢 ADICIONADO: Comprovante de Entrega / Assinatura
     ];
 
     // Blindagem de Tipos para o React receber os números e listas perfeitos

@@ -291,6 +291,30 @@ const AnimatedNotification = ({ show, status, titulo }) => (
   </AnimatePresence>
 );
 
+// 🟢 SKELETON LOADER PREMIUM PARA O CRM
+const CRMSkeleton = () => (
+    <div className="animate-pulse flex flex-col min-h-[600px] w-full mt-2">
+        <div className="flex justify-between items-center mb-6">
+            <div className="h-8 w-64 bg-slate-200 rounded-lg"></div>
+            <div className="h-10 w-32 bg-slate-200 rounded-xl"></div>
+        </div>
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-slate-100 overflow-hidden mb-6 h-[140px]">
+            {[1,2,3,4].map(i => <div key={i} className="flex-1 bg-slate-100/50 p-6"></div>)}
+        </div>
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 flex flex-col flex-1 p-6">
+            <div className="h-14 bg-slate-100 rounded-2xl mb-6"></div>
+            <div className="space-y-4">
+                {[1,2,3,4,5].map(i => (
+                    <div key={i} className="h-20 bg-slate-50 rounded-2xl border border-slate-100 flex items-center px-6 gap-6">
+                        <div className="h-12 w-12 bg-slate-200 rounded-full shrink-0"></div>
+                        <div className="h-5 w-1/3 bg-slate-200 rounded"></div>
+                        <div className="h-5 w-1/4 bg-slate-200 rounded ml-auto"></div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+);
 // ============================================================================
 // 5. COMPONENTE PRINCIPAL (AdminCustomersContent)
 // ============================================================================
@@ -679,13 +703,7 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
   // TELA 1: DASHBOARD PAINEL
   // ==========================================
   const renderPainel = () => {
-    if (carregandoClientes) return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Icons.Spinner className="w-10 h-10 text-blue-600" />
-        <p className="text-slate-500 font-bold animate-pulse">Sincronizando Dashboard com o Servidor HUB...</p>
-      </div>
-    );
-
+    if (carregandoClientes) return <CRMSkeleton />;
     return (
     <FadeIn key="painel" className="space-y-6">
       <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-50">
@@ -904,13 +922,8 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
   // ==========================================
   // TELA 2: LISTA DE CLIENTES CRM
   // ==========================================
-  const renderClientesCRMLista = () => {
-    if (carregandoClientes) return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Icons.Spinner className="w-10 h-10 text-blue-600" />
-        <p className="text-slate-500 font-bold animate-pulse">Buscando Clientes no Servidor HUB...</p>
-      </div>
-    );
+    const renderClientesCRMLista = () => {
+    if (carregandoClientes) return <CRMSkeleton />;
 
     return (
     <FadeIn key="diretorio" className="space-y-6">
@@ -1410,22 +1423,21 @@ export default function AdminCustomers() {
                             </div>
                         </div>
                         
-                        <nav className="flex gap-8 border-b border-slate-200 mt-8 overflow-x-auto no-scrollbar relative w-full" aria-label="Navegação do CRM">
-                            {abasDisponiveis.map(tab => (
-                                <button 
-                                    type="button" 
-                                    key={tab} 
-                                    aria-label={`Aba ${tab}`} 
-                                    aria-current={mainTabUrl === tab ? "page" : undefined} 
-                                    onClick={() => handleMainTabChange(tab)} 
-                                    className={`relative pb-4 text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${mainTabUrl === tab ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
-                                >
-                                    {tab}
-                                    {mainTabUrl === tab && (
-                                        <motion.div layoutId="activeTabIndicatorAdminMain" className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
-                                    )}
-                                </button>
-                            ))}
+                        <nav className="border-b border-slate-200 mt-6 pb-6 overflow-x-auto no-scrollbar relative w-full flex items-center" aria-label="Navegação do CRM">
+                            <div className="flex overflow-x-auto no-scrollbar bg-slate-100 p-1.5 rounded-2xl shadow-inner border border-slate-200/60 w-max max-w-full">
+                                {abasDisponiveis.map(tab => (
+                                    <button 
+                                        type="button" 
+                                        key={tab} 
+                                        aria-label={`Aba ${tab}`} 
+                                        aria-current={mainTabUrl === tab ? "page" : undefined} 
+                                        onClick={() => handleMainTabChange(tab)} 
+                                        className={`px-5 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all focus:outline-none ${mainTabUrl === tab ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800'}`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
                         </nav>
                     </header>
 

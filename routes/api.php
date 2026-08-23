@@ -9,10 +9,9 @@ use App\Http\Controllers\Api\CustomerController as ApiCustomerController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\CarrierController; // 🟢 NOVO: Importação do Controller de Transportadoras
-
-use App\Http\Controllers\Admin\MelhorEnvioController;
+use App\Http\Controllers\Admin\CarrierController; 
 use App\Http\Controllers\Admin\ShippingPackageController;
+use App\Http\Controllers\Admin\MelhorEnvioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +28,7 @@ Route::get('/user', function (Request $request) {
 // ==========================================
 Route::post('/admin/login', [AuthController::class, 'login']);
 
-// 🟢 Rota pública acionada quando o cliente clica no link do E-mail (Validar E-mail)
+// Rota pública acionada quando o cliente clica no link do E-mail (Validar E-mail)
 Route::get('/clientes/confirmar-email', [AdminCustomerController::class, 'confirmEmailUpdate']);
 
 // Redefinição de Senha via Link
@@ -41,7 +40,6 @@ Route::post('/clientes/processar-senha', [AdminCustomerController::class, 'proce
 // ==========================================
 Route::get('/customers', [ApiCustomerController::class, 'index']);
 
-
 // ==========================================
 // ROTAS DO HUB COMMERCE: ADMIN (PROTEGIDAS)
 // ==========================================
@@ -51,7 +49,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::prefix('customers')->group(function () {
         Route::get('/', [AdminCustomerController::class, 'index']);
         
-        // ⚠️ IMPORTANTE: Rotas estáticas precisam vir ANTES das rotas com {id}
+        // Rotas estáticas precisam vir ANTES das rotas com {id}
         Route::get('/metrics', [AdminCustomerController::class, 'getDashboardMetrics']);
         
         // Níveis VIP
@@ -63,12 +61,8 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::get('/settings', [AdminCustomerController::class, 'getSettings']);
         Route::put('/settings', [AdminCustomerController::class, 'updateSettings']);
 
-        // ----------------------------------------------------
         // AÇÕES DE PERFIL DE CLIENTE (Usam o parâmetro {id})
-        // ----------------------------------------------------
         Route::get('/{id}', [AdminCustomerController::class, 'show']);
-        
-        // 🟢 Edições Básicas
         Route::put('/{id}/basics', [AdminCustomerController::class, 'updateBasics']);
         Route::put('/{id}/phone', [AdminCustomerController::class, 'updatePhone']);
         Route::post('/{id}/sensitive-data', [AdminCustomerController::class, 'updateSensitiveData']);
@@ -76,8 +70,6 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::put('/{id}/tags', [AdminCustomerController::class, 'syncTags']);
         Route::post('/{id}/status', [AdminCustomerController::class, 'toggleSuspension']);
         Route::post('/{id}/wallet-transaction', [AdminCustomerController::class, 'addWalletTransaction']);
-        
-        // 🟢 E-mail e Senha (Segurança)
         Route::post('/{id}/email-link', [AdminCustomerController::class, 'sendEmailUpdateLink']);
         Route::put('/{id}/force-email', [AdminCustomerController::class, 'forceEmailUpdate']);
         Route::post('/{id}/generate-temp-password', [AdminCustomerController::class, 'generateTempPassword']);
@@ -98,30 +90,36 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::post('/{id}/dispatch', [OrderController::class, 'dispatchOrder']);
         Route::post('/{id}/cancel', [OrderController::class, 'cancelOrder']);
         
-        // 🟢 Fluxo Manual de Atualização com Comprovantes e Transportadoras
+        // 🟢 Fluxo Manual e Integração Melhor Envio
         Route::post('/{id}/status-manual', [OrderController::class, 'updateStatusManual']);
+        // 🟢 Rota Oficial de Emissão Fiscal e Documentos
+        Route::get('/{id}/preview-doc', [OrderController::class, 'previewDoc']); 
+        
+        // 🟢 Cancelar Etiqueta no Carrinho do Melhor Envio
+        Route::post('/{id}/cancel-me-cart', [OrderController::class, 'cancelMelhorEnvioCart']);
     });
 
     // --- MÓDULO: TRANSPORTADORAS ---
     Route::prefix('carriers')->group(function () {
         Route::get('/', [CarrierController::class, 'index']);
-        Route::post('/', [CarrierController::class, 'store']); // Salva e Edita (processando Logomarca)
+        Route::post('/', [CarrierController::class, 'store']); 
         Route::delete('/{id}', [CarrierController::class, 'destroy']);
     });
 
-    // --- MÓDULO: EMBALAGENS / VOLUMES PADRÃO ---
+    // --- MÓDULO: EMBALAGENS PADRÃO ---
     Route::prefix('shipping-packages')->group(function () {
         Route::get('/', [ShippingPackageController::class, 'index']);
         Route::post('/', [ShippingPackageController::class, 'store']);
         Route::delete('/{id}', [ShippingPackageController::class, 'destroy']);
     });
 
-// --- MÓDULO: MELHOR ENVIO (Configurações API + Remetente) ---
+    // --- MÓDULO: MELHOR ENVIO ---
     Route::prefix('melhorenvio')->group(function () {
         Route::get('/settings', [MelhorEnvioController::class, 'getSettings']);
         Route::post('/verify-token', [MelhorEnvioController::class, 'verifyToken']);
         Route::post('/carriers', [MelhorEnvioController::class, 'saveCarriers']);
-        Route::post('/sender', [MelhorEnvioController::class, 'saveSender']); // <-- ADICIONADO AQUI
+        Route::post('/sender', [MelhorEnvioController::class, 'saveSender']);
         Route::post('/disconnect', [MelhorEnvioController::class, 'disconnect']);
+        Route::post('/calculate', [MelhorEnvioController::class, 'calculate']); 
     });
 });

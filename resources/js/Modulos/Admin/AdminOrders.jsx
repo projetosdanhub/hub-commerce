@@ -77,12 +77,18 @@ const Icons = {
     Activity: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
     Lock: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>,
     Printer: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>,
-    WhatsApp: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    XCircle: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2"></circle><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 9l-6 6m0-6l6 6"></path></svg>,
+    QrCode: ({className="w-5 h-5"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6zM9 3v6M15 9v6M9 15v6M15 15v6" /></svg>,
+    ExternalLink: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2 2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" /></svg>,
+    WhatsApp: ({className="w-4 h-4"}) => <svg aria-hidden="true" className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>,
+    CheckCircle: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    Copy: ({ className = "w-4 h-4" }) => <svg aria-hidden="true" className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
 };
 
 const statusConfig = {
     'A_PAGAR': { label: 'A Pagar', cor: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
     'SEPARACAO': { label: 'Em Separação', cor: 'bg-sky-50 text-sky-700 border-sky-200' },
+    'SEPARADO': { label: 'Separado (Falta Envio)', cor: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
     'DESPACHADO': { label: 'Enviado', cor: 'bg-purple-50 text-purple-700 border-purple-200' },
     'ENTREGUE': { label: 'Entregue', cor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
     'EM_ANALISE_REEMBOLSO': { label: 'Em Análise', cor: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -100,18 +106,18 @@ const dicMelhorEnvio = [
 ];
 
 const TABS_INTELIGENTES = [
-    { key: 'TUDO', label: 'Todos os Pedidos' },
+    { key: 'TUDO', label: 'Todos' },
     { key: 'A_PAGAR', label: 'A Pagar' },
     { key: 'SEPARACAO', label: 'Em Separação' },
-    { key: 'DESPACHADO', label: 'Enviado' },
-    { key: 'ENTREGUE', label: 'Entregue' },
-    { key: 'EM_ANALISE_REEMBOLSO', label: 'Em Análise' },
-    { key: 'REEMBOLSADO', label: 'Reembolsados' },
-    { key: 'CANCELADO', label: 'Cancelados' }
+    { key: 'SEPARADO', label: 'Separados' },
+    { key: 'DESPACHADO', label: 'Enviados' },
+    { key: 'ENTREGUE', label: 'Entregues' },
+    { key: 'CANCELADO', label: 'Cancelados' },
+    { key: 'REEMBOLSADO', label: 'Reembolsados' }
 ];
 
 // ==========================================
-// FUNÇÕES AUXILIARES
+// FUNÇÕES AUXILIARES E COMPONENTES MENORES
 // ==========================================
 const safeNum = (val) => isNaN(Number(val)) ? 0 : Number(val);
 const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(safeNum(val));
@@ -122,35 +128,84 @@ const formatSmartCurrency = (value) => {
     if (num >= 1000) return `R$ ${(num / 1000).toFixed(1).replace('.', ',')}k`;
     return `R$ ${num.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 };
+
+// 🟢 CORREÇÃO DA DATA: Garante que "T" seja isolado e monta no padrão de Brasília
 const formatDateBR = (dateStr) => {
-    if(!dateStr || dateStr === '-') return '-';
-    try { const parts = String(dateStr).split('-'); if(parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`; return String(dateStr); } 
-    catch(e) { return '-'; }
+    if (!dateStr || dateStr === '-') return '-';
+    try {
+        const rawDate = String(dateStr).split('T')[0]; 
+        const parts = rawDate.split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return String(dateStr);
+    } catch (e) { return '-'; }
 };
+
 const formatDateTimeBR = (dateStr) => {
-    if(!dateStr) return '-';
-    try { const d = new Date(dateStr); return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }); } 
-    catch(e) { return '-'; }
+    if (!dateStr || dateStr === '-') return '-';
+    try {
+        const partesIso = String(dateStr).split('T');
+        if (partesIso.length === 2) {
+            const dParts = partesIso[0].split('-');
+            const tParts = partesIso[1].split(':');
+            if (dParts.length === 3 && tParts.length >= 2) {
+                return `${dParts[2]}/${dParts[1]}/${dParts[0]} às ${tParts[0]}:${tParts[1]}`;
+            }
+        }
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime())) return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+        return String(dateStr);
+    } catch (e) { return '-'; }
 };
+
 const parseCoupons = (coupons) => {
     if (!coupons) return [];
     return typeof coupons === 'string' ? JSON.parse(coupons) : coupons;
 };
-const getGatewayLogo = (gatewayName) => {
-    const name = String(gatewayName).toLowerCase();
-    if (name.includes('mercado')) return 'https://logospng.org/download/mercado-pago/logo-mercado-pago-icone-1024.png';
-    if (name.includes('stripe')) return 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg';
-    if (name.includes('pagar')) return 'https://pagar.me/wp-content/uploads/2022/08/Icon_Pagarme.svg';
-    if (name.includes('pix')) return 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo%E2%80%94pix_nacional_brasil.svg';
-    if (name.includes('paypal')) return 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg';
-    return null;
-}
+
+// 🟢 FUNÇÃO ANTI-FRAUDE E SILOING (Cálculo em Cascata)
+const calcularDescontosReais = (subtotal, frete, cuponsBrutos) => {
+    let saldoLoja = safeNum(subtotal);
+    let saldoFrete = safeNum(frete);
+    const aplicados = [];
+
+    const cupons = parseCoupons(cuponsBrutos || []);
+
+    const cLoja = cupons.filter(c => String(c.tipo).toUpperCase() === 'LOJA');
+    const cVipLoja = cupons.filter(c => String(c.tipo).toUpperCase().includes('LOJA VIP') || (String(c.tipo).toUpperCase().includes('VIP') && !String(c.tipo).toUpperCase().includes('FRETE')));
+    const cFrete = cupons.filter(c => String(c.tipo).toUpperCase() === 'FRETE');
+    const cVipFrete = cupons.filter(c => String(c.tipo).toUpperCase().includes('FRETE VIP') || (String(c.tipo).toUpperCase().includes('VIP') && String(c.tipo).toUpperCase().includes('FRETE')));
+
+    const processar = (lista, isFrete) => {
+        lista.forEach(c => {
+            const valNominal = safeNum(c.valor || c.desconto);
+            let valReal = 0;
+            if (isFrete) {
+                valReal = Math.min(valNominal, saldoFrete);
+                saldoFrete -= valReal;
+            } else {
+                valReal = Math.min(valNominal, saldoLoja);
+                saldoLoja -= valReal;
+            }
+            if (valReal > 0) aplicados.push({ ...c, valorAplicado: valReal });
+        });
+    };
+
+    processar(cLoja, false);
+    processar(cVipLoja, false);
+    processar(cFrete, true);
+    processar(cVipFrete, true);
+
+    return { cuponsReais: aplicados, liquidoRecebido: saldoLoja + saldoFrete };
+};
+
 const getCarrierLogo = (carrierName) => {
-    const name = String(carrierName).toLowerCase();
+    const name = String(carrierName || '').toLowerCase();
     if (name.includes('correios') || name.includes('sedex') || name.includes('pac')) return 'https://logospng.org/download/correios/logo-correios-2048.png';
-    if (name.includes('melhor')) return 'https://melhorenvio.com.br/images/logo-melhor-envio-azul.svg';
+    if (name.includes('melhor') || name.includes('me')) return 'https://melhorenvio.com.br/images/logo-melhor-envio-azul.svg';
     if (name.includes('jadlog')) return 'https://upload.wikimedia.org/wikipedia/commons/2/25/Jadlog_logo.png';
     if (name.includes('loggi')) return 'https://logospng.org/download/loggi/logo-loggi-2048.png';
+    if (name.includes('azul')) return 'https://www.azulcargoexpress.com.br/images/logo.png';
+    if (name.includes('latam')) return 'https://upload.wikimedia.org/wikipedia/commons/0/05/LATAM_Cargo_logo.svg';
     return null;
 }
 const getLogInfo = (log) => {
@@ -159,13 +214,32 @@ const getLogInfo = (log) => {
     const ev = String(log.evento || log.desc).toLowerCase();
     if (ev.includes('pago') || ev.includes('aprovado') || ev.includes('entregue')) { tipo = 'success'; }
     else if (ev.includes('cancelado') || ev.includes('reembolso') || ev.includes('estorno')) { tipo = 'danger'; }
-    else if (ev.includes('despachado') || ev.includes('separação') || ev.includes('transportadora') || ev.includes('melhor envio')) { tipo = 'warning'; } 
+    else if (ev.includes('despachado') || ev.includes('separação') || ev.includes('separado') || ev.includes('transportadora') || ev.includes('melhor envio')) { tipo = 'warning'; } 
     return { tipo, titulo };
 }
 
-// ==========================================
-// COMPONENTES AUXILIARES UI
-// ==========================================
+// 🟢 INTELIGÊNCIA: Deduzir a transportadora do Melhor Envio pelo histórico
+const deduceCarrier = (pedido) => {
+    // Se a transportadora foi definida manualmente no banco
+    if (pedido.carrier && pedido.carrier !== 'Aguardando Despacho') return pedido.carrier;
+    
+    // Se o rastreio foi apagado (Cancelado), não temos transportadora ativa!
+    if (!pedido.tracking_code && !pedido.carrier) return null;
+
+    // Se tem rastreio, procura qual foi o serviço do Melhor Envio usado na Timeline
+    const logME = pedido.timeline?.slice().reverse().find(l => String(l.evento || l.desc).includes('Melhor Envio (Serviço:'));
+    if (logME) {
+        const match = String(logME.evento || logME.desc).match(/Serviço: (\d+)/);
+        if (match) {
+            const meId = match[1];
+            const found = dicMelhorEnvio.find(m => String(m.id) === meId);
+            return found ? found.key : 'Melhor Envio';
+        }
+        return 'Melhor Envio';
+    }
+    return 'Logística Padrão';
+};
+
 const OrdersSkeleton = () => (
     <div className="animate-pulse flex flex-col min-h-[600px] w-full">
         <div className="flex justify-between items-center mb-4">
@@ -312,18 +386,20 @@ const AdminOrdersContent = () => {
     const [dashDateOpen, setDashDateOpen] = useState(false);
     const [dashDateRange, setDashDateRange] = useState({ start: '', end: '' });
 
-    // 🟢 ESTADOS DO MODAL & FLUXO DE EXPEDIÇÃO
+    // 🟢 ESTADOS DO MODAL & FLUXO DE EXPEDIÇÃO & MELHOR ENVIO COTAÇÃO
     const [modalAcao, setModalAcao] = useState({ isOpen: false, tipo: null, data: {} });
     const [formModal, setFormModal] = useState({ 
         motivo: '', tracking: '', refundMethod: 'ESTORNO', file: null,
         dispatchType: 'MANUAL', docTipo: 'DECLARACAO', mePagarCarteira: false,
         carrierId: '', meCarrierId: '',
+        packageId: '',
         volAltura: '', volLargura: '', volComprimento: '', volPeso: '',
         insuranceValue: ''
     });
     const [loadingAcao, setLoadingAcao] = useState(false);
     const [shippingRates, setShippingRates] = useState([]);
     const [isCalculatingME, setIsCalculatingME] = useState(false);
+    const [navigatingOrder, setNavigatingOrder] = useState(null);
 
     // 🟢 FETCH PEDIDOS
     const { data: fetchResult = {}, isLoading: carregandoPedidos, refetch } = useQuery({
@@ -338,6 +414,15 @@ const AdminOrdersContent = () => {
         queryKey: ['adminCarriers'],
         queryFn: async () => {
             try { const res = await api.get('/admin/carriers'); return res.data.data; } 
+            catch(e) { return []; }
+        }
+    });
+
+    // 🟢 FETCH EMBALAGENS (VOLUMES SALVOS)
+    const { data: packagesApi = [] } = useQuery({
+        queryKey: ['adminPackages'],
+        queryFn: async () => {
+            try { const res = await api.get('/admin/shipping-packages'); return res.data.data; } 
             catch(e) { return []; }
         }
     });
@@ -390,6 +475,25 @@ const AdminOrdersContent = () => {
         setTimeout(() => { setLoadingTimeline(false); setIsTimelineModalOpen(false); }, 800);
     };
 
+    const handlePackageChange = (e) => {
+        const pkgId = e.target.value;
+        if (!pkgId) {
+            setFormModal({...formModal, packageId: '', volAltura: '', volLargura: '', volComprimento: '', volPeso: ''});
+            return;
+        }
+        const pkg = packagesApi.find(p => String(p.id) === String(pkgId));
+        if (pkg) {
+            setFormModal({
+                ...formModal,
+                packageId: pkgId,
+                volAltura: pkg.altura,
+                volLargura: pkg.largura,
+                volComprimento: pkg.comprimento,
+                volPeso: pkg.peso_vazio 
+            });
+        }
+    };
+
     const handleCalculateShipping = async () => {
         if (!formModal.volAltura || !formModal.volLargura || !formModal.volComprimento || !formModal.volPeso) {
             return alert("Por favor, preencha todos os campos de volumetria e peso para simular o frete.");
@@ -399,17 +503,28 @@ const AdminOrdersContent = () => {
         }
         
         setIsCalculatingME(true);
-        setTimeout(() => {
-            const mockRates = meCarriersAtivas.map((c, idx) => ({
-                id: c.id,
-                price: 15.50 + (idx * 12.30),
-                delivery_time: 3 + idx
-            }));
-            setShippingRates(mockRates);
+        try {
+            const payload = {
+                to_postal_code: pedidoSelecionado.endereco.cep || pedidoSelecionado.endereco.zip_code,
+                height: formModal.volAltura,
+                width: formModal.volLargura,
+                length: formModal.volComprimento,
+                weight: formModal.volPeso,
+                insurance_value: formModal.insuranceValue
+            };
+            const res = await api.post('/admin/melhorenvio/calculate', payload);
+            setShippingRates(res.data.data);
             setIsCalculatingME(false);
-        }, 1200);
+        } catch (error) {
+            console.error("Erro na cotação:", error);
+            const msg = error.response?.data?.message || "Erro na cotação.";
+            alert(msg + " Verifique se as dimensões estão corretas e se o Endereço Remetente foi salvo nas Configurações.");
+            setIsCalculatingME(false);
+            setShippingRates([]);
+        }
     };
 
+    // 🟢 MUTAÇÕES
     const mutacaoGenericaStatus = useMutation({
         mutationFn: async ({ id, formData }) => await api.post(`/admin/orders/${id}/status-manual`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
         onSuccess: () => {
@@ -422,20 +537,40 @@ const AdminOrdersContent = () => {
             queryClientLocal.invalidateQueries({ queryKey: ['adminOrders'] });
             setModalAcao({ isOpen: false, tipo: null, data: {} });
             setLoadingAcao(false);
-            showToast('Simulação: A rota backend ainda não foi criada, mas a UI prosseguiu para teste.', 'success');
+            const msgErro = err.response?.data?.message || err.message;
+            showToast('Erro: ' + msgErro, 'error');
+            alert('Falha na integração: ' + msgErro);
+        }
+    });
+
+    const mutacaoEnvioManual = useMutation({
+        mutationFn: async ({ id, rastreio }) => await api.post(`/admin/orders/${id}/dispatch`, { rastreio }),
+        onSuccess: () => {
+            queryClientLocal.invalidateQueries({ queryKey: ['adminOrders'] });
+            setModalAcao({ isOpen: false, tipo: null, data: {} });
+            setLoadingAcao(false);
+            showToast('Rastreio salvo com sucesso!');
+        },
+        onError: (err) => {
+            setLoadingAcao(false);
+            alert('Erro: ' + (err.response?.data?.message || err.message));
         }
     });
 
     const processarAcaoManual = () => {
         const { tipo } = modalAcao;
         
-        if (['PAGAR', 'CANCELAR', 'INICIAR_REEMBOLSO', 'PROCESSAR_REEMBOLSO'].includes(tipo) && !formModal.motivo.trim()) {
+        if (tipo === 'PAGAR' && (!formModal.motivo.trim() || !formModal.file)) {
+            return alert("Para aprovar o pagamento manualmente é obrigatório informar o motivo e anexar o comprovante do pagamento.");
+        }
+        
+        if (['CANCELAR', 'INICIAR_REEMBOLSO', 'PROCESSAR_REEMBOLSO'].includes(tipo) && !formModal.motivo.trim()) {
             return alert("O motivo/parecer é obrigatório para manter o registro de auditoria.");
         }
         if (tipo === 'PROCESSAR_REEMBOLSO' && !formModal.file) return alert("O comprovante do estorno/reembolso é obrigatório.");
         if (tipo === 'ENTREGAR' && !formModal.file) return alert("O comprovante de entrega é obrigatório.");
 
-        if (tipo === 'DESPACHAR') {
+        if (tipo === 'CONFIGURAR_ENVIO' || tipo === 'ALTERAR_ENVIO') {
             if (!formModal.volAltura || !formModal.volLargura || !formModal.volComprimento || !formModal.volPeso) {
                 return alert("Por favor, preencha todas as dimensões de volumetria do pacote.");
             }
@@ -448,14 +583,41 @@ const AdminOrdersContent = () => {
             }
         }
 
+        if (tipo === 'ALTERAR_RASTREIO') {
+            if(!formModal.tracking) return alert("Insira o código de rastreio válido.");
+            setLoadingAcao(true);
+            mutacaoEnvioManual.mutate({ id: pedidoSelecionado.id, rastreio: formModal.tracking });
+            return;
+        }
+
+        // 🟢 FLUXO DE CANCELAR ETIQUETA NO CARRINHO DO MELHOR ENVIO
+        if (tipo === 'CANCELAR_ME_CART') {
+            setLoadingAcao(true);
+            api.post(`/admin/orders/${pedidoSelecionado.id}/cancel-me-cart`)
+                .then(() => {
+                    queryClientLocal.invalidateQueries({ queryKey: ['adminOrders'] });
+                    showToast('Etiqueta removida do carrinho com sucesso!');
+                    abrirModal('ALTERAR_ENVIO');
+                })
+                .catch((err) => {
+                    alert('Erro ao cancelar etiqueta no Melhor Envio: ' + (err.response?.data?.message || err.message));
+                })
+                .finally(() => {
+                    setLoadingAcao(false);
+                });
+            return;
+        }
+
         setLoadingAcao(true);
         const formData = new FormData();
-        formData.append('acao', tipo); 
+        
+        formData.append('acao', (tipo === 'CONFIGURAR_ENVIO' || tipo === 'ALTERAR_ENVIO') ? 'DESPACHAR' : tipo); 
+        
         if (formModal.motivo) formData.append('motivo', formModal.motivo);
         if (formModal.refundMethod) formData.append('refund_method', formModal.refundMethod);
         if (formModal.file) formData.append('arquivo', formModal.file);
 
-        if (tipo === 'DESPACHAR') {
+        if (tipo === 'CONFIGURAR_ENVIO' || tipo === 'ALTERAR_ENVIO') {
             formData.append('tracking_code', formModal.tracking);
             formData.append('dispatch_type', formModal.dispatchType);
             formData.append('doc_tipo', formModal.docTipo);
@@ -476,11 +638,20 @@ const AdminOrdersContent = () => {
     };
 
     const abrirModal = (tipo) => {
+        const defaultPackage = packagesApi.find(p => p.is_default);
+
         setFormModal({ 
-            motivo: '', tracking: '', refundMethod: 'ESTORNO', file: null,
-            dispatchType: 'MANUAL', docTipo: 'DECLARACAO', mePagarCarteira: false,
+            motivo: '', 
+            tracking: tipo === 'ALTERAR_RASTREIO' ? (pedidoSelecionado?.tracking_code || '') : '', 
+            refundMethod: 'ESTORNO', file: null,
+            dispatchType: isMEAuthenticated ? 'MELHORENVIO' : 'MANUAL', 
+            docTipo: 'DECLARACAO', mePagarCarteira: false,
             carrierId: '', meCarrierId: '',
-            volAltura: '', volLargura: '', volComprimento: '', volPeso: '',
+            packageId: defaultPackage ? defaultPackage.id : '',
+            volAltura: defaultPackage ? defaultPackage.altura : '', 
+            volLargura: defaultPackage ? defaultPackage.largura : '', 
+            volComprimento: defaultPackage ? defaultPackage.comprimento : '', 
+            volPeso: defaultPackage ? defaultPackage.peso_vazio : '',
             insuranceValue: pedidoSelecionado?.total || ''
         });
         setShippingRates([]);
@@ -543,46 +714,69 @@ const AdminOrdersContent = () => {
     }
 
     // ============================================================================
-    // MODAL DE AÇÕES MANUAIS E FLUXOS ESPECÍFICOS (EXPANDIDO PARA DESPACHO)
+    // MODAL DE AÇÕES MANUAIS E FLUXOS ESPECÍFICOS
     // ============================================================================
     const renderModalAcoes = () => {
         if (!modalAcao.isOpen) return null;
-        const isDespacho = modalAcao.tipo === 'DESPACHAR';
+        
         const isPagamento = modalAcao.tipo === 'PAGAR';
+        const isSeparar = modalAcao.tipo === 'SEPARAR';
+        const isDespacho = modalAcao.tipo === 'CONFIGURAR_ENVIO' || modalAcao.tipo === 'ALTERAR_ENVIO';
+        const isAlterarRastreio = modalAcao.tipo === 'ALTERAR_RASTREIO';
         const isEntrega = modalAcao.tipo === 'ENTREGAR';
         const isCancelar = modalAcao.tipo === 'CANCELAR';
         const isIniciaReembolso = modalAcao.tipo === 'INICIAR_REEMBOLSO';
         const isProcessaReembolso = modalAcao.tipo === 'PROCESSAR_REEMBOLSO';
+        const isCancelarMeCart = modalAcao.tipo === 'CANCELAR_ME_CART'; // 🟢 REGRA CADASTRADA
 
         let titulo = ''; let subtitulo = ''; let iconTitle = null; let confirmText = "Confirmar Ação";
-        const hasVolumetria = formModal.volAltura && formModal.volLargura && formModal.volComprimento && formModal.volPeso;
         
-        if (isPagamento) { titulo = "Aprovar Pagamento"; subtitulo = "O pedido irá para separação e os itens ficarão reservados no estoque."; iconTitle = <Icons.CreditCard className="w-5 h-5"/>; }
+        if (isPagamento) { titulo = "Aprovar Pagamento Manual"; subtitulo = "Atenção: O upload do comprovante é obrigatório para auditoria financeira."; iconTitle = <Icons.CreditCard className="w-5 h-5"/>; }
+        if (isSeparar) { titulo = "Concluir Separação"; subtitulo = "Confirme que todos os produtos já foram separados fisicamente no estoque."; iconTitle = <Icons.Box className="w-5 h-5"/>; confirmText="Confirmar Separação"; }
         if (isDespacho) { titulo = "Configurar Expedição"; subtitulo = "Selecione o método de envio e a volumetria para gerar as etiquetas."; iconTitle = <Icons.Package className="w-5 h-5"/>; confirmText="Gerar Envio e Despachar";}
+        if (isAlterarRastreio) { titulo = "Alterar Código de Rastreio"; subtitulo = "Atualize o código de rastreamento do parceiro logístico."; iconTitle = <Icons.Truck className="w-5 h-5"/>; confirmText="Atualizar Rastreio";}
         if (isEntrega) { titulo = "Confirmar Entrega"; subtitulo = "Marque o pedido como entregue (Comprovante obrigatório)."; iconTitle = <Icons.Check className="w-5 h-5"/>; }
         if (isCancelar) { titulo = "Cancelar Pedido"; subtitulo = "O pedido será cancelado e a reserva de estoque será liberada."; iconTitle = <Icons.AlertTriangle className="text-rose-500 w-6 h-6"/>; confirmText = "Confirmar Cancelamento"; }
         if (isIniciaReembolso) { titulo = "Analisar Devolução"; subtitulo = "Mudar status para Em Análise de Reembolso."; iconTitle = <Icons.AlertTriangle className="text-amber-500 w-6 h-6"/>; confirmText = "Iniciar Análise"; }
         if (isProcessaReembolso) { titulo = "Efetivar Reembolso"; subtitulo = "Aprove e documente o estorno ou saldo gerado."; iconTitle = <Icons.DollarSign className="text-rose-500 w-6 h-6"/>; confirmText = "Finalizar Ciclo"; }
+        // 🟢 APARÊNCIA DO NOVO MODAL
+        if (isCancelarMeCart) { titulo = "Remover do Carrinho (Melhor Envio)"; subtitulo = "Esta ação vai cancelar a etiqueta pendente no parceiro logístico, permitindo que você configure um novo transporte logo em seguida."; iconTitle = <Icons.AlertTriangle className="text-rose-500 w-6 h-6"/>; confirmText = "Confirmar Exclusão"; }
 
         return (
             <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm cursor-pointer" onClick={() => setModalAcao({...modalAcao, isOpen: false})} />
                 
-                <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className={`bg-white rounded-[24px] shadow-2xl p-8 w-full relative z-10 border border-slate-200 overflow-y-auto max-h-[90vh] custom-scrollbar ${isDespacho ? 'max-w-4xl' : 'max-w-md'}`}>
+                <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className={`bg-white rounded-[24px] shadow-2xl p-8 w-full relative z-10 border border-slate-200 overflow-y-auto custom-scrollbar ${isDespacho ? 'max-w-4xl max-h-[90vh]' : 'max-w-md max-h-[95vh]'}`}>
                     
                     <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isCancelar || isProcessaReembolso ? 'bg-rose-50 text-rose-500' : isIniciaReembolso ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-600'}`}>{iconTitle}</div>
-                        <h3 className={`text-xl font-black ${isCancelar || isProcessaReembolso ? 'text-rose-600' : isIniciaReembolso ? 'text-amber-600' : 'text-slate-900'}`}>{titulo}</h3>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isCancelar || isProcessaReembolso || isCancelarMeCart ? 'bg-rose-50 text-rose-500' : isIniciaReembolso ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-600'}`}>{iconTitle}</div>
+                        <h3 className={`text-xl font-black ${isCancelar || isProcessaReembolso || isCancelarMeCart ? 'text-rose-600' : isIniciaReembolso ? 'text-amber-600' : 'text-slate-900'}`}>{titulo}</h3>
                     </div>
                     <p className="text-sm font-medium text-slate-500 mb-6 leading-relaxed">{subtitulo}</p>
 
                     <div className="space-y-6 mb-8">
                         
+                        {/* 🟢 FLUXO ENVIO MANUAL (MARCAR COMO ENVIADO) */}
+                        {isAlterarRastreio && (
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Rastreio Logístico *</label>
+                                <input type="text" value={formModal.tracking} onChange={e => setFormModal({...formModal, tracking: e.target.value.toUpperCase()})} placeholder="BR123456789PT" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-sm font-mono font-bold text-slate-800 outline-none focus:border-blue-500 shadow-inner" />
+                            </div>
+                        )}
+
+                        {/* 🟢 FLUXO EXPEDIÇÃO: MELHOR ENVIO VS PARCEIROS MANUAIS */}
                         {isDespacho && (
                             <div className="space-y-8">
                                 <div className="bg-slate-50 p-1.5 rounded-xl flex border border-slate-200/60">
-                                    <button onClick={() => { setFormModal({...formModal, dispatchType: 'MANUAL'}); setShippingRates([]); }} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${formModal.dispatchType === 'MANUAL' ? 'bg-white text-slate-800 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>Parcerias Próprias</button>
-                                    <button onClick={() => setFormModal({...formModal, dispatchType: 'MELHORENVIO'})} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${formModal.dispatchType === 'MELHORENVIO' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-500 hover:text-blue-600'}`}><Icons.Truck className="w-4 h-4"/> Melhor Envio</button>
+                                    <button onClick={() => { setFormModal({...formModal, dispatchType: 'MANUAL'}); setShippingRates([]); }} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${formModal.dispatchType === 'MANUAL' ? 'bg-white text-slate-800 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
+                                        Parcerias Próprias
+                                    </button>
+                                    
+                                    {isMEAuthenticated && (
+                                        <button onClick={() => setFormModal({...formModal, dispatchType: 'MELHORENVIO'})} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 ${formModal.dispatchType === 'MELHORENVIO' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-500 hover:text-blue-600'}`}>
+                                            <Icons.Truck className="w-4 h-4"/> Melhor Envio
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -595,35 +789,42 @@ const AdminOrdersContent = () => {
                                                         <input type="radio" name="docTipo" checked={formModal.docTipo === 'DECLARACAO'} onChange={() => setFormModal({...formModal, docTipo: 'DECLARACAO'})} className="accent-blue-600 w-4 h-4"/>
                                                         <span className="text-sm font-bold text-slate-700">Declaração de Conteúdo</span>
                                                     </label>
-                                                    <button type="button" onClick={() => hasVolumetria ? window.open((api.defaults.baseURL || '') + `/admin/orders/${pedidoSelecionado.id}/preview-doc?tipo=DECLARACAO`, '_blank') : alert('Preencha a volumetria primeiro para gerar o documento.')} className="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="Pré-visualizar"><Icons.Eye className="w-4 h-4"/></button>
                                                 </div>
                                                 <div className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${formModal.docTipo === 'NFE' ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'}`}>
                                                     <label className="flex items-center gap-3 cursor-pointer flex-1">
                                                         <input type="radio" name="docTipo" checked={formModal.docTipo === 'NFE'} onChange={() => setFormModal({...formModal, docTipo: 'NFE'})} className="accent-blue-600 w-4 h-4"/>
-                                                        <span className="text-sm font-bold text-slate-700">Nota Fiscal Eletrônica (NFe)</span>
+                                                        <span className="text-sm font-bold text-slate-700">Nota Fiscal (NFe)</span>
                                                     </label>
-                                                    <button type="button" onClick={() => hasVolumetria ? window.open((api.defaults.baseURL || '') + `/admin/orders/${pedidoSelecionado.id}/preview-doc?tipo=NFE`, '_blank') : alert('Preencha a volumetria primeiro para gerar o documento.')} className="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="Pré-visualizar"><Icons.Eye className="w-4 h-4"/></button>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div>
                                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5"><Icons.Ruler className="w-4 h-4 text-amber-500"/> Volumetria do Pacote</h4>
+                                            
+                                            <div className="mb-3">
+                                                <label className="text-[10px] font-bold text-slate-500 block mb-1">Usar Embalagem Salva</label>
+                                                <select value={formModal.packageId} onChange={handlePackageChange} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 outline-none focus:border-amber-400 cursor-pointer shadow-sm">
+                                                    <option value="">Personalizada (Digitar)</option>
+                                                    {packagesApi.map(p => <option key={p.id} value={p.id}>{p.nome} ({p.altura}x{p.largura}x{p.comprimento}cm)</option>)}
+                                                </select>
+                                            </div>
+
                                             <div className="grid grid-cols-2 gap-3 mb-3">
                                                 <div className="relative">
-                                                    <input type="number" value={formModal.volAltura} onChange={e=>setFormModal({...formModal, volAltura: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Altura"/>
+                                                    <input type="number" value={formModal.volAltura} onChange={e=>setFormModal({...formModal, volAltura: e.target.value, packageId: ''})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Altura"/>
                                                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">cm</span>
                                                 </div>
                                                 <div className="relative">
-                                                    <input type="number" value={formModal.volLargura} onChange={e=>setFormModal({...formModal, volLargura: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Largura"/>
+                                                    <input type="number" value={formModal.volLargura} onChange={e=>setFormModal({...formModal, volLargura: e.target.value, packageId: ''})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Largura"/>
                                                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">cm</span>
                                                 </div>
                                                 <div className="relative">
-                                                    <input type="number" value={formModal.volComprimento} onChange={e=>setFormModal({...formModal, volComprimento: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Comprim."/>
+                                                    <input type="number" value={formModal.volComprimento} onChange={e=>setFormModal({...formModal, volComprimento: e.target.value, packageId: ''})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Comprim."/>
                                                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">cm</span>
                                                 </div>
                                                 <div className="relative">
-                                                    <input type="number" step="0.01" value={formModal.volPeso} onChange={e=>setFormModal({...formModal, volPeso: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Peso"/>
+                                                    <input type="number" step="0.001" value={formModal.volPeso} onChange={e=>setFormModal({...formModal, volPeso: e.target.value, packageId: ''})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm font-bold outline-none focus:border-amber-400" placeholder="Peso"/>
                                                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">kg</span>
                                                 </div>
                                             </div>
@@ -691,7 +892,7 @@ const AdminOrdersContent = () => {
                                                 {shippingRates.length === 0 ? (
                                                     <div className="flex flex-col items-center justify-center p-8 bg-slate-50 rounded-2xl border border-slate-200 border-dashed h-[180px]">
                                                         <Icons.Truck className="w-8 h-8 text-slate-300 mb-3" />
-                                                        <p className="text-xs font-bold text-slate-500 mb-3 text-center">Preencha a volumetria e clique em "Calcular Frete" <br/> para visualizar as opções do Melhor Envio.</p>
+                                                        <p className="text-xs font-bold text-slate-500 mb-3 text-center">Preencha a volumetria e clique em "Calcular Frete" <br/> para visualizar as opções.</p>
                                                     </div>
                                                 ) : (
                                                     <div className="flex gap-4 overflow-x-auto custom-scrollbar pb-2 pt-1 h-[180px]">
@@ -720,18 +921,6 @@ const AdminOrdersContent = () => {
                                                         })}
                                                     </div>
                                                 )}
-
-                                                {formModal.meCarrierId && (
-                                                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 mt-2">
-                                                        <label className="flex items-center gap-3 cursor-pointer">
-                                                            <input type="checkbox" checked={formModal.mePagarCarteira} onChange={(e) => setFormModal({...formModal, mePagarCarteira: e.target.checked})} className="accent-amber-600 w-4 h-4 shrink-0"/>
-                                                            <div className="flex flex-col">
-                                                                <span className="text-xs font-bold text-amber-900">Pagar etiqueta via Saldo na Carteira</span>
-                                                                <span className="text-[10px] font-medium text-amber-700">Se desmarcado, a etiqueta ficará aguardando pagamento no site do Melhor Envio.</span>
-                                                            </div>
-                                                        </label>
-                                                    </div>
-                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -739,6 +928,7 @@ const AdminOrdersContent = () => {
                             </div>
                         )}
 
+                        {/* 🟢 DEMAIS FLUXOS (PAGAMENTO, CANCELAR, REEMBOLSO) */}
                         {isProcessaReembolso && (
                             <div className="bg-rose-50 p-4 rounded-xl border border-rose-100 mb-4">
                                 <p className="text-[10px] font-bold text-rose-700 uppercase tracking-widest mb-1">Valor a Reembolsar</p>
@@ -746,9 +936,9 @@ const AdminOrdersContent = () => {
                             </div>
                         )}
 
-                        {(isPagamento || isCancelar || isIniciaReembolso || isProcessaReembolso) && (
+                        {(isPagamento || isSeparar || isCancelar || isIniciaReembolso || isProcessaReembolso) && (
                             <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Motivo / Parecer *</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Motivo / Parecer {(isSeparar || isCancelarMeCart) ? '(Opcional)' : '*'}</label>
                                 <textarea value={formModal.motivo} onChange={e => setFormModal({...formModal, motivo: e.target.value})} rows="2" placeholder="Descreva a razão desta ação..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 outline-none focus:border-blue-500 resize-none transition-all shadow-inner" />
                             </div>
                         )}
@@ -763,11 +953,11 @@ const AdminOrdersContent = () => {
                             </div>
                         )}
 
-                        {(isEntrega || isCancelar || isProcessaReembolso) && (
+                        {(isPagamento || isEntrega || isCancelar || isProcessaReembolso) && (
                             <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Anexar Comprovante {(isProcessaReembolso || isEntrega) ? '*' : '(Opcional)'}</label>
-                                <label className={`w-full flex items-center justify-center gap-2 border-2 border-dashed bg-slate-50 hover:bg-slate-100 rounded-xl p-3.5 cursor-pointer transition-colors shadow-sm ${((isProcessaReembolso || isEntrega) && !formModal.file) ? 'border-rose-300 text-rose-500' : 'border-slate-300 text-slate-600'}`}>
-                                    <Icons.Upload className={`w-5 h-5 ${((isProcessaReembolso || isEntrega) && !formModal.file) ? 'text-rose-400' : 'text-slate-400'}`} />
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Anexar Comprovante {(isProcessaReembolso || isEntrega || isPagamento) ? '*' : '(Opcional)'}</label>
+                                <label className={`w-full flex items-center justify-center gap-2 border-2 border-dashed bg-slate-50 hover:bg-slate-100 rounded-xl p-3.5 cursor-pointer transition-colors shadow-sm ${((isProcessaReembolso || isEntrega || isPagamento) && !formModal.file) ? 'border-rose-300 text-rose-500' : 'border-slate-300 text-slate-600'}`}>
+                                    <Icons.Upload className={`w-5 h-5 ${((isProcessaReembolso || isEntrega || isPagamento) && !formModal.file) ? 'text-rose-400' : 'text-slate-400'}`} />
                                     <span className="text-xs font-bold truncate">{formModal.file ? formModal.file.name : 'Selecionar Arquivo PDF/Imagem'}</span>
                                     <input type="file" accept="image/*,application/pdf" onChange={e => setFormModal({...formModal, file: e.target.files[0]})} className="hidden" />
                                 </label>
@@ -777,7 +967,7 @@ const AdminOrdersContent = () => {
 
                     <div className="flex gap-3">
                         <button type="button" onClick={() => setModalAcao({ isOpen: false, tipo: null, data: {} })} className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors shadow-sm">Voltar</button>
-                        <ProgressButton onClick={processarAcaoManual} loading={loadingAcao} text={confirmText} className={`flex-[2] text-white font-bold rounded-xl text-sm shadow-sm transition-colors ${isCancelar || isProcessaReembolso ? 'bg-rose-600 hover:bg-rose-700' : isIniciaReembolso ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'}`} />
+                        <ProgressButton onClick={processarAcaoManual} loading={loadingAcao} text={confirmText} className={`flex-[2] text-white font-bold rounded-xl text-sm shadow-sm transition-colors ${isCancelar || isProcessaReembolso || isCancelarMeCart ? 'bg-rose-600 hover:bg-rose-700' : isIniciaReembolso ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'}`} />
                     </div>
                 </motion.div>
             </div>
@@ -847,13 +1037,14 @@ const AdminOrdersContent = () => {
                     </div>
                 </div>
 
-                <div className="flex overflow-x-auto custom-scrollbar border-b border-slate-100 bg-white items-center gap-6 px-6">
-                    {TABS_INTELIGENTES.map(tab => (
-                        <button type="button" key={tab.key} onClick={() => {setAbaAtiva(tab.key); setPaginaAtual(1);}} className={`relative py-4 text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-colors ${abaAtiva === tab.key ? 'text-blue-600' : 'text-slate-400 hover:text-slate-800'}`}>
-                            {tab.label}
-                            {abaAtiva === tab.key && <motion.div layoutId="orderTabIndicator" className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-md" />}
-                        </button>
-                    ))}
+                <div className="px-6 py-4 border-b border-slate-100 bg-white overflow-hidden flex items-center justify-start md:justify-center">
+                    <div className="flex overflow-x-auto no-scrollbar bg-slate-100 p-1.5 rounded-2xl shadow-inner border border-slate-200/60 w-max max-w-full">
+                        {TABS_INTELIGENTES.map(tab => (
+                            <button type="button" key={tab.key} onClick={() => {setAbaAtiva(tab.key); setPaginaAtual(1);}} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${abaAtiva === tab.key ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800'}`}>
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="overflow-x-auto flex-1 custom-scrollbar">
@@ -936,6 +1127,32 @@ const AdminOrdersContent = () => {
         const totalItemsPages = Math.ceil((o.items?.length || 0) / itemsPerPage);
         const paginatedItems = o.items?.slice((itemsPage - 1) * itemsPerPage, itemsPage * itemsPerPage);
 
+        const getLogDate = (statusKeyword) => {
+            if (!o || !o.timeline) return null;
+            const keys = statusKeyword.split('|');
+            const log = o.timeline.slice().reverse().find(l => keys.some(k => String(l.evento || l.desc).toUpperCase().includes(k)));
+            return log ? (log.data || formatDateTimeBR(log.data_raw)) : null;
+        };
+
+        const isMelhorEnvio = deduceCarrier(o).toLowerCase().includes('melhor envio') || 
+                              deduceCarrier(o).toLowerCase().includes('correios') || 
+                              deduceCarrier(o).toLowerCase().includes('jadlog') || 
+                              deduceCarrier(o).toLowerCase().includes('loggi') || 
+                              deduceCarrier(o).toLowerCase().includes('azul') || 
+                              deduceCarrier(o).toLowerCase().includes('latam');
+
+        const imprimirDocumento = async (tipo) => {
+            try {
+                const response = await api.get(`/admin/orders/${o.id}/preview-doc?tipo=${tipo}`);
+                const janela = window.open('', '', 'width=900,height=700');
+                janela.document.write(response.data);
+                janela.document.close();
+            } catch (error) {
+                console.error("Erro ao gerar documento:", error);
+                alert("Erro ao gerar o documento fiscal. Verifique a sua conexão.");
+            }
+        };
+
         return (
             <motion.div key="detail" {...tabTransition} className="space-y-6 max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
@@ -946,7 +1163,10 @@ const AdminOrdersContent = () => {
                         <div>
                             <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2 mb-1">
                                 Pedido #{prefixo}{o.id} 
-                                <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border shadow-sm tracking-widest ${statusConfig[o.status]?.cor || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                                <button type="button" onClick={handleRefresh} className="ml-1 p-1.5 bg-slate-50 border border-slate-200 text-slate-400 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 rounded-md transition-all shadow-sm" title="Sincronizar Pedido">
+                                    <Icons.Refresh className={`w-3.5 h-3.5 ${isManualRefresh ? 'animate-spin' : ''}`} />
+                                </button>
+                                <span className={`ml-1 text-[10px] font-black uppercase px-2.5 py-1 rounded-md border shadow-sm tracking-widest ${statusConfig[o.status]?.cor || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                                     {statusConfig[o.status]?.label || o.status}
                                 </span>
                             </h2>
@@ -975,9 +1195,21 @@ const AdminOrdersContent = () => {
                                     <Icons.AlertTriangle className="w-5 h-5" />
                                     <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Cancelar & Reembolsar</span></span>
                                 </button>
-                                <button type="button" onClick={() => abrirModal('DESPACHAR')} className="h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
+                                <button type="button" onClick={() => abrirModal('SEPARAR')} className="h-12 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
+                                    <Icons.Package className="w-5 h-5" />
+                                    <span className="whitespace-nowrap font-bold text-sm">Finalizar Separação</span>
+                                </button>
+                            </>
+                        )}
+                        {o.status === 'SEPARADO' && (
+                            <>
+                                <button type="button" onClick={() => abrirModal('INICIAR_REEMBOLSO')} className="group relative h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-amber-50 hover:border-amber-200 text-amber-500 rounded-xl shadow-sm transition-all px-4">
+                                    <Icons.AlertTriangle className="w-5 h-5" />
+                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Iniciar Reembolso</span></span>
+                                </button>
+                                <button type="button" onClick={() => abrirModal('CONFIGURAR_ENVIO')} className="h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
                                     <Icons.Truck className="w-5 h-5" />
-                                    <span className="whitespace-nowrap font-bold text-sm">Avançar p/ Despacho</span>
+                                    <span className="whitespace-nowrap font-bold text-sm">Configurar Expedição</span>
                                 </button>
                             </>
                         )}
@@ -1008,15 +1240,20 @@ const AdminOrdersContent = () => {
                     </div>
                 </div>
 
-                <RenderStepper status={o.status} pedido={o} />
+                <RenderStepper status={o.status} pedido={o} getLogDate={getLogDate} />
 
-                <div className="flex border-b border-slate-200 gap-8 overflow-x-auto no-scrollbar pb-1 px-2">
-                    {['RESUMO', 'LOGISTICA', 'AUDITORIA'].map((tab) => (
-                        <button key={tab} type="button" onClick={() => setDetailTab(tab)} className={`pb-3 text-[11px] font-bold uppercase tracking-widest relative whitespace-nowrap transition-colors ${detailTab === tab ? 'text-blue-600' : 'text-slate-400 hover:text-slate-800'}`}>
-                            {tab === 'LOGISTICA' ? 'Destinatário & Logística' : tab === 'AUDITORIA' ? 'Timeline (Audit)' : tab}
-                            {detailTab === tab && <motion.div layoutId="detailTab" className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-md" />}
-                        </button>
-                    ))}
+                <div className="flex overflow-x-auto no-scrollbar bg-slate-100 p-1.5 rounded-2xl shadow-inner border border-slate-200/60 mb-6 w-max max-w-full">
+                    {['RESUMO', 'LOGISTICA', 'AUDITORIA'].map((tab) => {
+                        const isActive = detailTab === tab;
+                        const label = tab === 'LOGISTICA' ? 'Destinatário & Logística' : tab === 'AUDITORIA' ? 'Timeline (Audit)' : tab;
+                        const Icon = tab === 'RESUMO' ? Icons.Package : tab === 'LOGISTICA' ? Icons.Truck : Icons.Activity;
+                        
+                        return (
+                            <button key={tab} type="button" onClick={() => setDetailTab(tab)} className={`px-6 py-3 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all flex items-center gap-2 ${isActive ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800'}`}>
+                                <Icon className="w-4 h-4" /> {label}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -1102,58 +1339,177 @@ const AdminOrdersContent = () => {
                             </div>
 
                             <div className="space-y-6 flex flex-col">
-                                <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 shadow-sm">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Icons.Tag className="w-4 h-4" /> Cupons e Vantagens</h4>
-                                    <div className="space-y-3">
-                                        {parseCoupons(o.coupons || o.cupons).length > 0 ? (
-                                            parseCoupons(o.coupons || o.cupons).map((cupom, idx) => {
-                                                const isVip = cupom.tipo && String(cupom.tipo).toUpperCase().includes('VIP');
-                                                const theme = isVip ? 'amber' : 'purple';
-                                                return (
-                                                    <div key={idx} className={`bg-${theme}-50/30 border border-${theme}-100 p-3.5 rounded-xl flex justify-between items-center shadow-sm`}>
-                                                        <div className="flex items-center gap-2.5">
-                                                            <div className={`w-8 h-8 rounded-full bg-${theme}-100 flex items-center justify-center shrink-0`}>
-                                                                {isVip ? <Icons.Crown className={`w-4 h-4 text-${theme}-600`}/> : <Icons.Tag className={`w-4 h-4 text-${theme}-600`}/>}
-                                                            </div>
-                                                            <div>
-                                                                <strong className={`text-[11px] font-black text-${theme}-900 block`}>{cupom.nome || cupom.codigo || 'Benefício'}</strong>
-                                                                <span className={`text-[8px] font-black text-${theme}-600 uppercase tracking-widest block mt-0.5`}>{cupom.tipo || 'CUPOM'}</span>
-                                                            </div>
+                                {(() => {
+                                    // 1. Extrai os valores originais
+                                    const subtotalBruto = safeNum(o.subtotal);
+                                    const freteBruto = safeNum(o.frete_valor || o.frete);
+                                    const totalBruto = subtotalBruto + freteBruto;
+
+                                    // 2. Captura os cupons
+                                    const cuponsLista = parseCoupons(o.coupons || o.cupons || o.applied_coupons);
+                                    let reqCupomLoja = 0, reqCupomFrete = 0, reqVipLoja = 0, reqVipFrete = 0;
+
+                                    cuponsLista.forEach(c => {
+                                        const tipo = String(c.tipo).toUpperCase();
+                                        const val = safeNum(c.valor || c.desconto);
+                                        if (tipo === 'LOJA') reqCupomLoja += val;
+                                        else if (tipo === 'FRETE') reqCupomFrete += val;
+                                        else if (tipo === 'LOJA VIP' || (tipo.includes('VIP') && !tipo.includes('FRETE'))) reqVipLoja += val;
+                                        else if (tipo === 'FRETE VIP' || (tipo.includes('VIP') && tipo.includes('FRETE'))) reqVipFrete += val;
+                                    });
+
+                                    // 4. LÓGICA ANTI-FRAUDE EM CASCATA
+                                    let saldoFrete = freteBruto;
+                                    const descontoFreteReal = Math.min(reqCupomFrete, saldoFrete);
+                                    saldoFrete -= descontoFreteReal;
+                                    const descontoVipFreteReal = Math.min(reqVipFrete, saldoFrete);
+                                    saldoFrete -= descontoVipFreteReal;
+
+                                    let saldoLoja = subtotalBruto;
+                                    const descontoLojaReal = Math.min(reqCupomLoja, saldoLoja);
+                                    saldoLoja -= descontoLojaReal;
+                                    const descontoVipLojaReal = Math.min(reqVipLoja, saldoLoja);
+                                    saldoLoja -= descontoVipLojaReal;
+
+                                    const totalLiquidoAuditoria = saldoLoja + saldoFrete;
+
+                                    const cuponsReaisAplicados = [];
+                                    cuponsLista.forEach(c => {
+                                        const tipo = String(c.tipo).toUpperCase();
+                                        let valorAplicado = 0;
+                                        if (tipo === 'LOJA' && descontoLojaReal > 0) valorAplicado = Math.min(safeNum(c.valor || c.desconto), descontoLojaReal);
+                                        else if (tipo === 'FRETE' && descontoFreteReal > 0) valorAplicado = Math.min(safeNum(c.valor || c.desconto), descontoFreteReal);
+                                        else if ((tipo === 'LOJA VIP' || (tipo.includes('VIP') && !tipo.includes('FRETE'))) && descontoVipLojaReal > 0) valorAplicado = Math.min(safeNum(c.valor || c.desconto), descontoVipLojaReal);
+                                        else if ((tipo === 'FRETE VIP' || (tipo.includes('VIP') && tipo.includes('FRETE'))) && descontoVipFreteReal > 0) valorAplicado = Math.min(safeNum(c.valor || c.desconto), descontoVipFreteReal);
+                                        
+                                        if (valorAplicado > 0) {
+                                            cuponsReaisAplicados.push({ ...c, valorAplicado });
+                                        }
+                                    });
+
+                                    return (
+                                        <>
+                                            <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 shadow-sm flex flex-col max-h-[340px]">
+                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0"><Icons.Tag className="w-4 h-4" /> Cupons e Vantagens</h4>
+                                                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3 mb-2">
+                                                    {cuponsReaisAplicados.length > 0 ? (
+                                                        cuponsReaisAplicados.map((cupom, idx) => {
+                                                            const isVip = cupom.tipo && String(cupom.tipo).toUpperCase().includes('VIP');
+                                                            const theme = isVip ? 'amber' : 'purple';
+                                                            return (
+                                                                <div key={idx} className={`bg-${theme}-50/30 border border-${theme}-100 p-3.5 rounded-xl flex justify-between items-center shadow-sm`}>
+                                                                    <div className="flex items-center gap-2.5">
+                                                                        <div className={`w-8 h-8 rounded-full bg-${theme}-100 flex items-center justify-center shrink-0`}>
+                                                                            {isVip ? <Icons.Crown className={`w-4 h-4 text-${theme}-600`}/> : <Icons.Tag className={`w-4 h-4 text-${theme}-600`}/>}
+                                                                        </div>
+                                                                        <div>
+                                                                            <strong className={`text-[11px] font-black text-${theme}-900 block`}>{cupom.nome || cupom.codigo || 'Benefício'}</strong>
+                                                                            <span className={`text-[8px] font-black text-${theme}-600 uppercase tracking-widest block mt-0.5`}>{cupom.tipo || 'CUPOM'}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">-{formatCurrency(cupom.valorAplicado)}</span>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <div className="h-[60px] flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-slate-200 border-dashed text-center">
+                                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum benefício aplicado</p>
                                                         </div>
-                                                        <span className="text-[11px] font-black text-emerald-600 bg-white px-2 py-1 rounded-lg shadow-sm border border-emerald-100/60 shrink-0">-{formatCurrency(cupom.valor || cupom.desconto)}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8">
+                                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-5"><Icons.DollarSign className="w-4 h-4 text-emerald-500"/> Composição Fin. & Auditoria</h3>
+                                                <div className="space-y-3.5 text-xs font-medium text-slate-600">
+                                                    <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
+                                                        <span>Subtotal Produtos:</span>
+                                                        <span className="text-slate-800 font-bold text-sm">{formatCurrency(subtotalBruto)}</span>
                                                     </div>
-                                                );
-                                            })
-                                        ) : (
-                                            <div className="h-[60px] flex flex-col items-center justify-center bg-slate-50 rounded-2xl border border-slate-200 border-dashed text-center">
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nenhum benefício aplicado</p>
+                                                    <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
+                                                        <span>Frete Cobrado:</span>
+                                                        <span className="text-slate-800 font-bold text-sm">{formatCurrency(freteBruto)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center pb-3 border-b-2 border-slate-800 border-dashed">
+                                                        <span className="font-bold uppercase tracking-wider text-[10px]">Total Bruto:</span>
+                                                        <span className="text-slate-900 font-black">{formatCurrency(totalBruto)}</span>
+                                                    </div>
+
+                                                    {descontoLojaReal > 0 && (
+                                                        <div className="flex justify-between items-center text-rose-500">
+                                                            <span className="font-bold uppercase tracking-wider text-[10px]">(-) Cupom Loja:</span>
+                                                            <span className="font-black">-{formatCurrency(descontoLojaReal)}</span>
+                                                        </div>
+                                                    )}
+                                                    {descontoFreteReal > 0 && (
+                                                        <div className="flex justify-between items-center text-rose-500">
+                                                            <span className="font-bold uppercase tracking-wider text-[10px]">(-) Cupom Frete:</span>
+                                                            <span className="font-black">-{formatCurrency(descontoFreteReal)}</span>
+                                                        </div>
+                                                    )}
+                                                    {descontoVipLojaReal > 0 && (
+                                                        <div className="flex justify-between items-center text-indigo-500">
+                                                            <span className="font-bold uppercase tracking-wider text-[10px]">(-) Benefício VIP (Loja):</span>
+                                                            <span className="font-black">-{formatCurrency(descontoVipLojaReal)}</span>
+                                                        </div>
+                                                    )}
+                                                    {descontoVipFreteReal > 0 && (
+                                                        <div className="flex justify-between items-center text-indigo-500">
+                                                            <span className="font-bold uppercase tracking-wider text-[10px]">(-) Benefício VIP (Frete):</span>
+                                                            <span className="font-black">-{formatCurrency(descontoVipFreteReal)}</span>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex justify-between items-end pt-3 mt-3 border-t border-slate-100">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-slate-800 font-black uppercase tracking-widest text-xs">Líquido Recebido:</span>
+                                                            {safeNum(o.total) !== totalLiquidoAuditoria && (
+                                                                <span className="text-[9px] text-rose-500 mt-1">
+                                                                    *Divergência Banco: {formatCurrency(o.total)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-2xl text-emerald-600 font-black">{formatCurrency(totalLiquidoAuditoria)}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8">
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-5"><Icons.DollarSign className="w-4 h-4 text-emerald-500"/> Composição Financeira</h3>
-                                    <div className="space-y-3.5 text-xs font-medium text-slate-600">
-                                        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100"><span>Subtotal Produtos:</span><span className="text-slate-800 font-bold text-sm">{formatCurrency(o.subtotal)}</span></div>
-                                        <div className="flex justify-between items-center pb-2.5 border-b border-slate-100"><span>Frete Cobrado:</span><span className="text-slate-800 font-bold text-sm">{formatCurrency(o.frete_valor || o.frete)}</span></div>
-                                        {parseCoupons(o.coupons || o.cupons).map((cupom, idx) => (
-                                            <div key={idx} className="flex justify-between items-center pb-2.5 border-b border-slate-100 text-rose-500">
-                                                <span className="font-bold uppercase tracking-wider text-[10px]">(-) Desc. {cupom.tipo || 'Cupom'}:</span>
-                                                <span className="font-black text-sm">-{formatCurrency(cupom.valor || cupom.desconto)}</span>
+
+                                            {/* GATEWAY & COMPROVANTE (Se Houver) */}
+                                            <div className="bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="space-y-1">
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Gateway de Pagamento</span>
+                                                        <span className="text-sm font-black text-slate-800 block">"{o.pagamento?.payment_gateway || o.pagamento?.gateway || 'Desconhecido'}"</span>
+                                                    </div>
+                                                    <Icons.CheckCircle className="w-6 h-6 text-emerald-500 opacity-60" />
+                                                </div>
+                                                <div className="space-y-1 pb-4 border-b border-slate-100">
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Pagamento Via</span>
+                                                    <span className="text-xs font-bold text-slate-700 block uppercase">{o.pagamento_metodo || o.pagamento?.metodo}</span>
+                                                    {(o.pagamento_parcelas > 1 || o.pagamento?.parcelas > 1) ? (
+                                                        <span className="text-[10px] font-medium text-slate-500">Parcelado em {o.pagamento_parcelas || o.pagamento?.parcelas}x de {formatCurrency(o.pagamento?.valor_parcela || (o.total / (o.pagamento_parcelas || 1)))}</span>
+                                                    ) : <span className="text-[10px] font-medium text-slate-500">Pagamento à vista / Único</span>}
+                                                </div>
+
+                                                {/* Mostra botão para baixar comprovante de pagamento se existir no histórico */}
+                                                {o.comprovante_pagamento && (
+                                                    <div className="pt-4 mt-4 border-t border-slate-100">
+                                                        <a href={o.comprovante_pagamento} target="_blank" rel="noreferrer" className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition-colors border border-slate-200 shadow-sm">
+                                                            <Icons.Download className="w-4 h-4" /> Baixar Comprovante de Pagamento
+                                                        </a>
+                                                    </div>
+                                                )}
                                             </div>
-                                        ))}
-                                        <div className="flex justify-between items-center pt-3">
-                                            <span className="text-slate-800 font-black uppercase tracking-widest text-xs">Líquido Recebido:</span>
-                                            <span className="text-2xl text-emerald-600 font-black">{formatCurrency(o.total)}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </motion.div>
                     )}
 
                     {detailTab === 'LOGISTICA' && (
                         <motion.div key="LOGISTICA" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
                             <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8">
                                 <h3 className="font-black text-slate-800 flex items-center gap-2 mb-6 text-base"><Icons.MapPin className="w-5 h-5 text-rose-500"/> Endereço do Destinatário</h3>
                                 <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-3 shadow-sm">
@@ -1168,44 +1524,180 @@ const AdminOrdersContent = () => {
                                     )}
                                 </div>
                             </div>
-                            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8">
-                                <h3 className="font-black text-slate-800 flex items-center gap-2 mb-6 text-base"><Icons.Truck className="w-5 h-5 text-blue-500"/> Informações da Transportadora</h3>
-                                <div className="space-y-4">
-                                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
-                                        <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-200">
-                                            {getCarrierLogo(o.carrier) ? (
-                                                <img src={getCarrierLogo(o.carrier)} className="h-8 object-contain" alt="Transportadora" />
-                                            ) : (
-                                                <Icons.Box className="w-8 h-8 text-slate-400"/>
-                                            )}
-                                            <div className="text-right">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Status Logístico Atual</span>
-                                                <span className="text-lg font-black text-slate-800">{o.carrier || 'Aguardando Despacho'}</span>
+
+                            {/* CAIXA DE INFORMAÇÕES DA TRANSPORTADORA SUPERIOR */}
+                            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-5 sm:p-6 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10"></div>
+                                <h3 className="font-black text-slate-800 flex items-center gap-2 mb-4 text-sm relative z-10"><Icons.Truck className="w-4 h-4 text-blue-500"/> Informações da Logística</h3>
+                                
+                                <div className="space-y-4 relative z-10">
+                                    {(!o.carrier && !o.tracking_code) ? (
+                                        <div className="flex flex-col items-center justify-center bg-slate-50 border border-slate-100 border-dashed rounded-xl p-6 text-center shadow-sm">
+                                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
+                                                <Icons.Box className="w-6 h-6 text-slate-300" />
+                                            </div>
+                                            <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Aguardando Configuração</span>
+                                            <p className="text-[10px] font-bold text-slate-400 mt-1 max-w-xs leading-relaxed">Nenhum envio foi gerado ou o anterior foi removido. Configure a expedição para visualizar a transportadora.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
+                                            
+                                            {/* LOGO REDUZIDO E ADAPTADO */}
+                                            <div className="w-16 h-12 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1.5 shadow-sm shrink-0">
+                                                {getCarrierLogo(deduceCarrier(o)) ? (
+                                                    <img src={getCarrierLogo(deduceCarrier(o))} className="w-full h-full object-contain mix-blend-multiply" alt="Transportadora" />
+                                                ) : (
+                                                    <Icons.Box className="w-6 h-6 text-slate-300"/>
+                                                )}
+                                            </div>
+
+                                            <div className="flex-1 w-full text-center sm:text-left space-y-1">
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Transportadora Escolhida</span>
+                                                <h4 className="text-sm font-black text-slate-800 leading-tight">{deduceCarrier(o) || 'Logística Manual'}</h4>
+                                                
+                                                <div className="mt-2 pt-2 border-t border-slate-200/60 flex flex-col sm:flex-row items-center gap-3 justify-center sm:justify-start">
+                                                    <div>
+                                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
+                                                            {isMelhorEnvio && String(o.tracking_code).length > 20 ? 'Protocolo / Carrinho (ME)' : 'Cód. Rastreio / Integração'}
+                                                        </span>
+                                                        <span className="font-mono text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 inline-block shadow-sm">
+                                                            {o.tracking_code || 'Pendente'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="hidden sm:block w-px h-6 bg-slate-200"></div>
+                                                    <div>
+                                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Status Logístico</span>
+                                                        <span className={`text-[11px] font-black block ${o.status === 'SEPARADO' ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                                            {o.status === 'SEPARADO' ? 'Aguardando Pagamento/Envio' : (getLogDate('DESPACHADO|ENVIADO') || 'Enviado')}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        {o.tracking_code && <div className="mt-3 pt-3 border-t border-slate-200"><span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Rastreio</span><span className="font-mono font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block border border-blue-100">{o.tracking_code}</span></div>}
-                                    </div>
+                                    )}
+
+                                    {/* 🟢 MOSTRA O COMPROVANTE DE ASSINATURA/ENTREGA SE HOUVER */}
+                                    {o.status === 'ENTREGUE' && o.comprovante_entrega && (
+                                        <div className="mt-4 pt-4 border-t border-slate-200/60">
+                                            <a href={o.comprovante_entrega} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold py-2.5 rounded-xl text-xs transition-colors border border-emerald-200 shadow-sm">
+                                                <Icons.Download className="w-4 h-4" /> Baixar Comprovante de Assinatura/Entrega
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* 🟢 PAINEL DE GESTÃO DE ETIQUETAS (Apenas quando Despachado) */}
-                            {o.status === 'DESPACHADO' && (
-                                <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8 mt-6 col-span-1 md:col-span-2">
-                                    <h3 className="font-black text-slate-800 flex items-center gap-2 mb-4 text-base"><Icons.Printer className="w-5 h-5 text-blue-500"/> Gestão de Etiquetas e Documentos</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        <button className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-colors group">
-                                            <Icons.FileText className="w-6 h-6 text-slate-400 group-hover:text-blue-500 mb-2"/>
-                                            <span className="text-xs font-bold text-slate-700">Imprimir Etiqueta</span>
-                                        </button>
-                                        <button className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-colors group">
-                                            <Icons.FileText className="w-6 h-6 text-slate-400 group-hover:text-blue-500 mb-2"/>
-                                            <span className="text-xs font-bold text-slate-700">Declaração / NFe</span>
-                                        </button>
-                                        <button className="flex flex-col items-center justify-center p-4 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors group">
-                                            <Icons.DollarSign className="w-6 h-6 text-amber-500 mb-2"/>
-                                            <span className="text-xs font-bold text-amber-700">Pagar Etiqueta</span>
-                                            <span className="text-[9px] text-amber-600">(Melhor Envio)</span>
-                                        </button>
+                            {/* 🟢 PAINEL DE GESTÃO DE ETIQUETAS E FISCAL */}
+                            {['DESPACHADO', 'ENTREGUE'].includes(o.status) && (
+                                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-[24px] border border-slate-700 shadow-xl p-6 sm:p-8 mt-6 col-span-1 md:col-span-2 relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent pointer-events-none"></div>
+                                    
+                                    <h3 className="font-black text-white flex items-center gap-2 mb-6 text-lg relative z-10"><Icons.Printer className="w-6 h-6 text-blue-400"/> Central Fiscal e Etiquetas</h3>
+                                    
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
+                                        
+                                        <motion.button 
+                                            whileTap={{ scale: 0.95 }}
+                                            type="button"
+                                            onClick={() => imprimirDocumento('DECLARACAO')}
+                                            className="flex flex-col items-center justify-center p-4 bg-slate-800/80 border border-slate-600 hover:border-blue-400 hover:bg-slate-700 rounded-xl transition-colors shadow-sm text-center"
+                                        >
+                                            <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center mb-2 shadow-inner">
+                                                <Icons.QrCode className="w-5 h-5 text-slate-300"/>
+                                            </div>
+                                            <span className="text-[11px] font-bold text-white mb-0.5">Declaração Conteúdo</span>
+                                            <span className="text-[9px] font-medium text-slate-400">c/ QR Code Seguro</span>
+                                        </motion.button>
+
+                                        <motion.button 
+                                            whileTap={{ scale: 0.95 }}
+                                            type="button"
+                                            onClick={() => alert("MÓDULO FUTURO: A emissão de NFe A1 será disponibilizada com o seu Certificado Digital.")}
+                                            className="flex flex-col items-center justify-center p-4 bg-slate-800/80 border border-slate-600 hover:border-emerald-400 hover:bg-slate-700 rounded-xl transition-colors shadow-sm text-center"
+                                        >
+                                            <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center mb-2 shadow-inner">
+                                                <Icons.FileText className="w-5 h-5 text-slate-300"/>
+                                            </div>
+                                            <span className="text-[11px] font-bold text-white mb-0.5">Emitir NFe (A1)</span>
+                                            <span className="text-[9px] font-medium text-slate-400">Módulo ERP Avançado</span>
+                                        </motion.button>
+
+                                        {isMelhorEnvio ? (
+                                            <>
+                                                <motion.a 
+                                                    whileTap={{ scale: 0.95 }}
+                                                    href="https://sandbox.melhorenvio.com.br/painel/carrinho" 
+                                                    target="_blank" rel="noreferrer"
+                                                    className="flex flex-col items-center justify-center p-4 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 rounded-xl transition-colors shadow-sm text-center"
+                                                >
+                                                    <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center mb-2 shadow-inner">
+                                                        <Icons.DollarSign className="w-5 h-5 text-amber-400"/>
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-white mb-0.5">Pagar Etiqueta (ME)</span>
+                                                    <span className="text-[9px] font-medium text-amber-200/60">Finalizar no Sandbox</span>
+                                                </motion.a>
+
+                                                <motion.a 
+                                                    whileTap={{ scale: 0.95 }}
+                                                    href="https://sandbox.melhorenvio.com.br/painel/envios/liberados" 
+                                                    target="_blank" rel="noreferrer"
+                                                    className="flex flex-col items-center justify-center p-4 bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 rounded-xl transition-colors shadow-sm text-center"
+                                                >
+                                                    <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center mb-2 shadow-inner">
+                                                        <Icons.Printer className="w-5 h-5 text-blue-400"/>
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-white mb-0.5">Imprimir Etiqueta Final</span>
+                                                    <span className="text-[9px] font-medium text-blue-200/60">DACE e Romaneio (ME)</span>
+                                                </motion.a>
+
+                                                {/* 🟢 O BOTÃO DE CANCELAR ETIQUETA COM MODAL PREMIUM */}
+                                                {(o.tracking_code && String(o.tracking_code).length > 20) && (
+                                                    <div className="col-span-1 sm:col-span-4 mt-2 flex justify-end">
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => abrirModal('CANCELAR_ME_CART')} 
+                                                            className="text-[10px] font-bold text-rose-400 hover:text-rose-300 underline underline-offset-2 transition-colors"
+                                                        >
+                                                            Cancelar Etiqueta no Carrinho e Alterar Transporte
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <motion.button 
+                                                    whileTap={{ scale: 0.95 }}
+                                                    type="button"
+                                                    onClick={() => imprimirDocumento('ETIQUETA_MANUAL')}
+                                                    className="flex flex-col items-center justify-center p-4 bg-slate-800/80 border border-slate-600 hover:border-sky-400 hover:bg-slate-700 rounded-xl transition-colors shadow-sm text-center"
+                                                >
+                                                    <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center mb-2 shadow-inner">
+                                                        <Icons.Printer className="w-5 h-5 text-slate-300"/>
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-white mb-0.5">Etiqueta & Romaneio</span>
+                                                    <span className="text-[9px] font-medium text-slate-400">c/ QR Code (Parceiro)</span>
+                                                </motion.button>
+
+                                                <motion.button 
+                                                    whileTap={{ scale: 0.95 }}
+                                                    type="button"
+                                                    onClick={() => abrirModal('ALTERAR_RASTREIO')}
+                                                    className="flex flex-col items-center justify-center p-4 bg-indigo-600/20 border border-indigo-500/30 hover:bg-indigo-600/30 rounded-xl transition-colors shadow-sm text-center"
+                                                >
+                                                    <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center mb-2 shadow-inner">
+                                                        <Icons.Edit3 className="w-5 h-5 text-indigo-400"/>
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-white mb-0.5">Alterar Rastreio</span>
+                                                    <span className="text-[9px] font-medium text-indigo-200/60">Atualizar Código Local</span>
+                                                </motion.button>
+
+                                                <div className="col-span-1 sm:col-span-4 mt-2 flex justify-end">
+                                                    <button type="button" onClick={() => abrirModal('ALTERAR_ENVIO')} className="text-[10px] font-bold text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">
+                                                        Alterar Modo de Transporte (Voltar)
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -1350,23 +1842,17 @@ const AdminOrdersContent = () => {
     );
 };
 
-const RenderStepper = ({ status, pedido }) => {
+const RenderStepper = ({ status, pedido, getLogDate }) => {
     const [isInitialMount, setIsInitialMount] = useState(true);
     useEffect(() => { setIsInitialMount(false); }, []);
 
-    const steps = ['A_PAGAR', 'SEPARACAO', 'DESPACHADO', 'ENTREGUE'];
-    const flowLabels = ['A Pagar', 'Em Separação', 'Enviado', 'Entregue'];
+    const steps = ['A_PAGAR', 'SEPARACAO', 'SEPARADO', 'DESPACHADO', 'ENTREGUE'];
+    const flowLabels = ['A Pagar', 'Em Separação', 'Separado', 'Enviado', 'Entregue'];
     
     let currentIndex = steps.indexOf(status);
     if (currentIndex === -1 && ['CANCELADO', 'REEMBOLSADO', 'EM_ANALISE_REEMBOLSO'].includes(status)) currentIndex = 0; 
     
     const progressPercentage = currentIndex === -1 ? 0 : (currentIndex / (steps.length - 1)) * 100;
-
-    const getLogDate = (statusKeyword) => {
-        if (!pedido || !pedido.timeline) return null;
-        const log = pedido.timeline.slice().reverse().find(l => String(l.evento || l.desc).toUpperCase().includes(statusKeyword));
-        return log ? (log.data || formatDateTimeBR(log.data_raw)) : null;
-    }
 
     if (status === 'EM_ANALISE_REEMBOLSO') return (
         <div className="text-amber-700 font-bold text-sm bg-amber-50 p-6 rounded-[24px] border border-amber-200 text-center shadow-sm mb-6">
@@ -1422,7 +1908,7 @@ const RenderStepper = ({ status, pedido }) => {
 
     return (
         <div className="relative overflow-hidden p-6 sm:p-8 bg-slate-50/50 rounded-[24px] border border-slate-100 mb-6">
-            <div className="relative z-10 w-full max-w-2xl mx-auto flex items-start justify-between pb-8 pt-2">
+            <div className="relative z-10 w-full max-w-3xl mx-auto flex items-start justify-between pb-8 pt-2">
                 <div className="absolute top-[18px] left-0 w-full h-1 bg-slate-200 rounded-full z-0" />
                 <motion.div className="absolute top-[18px] left-0 h-1 bg-sky-400 rounded-full z-0 shadow-[0_0_10px_rgba(56,189,248,0.4)]" initial={isInitialMount ? { width: 0 } : false} animate={{ width: `${progressPercentage}%` }} transition={{ duration: 1, ease: "easeOut" }} />
                 {steps.map((step, idx) => {
@@ -1432,9 +1918,10 @@ const RenderStepper = ({ status, pedido }) => {
                     let dateStr = null;
                     if (isCompleted) {
                         if (idx === 0) dateStr = formatDateBR(pedido?.data_raw || pedido?.created_at);
-                        if (idx === 1) dateStr = getLogDate('PAGAMENTO') || getLogDate('SEPARAÇÃO');
-                        if (idx === 2) dateStr = getLogDate('DESPACHADO');
-                        if (idx === 3) dateStr = getLogDate('ENTREGUE');
+                        if (idx === 1) dateStr = getLogDate('PAGAMENTO|PAGO|SEPARA');
+                        if (idx === 2) dateStr = getLogDate('SEPARADO|EXPEDIÇÃO|MELHOR ENVIO');
+                        if (idx === 3) dateStr = getLogDate('DESPACHADO|ENVIADO');
+                        if (idx === 4) dateStr = getLogDate('ENTREGUE');
                     }
 
                     return (
