@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MenuConfig;
 use App\Models\NavigationMenu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -10,18 +11,62 @@ use App\Services\CacheFallbackService;
 
 class NavigationMenuController extends Controller
 {
-    // Retorna o Menu ordenado para a tela
-    public function index()
+    // GET /api/admin/menu
+    public function getConfigs()
     {
-        $menus = CacheFallbackService::remember('admin_navigation_menu', 60 * 24, function () {
-            return NavigationMenu::orderBy('ordem', 'asc')->get();
-        });
-        
-        return response()->json(['status' => 'success', 'data' => $menus]);
+        $configs = MenuConfig::orderBy('created_at', 'desc')->get();
+        return response()->json(['status' => 'success', 'data' => $configs]);
     }
 
-    public function sync(Request $request)
+    // POST /api/admin/menu
+    public function storeConfig(Request $request)
     {
+        $request->validate(['nome' => 'required|string|max:255']);
+        $config = MenuConfig::create(['nome' => $request->nome]);
+        return response()->json(['status' => 'success', 'data' => $config, 'message' => 'Menu criado com sucesso.']);
+    }
+
+    // PUT /api/admin/menu/{id}
+    public function updateConfig(Request $request, $id)
+    {
+        $request->validate(['nome' => 'required|string|max:255']);
+        $config = MenuConfig::findOrFail($id);
+        $config->update(['nome' => $request->nome]);
+        return response()->json(['status' => 'success', 'message' => 'Menu renomeado com sucesso.']);
+    }
+
+    // DELETE /api/admin/menu/{id}
+    public function destroyConfig($id)
+    {
+        $config = MenuConfig::findOrFail($id);
+        
+        // Remove imagens de banner associadas aos itens desse menu
+        foreach ($config->items as $item) {
+            if ($item->banner) {
+                $caminhoRelativo = str_replace(asset('storage/') . '/', '', $item->banner);
+                Storage::disk('public')->delete($caminhoRelativo);
+            }
+        }
+        
+        $config->delete(); // Cascade cuidará de deletar os items no DB, mas removemos as imgs acima
+        CacheFallbackService::forget('storefront_navigation_menu_active');
+        
+        return response()->json(['status' => 'success', 'message' => 'Menu removido com sucesso.']);
+    }
+
+    // GET /api/admin/menu/{id}/items
+    public function getItems($id)
+    {
+        $config = MenuConfig::findOrFail($id);
+        $items = $config->items()->orderBy('ordem', 'asc')->get();
+        return response()->json(['status' => 'success', 'data' => $items]);
+    }
+
+    // POST /api/admin/menu/{id}/sync
+    public function syncItems(Request $request, $id)
+    {
+        $config = MenuConfig::findOrFail($id);
+
         $request->validate([
             'items.*.banner_file' => 'nullable|file|mimes:jpeg,png,webp|max:4096',
         ], [
@@ -34,21 +79,19 @@ class NavigationMenuController extends Controller
         $idsMantidos = [];
 
         foreach ($items as $index => $item) {
-            // O React gera IDs como 17293819283 (Date.now) para links novos não salvos.
-            // Se o ID for menor que 1 bilhão, sabemos que é um ID real do MySQL.
             $menuId = (isset($item['id']) && $item['id'] < 1000000000) ? $item['id'] : null;
             
             $dados = [
+                'menu_config_id' => $config->id,
                 'nome' => $item['nome'],
                 'link' => $item['link'] ?? null,
                 'categoria_vinculada' => $item['categoria_vinculada'] ?? null,
                 'depth' => (int) $item['depth'],
-                'ordem' => $index, // A posição no array do React dita a ordem real
+                'ordem' => $index,
                 'parent_id' => isset($item['parent_id']) && $item['parent_id'] !== '' ? $item['parent_id'] : null,
                 'ativo' => isset($item['ativo']) ? filter_var($item['ativo'], FILTER_VALIDATE_BOOLEAN) : true,
             ];
 
-            // Processa o Upload do Banner Promocional, se houver arquivo físico novo
             if ($request->hasFile("items.{$index}.banner_file")) {
                 $path = $request->file("items.{$index}.banner_file")->store('menus', 'public');
                 $dados['banner'] = asset('storage/' . $path);
@@ -57,7 +100,7 @@ class NavigationMenuController extends Controller
             }
 
             if ($menuId) {
-                $menu = NavigationMenu::find($menuId);
+                $menu = NavigationMenu::where('id', $menuId)->where('menu_config_id', $config->id)->first();
                 if ($menu) {
                     $menu->update($dados);
                     $idsMantidos[] = $menu->id;
@@ -68,8 +111,8 @@ class NavigationMenuController extends Controller
             }
         }
 
-        // Deleta do Banco de Dados os links que o Lojista removeu na tela
-        $menusParaDeletar = NavigationMenu::whereNotIn('id', $idsMantidos)->get();
+        // Deleta os links que foram removidos
+        $menusParaDeletar = NavigationMenu::where('menu_config_id', $config->id)->whereNotIn('id', $idsMantidos)->get();
         foreach ($menusParaDeletar as $menuDel) {
             if ($menuDel->banner) {
                 $caminhoRelativo = str_replace(asset('storage/') . '/', '', $menuDel->banner);
@@ -78,9 +121,8 @@ class NavigationMenuController extends Controller
             $menuDel->delete();
         }
 
-        CacheFallbackService::forget('admin_navigation_menu');
         CacheFallbackService::forget('storefront_navigation_menu_active');
 
-        return response()->json(['status' => 'success', 'message' => 'Mega Menu sincronizado com sucesso!']);
+        return response()->json(['status' => 'success', 'message' => 'Itens do menu sincronizados com sucesso!']);
     }
 }

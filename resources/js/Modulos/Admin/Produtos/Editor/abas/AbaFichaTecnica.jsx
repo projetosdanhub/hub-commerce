@@ -21,60 +21,64 @@ export default function AbaFichaTecnica({ p, setP }) {
     };
 
     return (
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
+        <div className="hub-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <div>
-                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Ficha Técnica</h3>
-                    <p className="text-xs text-slate-500 mt-1">Defina características detalhadas (material, cor, voltagem, etc.)</p>
+                    <h3 className="hub-card-title">Ficha Técnica</h3>
+                    <p style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', marginTop: '4px' }}>Defina características detalhadas (material, cor, voltagem, etc.)</p>
                 </div>
                 <button 
                     onClick={handleAddAtributo}
-                    className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl font-bold text-xs flex items-center gap-2 transition-colors"
+                    style={{ padding: '8px 16px', backgroundColor: 'var(--hub-primary)', color: '#fff', borderRadius: 'var(--hub-radius-lg)', fontWeight: 'bold', fontSize: '12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', transition: 'background-color 0.2s' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hub-primary-dark)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--hub-primary)'}
                 >
-                    <Icons.Plus className="w-4 h-4" /> Adicionar Atributo
+                    <Icons.Plus style={{ width: '16px', height: '16px' }} /> Adicionar Atributo
                 </button>
             </div>
 
             {ficha.length === 0 ? (
-                <div className="text-center py-12 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                    <Icons.Layout className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-                    <p className="text-sm font-medium text-slate-500">Nenhum atributo cadastrado.</p>
-                    <p className="text-xs text-slate-400 mt-1">Adicione atributos para enriquecer os detalhes do produto.</p>
+                <div style={{ textAlign: 'center', padding: '48px 0', backgroundColor: 'var(--hub-surface-subtle)', borderRadius: 'var(--hub-radius-lg)', border: '1px dashed var(--hub-border)' }}>
+                    <Icons.Layout className="hub-icon" style={{ width: '32px', height: '32px', color: 'var(--hub-border-dark)', margin: '0 auto 12px' }} />
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--hub-text-secondary)' }}>Nenhum atributo cadastrado.</p>
+                    <p style={{ fontSize: '12px', color: 'var(--hub-text-muted)', marginTop: '4px' }}>Adicione atributos para enriquecer os detalhes do produto.</p>
                 </div>
             ) : (
-                <div className="space-y-3">
-                    <div className="grid grid-cols-12 gap-4 px-4 pb-2 border-b border-slate-100">
-                        <div className="col-span-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Atributo</div>
-                        <div className="col-span-6 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Valor</div>
-                        <div className="col-span-1"></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', gap: '16px', padding: '0 16px 8px', borderBottom: '1px solid var(--hub-border-subtle)' }}>
+                        <div style={{ flex: '5', fontSize: '10px', fontWeight: 'bold', color: 'var(--hub-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Atributo</div>
+                        <div style={{ flex: '6', fontSize: '10px', fontWeight: 'bold', color: 'var(--hub-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Valor</div>
+                        <div style={{ width: '32px' }}></div>
                     </div>
                     {ficha.map((item, index) => (
-                        <div key={index} className="grid grid-cols-12 gap-4 items-center group">
-                            <div className="col-span-5">
+                        <div key={index} style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                            <div style={{ flex: '5' }}>
                                 <input 
                                     type="text" 
                                     placeholder="Ex: Material"
                                     value={item.atributo}
                                     onChange={(e) => handleChangeAtributo(index, 'atributo', e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-700 outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                                    className="hub-input"
                                 />
                             </div>
-                            <div className="col-span-6">
+                            <div style={{ flex: '6' }}>
                                 <input 
                                     type="text" 
                                     placeholder="Ex: Algodão"
                                     value={item.valor}
                                     onChange={(e) => handleChangeAtributo(index, 'valor', e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-700 outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                                    className="hub-input"
                                 />
                             </div>
-                            <div className="col-span-1 flex justify-end">
+                            <div style={{ width: '32px', display: 'flex', justifyContent: 'flex-end' }}>
                                 <button 
                                     onClick={() => handleRemoveAtributo(index)}
-                                    className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                    style={{ padding: '6px', color: 'var(--hub-text-secondary)', backgroundColor: 'transparent', borderRadius: 'var(--hub-radius-sm)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                                    onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--hub-danger)'}}
+                                    onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--hub-text-secondary)'}}
                                     title="Remover"
                                 >
-                                    <Icons.Trash className="w-4 h-4" />
+                                    <Icons.Trash style={{ width: '16px', height: '16px' }} />
                                 </button>
                             </div>
                         </div>

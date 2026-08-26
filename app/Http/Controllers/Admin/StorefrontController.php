@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\StorefrontConfig;
 use App\Models\NavigationMenu;
+use App\Models\Category;
+use App\Models\Product;
 use App\Services\CacheFallbackService;
+use App\Services\PaymentGatewayService;
 
 class StorefrontController extends Controller
 {
@@ -18,26 +21,38 @@ class StorefrontController extends Controller
         if (!$config) {
             // Layout padrão inicial caso a loja seja nova
             $defaultLayout = [
-                ['id' => 'hero-1', 'type' => 'HeroBanner', 'isVisible' => true, 'props' => ['titulo' => 'Grande Promoção']],
-                ['id' => 'cat-1', 'type' => 'CategoryGrid', 'isVisible' => true, 'props' => ['titulo' => 'Departamentos']],
-                ['id' => 'promo-1', 'type' => 'PromoBanners', 'isVisible' => true, 'props' => ['quantidade' => 2]],
+                ['id' => 'fb-1', 'type' => 'BannerPrincipal', 'isVisible' => true, 'props' => ['titulo' => 'Grande Promoção']],
+                ['id' => 'fb-2', 'type' => 'GradeCategorias', 'isVisible' => true, 'props' => ['titulo' => 'Departamentos']],
+                ['id' => 'fb-3', 'type' => 'BannersPromocionais', 'isVisible' => true, 'props' => ['quantidade' => 2]],
             ];
-            return response()->json(['status' => 'success', 'data' => $defaultLayout]);
+            return response()->json(['status' => 'success', 'data' => $defaultLayout, 'active_menu_id' => null]);
         }
 
-        return response()->json(['status' => 'success', 'data' => $config->layout_blocks]);
+        return response()->json([
+            'status' => 'success', 
+            'data' => $config->layout_blocks,
+            'active_menu_id' => $config->active_menu_id
+        ]);
     }
 
     // Retorna o menu sincronizado para a loja pública (Apenas itens ativos)
     public function getMenu()
     {
-        $menus = CacheFallbackService::remember('storefront_navigation_menu_active', 60 * 24, function () {
-            // Busca todos ordenados e só os ativos
-            $all = NavigationMenu::where('ativo', true)->orderBy('ordem', 'asc')->get();
+        $config = StorefrontConfig::first();
+        $activeMenuId = $config ? $config->active_menu_id : null;
+
+        if (!$activeMenuId) {
+            return response()->json(['status' => 'success', 'data' => []]);
+        }
+
+        $menus = CacheFallbackService::remember('storefront_navigation_menu_active_' . $activeMenuId, 60 * 24, function () use ($activeMenuId) {
+            // Busca todos ordenados e só os ativos deste menu config
+            $all = NavigationMenu::where('menu_config_id', $activeMenuId)
+                ->where('ativo', true)
+                ->orderBy('ordem', 'asc')
+                ->get();
             
-            // Mas precisamos filtrar os filhos que têm pai inativo. 
-            // O where('ativo', true) tira os pais inativos, mas se o filho estiver ativo e o pai não (teoricamente possível se a flag for por item),
-            // o ideal é só retornar quem tem parent_id nulo ou cujo parent_id está na lista de ativos.
+            // Filtra os filhos que têm pai inativo.
             $activeIds = $all->pluck('id')->toArray();
             
             return $all->filter(function($item) use ($activeIds) {
@@ -51,20 +66,216 @@ class StorefrontController extends Controller
         return response()->json(['status' => 'success', 'data' => $menus]);
     }
 
+    // Retorna categorias ativas para a loja
+    public function getCategories()
+    {
+        $categories = CacheFallbackService::remember('storefront_categories_active', 60 * 24, function () {
+            return Category::where('status', 'ativo')->orderBy('ordem', 'asc')->get();
+        });
+        return response()->json(['status' => 'success', 'data' => $categories]);
+    }
+
+    // Retorna produtos para a loja (com paginação e filtros)
+    public function getProducts(Request $request)
+    {
+        $query = Product::with(['images', 'variations', 'category'])
+            ->where('status', 'ativo')
+            ->where('estoque_atual', '>', 0); // Opcional, dependendo da regra
+
+        if ($request->has('category_id')) {
+            $query->where('categoria_id', $request->category_id);
+        }
+
+        if ($request->has('is_featured')) {
+            $query->where('is_featured', true);
+        }
+        
+        // Pesquisa
+        if ($request->has('q')) {
+            $query->where('nome', 'like', '%' . $request->q . '%');
+        }
+
+        $products = $query->orderBy('created_at', 'desc')->paginate(12);
+
+        return response()->json(['status' => 'success', 'data' => $products]);
+    }
+
+    // Retorna um produto detalhado por ID ou slug
+    public function getProduct($id)
+    {
+        $product = Product::with(['images', 'variations', 'category'])
+            ->where('status', 'ativo')
+            ->where(function($query) use ($id) {
+                $query->where('id', $id)->orWhere('slug', $id);
+            })
+            ->first();
+
+        if (!$product) {
+            return response()->json(['status' => 'error', 'message' => 'Produto não encontrado'], 404);
+        }
+
+        return response()->json(['status' => 'success', 'data' => $product]);
+    }
+
     // Salva a nova configuração da vitrine
     public function publishVitrine(Request $request)
     {
         $request->validate([
-            'layout_blocks' => 'required|array'
+            'layout_blocks' => 'required|array',
+            'active_menu_id' => 'nullable|exists:menu_configs,id'
         ]);
 
         $config = StorefrontConfig::firstOrCreate(['id' => 1]);
         $config->layout_blocks = $request->layout_blocks;
+        
+        if ($request->has('active_menu_id')) {
+            $config->active_menu_id = $request->active_menu_id;
+            CacheFallbackService::forget('storefront_navigation_menu_active_' . $request->active_menu_id);
+        }
+        
         $config->save();
 
         return response()->json([
             'status' => 'success', 
             'message' => 'Vitrine publicada com sucesso! A loja já está atualizada.'
         ]);
+    }
+
+    // Processa o Checkout da loja
+    public function checkout(Request $request)
+    {
+        $request->validate([
+            'cliente.email' => 'required|email',
+            'cliente.nome' => 'required|string',
+            'cliente.cpf' => 'nullable|string',
+            'cliente.telefone' => 'nullable|string',
+            'endereco.cep' => 'required|string',
+            'endereco.rua' => 'required|string',
+            'endereco.numero' => 'required|string',
+            'endereco.bairro' => 'required|string',
+            'endereco.cidade' => 'required|string',
+            'endereco.uf' => 'required|string',
+            'items' => 'required|array',
+            'items.*.id' => 'required',
+            'items.*.quantity' => 'required|integer|min:1',
+            'pagamento.metodo' => 'required|string',
+            'pagamento.parcelas' => 'nullable|integer',
+        ]);
+
+        \DB::beginTransaction();
+
+        try {
+            // 1. Achar ou Criar o Cliente
+            $user = \App\Models\User::firstOrCreate(
+                ['email' => $request->input('cliente.email')],
+                [
+                    'name' => $request->input('cliente.nome'),
+                    'cpf' => $request->input('cliente.cpf'),
+                    'telefone' => $request->input('cliente.telefone'),
+                    'role' => 'cliente',
+                    'password' => \Hash::make(\Str::random(12)), // Senha aleatória para convidado
+                ]
+            );
+
+            // 2. Calcular Totais
+            $subtotal = 0;
+            $itemsToSave = [];
+
+            foreach ($request->input('items') as $itemInput) {
+                $product = Product::find($itemInput['id']);
+                if (!$product) continue;
+                
+                $price = $product->preco_promocional ?: $product->preco;
+                $quantity = $itemInput['quantity'];
+                
+                $subtotal += $price * $quantity;
+                
+                $itemsToSave[] = [
+                    'product_id' => $product->id, // Para referência futura, mas salvaremos os dados reais.
+                    'sku' => $product->sku ?? ('SKU-'.$product->id),
+                    'product_name' => $product->nome,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                    'product_image' => null, // Pegaria da primeira imagem
+                ];
+            }
+
+            // Exemplo de Frete Fixo
+            $frete = 15.90;
+            $total = $subtotal + $frete;
+
+            // 3. Criar o Pedido
+            $order = \App\Models\Order::create([
+                'user_id' => $user->id,
+                'subtotal' => $subtotal,
+                'frete' => $frete,
+                'desconto' => 0,
+                'total' => $total,
+                'status' => 'pending', // Pagamento Pendente
+                'payment_gateway' => 'hub_default',
+                'payment_method' => $request->input('pagamento.metodo'),
+                'payment_installments' => $request->input('pagamento.parcelas', 1),
+            ]);
+
+            // 4. Salvar Itens
+            foreach ($itemsToSave as $itemData) {
+                \App\Models\OrderItem::create([
+                    'order_id' => $order->id,
+                    'sku' => $itemData['sku'],
+                    'product_name' => $itemData['product_name'],
+                    'quantity' => $itemData['quantity'],
+                    'price' => $itemData['price'],
+                ]);
+            }
+
+            // 5. Salvar Endereço
+            \App\Models\OrderAddress::create([
+                'order_id' => $order->id,
+                'cep' => $request->input('endereco.cep'),
+                'rua' => $request->input('endereco.rua'),
+                'num' => $request->input('endereco.numero'),
+                'complemento' => $request->input('endereco.complemento'),
+                'bairro' => $request->input('endereco.bairro'),
+                'cidade' => $request->input('endereco.cidade'),
+                'uf' => $request->input('endereco.uf'),
+            ]);
+
+            // 6. Processar Pagamento via Gateway API
+            $paymentService = new PaymentGatewayService();
+            $paymentResult = $paymentService->processPayment(
+                $order,
+                $request->input('pagamento'),
+                $request->input('cliente'),
+                $request->input('endereco')
+            );
+
+            if ($paymentResult['status'] === 'error') {
+                throw new \Exception($paymentResult['message']);
+            }
+
+            // Atualiza status do pedido após pagamento
+            $order->status = 'paid'; // ou 'processing' dependendo do gateway
+            $order->payment_gateway = $paymentResult['gateway'];
+            $order->save();
+            
+            \DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Pedido criado e pagamento aprovado com sucesso.',
+                'data' => [
+                    'order_id' => $order->id,
+                    'transaction_id' => $paymentResult['transaction_id'],
+                    'total' => $order->total,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Erro ao processar o checkout: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

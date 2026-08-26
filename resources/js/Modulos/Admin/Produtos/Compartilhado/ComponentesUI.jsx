@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icons } from './Icones';
+import { Loader2, Check, AlertTriangle } from 'lucide-react';
 
 export const formatDateBR = (dateStr) => {
     if (!dateStr) return '';
@@ -22,50 +23,42 @@ export const gerarCSV = (dados) => {
 };
 
 export const SafeTooltip = ({ children, text, title }) => (
-    <div className="group relative flex items-center justify-center cursor-help">
-        {children || <Icons.Info className="w-4 h-4 text-slate-400 hover:text-blue-500 transition-colors" />}
-        <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-[99999] w-max max-w-[250px] whitespace-normal bg-slate-800 text-white text-[10px] font-bold px-3 py-2 rounded-lg shadow-xl flex flex-col items-center text-center leading-relaxed border border-slate-700">
-            {title && <span className="text-blue-300 mb-1 border-b border-slate-600 pb-1 w-full uppercase tracking-widest text-[9px]">{title}</span>}
-            <span className="font-mono text-slate-200">{text}</span>
-            <svg className="absolute text-slate-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
+    <div className="group" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'help' }}>
+        {children || <Icons.Info style={{ width: '16px', height: '16px', color: 'var(--hub-text-muted)', transition: 'color 0.2s' }} className="group-hover:text-[var(--hub-primary)]" />}
+        <div className="hub-hover-show" style={{ position: 'absolute', bottom: '100%', marginBottom: '8px', opacity: 0, transition: 'opacity 0.2s', pointerEvents: 'none', zIndex: 99999, width: 'max-content', maxWidth: '250px', whiteSpace: 'normal', backgroundColor: 'var(--hub-text)', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '8px 12px', borderRadius: 'var(--hub-radius-md)', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', lineHeight: 1.5, border: '1px solid var(--hub-border-strong)' }}>
+            {title && <span style={{ color: 'var(--hub-primary-soft)', marginBottom: '4px', borderBottom: '1px solid var(--hub-border-strong)', paddingBottom: '4px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '10px', fontWeight: '600' }}>{title}</span>}
+            <span style={{ fontFamily: 'monospace', color: 'var(--hub-surface-subtle)' }}>{text}</span>
+            <svg style={{ position: 'absolute', color: 'var(--hub-text)', height: '8px', width: '100%', left: 0, top: '100%' }} x="0px" y="0px" viewBox="0 0 255 255"><polygon style={{ fill: 'currentColor' }} points="0,0 127.5,127.5 255,0"/></svg>
         </div>
     </div>
 );
 
-export const PremiumSaveButton = ({ onClick, loading, text, icon: Icon = Icons.Check, disabled = false, className = '' }) => (
+export const PremiumSaveButton = ({ onClick, loading, text, icon: Icon, disabled = false, className = '' }) => (
     <button 
         type={onClick ? "button" : "submit"} 
         onClick={onClick} 
         disabled={loading || disabled} 
-        className={`group relative overflow-hidden bg-slate-900 text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70 ${className}`}
+        style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'var(--hub-text)', color: 'var(--hub-text-on-color)', fontWeight: '600', padding: '12px 24px', borderRadius: 'var(--hub-radius-md)', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', whiteSpace: 'nowrap', transition: 'opacity 0.2s', opacity: (loading || disabled) ? 0.5 : 1, cursor: (loading || disabled) ? 'not-allowed' : 'pointer' }}
+        className={`group hub-button-hover ${className}`}
     >
-        {loading ? <Icons.Spinner className="w-4 h-4 text-white" /> : <Icon className="w-4 h-4 group-hover:scale-110 transition-transform"/>}
-        <span className="relative z-10">{loading ? "Processando..." : text}</span>
-        {loading && <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 2, ease: "linear", repeat: Infinity }} className="absolute left-0 bottom-0 h-1 bg-blue-500 z-0" />}
+        {loading ? (
+            <Loader2 size={16} className="animate-spin" style={{ color: '#fff' }} />
+        ) : Icon ? (
+            <Icon style={{ width: '16px', height: '16px', transition: 'transform 0.2s' }} className="group-hover:scale-110" />
+        ) : (
+            <Check size={16} style={{ transition: 'transform 0.2s' }} className="group-hover:scale-110" />
+        )}
+        <span style={{ position: 'relative', zIndex: 10 }}>{loading ? "Processando..." : text}</span>
+        {loading && <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 2, ease: "linear", repeat: Infinity }} style={{ position: 'absolute', left: 0, bottom: 0, height: '4px', backgroundColor: 'var(--hub-primary)', zIndex: 0 }} />}
     </button>
 );
 
-export const CustomStyles = () => (
-    <style dangerouslySetInnerHTML={{__html: `
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent; }
-        .custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .thin-scroll { scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent; }
-        .thin-scroll::-webkit-scrollbar { height: 3px; }
-        .thin-scroll::-webkit-scrollbar-track { background: transparent; }
-        .thin-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
-        .thin-scroll:hover::-webkit-scrollbar-thumb { background: #cbd5e1; }
-        .thin-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .smart-flex-container { display: flex; flex-wrap: wrap; width: 100%; gap: 1px; }
-        .smart-flex-item { flex: 1 1 240px; min-width: 200px; }
-        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type="number"] { -moz-appearance: textfield; }
-    `}} />
-);
+/**
+ * CustomStyles is now a no-op — all scrollbar, flex-container, and number-input
+ * styles have been moved to admin-design-system.css. This export is kept for
+ * backward compatibility with existing imports.
+ */
+export const CustomStyles = () => null;
 
 export const FadeIn = ({ children, className = "", ...props }) => (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }} className={className} {...props}>
@@ -74,21 +67,43 @@ export const FadeIn = ({ children, className = "", ...props }) => (
 );
 
 export const AnimatedToggle = ({ active, onChange }) => (
-    <button type="button" role="switch" aria-checked={active} onClick={() => onChange(!active)} className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${active ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-        <span aria-hidden="true" className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${active ? 'translate-x-5' : 'translate-x-0'}`} />
+    <button 
+        type="button" 
+        role="switch" 
+        aria-checked={active} 
+        onClick={() => onChange(!active)} 
+        style={{ position: 'relative', display: 'inline-flex', height: '24px', width: '44px', flexShrink: 0, cursor: 'pointer', borderRadius: '9999px', border: '2px solid transparent', transition: 'background-color 0.2s ease-in-out', outline: 'none', backgroundColor: active ? 'var(--hub-success)' : 'var(--hub-border-strong)' }}
+    >
+        <span aria-hidden="true" style={{ pointerEvents: 'none', display: 'inline-block', height: '20px', width: '20px', transform: active ? 'translateX(20px)' : 'translateX(0)', borderRadius: '9999px', backgroundColor: '#fff', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)', transition: 'transform 0.2s ease-in-out' }} />
     </button>
 );
 
 export const AnimatedNotification = ({ show, status, titulo }) => (
     <AnimatePresence>
         {show && (
-            <motion.div initial={{ opacity: 0, y: -50, scale: 0.9 }} animate={{ opacity: 1, y: 20, scale: 1 }} exit={{ opacity: 0, y: -50, scale: 0.9 }} className="fixed top-4 right-4 z-[999999] bg-white rounded-[20px] shadow-xl border border-slate-200 p-3 flex items-center gap-4 min-w-[300px]" role="alert">
-                <div className="relative w-10 h-10 flex-shrink-0 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center">
-                    {status === 'loading' ? <Icons.Spinner className="text-blue-500 w-5 h-5" /> : status === 'error' ? <Icons.AlertTriangle className="text-rose-500 w-5 h-5"/> : <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-emerald-500"><Icons.Check className="w-5 h-5"/></motion.div>}
+            <motion.div 
+                initial={{ opacity: 0, y: -50, scale: 0.9 }} 
+                animate={{ opacity: 1, y: 20, scale: 1 }} 
+                exit={{ opacity: 0, y: -50, scale: 0.9 }} 
+                style={{ position: 'fixed', top: '16px', right: '16px', zIndex: 999999, backgroundColor: 'var(--hub-surface)', borderRadius: 'var(--hub-radius-lg)', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', border: '1px solid var(--hub-border-subtle)', padding: '12px', display: 'flex', alignItems: 'center', gap: '16px', minWidth: '300px' }} 
+                role="alert"
+            >
+                <div style={{ position: 'relative', width: '40px', height: '40px', flexShrink: 0, backgroundColor: 'var(--hub-surface-subtle)', border: '1px solid var(--hub-border-subtle)', borderRadius: 'var(--hub-radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {status === 'loading' ? (
+                        <Loader2 size={18} className="animate-spin" style={{ color: 'var(--hub-primary)' }} />
+                    ) : status === 'error' ? (
+                        <AlertTriangle size={18} style={{ color: 'var(--hub-danger)' }} />
+                    ) : (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} style={{ color: 'var(--hub-success)' }}>
+                            <Check size={18} />
+                        </motion.div>
+                    )}
                 </div>
-                <div className="pr-4">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{status === 'loading' ? 'A Processar...' : status === 'error' ? 'Atenção' : 'Concluído'}</p>
-                    <p className="text-sm font-black text-slate-800 line-clamp-1">{titulo}</p>
+                <div style={{ paddingRight: '16px' }}>
+                    <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--hub-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+                        {status === 'loading' ? 'A Processar...' : status === 'error' ? 'Atenção' : 'Concluído'}
+                    </p>
+                    <p style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--hub-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{titulo}</p>
                 </div>
             </motion.div>
         )}
@@ -102,11 +117,16 @@ export class ProductErrorBoundary extends Component {
     render() {
         if (this.state.hasError) {
             return (
-                <section className="p-10 bg-rose-50 border border-rose-200 rounded-[24px] text-center mt-6 shadow-sm max-w-lg mx-auto">
-                    <Icons.AlertTriangle />
-                    <h2 className="text-2xl font-black text-rose-900 mb-2 mt-4">Ops! Falha Estrutural</h2>
-                    <p className="text-sm text-rose-700 mb-6">Encontramos dados corrompidos ao carregar o catálogo. Mas nós seguramos o sistema para não travar!</p>
-                    <button onClick={() => window.location.reload()} aria-label="Recarregar página" className="bg-rose-600 text-white font-bold px-8 py-3 rounded-xl shadow-md hover:bg-rose-700 transition-colors">
+                <section style={{ padding: '40px', backgroundColor: 'var(--hub-danger-subtle)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--hub-radius-lg)', textAlign: 'center', marginTop: '24px', maxWidth: '32rem', marginLeft: 'auto', marginRight: 'auto' }}>
+                    <AlertTriangle size={32} style={{ margin: '0 auto', color: 'var(--hub-danger)' }} />
+                    <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--hub-danger)', marginBottom: '8px', marginTop: '16px' }}>Ops! Falha Estrutural</h2>
+                    <p style={{ fontSize: '14px', color: 'var(--hub-text-secondary)', marginBottom: '24px' }}>Encontramos dados corrompidos ao carregar o catálogo. Mas nós seguramos o sistema para não travar!</p>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        aria-label="Recarregar página" 
+                        style={{ backgroundColor: 'var(--hub-danger)', color: '#fff', fontWeight: '600', padding: '12px 32px', borderRadius: 'var(--hub-radius-md)', cursor: 'pointer', border: 'none' }}
+                        className="hub-button-hover"
+                    >
                         Tentar Novamente
                     </button>
                 </section>

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../../../api';
 import { Icons } from '../Compartilhado/Icones';
 import { PremiumSaveButton, AnimatedNotification } from '../Compartilhado/ComponentesUI';
+import { IconButton } from '../../DesignSystem/primitives/IconButton';
+import { Badge } from '../../DesignSystem/primitives/Badge';
 
 import AbaGeral from './abas/AbaGeral';
 import AbaFichaTecnica from './abas/AbaFichaTecnica';
@@ -197,51 +199,70 @@ export default function EditorDeProduto({
     const AbasEditor = ['GERAL', 'FICHA TÉCNICA', 'ESTOQUE', 'MÍDIA', 'VARIAÇÕES', 'FISCAL', 'LOGÍSTICA', 'SEO'];
 
     return (
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="hub-panel" style={{ overflow: 'hidden' }}>
             <AnimatedNotification show={toast.show} status={toast.status} titulo={toast.message} />
             
-            <header className="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/30 sticky top-0 z-20 backdrop-blur-md">
-                <div className="flex items-center gap-4">
-                    <button onClick={handleVoltar} className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors shadow-sm">
-                        <Icons.Back className="w-5 h-5" />
-                    </button>
+            <header className="modal-responsive-flex" style={{ display: 'flex', padding: '24px', borderBottom: '1px solid var(--hub-border-subtle)', backgroundColor: 'var(--hub-surface-subtle)', position: 'sticky', top: 0, zIndex: 20, backdropFilter: 'blur(12px)', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <IconButton 
+                        icon={Icons.Back} 
+                        onClick={handleVoltar} 
+                        label="Voltar"
+                        style={{ backgroundColor: '#fff', border: '1px solid var(--hub-border-subtle)' }}
+                    />
                     <div>
-                        <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'var(--hub-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, letterSpacing: '-0.02em' }}>
                             {produtoEmEdicao.isNovo ? 'Novo Produto' : 'Editar Produto'}
                         </h2>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${produtoEmEdicao.status === 'ATIVO' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                                <div className={`w-1.5 h-1.5 rounded-full ${produtoEmEdicao.status === 'ATIVO' ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                            <Badge variant={produtoEmEdicao.status === 'ATIVO' ? 'success' : 'neutral'}>
                                 {produtoEmEdicao.status}
-                            </span>
-                            {hasChanges && <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded">Alterações não salvas</span>}
+                            </Badge>
+                            {hasChanges && <Badge variant="warning">Alterações não salvas</Badge>}
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div className="modal-responsive-flex" style={{ display: 'flex', alignItems: 'center', gap: '12px', width: 'auto' }}>
                     <PremiumSaveButton onClick={salvarProduto} loading={loadingAcao === 'salvar_produto'} text="Salvar Produto" />
                 </div>
             </header>
 
-            <div className="p-4 sm:p-6 pb-0 overflow-x-auto hide-scroll border-b border-slate-100 bg-white">
-                <div className="flex bg-slate-100/70 p-1.5 rounded-2xl w-max min-w-full">
+            <div className="custom-scrollbar" style={{ padding: '24px 24px 0 24px', overflowX: 'auto', borderBottom: '1px solid var(--hub-border-subtle)', backgroundColor: '#fff' }}>
+                <div style={{ display: 'flex', backgroundColor: 'var(--hub-surface-subtle)', padding: '4px', borderRadius: 'var(--hub-radius-lg)', width: 'max-content', minWidth: '100%', marginBottom: '24px' }}>
                     {AbasEditor.map(aba => (
                         <button 
                             key={aba} 
                             onClick={() => setEditorTab(aba)} 
-                            className={`relative px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap outline-none flex-1 ${editorTab === aba ? 'text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+                            style={{ 
+                                position: 'relative', 
+                                padding: '10px 20px', 
+                                borderRadius: 'var(--hub-radius-md)', 
+                                fontSize: '12px', 
+                                fontWeight: 'bold', 
+                                transition: 'all 0.2s', 
+                                whiteSpace: 'nowrap', 
+                                outline: 'none', 
+                                flex: 1, 
+                                backgroundColor: editorTab === aba ? '#fff' : 'transparent',
+                                color: editorTab === aba ? 'var(--hub-primary)' : 'var(--hub-text-secondary)',
+                                border: 'none',
+                                boxShadow: editorTab === aba ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
                         >
-                            {editorTab === aba && <motion.div layoutId="activeEditorTab" className="absolute inset-0 bg-white rounded-xl" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />}
-                            <span className="relative z-10 flex items-center gap-2">
+                            <span style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {aba}
-                                {aba === 'GERAL' && Object.keys(errosForm).length > 0 && <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div>}
+                                {aba === 'GERAL' && Object.keys(errosForm).length > 0 && <div className="animate-pulse" style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--hub-danger)' }}></div>}
                             </span>
                         </button>
                     ))}
                 </div>
             </div>
 
-            <div className="p-4 sm:p-6 bg-slate-50/30 min-h-[500px]">
+            <div style={{ padding: '24px', backgroundColor: 'var(--hub-surface)', minHeight: '500px' }}>
                 <AnimatePresence mode="wait">
                     <motion.div key={editorTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
                         {editorTab === 'GERAL' && <AbaGeral p={produtoEmEdicao} setP={setProdutoEmEdicao} erros={errosForm} setErros={setErrosForm} categorias={categorias} />}

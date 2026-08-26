@@ -49,18 +49,41 @@ const CustomRecessedToggle = ({ active, onChange }) => {
         <button 
             type="button" 
             onClick={() => onChange(!active)} 
-            className={`relative w-14 h-8 rounded-full flex items-center transition-colors duration-300 ${active ? 'bg-blue-600' : 'bg-slate-300'} focus:outline-none`}
-            style={{ boxShadow: "inset 0 2px 4px rgba(0,0,0,0.15)" }}
+            style={{ 
+                position: 'relative', 
+                width: '56px', 
+                height: '32px', 
+                borderRadius: '9999px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                transition: 'background-color 0.3s', 
+                backgroundColor: active ? 'var(--hub-accent)' : 'var(--hub-border)', 
+                outline: 'none',
+                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.15)",
+                border: 'none',
+                cursor: 'pointer'
+            }}
         >
             <motion.div 
                 initial={false}
-                animate={{ 
-                    x: active ? 26 : 2,
-                }}
+                animate={{ x: active ? 26 : 2 }}
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                className={`w-6 h-6 rounded-full bg-white shadow flex items-center justify-center`}
+                style={{ 
+                    width: '24px', 
+                    height: '24px', 
+                    borderRadius: '50%', 
+                    backgroundColor: '#fff', 
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                }}
             >
-                {active ? <div className="w-2 h-2 rounded-full bg-blue-500" /> : <div className="w-2 h-2 rounded-full bg-slate-300" />}
+                {active ? (
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--hub-accent)' }} />
+                ) : (
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--hub-border)' }} />
+                )}
             </motion.div>
         </button>
     );
@@ -71,23 +94,40 @@ const CustomTriggerSelect = ({ value, onChange }) => {
     const selected = gatilhoOptions.find(opt => opt.value === value) || gatilhoOptions[0];
     const Icon = selected.icon;
     
-    // Close on click outside (simplified for inline)
     return (
-        <div className="relative">
-            <button type="button" onClick={() => setIsOpen(!isOpen)} className="w-full flex items-center justify-between bg-white border border-slate-300 rounded-xl px-4 h-12 text-sm outline-none focus:border-blue-500 shadow-sm font-medium">
-                <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 text-slate-500" />
-                    <span className="text-slate-700">{selected.label}</span>
+        <div style={{ position: 'relative' }}>
+            <button type="button" onClick={() => setIsOpen(!isOpen)} style={{ 
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+                backgroundColor: 'var(--hub-background)', border: '1px solid var(--hub-border)', 
+                borderRadius: '12px', padding: '0 16px', height: '48px', fontSize: '14px', 
+                outline: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', fontWeight: 500,
+                cursor: 'pointer'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Icon size={16} style={{ color: 'var(--hub-text-secondary)' }} />
+                    <span style={{ color: 'var(--hub-text-primary)' }}>{selected.label}</span>
                 </div>
-                <ChevronDown className="w-4 h-4 text-slate-400" />
+                <ChevronDown size={16} style={{ color: 'var(--hub-text-secondary)' }} />
             </button>
             {isOpen && (
                 <>
-                    <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
-                    <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-64 overflow-y-auto py-1">
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setIsOpen(false)}></div>
+                    <div style={{ 
+                        position: 'absolute', zIndex: 20, width: '100%', marginTop: '4px', 
+                        backgroundColor: 'var(--hub-background)', border: '1px solid var(--hub-border-subtle)', 
+                        borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', 
+                        maxHeight: '256px', overflowY: 'auto', padding: '4px 0' 
+                    }}>
                         {gatilhoOptions.map(opt => (
-                            <button key={opt.value} type="button" onClick={() => { onChange(opt.value); setIsOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors ${value === opt.value ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-600'}`}>
-                                <opt.icon className={`w-4 h-4 ${value === opt.value ? 'text-blue-500' : 'text-slate-400'}`} />
+                            <button key={opt.value} type="button" onClick={() => { onChange(opt.value); setIsOpen(false); }} style={{ 
+                                width: '100%', display: 'flex', alignItems: 'center', gap: '12px', 
+                                padding: '10px 16px', fontSize: '14px', transition: 'background-color 0.2s', 
+                                backgroundColor: value === opt.value ? '#eff6ff' : 'transparent', 
+                                color: value === opt.value ? '#1d4ed8' : 'var(--hub-text-secondary)', 
+                                fontWeight: value === opt.value ? 'bold' : 'normal', 
+                                border: 'none', cursor: 'pointer', textAlign: 'left' 
+                            }}>
+                                <opt.icon size={16} style={{ color: value === opt.value ? '#3b82f6' : 'var(--hub-text-secondary)' }} />
                                 <span>{opt.label}</span>
                             </button>
                         ))}
@@ -98,42 +138,61 @@ const CustomTriggerSelect = ({ value, onChange }) => {
     );
 };
 
+const mapTailwindColor = (twClass) => {
+    if (twClass.includes('indigo')) return { bg: '#eef2ff', border: '#e0e7ff', text: '#4f46e5' };
+    if (twClass.includes('emerald')) return { bg: '#ecfdf5', border: '#d1fae5', text: '#059669' };
+    if (twClass.includes('orange')) return { bg: '#fff7ed', border: '#ffedd5', text: '#ea580c' };
+    return { bg: '#f8fafc', border: '#f1f5f9', text: '#475569' };
+};
+
 const EditorDeRegra = ({ triggerForm, setTriggerForm, onSalvar, onVoltar, isSaving }) => {
     return (
-        <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.24 }} className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-8 max-w-5xl mx-auto">
-            <button onClick={onVoltar} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 mb-6 transition-colors">
-                <ArrowLeft className="w-4 h-4" /> Voltar para a lista
+        <motion.div key="form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.24 }} className="hub-card" style={{ maxWidth: '1024px', margin: '0 auto', padding: '32px' }}>
+            <button onClick={onVoltar} style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', 
+                fontWeight: 'bold', color: 'var(--hub-text-secondary)', marginBottom: '24px', 
+                background: 'transparent', border: 'none', cursor: 'pointer' 
+            }}>
+                <ArrowLeft size={16} /> Voltar para a lista
             </button>
             
-            <h2 className="text-2xl font-black text-slate-900 mb-2">{triggerForm.id ? 'Editar Regra de Disparo' : 'Criar Regra de Disparo'}</h2>
-            <p className="text-sm text-slate-500 mb-6">Defina nomes livres, determine a URL alvo da loja para validação do pixel e enriqueça com Payload.</p>
+            <h2 className="hub-card-title" style={{ fontSize: '24px', marginBottom: '8px' }}>
+                {triggerForm.id ? 'Editar Regra de Disparo' : 'Criar Regra de Disparo'}
+            </h2>
+            <p className="hub-page-subtitle" style={{ marginBottom: '24px' }}>
+                Defina nomes livres, determine a URL alvo da loja para validação do pixel e enriqueça com Payload.
+            </p>
 
             {/* Tutorial Dinâmico / Dicionário */}
-            <div className="bg-sky-50/50 border border-sky-100 rounded-2xl p-5 mb-8">
-                <h4 className="font-black text-sky-900 mb-3 flex items-center gap-2"><BookOpen className="w-4 h-4"/> Dicionário de Gatilhos</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs text-sky-800 leading-relaxed">
-                    <div><strong className="text-sky-900 block mb-0.5 flex items-center gap-1"><MousePointerClick className="w-3 h-3"/> Click Elemento</strong> Dispara ao clicar. Ex: <code>.btn-compra</code> (classe) ou <code>#meu-botao</code> (ID).</div>
-                    <div><strong className="text-sky-900 block mb-0.5 flex items-center gap-1"><Link className="w-3 h-3"/> Click Link</strong> Dispara ao clicar num link <code>&lt;a&gt;</code> específico.</div>
-                    <div><strong className="text-sky-900 block mb-0.5 flex items-center gap-1"><Globe className="w-3 h-3"/> URL Alvo</strong> O alvo <code>*</code> ativa em todo o site. Específico Ex: <code>/carrinho</code>.</div>
-                    <div><strong className="text-sky-900 block mb-0.5 flex items-center gap-1"><MoveDown className="w-3 h-3"/> Scroll Depth</strong> Dispara ao rolar a tela. Ex: <code>50</code> (%).</div>
-                    <div><strong className="text-sky-900 block mb-0.5 flex items-center gap-1"><Timer className="w-3 h-3"/> Time Delay</strong> Dispara após retenção. Ex: <code>15</code> (s).</div>
-                    <div><strong className="text-sky-900 block mb-0.5 flex items-center gap-1"><FormInput className="w-3 h-3"/> Envio Formulário</strong> Dispara ao submeter. Ex: <code>#form-lead</code>.</div>
-                    <div><strong className="text-sky-900 block mb-0.5 flex items-center gap-1"><Eye className="w-3 h-3"/> Elemento Visível</strong> Dispara quando o elemento aparecer. Ex: <code>.banner-final</code>.</div>
-                    <div><strong className="text-sky-900 block mb-0.5 flex items-center gap-1"><PlaySquare className="w-3 h-3"/> Vídeo Play</strong> Dispara ao interagir com vídeo embedado.</div>
-                    <div><strong className="text-sky-900 block mb-0.5 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> Erro JS</strong> Dispara se houver quebra no código (Console).</div>
+            <div style={{ backgroundColor: '#f0f9ff', border: '1px solid #e0f2fe', borderRadius: '16px', padding: '20px', marginBottom: '32px' }}>
+                <h4 style={{ fontWeight: 900, color: '#0c4a6e', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BookOpen size={16}/> Dicionário de Gatilhos
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', fontSize: '12px', color: '#075985', lineHeight: '1.6' }}>
+                    <div><strong style={{ color: '#0c4a6e', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><MousePointerClick size={12}/> Click Elemento</strong> Dispara ao clicar. Ex: <code>.btn-compra</code> (classe) ou <code>#meu-botao</code> (ID).</div>
+                    <div><strong style={{ color: '#0c4a6e', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><Link size={12}/> Click Link</strong> Dispara ao clicar num link <code>&lt;a&gt;</code> específico.</div>
+                    <div><strong style={{ color: '#0c4a6e', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><Globe size={12}/> URL Alvo</strong> O alvo <code>*</code> ativa em todo o site. Específico Ex: <code>/carrinho</code>.</div>
+                    <div><strong style={{ color: '#0c4a6e', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><MoveDown size={12}/> Scroll Depth</strong> Dispara ao rolar a tela. Ex: <code>50</code> (%).</div>
+                    <div><strong style={{ color: '#0c4a6e', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><Timer size={12}/> Time Delay</strong> Dispara após retenção. Ex: <code>15</code> (s).</div>
+                    <div><strong style={{ color: '#0c4a6e', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><FormInput size={12}/> Envio Formulário</strong> Dispara ao submeter. Ex: <code>#form-lead</code>.</div>
+                    <div><strong style={{ color: '#0c4a6e', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><Eye size={12}/> Elemento Visível</strong> Dispara quando o elemento aparecer. Ex: <code>.banner-final</code>.</div>
+                    <div><strong style={{ color: '#0c4a6e', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><PlaySquare size={12}/> Vídeo Play</strong> Dispara ao interagir com vídeo embedado.</div>
+                    <div><strong style={{ color: '#0c4a6e', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}><AlertCircle size={12}/> Erro JS</strong> Dispara se houver quebra no código (Console).</div>
                 </div>
             </div>
 
-            <form onSubmit={onSalvar} className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={onSalvar} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                <div className="hub-smart-grid" style={{ gap: '24px' }}>
                     <div>
-                        <label className="text-[12px] font-bold text-slate-700 mb-2 block">Nome Interno</label>
-                        <input type="text" value={triggerForm.nome} onChange={e => setTriggerForm({...triggerForm, nome: e.target.value})} required placeholder="Ex: Lead Botão Header" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 h-12 text-sm outline-none focus:border-blue-500 transition-all" />
+                        <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-primary)', marginBottom: '8px', display: 'block' }}>Nome Interno</label>
+                        <input type="text" value={triggerForm.nome} onChange={e => setTriggerForm({...triggerForm, nome: e.target.value})} required placeholder="Ex: Lead Botão Header" 
+                            style={{ width: '100%', backgroundColor: 'var(--hub-surface)', border: '1px solid var(--hub-border)', borderRadius: '12px', padding: '0 16px', height: '48px', fontSize: '14px', outline: 'none' }} />
                     </div>
                     <div>
-                        <label className="text-[12px] font-bold text-slate-700 mb-2 block">Nome Oficial do Evento</label>
-                        <div className="flex gap-2">
-                            <select value={triggerForm.evento_selecionado} onChange={e => setTriggerForm({...triggerForm, evento_selecionado: e.target.value, evento_custom: e.target.value !== 'CUSTOM' ? '' : triggerForm.evento_custom})} className={`bg-slate-50 border border-slate-200 rounded-xl px-3 h-12 text-sm font-mono outline-none focus:border-blue-500 cursor-pointer transition-all shadow-sm ${triggerForm.evento_selecionado === 'CUSTOM' ? 'w-1/3' : 'w-full'}`}>
+                        <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-primary)', marginBottom: '8px', display: 'block' }}>Nome Oficial do Evento</label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <select value={triggerForm.evento_selecionado} onChange={e => setTriggerForm({...triggerForm, evento_selecionado: e.target.value, evento_custom: e.target.value !== 'CUSTOM' ? '' : triggerForm.evento_custom})} 
+                                style={{ backgroundColor: 'var(--hub-surface)', border: '1px solid var(--hub-border)', borderRadius: '12px', padding: '0 12px', height: '48px', fontSize: '14px', fontFamily: 'monospace', outline: 'none', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', width: triggerForm.evento_selecionado === 'CUSTOM' ? '33.33%' : '100%' }}>
                                 <option value="PageView">PageView</option>
                                 <option value="ViewContent">ViewContent</option>
                                 <option value="Search">Search</option>
@@ -156,30 +215,34 @@ const EditorDeRegra = ({ triggerForm, setTriggerForm, onSalvar, onVoltar, isSavi
                                 <option value="CUSTOM">Customizado...</option>
                             </select>
                             {triggerForm.evento_selecionado === 'CUSTOM' && (
-                                <input type="text" value={triggerForm.evento_custom} onChange={e => setTriggerForm({...triggerForm, evento_custom: e.target.value})} required placeholder="NomeLivre" className="w-2/3 bg-white border border-blue-300 rounded-xl px-4 h-12 text-sm font-mono outline-none focus:ring-2 focus:ring-blue-100 transition-all shadow-sm" />
+                                <input type="text" value={triggerForm.evento_custom} onChange={e => setTriggerForm({...triggerForm, evento_custom: e.target.value})} required placeholder="NomeLivre" 
+                                    style={{ width: '66.66%', backgroundColor: 'var(--hub-background)', border: '1px solid #93c5fd', borderRadius: '12px', padding: '0 16px', height: '48px', fontSize: '14px', fontFamily: 'monospace', outline: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }} />
                             )}
                         </div>
                     </div>
                 </div>
 
                 {/* Regra do Gatilho */}
-                <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl space-y-6">
-                    <h3 className="font-bold text-slate-800 flex items-center gap-2"><Zap className="w-4 h-4 text-blue-500"/> Regra do Gatilho & Validação</h3>
+                <div style={{ padding: '24px', backgroundColor: 'var(--hub-surface)', border: '1px solid var(--hub-border-subtle)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <h3 style={{ fontWeight: 'bold', color: 'var(--hub-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Zap size={16} style={{ color: '#3b82f6' }}/> Regra do Gatilho & Validação
+                    </h3>
                     
                     <div>
-                        <label className="text-[12px] font-bold text-slate-700 mb-1 block flex items-center gap-1">
+                        <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             URL de Atuação Alvo <SafeTooltip text="Se vazio ou '*', funcionará em todo o site. Se colocar '/checkout', o gatilho só será disparado caso o cliente esteja nessa página. Exemplo de página inicial: /" title="Filtro de Rota" />
                         </label>
-                        <input type="text" value={triggerForm.url_alvo} onChange={e => setTriggerForm({...triggerForm, url_alvo: e.target.value})} required placeholder="Ex: * (Todas as Páginas) ou /categoria/promo" className="w-full bg-white border border-slate-300 rounded-xl px-4 h-12 text-sm outline-none font-mono focus:border-blue-500 shadow-sm" />
+                        <input type="text" value={triggerForm.url_alvo} onChange={e => setTriggerForm({...triggerForm, url_alvo: e.target.value})} required placeholder="Ex: * (Todas as Páginas) ou /categoria/promo" 
+                            style={{ width: '100%', backgroundColor: 'var(--hub-background)', border: '1px solid var(--hub-border)', borderRadius: '12px', padding: '0 16px', height: '48px', fontSize: '14px', outline: 'none', fontFamily: 'monospace', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }} />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="hub-smart-grid" style={{ gap: '24px' }}>
                         <div>
-                            <label className="text-[12px] font-bold text-slate-700 mb-2 block">Quando a regra deve disparar?</label>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-primary)', marginBottom: '8px', display: 'block' }}>Quando a regra deve disparar?</label>
                             <CustomTriggerSelect value={triggerForm.tipo_gatilho} onChange={(val) => setTriggerForm({...triggerForm, tipo_gatilho: val, valor_gatilho: ['exit_intent', 'video_play', 'js_error'].includes(val) ? '' : triggerForm.valor_gatilho})} />
                         </div>
                         <div>
-                            <label className="text-[12px] font-bold text-slate-700 mb-2 block">Condição exata a monitorar</label>
+                            <label style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-primary)', marginBottom: '8px', display: 'block' }}>Condição exata a monitorar</label>
                             <input 
                                 type={['scroll', 'time'].includes(triggerForm.tipo_gatilho) ? 'number' : 'text'} 
                                 value={triggerForm.valor_gatilho} 
@@ -201,16 +264,29 @@ const EditorDeRegra = ({ triggerForm, setTriggerForm, onSalvar, onVoltar, isSavi
                                     triggerForm.tipo_gatilho === 'custom_event' ? "Ex: view_promotion" :
                                     "Não aplicável para este gatilho"
                                 } 
-                                className={`w-full bg-white border border-slate-300 rounded-xl px-4 h-12 text-sm outline-none font-mono shadow-sm ${['exit_intent', 'video_play', 'js_error'].includes(triggerForm.tipo_gatilho) ? 'opacity-50 cursor-not-allowed bg-slate-100' : 'focus:border-blue-500'}`} 
+                                style={{ 
+                                    width: '100%', 
+                                    backgroundColor: ['exit_intent', 'video_play', 'js_error'].includes(triggerForm.tipo_gatilho) ? '#f1f5f9' : 'var(--hub-background)', 
+                                    border: '1px solid var(--hub-border)', 
+                                    borderRadius: '12px', 
+                                    padding: '0 16px', 
+                                    height: '48px', 
+                                    fontSize: '14px', 
+                                    outline: 'none', 
+                                    fontFamily: 'monospace', 
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)', 
+                                    opacity: ['exit_intent', 'video_play', 'js_error'].includes(triggerForm.tipo_gatilho) ? 0.5 : 1, 
+                                    cursor: ['exit_intent', 'video_play', 'js_error'].includes(triggerForm.tipo_gatilho) ? 'not-allowed' : 'text' 
+                                }}
                             />
                         </div>
                     </div>
                     
-                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
-                        <BookOpen className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                    <div style={{ backgroundColor: '#eff6ff', padding: '16px', borderRadius: '12px', border: '1px solid #dbeafe', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <BookOpen size={20} style={{ color: '#3b82f6', flexShrink: 0, marginTop: '2px' }} />
                         <div>
-                            <h4 className="text-sm font-bold text-blue-900 mb-1">Dicionário de Disparadores</h4>
-                            <p className="text-xs text-blue-700/80 leading-relaxed">
+                            <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '4px' }}>Dicionário de Disparadores</h4>
+                            <p style={{ fontSize: '12px', color: '#1d4ed8', opacity: 0.8, lineHeight: 1.6 }}>
                                 <strong>{gatilhoOptions.find(o => o.value === triggerForm.tipo_gatilho)?.label}:</strong> {gatilhoDictionary[triggerForm.tipo_gatilho]}
                             </p>
                         </div>
@@ -218,51 +294,55 @@ const EditorDeRegra = ({ triggerForm, setTriggerForm, onSalvar, onVoltar, isSavi
                 </div>
 
                 {/* Payload Builder Categorizado */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                    <div className="mb-6 border-b border-slate-100 pb-4">
-                        <h3 className="font-black text-slate-800 flex items-center gap-2"><Database className="w-5 h-5 text-blue-600"/> Enriquecimento de Dados (CAPI Payload Builder)</h3>
-                        <p className="text-xs text-slate-500 mt-1">Selecione quais chaves o evento deve extrair do Data Layer e enviar ao Gerenciador de Eventos.</p>
+                <div className="hub-card" style={{ padding: '24px' }}>
+                    <div style={{ marginBottom: '24px', borderBottom: '1px solid var(--hub-border-subtle)', paddingBottom: '16px' }}>
+                        <h3 className="hub-card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Database size={20} style={{ color: '#2563eb' }}/> Enriquecimento de Dados (CAPI Payload Builder)
+                        </h3>
+                        <p style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', marginTop: '4px' }}>Selecione quais chaves o evento deve extrair do Data Layer e enviar ao Gerenciador de Eventos.</p>
                     </div>
                     
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {payloadCategories.map((categoria, idx) => (
-                            <div key={idx} className={`p-5 rounded-xl border ${categoria.bg} ${categoria.border}`}>
-                                <h4 className={`font-bold text-sm flex items-center gap-1.5 mb-1 ${categoria.color}`}>
-                                    <categoria.icon className="w-4 h-4" /> {categoria.title}
-                                </h4>
-                                <p className={`text-[10px] mb-4 opacity-70 ${categoria.color}`}>{categoria.desc}</p>
-                                
-                                <div className="space-y-3">
-                                    {categoria.items.map(campo => (
-                                        <label key={campo.key} className={`flex items-center gap-2 text-xs font-bold cursor-pointer transition-colors ${triggerForm.payload?.[campo.key] ? categoria.color : 'text-slate-600 hover:text-slate-900'}`}>
-                                            <input 
-                                                type="checkbox" 
-                                                checked={triggerForm.payload?.[campo.key] || false} 
-                                                onChange={e => setTriggerForm({...triggerForm, payload: {...triggerForm.payload, [campo.key]: e.target.checked}})} 
-                                                className="w-4 h-4 rounded border-slate-300" 
-                                                style={{ accentColor: 'currentColor' }}
-                                            /> 
-                                            {campo.label}
-                                            <SafeTooltip text={campo.tip} title="Parâmetro Oficial" />
-                                        </label>
-                                    ))}
+                    <div className="hub-smart-grid" style={{ gap: '24px' }}>
+                        {payloadCategories.map((categoria, idx) => {
+                            const colors = mapTailwindColor(categoria.bg);
+                            return (
+                                <div key={idx} style={{ padding: '20px', borderRadius: '12px', backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}>
+                                    <h4 style={{ fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', color: colors.text }}>
+                                        <categoria.icon size={16} /> {categoria.title}
+                                    </h4>
+                                    <p style={{ fontSize: '10px', marginBottom: '16px', opacity: 0.7, color: colors.text }}>{categoria.desc}</p>
+                                    
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {categoria.items.map(campo => (
+                                            <label key={campo.key} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'color 0.2s', color: triggerForm.payload?.[campo.key] ? colors.text : 'var(--hub-text-secondary)' }}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={triggerForm.payload?.[campo.key] || false} 
+                                                    onChange={e => setTriggerForm({...triggerForm, payload: {...triggerForm.payload, [campo.key]: e.target.checked}})} 
+                                                    style={{ width: '16px', height: '16px', borderRadius: '4px', border: '1px solid var(--hub-border)', accentColor: 'currentColor' }}
+                                                /> 
+                                                {campo.label}
+                                                <SafeTooltip text={campo.tip} title="Parâmetro Oficial" />
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
                 {/* Footer: Toggle + Ações */}
-                <div className="flex items-center justify-between border-t border-slate-200 pt-6">
-                    <div className="flex items-center gap-4">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--hub-border-subtle)', paddingTop: '24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <CustomRecessedToggle active={triggerForm.status} onChange={(val) => setTriggerForm({...triggerForm, status: val})} />
                         <div>
-                            <span className="text-sm text-slate-800 font-bold select-none block">Regra Ativa</span>
-                            <span className="text-[11px] text-slate-500">Ativa/desativa o monitoramento na loja</span>
+                            <span style={{ fontSize: '14px', color: 'var(--hub-text-primary)', fontWeight: 'bold', userSelect: 'none', display: 'block' }}>Regra Ativa</span>
+                            <span style={{ fontSize: '11px', color: 'var(--hub-text-secondary)' }}>Ativa/desativa o monitoramento na loja</span>
                         </div>
                     </div>
-                    <div className="flex gap-3">
-                        <button type="button" onClick={onVoltar} className="px-6 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <button type="button" onClick={onVoltar} className="hub-btn-secondary" style={{ padding: '0 24px', height: '48px', borderRadius: '12px' }}>Cancelar</button>
                         <PremiumSaveButton loading={isSaving} text="Salvar Regra de Conversão" />
                     </div>
                 </div>

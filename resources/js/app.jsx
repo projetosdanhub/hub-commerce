@@ -10,38 +10,42 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 
 // --- IMPORTAÇÃO DO MOTOR DE TRACKING E API ---
-import { initTracking, trackPageView } from './tracking';
+import { 
+    initTracking, trackPageView, trackViewItem, trackAddToCart, 
+    trackBeginCheckout, trackAddPaymentInfo, trackPurchase 
+} from './tracking';
 import api from './api';
 
 // --- IMPORTAÇÃO DOS COMPONENTES DA LOJA ---
-import Header from './Modulos/Loja/Header';
-import Footer from './Modulos/Loja/Footer';
-import ProductQuickView from './Modulos/Loja/ProductQuickView';
-import SideCart from './Modulos/Loja/SideCart';
-import SideFavorites from './Modulos/Loja/SideFavorites';
+import Cabecalho from './Modulos/Loja/Cabecalho';
+import Rodape from './Modulos/Loja/Rodape';
+import VisualizacaoRapidaProduto from './Modulos/Loja/VisualizacaoRapidaProduto';
+import CarrinhoLateral from './Modulos/Loja/CarrinhoLateral';
+import FavoritosLateral from './Modulos/Loja/FavoritosLateral';
 
 // --- IMPORTAÇÃO DAS PÁGINAS DA LOJA ---
-import HomePage from './Modulos/Loja/HomePage';
-import ProductDetail from './Modulos/Loja/ProductDetail';
-import CartPage from './Modulos/Loja/CartPage';
-import PerfilPage from './Modulos/Loja/PerfilPage';
-import AfiliadosDashboard from './Modulos/Loja/AfiliadosDashboard';
-import AuthPage from './Modulos/Loja/AuthPage';
+import PaginaInicial from './Modulos/Loja/PaginaInicial';
+import DetalheProduto from './Modulos/Loja/DetalheProduto';
+import PaginaCarrinho from './Modulos/Loja/PaginaCarrinho';
+import PaginaPerfil from './Modulos/Loja/PaginaPerfil';
+import PainelAfiliados from './Modulos/Loja/PainelAfiliados';
+import PaginaAutenticacao from './Modulos/Loja/PaginaAutenticacao';
 
 // --- IMPORTAÇÃO DOS MÓDULOS ADMIN ---
 import AdminLayout from './Modulos/Admin/AdminLayout';
 import AdminOrders from './Modulos/Admin/AdminOrders';
-import AdminCategories from './Modulos/Admin/AdminCategories';
-import AdminProducts from './Modulos/Admin/AdminProducts';
+import CategoriasPrincipal from './Modulos/Admin/Categorias/CategoriasPrincipal';
+import MenusPrincipal from './Modulos/Admin/Menus/MenusPrincipal';
+import AdminProducts from './Modulos/Admin/Produtos/ProdutosPrincipal';
 import AdminMarketing from './Modulos/Admin/AdminMarketing';
 import AdminCustomers from './Modulos/Admin/AdminCustomers';
 import AdminAfiliados from './Modulos/Admin/AdminAfiliados';
-import AdminVitrine from './Modulos/Admin/AdminVitrine';
-import AdminConfig from './Modulos/Admin/AdminConfig';
+import ConstrutorVitrinePrincipal from './Modulos/Admin/ConstrutorVitrine/ConstrutorVitrinePrincipal';
+import ConfiguracoesPrincipal from './Modulos/Admin/Configuracoes/ConfiguracoesPrincipal';
 import AdminAvaliacoes from './Modulos/Admin/AdminAvaliacoes';
 import AdminLogin from './Modulos/Admin/AdminLogin';
 import AdminCarriers from './Modulos/Admin/AdminCarriers';
-import AdminPixels from './Modulos/Admin/AdminPixels';
+import AdminPixels from './Modulos/Admin/Pixels/PixelsPrincipal';
 
 // Mocks Temporários
 const CategoryPage = () => <div className="p-20 text-center text-2xl font-bold">Página de Categoria / Departamentos</div>;
@@ -87,6 +91,35 @@ const AppContent = () => {
             return () => clearTimeout(timeoutId);
         }
     }, [location.pathname, location.search, isAdmin]);
+
+    // Ouvinte Global do Motor de Eventos Desacoplado
+    useEffect(() => {
+        if (isAdmin) return;
+
+        const handleTrackingEvent = (e) => {
+            const { event, data } = e.detail;
+            switch(event) {
+                case 'ViewContent':
+                    trackViewItem({ price: data.value, item_id: data.content_ids?.[0] });
+                    break;
+                case 'AddToCart':
+                    trackAddToCart({ price: data.value, item_id: data.content_ids?.[0] }, data.value);
+                    break;
+                case 'InitiateCheckout':
+                    trackBeginCheckout({ value: data.value, items: data.content_ids?.map(id => ({item_id: id})) });
+                    break;
+                case 'AddPaymentInfo':
+                    trackAddPaymentInfo('generic', { value: data.value });
+                    break;
+                case 'Purchase':
+                    trackPurchase({ transaction_id: data.transaction_id, order_id: data.transaction_id, value: data.value }, {});
+                    break;
+            }
+        };
+
+        window.addEventListener('tracker:event', handleTrackingEvent);
+        return () => window.removeEventListener('tracker:event', handleTrackingEvent);
+    }, [isAdmin]);
 
     // --- 1. ESTADO GLOBAL DO CARRINHO (MEMÓRIA LOCALSTORAGE) ---
     const [cartItems, setCartItems] = useState(() => {
@@ -179,7 +212,7 @@ const AppContent = () => {
             {/* CABEÇALHO GLOBAL (RENDERIZADO PRIMEIRO)                  */}
             {/* ======================================================= */}
             {!hideLayout && (
-                <Header 
+                <Cabecalho 
                     cartCount={totalItems} 
                     onCartClick={() => setIsCartOpen(true)}
                     favoritesCount={favoritos.length}
@@ -194,28 +227,29 @@ const AppContent = () => {
             <main className="flex-grow w-full relative z-10">
                 <Routes>
                     {/* ROTAS PÚBLICAS DA LOJA */}
-                    <Route path="/" element={<HomePage onOpenQuickView={handleOpenQuickView} />} />
-                    <Route path="/produto/:id" element={<ProductDetail onAddCart={adicionarAoCarrinho} onOpenQuickView={handleOpenQuickView} />} />
-                    <Route path="/carrinho" element={<CartPage cartItems={cartItems} setCartItems={setCartItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
-                    <Route path="/perfil" element={<PerfilPage cartCount={totalItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
-                    <Route path="/afiliados" element={<AfiliadosDashboard cartCount={totalItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/categoria/:slug" element={<CategoryPage />} />
-                    <Route path="/login" element={<AuthPage />} />
+                    <Route path="/" element={<PaginaInicial onOpenQuickView={handleOpenQuickView} />} />
+                    <Route path="/produto/:id" element={<DetalheProduto onAddCart={adicionarAoCarrinho} onOpenQuickView={handleOpenQuickView} />} />
+                    <Route path="/carrinho" element={<PaginaCarrinho cartItems={cartItems} setCartItems={setCartItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
+                    <Route path="/perfil" element={<PaginaPerfil cartCount={totalItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
+                    <Route path="/afiliados" element={<PainelAfiliados cartCount={totalItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
+                    <Route path="/checkout" element={<PaginaCheckout />} />
+                    <Route path="/categoria/:slug" element={<PaginaCategoria />} />
+                    <Route path="/login" element={<PaginaAutenticacao />} />
 
                     {/* ROTAS DO HUB ADMIN */}
                     {/* Usando rotas aninhadas (v6) para tirar proveito total do <Outlet /> no AdminLayout */}
                     <Route path="/admin" element={<AdminLayout />}>
                         <Route index element={<div className="p-8 text-slate-500">Dashboard Geral (Em construção)</div>} />
                         <Route path="pedidos" element={<AdminOrders />} />
-                        <Route path="categorias" element={<AdminCategories />} />
+                        <Route path="categorias" element={<CategoriasPrincipal />} />
+                        <Route path="menus" element={<MenusPrincipal />} />
                         <Route path="produtos" element={<AdminProducts />} />
                         <Route path="marketing" element={<AdminMarketing />} />
                         <Route path="pixels" element={<AdminPixels />} />
                         <Route path="clientes" element={<AdminCustomers />} />
                         <Route path="afiliados" element={<AdminAfiliados />} />
-                        <Route path="vitrine" element={<AdminVitrine />} />
-                        <Route path="configuracoes" element={<AdminConfig />} />
+                        <Route path="vitrine" element={<ConstrutorVitrinePrincipal />} />
+                        <Route path="configuracoes" element={<ConfiguracoesPrincipal />} />
                         <Route path="avaliacoes" element={<AdminAvaliacoes />} />
                         <Route path="transportadoras" element={<AdminCarriers />} />
                     </Route>
@@ -228,12 +262,12 @@ const AppContent = () => {
             {/* ======================================================= */}
             {/* RODAPÉ GLOBAL                                           */}
             {/* ======================================================= */}
-            {!hideLayout && <Footer />}
+            {!hideLayout && <Rodape />}
 
             {/* ========================================================================= */}
             {/* MODAIS GLOBAIS DA RAIZ (RENDERIZADOS NO FIM PARA SOBREPOR TUDO O RESTO)   */}
             {/* ========================================================================= */}
-            <SideCart 
+            <CarrinhoLateral 
                 isOpen={isCartOpen} 
                 onClose={() => setIsCartOpen(false)} 
                 cartItems={cartItems} 
@@ -243,7 +277,7 @@ const AppContent = () => {
                 isLogado={true} 
             />
 
-            <SideFavorites 
+            <FavoritosLateral 
                 isOpen={isFavoritesOpen} 
                 onClose={() => setIsFavoritesOpen(false)} 
                 favoritos={favoritos} 
@@ -252,7 +286,7 @@ const AppContent = () => {
                 onOpenQuickView={handleOpenQuickView} 
             />
 
-            <ProductQuickView 
+            <VisualizacaoRapidaProduto 
                 isOpen={quickViewProdutoId !== false} 
                 produtoId={quickViewProdutoId} 
                 onClose={handleCloseQuickView} 

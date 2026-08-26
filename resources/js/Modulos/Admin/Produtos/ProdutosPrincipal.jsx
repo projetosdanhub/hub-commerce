@@ -1,22 +1,24 @@
 // ============================================================================
 // FICHEIRO: resources/js/Modulos/Admin/AdminProducts.jsx
-// ARQUITETURA: Catálogo Enterprise SaaS Refatorado
+// ARQUITETURA: Catálogo Enterprise SaaS Refatorado (Gravity V2)
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Package } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Package, LayoutDashboard, List, History } from 'lucide-react';
 
-import api from '../../api';
+import api from '../../../api';
 
-// --- Shared Components ---
-import { CustomStyles } from './Produtos/Compartilhado/ComponentesUI';
+// --- Shared Components / Design System ---
+import { CustomStyles } from './Compartilhado/ComponentesUI';
+import { PageHeader } from '../DesignSystem/patterns/PageHeader';
+import { LocalNavigation } from '../DesignSystem/patterns/LocalNavigation';
 
 // --- Modulos ---
-import DashboardCatalogo from './Produtos/Painel/DashboardCatalogo';
-import ListaDeProdutos from './Produtos/Lista/ListaDeProdutos';
-import EditorDeProduto from './Produtos/Editor/EditorDeProduto';
-import AuditoriaProdutos from './Produtos/Auditoria/AuditoriaProdutos';
+import DashboardCatalogo from './Painel/DashboardCatalogo';
+import ListaDeProdutos from './Lista/ListaDeProdutos';
+import EditorDeProduto from './Editor/EditorDeProduto';
+import AuditoriaProdutos from './Auditoria/AuditoriaProdutos';
 
 class ProductErrorBoundary extends React.Component {
     constructor(props) {
@@ -32,10 +34,14 @@ class ProductErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="p-8 bg-rose-50 rounded-2xl border border-rose-200">
-                    <h2 className="text-xl font-bold text-rose-800 mb-2">Algo deu errado no Catálogo.</h2>
-                    <p className="text-rose-600 font-mono text-sm">{this.state.error?.toString()}</p>
-                    <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-rose-600 text-white font-bold rounded-lg hover:bg-rose-700">
+                <div className="hub-panel" style={{ padding: '32px', margin: '16px', backgroundColor: 'var(--hub-danger-soft)', borderColor: 'rgba(var(--hub-danger-rgb), 0.2)' }}>
+                    <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--hub-danger)', marginBottom: '8px' }}>Algo deu errado no Catálogo.</h2>
+                    <p style={{ color: 'rgba(var(--hub-danger-rgb), 0.8)', fontFamily: 'monospace', fontSize: '14px' }}>{this.state.error?.toString()}</p>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="hub-btn"
+                        style={{ marginTop: '16px', backgroundColor: 'var(--hub-danger)', color: 'var(--hub-text-on-color)' }}
+                    >
                         Recarregar Página
                     </button>
                 </div>
@@ -108,56 +114,38 @@ const AdminProductsContent = () => {
         setMainTab('EDITOR');
     };
 
-    const renderHeader = () => {
-        if (mainTab === 'EDITOR') return null; // Editor tem seu próprio header
-
-        return (
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 px-4 sm:px-0">
-                <div>
-                    <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-                        <Package className="w-6 h-6 text-blue-600" /> Gestão de Catálogo
-                    </h1>
-                    <p className="text-slate-500 mt-1 text-sm">Gerencie seus produtos, variações, grade de estoque, fiscal e mídia em um hub centralizado.</p>
-                </div>
-            </div>
-        );
-    };
-
-    const renderTabs = () => {
-        if (mainTab === 'EDITOR') return null; // Não exibe abas principais durante edição
-
-        return (
-            <div className="flex overflow-x-auto no-scrollbar bg-slate-100/80 p-1 rounded-xl mb-10 w-max max-w-full border border-slate-200/50 mx-4 sm:mx-0">
-                {['DASHBOARD', 'PRODUTOS', 'AUDITORIA'].map(tab => (
-                    <button 
-                        type="button" 
-                        key={tab} 
-                        aria-selected={mainTab === tab} 
-                        onClick={() => setMainTab(tab)} 
-                        className={`relative px-5 py-2.5 rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap outline-none ${mainTab === tab ? 'bg-white text-slate-800 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
-                    >
-                        {mainTab === tab && <motion.div layoutId="activeMainTabProducts" className="absolute inset-0 bg-white rounded-xl" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />}
-                        <span className="relative z-10">{tab}</span>
-                    </button>
-                ))}
-            </div>
-        );
-    };
+    const navTabs = [
+        { id: 'DASHBOARD', label: 'DASHBOARD', icon: LayoutDashboard },
+        { id: 'PRODUTOS', label: 'PRODUTOS', icon: List },
+        { id: 'AUDITORIA', label: 'AUDITORIA', icon: History }
+    ];
 
     return (
-        <div className="w-full max-w-7xl mx-auto pb-16 relative min-h-screen bg-slate-50/50 font-sans selection:bg-blue-200 selection:text-blue-900 pt-8">
+        <div className="hub-page-container">
             <Helmet>
                 <title>Gestão de Catálogo | Hub Commerce</title>
             </Helmet>
             <CustomStyles />
             
-            {renderHeader()}
-            {renderTabs()}
+            {mainTab !== 'EDITOR' && (
+                <>
+                    <PageHeader 
+                        title="Gestão de Catálogo"
+                        description="Gerencie seus produtos, variações, grade de estoque, fiscal e mídia em um hub centralizado."
+                        icon={Package}
+                    />
+                    <LocalNavigation 
+                        tabs={navTabs}
+                        activeTab={mainTab}
+                        onChange={setMainTab}
+                    />
+                </>
+            )}
 
-            <div className="px-4 sm:px-0">
+            <div style={{ width: '100%' }}>
                 <AnimatePresence mode="wait">
                     {mainTab === 'DASHBOARD' && (
-                        <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                        <motion.div key="dashboard" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.15, ease: "easeOut" }}>
                             <DashboardCatalogo 
                                 produtos={produtos} 
                                 isRefreshing={isLoading} 
@@ -166,7 +154,7 @@ const AdminProductsContent = () => {
                         </motion.div>
                     )}
                     {mainTab === 'PRODUTOS' && (
-                        <motion.div key="produtos" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                        <motion.div key="produtos" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.15, ease: "easeOut" }}>
                             <ListaDeProdutos 
                                 produtos={produtos} 
                                 categorias={categorias}
@@ -177,12 +165,12 @@ const AdminProductsContent = () => {
                         </motion.div>
                     )}
                     {mainTab === 'AUDITORIA' && (
-                        <motion.div key="auditoria" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                        <motion.div key="auditoria" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.15, ease: "easeOut" }}>
                             <AuditoriaProdutos />
                         </motion.div>
                     )}
                     {mainTab === 'EDITOR' && produtoEmEdicao && (
-                        <motion.div key="editor" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                        <motion.div key="editor" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.15, ease: "easeOut" }}>
                             <EditorDeProduto 
                                 produtoOriginal={produtoEmEdicao} 
                                 onVoltar={() => setMainTab('PRODUTOS')} 

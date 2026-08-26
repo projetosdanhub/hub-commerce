@@ -48,6 +48,10 @@ Route::get('/customers', [ApiCustomerController::class, 'index']);
 // 🟢 LEITURA PÚBLICA: O React carrega a vitrine e as configs do Pixel sem precisar de login
 Route::get('/storefront', [StorefrontController::class, 'getVitrine']);
 Route::get('/storefront/menu', [StorefrontController::class, 'getMenu']);
+Route::get('/storefront/categories', [StorefrontController::class, 'getCategories']);
+Route::get('/storefront/products', [StorefrontController::class, 'getProducts']);
+Route::get('/storefront/products/{id}', [StorefrontController::class, 'getProduct']);
+Route::post('/storefront/checkout', [StorefrontController::class, 'checkout']);
 Route::get('/tracking', [TrackingController::class, 'getSettings']);
 
 // 🟢 INGESTÃO DE DADOS (DATA LAYER): Recebe os eventos de conversão da loja pública
@@ -100,8 +104,12 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     });
     // --- MÓDULO: MEGA MENU ---
     Route::prefix('menu')->group(function () {
-        Route::get('/', [NavigationMenuController::class, 'index']);
-        Route::post('/sync', [NavigationMenuController::class, 'sync']);
+        Route::get('/', [NavigationMenuController::class, 'getConfigs']);
+        Route::post('/', [NavigationMenuController::class, 'storeConfig']);
+        Route::put('/{id}', [NavigationMenuController::class, 'updateConfig']);
+        Route::delete('/{id}', [NavigationMenuController::class, 'destroyConfig']);
+        Route::get('/{id}/items', [NavigationMenuController::class, 'getItems']);
+        Route::post('/{id}/sync', [NavigationMenuController::class, 'syncItems']);
     });
     // --- MÓDULO: PRODUTOS ---
     Route::prefix('products')->group(function () {
@@ -168,6 +176,12 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::get('/triggers', [TrackingController::class, 'getTriggers']);
         Route::post('/triggers', [TrackingController::class, 'storeTrigger']);
         Route::delete('/triggers/{id}', [TrackingController::class, 'deleteTrigger']);
+    });
+
+    // --- MÓDULO: CONFIGURAÇÕES GERAIS (GATEWAYS E LOGÍSTICA) ---
+    Route::prefix('settings')->group(function () {
+        Route::get('/{group}', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'getGroup']);
+        Route::post('/', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'setSetting']);
     });
 
     // --- MÓDULO: CONSTRUTOR DE VITRINE ---

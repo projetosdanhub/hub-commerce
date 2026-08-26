@@ -30,7 +30,7 @@ const SpinnerIcon = () => (
     </svg>
 );
 
-const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
+const CartaoProdutoHorizontal = ({ abrirModal, produto, produtoId = 1 }) => {
     const navigate = useNavigate();
 
     // --- ESTADOS DE LOADING PARA EXPERIÊNCIA DO UTILIZADOR (UX) ---
@@ -47,21 +47,29 @@ const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
     };
 
     // 2. DADOS DO PRODUTO (Dinâmicos)
-    const produto = {
+    const currentProduct = produto || {
         id: produtoId,
         sku: `SKU-${produtoId}HQ`,
-        nome: "Auscultadores Bluetooth Noise Cancelling Premium",
-        precoAntigo: 450.00,
-        precoAtual: 349.99,
-        descricaoCurta: "Cancelamento de ruído ativo topo de gama, até 30h de bateria, conforto inigualável.",
-        imagem: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80",
-        avaliacoes: { total: 412, media: 4.9 },
-        ePersonalizavel: true
+        nome: "Produto Não Encontrado",
+        precoAntigo: 0,
+        precoAtual: 0,
+        descricaoCurta: "...",
+        imagem: null,
+        avaliacoes: { total: 0, media: 0 },
+        ePersonalizavel: false
     };
 
+    const precoAtual = Number(currentProduct.preco_promocional || currentProduct.preco || currentProduct.precoAtual || 0);
+    const precoAntigo = currentProduct.preco_promocional ? Number(currentProduct.preco) : Number(currentProduct.precoAntigo || 0);
+    
+    // Calcula imagem (Considerando relação model Images ou mock)
+    const imagemUrl = currentProduct.images && currentProduct.images.length > 0 
+        ? `/storage/${currentProduct.images[0].caminho}` 
+        : (currentProduct.imagem || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80");
+
     let descontoPercentual = 0;
-    if (produto.precoAntigo > produto.precoAtual) {
-        descontoPercentual = Math.round(((produto.precoAntigo - produto.precoAtual) / produto.precoAntigo) * 100);
+    if (precoAntigo > precoAtual) {
+        descontoPercentual = Math.round(((precoAntigo - precoAtual) / precoAntigo) * 100);
     }
 
     // --- TRACKING & HANDLERS COM DELAYS ---
@@ -75,7 +83,7 @@ const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
 
         // Atraso de 0.7s sugerido para processar a animação
         setTimeout(() => {
-            navigate(`/produto/${produto.id}`);
+            navigate(`/produto/${currentProduct.id || currentProduct.slug || 1}`);
             setIsNavigating(false); // Reseta caso o user faça "Voltar" no browser
         }, 700);
     };
@@ -87,7 +95,7 @@ const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
         // Atraso de 0.5s para não abrir instantaneamente e dar tempo ao DOM de preparar
         setTimeout(() => {
             if (typeof abrirModal === 'function') {
-                abrirModal(produto.id);
+                abrirModal(currentProduct.id);
             } else {
                 console.warn("Função abrirModal não fornecida ao ProductCardHorizontal.");
             }
@@ -100,19 +108,19 @@ const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
             // Utilizamos 'group/card' para garantir que os hovers (como o ícone do carrinho) 
             // reajam APENAS a este cartão específico.
             className="w-full min-w-[85vw] lg:min-w-0 min-h-[150px] sm:min-h-[170px] bg-white rounded-[16px] border border-transparent hover:border-gray-100 hover:shadow-lg transition-all duration-300 relative flex overflow-hidden group/card select-none"
-            aria-label={`Visualizar detalhes do produto: ${produto.nome}`}
+            aria-label={`Visualizar detalhes do produto: ${currentProduct.nome}`}
         >
             {/* ZONA DA IMAGEM (ESQUERDA) */}
             <div className="relative w-[130px] sm:w-[190px] bg-gray-50 overflow-hidden flex-shrink-0 pointer-events-none">
                 <img 
-                    src={produto.imagem} 
-                    alt={produto.nome} 
+                    src={imagemUrl} 
+                    alt={currentProduct.nome} 
                     loading="lazy"
                     draggable="false"
                     className="absolute inset-0 w-full h-full object-cover mix-blend-multiply transition-transform duration-1000 ease-out group-hover/card:scale-[1.04]" 
                 />
 
-                {produto.ePersonalizavel && (
+                {currentProduct.is_personalizable && (
                     <div className="absolute top-2 left-2 bg-[#111827]/80 backdrop-blur-md text-white text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-md shadow-sm z-10 tracking-wider uppercase border border-white/20">
                         Personalizável
                     </div>
@@ -145,16 +153,16 @@ const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
                 
                 <div className="mb-2">
                     <h3 className="text-gray-900 font-medium text-[14px] sm:text-[15px] line-clamp-2 leading-snug mb-1.5">
-                        {produto.nome}
+                        {currentProduct.nome}
                     </h3>
 
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                        {produto.avaliacoes.total > 0 && (
+                        {currentProduct.avaliacoes && currentProduct.avaliacoes.total > 0 && (
                             <div className="flex items-center space-x-1.5">
                                 <div className="flex">
-                                    {[1, 2, 3, 4, 5].map((i) => <StarIcon key={i} preenchida={i <= Math.round(produto.avaliacoes.media)} />)}
+                                    {[1, 2, 3, 4, 5].map((i) => <StarIcon key={i} preenchida={i <= Math.round(currentProduct.avaliacoes.media)} />)}
                                 </div>
-                                <span className="text-[10px] sm:text-[11px] font-medium text-gray-400">({produto.avaliacoes.total})</span>
+                                <span className="text-[10px] sm:text-[11px] font-medium text-gray-400">({currentProduct.avaliacoes.total})</span>
                             </div>
                         )}
                         
@@ -168,7 +176,7 @@ const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
 
                     {configLojista.exibirDescricao && (
                         <p className="text-gray-500 text-[11px] sm:text-[12px] line-clamp-1 sm:line-clamp-2 leading-relaxed hidden sm:block">
-                            {produto.descricaoCurta}
+                            {currentProduct.descricaoCurta || currentProduct.descricao_curta || currentProduct.nome}
                         </p>
                     )}
                 </div>
@@ -177,10 +185,10 @@ const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
                     
                     {/* Bloco de Preços e Badges Extras */}
                     <div className="flex flex-col min-w-0 pointer-events-none">
-                        {produto.precoAntigo > produto.precoAtual && (
+                        {precoAntigo > precoAtual && (
                             <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                                 <span className="text-gray-400 text-[11px] sm:text-[12px] line-through font-medium truncate">
-                                    R$ {produto.precoAntigo.toFixed(2)}
+                                    R$ {precoAntigo.toFixed(2)}
                                 </span>
                                 {descontoPercentual > 0 && (
                                     <span className="text-orange-500 text-[10px] sm:text-[11px] font-semibold tracking-tight whitespace-nowrap">
@@ -191,7 +199,7 @@ const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
                         )}
                         
                         <span className="text-gray-900 font-bold text-[18px] sm:text-[22px] leading-none tracking-tight truncate">
-                            R$ {produto.precoAtual.toFixed(2)}
+                            R$ {precoAtual.toFixed(2)}
                         </span>
 
                         {/* Badges Adicionais Injetados pelo Lojista */}
@@ -225,4 +233,4 @@ const ProductCardHorizontal = ({ abrirModal, produtoId = 1 }) => {
     );
 };
 
-export default ProductCardHorizontal;
+export default CartaoProdutoHorizontal;

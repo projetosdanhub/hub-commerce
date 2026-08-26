@@ -3,116 +3,136 @@ import { Icons } from '../../Compartilhado/Icones';
 
 export default function AbaGeral({ p, setP, erros, setErros, categorias }) {
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide mb-4">Informações Básicas</h3>
-                    <div className="space-y-4">
-                        <div className="group/input">
-                            <label className="text-[10px] font-bold text-slate-500 group-focus-within/input:text-blue-600 uppercase block mb-1.5 transition-colors">
-                                Nome do Produto *
-                            </label>
-                            <input 
-                                type="text" 
-                                value={p.nome} 
-                                onChange={e => { setErros({...erros, nome: false}); setP({...p, nome: e.target.value}); }} 
-                                placeholder="Ex: Cadeira Ergônomica..."
-                                className={`w-full bg-slate-50/50 border ${erros.nome ? 'border-rose-400 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'} rounded-xl px-5 py-3.5 text-sm font-medium text-slate-800 outline-none focus:bg-white focus:ring-4 focus:border-blue-400 transition-all shadow-sm`} 
-                            />
-                            {erros.nome && <span className="text-[10px] text-rose-500 font-bold mt-1 block">O nome é obrigatório</span>}
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="group/input">
-                                <label className="text-[10px] font-bold text-slate-500 group-focus-within/input:text-blue-600 uppercase block mb-1.5 transition-colors">
-                                    SKU Principal (Mestre)
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+            <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+                {/* Column 1 (2/3 width on large screens) */}
+                <div style={{ gridColumn: 'span 2 / span 2', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div className="hub-card">
+                        <h3 className="hub-card-title">Informações Básicas</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div className="hub-field">
+                                <label className="hub-label">
+                                    Nome do Produto *
                                 </label>
-                                <div className="flex">
-                                    <div className="bg-slate-100 border border-slate-200 border-r-0 rounded-l-xl px-4 py-3.5 text-sm font-bold text-slate-500 flex items-center shadow-sm">
-                                        <input type="text" value={p.skuRef} onChange={e => setP({...p, skuRef: e.target.value.toUpperCase()})} placeholder="REF" className="w-16 bg-transparent outline-none text-center" />
-                                        <span>-</span>
+                                <input 
+                                    type="text" 
+                                    value={p.nome} 
+                                    onChange={e => { setErros({...erros, nome: false}); setP({...p, nome: e.target.value}); }} 
+                                    placeholder="Ex: Cadeira Ergônomica..."
+                                    className={`hub-input ${erros.nome ? 'error' : ''}`} 
+                                />
+                                {erros.nome && <span className="hub-error-text">O nome é obrigatório</span>}
+                            </div>
+                            
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <div className="hub-field" style={{ flex: 1 }}>
+                                    <label className="hub-label">
+                                        SKU Principal (Mestre)
+                                    </label>
+                                    <div style={{ display: 'flex' }}>
+                                        <div style={{ 
+                                            backgroundColor: 'var(--hub-surface-subtle)', 
+                                            border: '1px solid var(--hub-border)', 
+                                            borderRight: 'none', 
+                                            borderRadius: 'var(--hub-radius-md) 0 0 var(--hub-radius-md)', 
+                                            padding: '12px 16px', 
+                                            fontSize: '14px', 
+                                            fontWeight: 'bold', 
+                                            color: 'var(--hub-text-secondary)', 
+                                            display: 'flex', 
+                                            alignItems: 'center' 
+                                        }}>
+                                            <input type="text" value={p.skuRef} onChange={e => setP({...p, skuRef: e.target.value.toUpperCase()})} placeholder="REF" style={{ width: '64px', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', border: 'none', color: 'inherit', fontWeight: 'inherit', padding: 0 }} />
+                                            <span>-</span>
+                                        </div>
+                                        <input type="text" value={p.skuSufixo} onChange={e => setP({...p, skuSufixo: e.target.value.toUpperCase()})} placeholder="SUFIXO (Automático)" className="hub-input" style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0, flex: 1, minWidth: 0, fontFamily: 'monospace' }} />
                                     </div>
-                                    <input type="text" value={p.skuSufixo} onChange={e => setP({...p, skuSufixo: e.target.value.toUpperCase()})} placeholder="SUFIXO (Automático se vazio)" className="flex-1 min-w-0 bg-slate-50/50 border border-slate-200 rounded-r-xl px-5 py-3.5 text-sm font-mono font-bold text-slate-700 outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-400 transition-all shadow-sm" />
+                                </div>
+                                <div className="hub-field" style={{ flex: 1 }}>
+                                    <label className="hub-label">
+                                        Status
+                                    </label>
+                                    <select value={p.status} onChange={e => setP({...p, status: e.target.value})} className="hub-input hub-select">
+                                        <option value="ATIVO">ATIVO - Visível na loja</option>
+                                        <option value="INATIVO">INATIVO - Oculto</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div className="group/input">
-                                <label className="text-[10px] font-bold text-slate-500 group-focus-within/input:text-blue-600 uppercase block mb-1.5 transition-colors">
-                                    Status
+
+                            <div className="hub-field">
+                                <label className="hub-label">
+                                    Categoria Principal *
                                 </label>
-                                <select value={p.status} onChange={e => setP({...p, status: e.target.value})} className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-5 py-3.5 text-sm font-black text-slate-700 outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-400 transition-all shadow-sm cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_16px_center] bg-no-repeat pr-10">
-                                    <option value="ATIVO">ATIVO - Visível na loja</option>
-                                    <option value="INATIVO">INATIVO - Oculto</option>
+                                <select 
+                                    value={p.categoriaPrincipal} 
+                                    onChange={e => { setErros({...erros, categoriaPrincipal: false}); setP({...p, categoriaPrincipal: e.target.value}); }}
+                                    className={`hub-input hub-select ${erros.categoriaPrincipal ? 'error' : ''}`}
+                                >
+                                    <option value="">Selecione uma categoria...</option>
+                                    {categorias.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
                                 </select>
+                                {erros.categoriaPrincipal && <span className="hub-error-text">Selecione a categoria</span>}
                             </div>
-                        </div>
-                        <div className="group/input">
-                            <label className="text-[10px] font-bold text-slate-500 group-focus-within/input:text-blue-600 uppercase block mb-1.5 transition-colors">
-                                Categoria Principal *
-                            </label>
-                            <select 
-                                value={p.categoriaPrincipal} 
-                                onChange={e => { setErros({...erros, categoriaPrincipal: false}); setP({...p, categoriaPrincipal: e.target.value}); }}
-                                className={`w-full bg-slate-50/50 border ${erros.categoriaPrincipal ? 'border-rose-400 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'} rounded-xl px-5 py-3.5 text-sm font-medium text-slate-800 outline-none focus:bg-white focus:ring-4 focus:border-blue-400 transition-all shadow-sm cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:16px_16px] bg-[right_16px_center] bg-no-repeat pr-10`}
-                            >
-                                <option value="">Selecione uma categoria...</option>
-                                {categorias.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
-                            </select>
-                            {erros.categoriaPrincipal && <span className="text-[10px] text-rose-500 font-bold mt-1 block">Selecione a categoria</span>}
-                        </div>
-                        <div className="group/input">
-                            <label className="text-[10px] font-bold text-slate-500 group-focus-within/input:text-blue-600 uppercase block mb-1.5 transition-colors">
-                                Descrição Completa
-                            </label>
-                            <textarea 
-                                value={p.descricao} 
-                                onChange={e => setP({...p, descricao: e.target.value})} 
-                                rows="6" 
-                                placeholder="Descreva os detalhes, características e diferenciais do produto..."
-                                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-medium text-slate-700 outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-400 transition-all shadow-sm resize-y min-h-[120px]" 
-                            ></textarea>
+                            <div className="hub-field">
+                                <label className="hub-label">
+                                    Descrição Completa
+                                </label>
+                                <textarea 
+                                    value={p.descricao} 
+                                    onChange={e => setP({...p, descricao: e.target.value})} 
+                                    rows="6" 
+                                    placeholder="Descreva os detalhes, características e diferenciais do produto..."
+                                    className="hub-input"
+                                    style={{ resize: 'vertical', minHeight: '120px' }}
+                                ></textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div className="space-y-6">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide mb-4">Preço</h3>
-                    <div className="space-y-4">
-                        <div className="group/input">
-                            <label className="text-[10px] font-bold text-slate-500 group-focus-within/input:text-blue-600 uppercase block mb-1.5 transition-colors">
-                                Preço de Venda *
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span className="text-slate-400 font-bold text-sm">R$</span>
+                
+                {/* Column 2 (1/3 width on large screens) */}
+                <div style={{ gridColumn: 'span 1 / span 1', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div className="hub-card">
+                        <h3 className="hub-card-title">Preço</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div className="hub-field">
+                                <label className="hub-label">
+                                    Preço de Venda *
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                    <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, paddingLeft: '16px', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+                                        <span style={{ color: 'var(--hub-text-secondary)', fontWeight: 'bold', fontSize: '14px' }}>R$</span>
+                                    </div>
+                                    <input 
+                                        type="number" 
+                                        step="0.01" 
+                                        min="0"
+                                        value={p.preco} 
+                                        onChange={e => { setErros({...erros, preco: false}); setP({...p, preco: e.target.value}); }} 
+                                        className={`hub-input ${erros.preco ? 'error' : ''}`}
+                                        style={{ paddingLeft: '40px', fontWeight: '900', fontSize: '16px' }}
+                                    />
                                 </div>
-                                <input 
-                                    type="number" 
-                                    step="0.01" 
-                                    min="0"
-                                    value={p.preco} 
-                                    onChange={e => { setErros({...erros, preco: false}); setP({...p, preco: e.target.value}); }} 
-                                    className={`w-full bg-slate-50/50 border ${erros.preco ? 'border-rose-400 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-blue-500/20'} rounded-xl pl-10 pr-4 py-3.5 text-base font-black text-slate-800 outline-none focus:bg-white focus:ring-4 focus:border-blue-400 transition-all shadow-sm`} 
-                                />
+                                {erros.preco && <span className="hub-error-text">Preço inválido</span>}
                             </div>
-                            {erros.preco && <span className="text-[10px] text-rose-500 font-bold mt-1 block">Preço inválido</span>}
-                        </div>
-                        <div className="group/input">
-                            <label className="text-[10px] font-bold text-slate-500 group-focus-within/input:text-blue-600 uppercase block mb-1.5 transition-colors">
-                                Preço Promocional (Opcional)
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span className="text-emerald-500 font-bold text-sm">R$</span>
+                            <div className="hub-field">
+                                <label className="hub-label">
+                                    Preço Promocional (Opcional)
+                                </label>
+                                <div style={{ position: 'relative' }}>
+                                    <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, paddingLeft: '16px', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+                                        <span style={{ color: 'var(--hub-success)', fontWeight: 'bold', fontSize: '14px' }}>R$</span>
+                                    </div>
+                                    <input 
+                                        type="number" 
+                                        step="0.01" 
+                                        min="0"
+                                        value={p.precoPromo} 
+                                        onChange={e => setP({...p, precoPromo: e.target.value})} 
+                                        className="hub-input"
+                                        style={{ paddingLeft: '40px', fontWeight: '900', fontSize: '16px', color: 'var(--hub-success)' }}
+                                    />
                                 </div>
-                                <input 
-                                    type="number" 
-                                    step="0.01" 
-                                    min="0"
-                                    value={p.precoPromo} 
-                                    onChange={e => setP({...p, precoPromo: e.target.value})} 
-                                    className="w-full bg-slate-50/50 border border-slate-200 rounded-xl pl-10 pr-4 py-3.5 text-base font-black text-emerald-600 outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all shadow-sm placeholder:text-emerald-300 placeholder:font-medium" 
-                                />
                             </div>
                         </div>
                     </div>

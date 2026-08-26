@@ -1,18 +1,41 @@
-@import 'tailwindcss';
+@import './tokens.css';
+@import './layout.css';
+@import './components.css';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
-
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* =========================================
+   Reset Básico (Substituindo o Tailwind base)
+   ========================================= */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+body {
+    font-family: var(--hub-font-sans);
+    background-color: var(--hub-bg-body);
+    color: var(--hub-text-primary);
+    line-height: var(--hub-line-height-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    color: var(--hub-brand-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--hub-brand-primary-hover);
+}
+
+button {
+    font-family: inherit;
+}
+
+/* =========================================
+   Utilitários de Scrollbar
+   ========================================= */
 
 /* Esconde a barra de rolagem em Chrome/Safari/Edge */
 .no-scrollbar::-webkit-scrollbar {
@@ -24,23 +47,17 @@
     scrollbar-width: none;  /* Firefox */
 }
 
-/* Scroll customizado — ultra-fino e refinado */
-.custom-scrollbar { scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent; }
-.custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; }
+/* Scroll customizado — fino e refinado seguindo Design System */
+.custom-scrollbar { 
+    scrollbar-width: thin; 
+    scrollbar-color: var(--hub-border-strong) transparent; 
+}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 20px;
+    background: var(--hub-border-strong);
+    border-radius: var(--hub-radius-pill);
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* Scroll horizontal fino — barra de métricas */
-.thin-scroll { scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent; }
-.thin-scroll::-webkit-scrollbar { height: 3px; width: 3px; }
-.thin-scroll::-webkit-scrollbar-track { background: transparent; }
-.thin-scroll::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 20px;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { 
+    background: var(--hub-text-muted); 
 }
-.thin-scroll:hover::-webkit-scrollbar-thumb { background: #cbd5e1; }
-.thin-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

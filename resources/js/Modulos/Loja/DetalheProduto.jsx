@@ -126,6 +126,10 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
     const { id } = useParams();
     
     // --- ESTADOS DO PRODUTO E UI ---
+    const [produto, setProduto] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [imagemAtiva, setImagemAtiva] = useState(0);
     const [quantidade, setQuantidade] = useState(1);
     const [qtdKey, setQtdKey] = useState(0); // Força animação de chaqualhar
@@ -142,6 +146,71 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
 
     useEffect(() => { 
         if (typeof window !== 'undefined') window.scrollTo(0, 0); 
+        
+        const fetchProduct = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`/api/storefront/products/${id}`);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    // Mapeia o produto da API para o formato esperado pela view
+                    const prodApi = data.data;
+                    const preco = Number(prodApi.preco_promocional || prodApi.preco || 0);
+                    const precoAntigo = prodApi.preco_promocional ? Number(prodApi.preco) : 0;
+                    
+                    const p = {
+                        id: prodApi.id,
+                        nome: prodApi.nome,
+                        precoAntigo: precoAntigo,
+                        precoAtual: preco,
+                        descricao: prodApi.descricao || "Sem descrição disponível.",
+                        imagens: prodApi.images && prodApi.images.length > 0 
+                                 ? prodApi.images.map(img => `/storage/${img.caminho}`)
+                                 : ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80"],
+                        avaliacoes: { media: 4.8, total: 128, contagemImagens: 24, contagemVideos: 5, contagemTexto: 99 },
+                        ePersonalizavel: prodApi.is_personalizable || false,
+                        freteGratisAte: true,
+                        variacoes: prodApi.variations && prodApi.variations.length > 0 ? [
+                            {
+                                tipo: 'Variações',
+                                estilo: 'texto',
+                                opcoes: prodApi.variations.map(v => ({ nome: v.nome, preco_adicional: v.preco_adicional }))
+                            }
+                        ] : [],
+                        estoque: prodApi.estoque_atual || 15
+                    };
+                    setProduto(p);
+                    
+                    // Dispara evento para o Data Layer (Pixel/GA4 ViewContent)
+                    if (window.dispatchEvent) {
+                        window.dispatchEvent(new CustomEvent('tracker:event', {
+                            detail: {
+                                event: 'ViewContent',
+                                data: {
+                                    content_ids: [p.id],
+                                    content_name: p.nome,
+                                    content_type: 'product',
+                                    value: p.precoAtual,
+                                    currency: 'BRL'
+                                }
+                            }
+                        }));
+                    }
+
+                } else {
+                    setError('Produto não encontrado.');
+                }
+            } catch (err) {
+                console.error("Erro ao carregar produto:", err);
+                setError('Erro ao carregar produto.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) {
+            fetchProduct();
+        }
     }, [id]);
 
     // --- CONFIGURAÇÕES DINÂMICAS DO LOJISTA (Banners) ---
@@ -161,43 +230,20 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
         ]
     };
 
-    // --- DADOS DO PRODUTO (MOCK API) ---
-    const produto = {
-        id: id || 1,
-        nome: "Auscultadores Bluetooth Noise Cancelling Premium com Som HD",
-        precoAntigo: 450.00,
-        precoAtual: 349.99,
-        descricao: "Desfrute do silêncio absoluto com o cancelamento de ruído ativo de última geração. O design ergonómico garante conforto para horas de utilização ininterrupta.",
-        imagens: [
-            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
-            "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&q=80",
-            "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=800&q=80",
-            "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&q=80",
-            "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?w=800&q=80"
-        ],
-        avaliacoes: { media: 4.8, total: 128, contagemImagens: 24, contagemVideos: 5, contagemTexto: 99 },
-        ePersonalizavel: true,
-        freteGratisAte: true,
-        variacoes: [
-            { 
-                tipo: 'Cor', 
-                estilo: 'imagem', 
-                opcoes: [
-                    { nome: 'Preto Onyx', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100' },
-                    { nome: 'Prata Lunar', img: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=100' }
-                ]
-            },
-            { 
-                tipo: 'Tamanho', 
-                estilo: 'texto', 
-                opcoes: [{ nome: 'Único' }, { nome: 'Ajustável' }] 
-            }
-        ],
-        estoque: 15
-    };
+    const [variacoesSelecionadas, setVariacoesSelecionadas] = useState({});
+    
+    // Atualiza seleção padrão de variações quando o produto carregar
+    useEffect(() => {
+        if (produto && produto.variacoes && produto.variacoes.length > 0) {
+            const defaultVars = {};
+            produto.variacoes.forEach(v => {
+                if(v.opcoes && v.opcoes.length > 0) defaultVars[v.tipo] = v.opcoes[0].nome;
+            });
+            setVariacoesSelecionadas(defaultVars);
+        }
+    }, [produto]);
 
-    const [variacoesSelecionadas, setVariacoesSelecionadas] = useState({ 'Cor': 'Preto Onyx', 'Tamanho': 'Único' });
-    const descontoPercentual = produto.precoAntigo > produto.precoAtual ? Math.round(((produto.precoAntigo - produto.precoAtual) / produto.precoAntigo) * 100) : 0;
+    const descontoPercentual = (produto && produto.precoAntigo > produto.precoAtual) ? Math.round(((produto.precoAntigo - produto.precoAtual) / produto.precoAntigo) * 100) : 0;
 
     // --- AVALIAÇÕES MOCK & PAGINAÇÃO ---
     const reviewsMock = [
@@ -246,6 +292,26 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
             setIsFavorito(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="w-full min-h-screen flex items-center justify-center bg-[#FCFCFD]">
+                <SpinnerIcon className="w-12 h-12 text-sky-500" />
+            </div>
+        );
+    }
+
+    if (error || !produto) {
+        return (
+            <div className="w-full min-h-screen flex items-center justify-center bg-[#FCFCFD]">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Ops!</h2>
+                    <p className="text-gray-500 mb-4">{error || "Produto não encontrado."}</p>
+                    <Link to="/" className="text-sky-600 font-semibold hover:underline">Voltar para a Loja</Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full bg-[#FCFCFD] selection:bg-blue-100">
@@ -464,7 +530,7 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
                     <div className="prose prose-sm max-w-none text-gray-600">
                         {abaAtiva === 'descricao' && (
                             <div className="leading-relaxed space-y-4">
-                                <p>{produto.descricao}</p>
+                                <div dangerouslySetContent={{ __html: produto.descricao }}></div>
                             </div>
                         )}
                         {abaAtiva === 'especificacoes' && (

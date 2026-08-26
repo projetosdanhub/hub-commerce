@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import NavigationMenu from './NavigationMenu';
+import NavigationMenu from './MenuNavegacao';
 import api from '../../api';
 
 // --- ÍCONES SVG NATIVOS ---

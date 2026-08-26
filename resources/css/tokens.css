@@ -1,0 +1,128 @@
+/* tokens.css - Design System Variáveis Globais */
+
+:root {
+  /* =========================================
+     Cores de Marca (Brand)
+     ========================================= */
+  --hub-brand-primary: #2563EB;
+  --hub-brand-primary-hover: #1D4ED8;
+  --hub-brand-primary-active: #1E40AF;
+  --hub-brand-secondary: #3B82F6;
+  --hub-brand-sky: #38BDF8;
+
+  /* =========================================
+     Superfícies e Fundos (Surfaces & Backgrounds)
+     ========================================= */
+  --hub-bg-body: #F8FAFC;
+  --hub-surface: #FFFFFF;
+  --hub-surface-hover: #F1F5F9;
+  --hub-surface-active: #E2E8F0;
+  
+  /* Fallback e Glassmorphism */
+  --hub-glass-bg: rgba(255, 255, 255, 0.85);
+  --hub-glass-blur: blur(12px);
+  --hub-glass-modal-bg: rgba(255, 255, 255, 0.95);
+  --hub-glass-modal-blur: blur(16px);
+
+  /* =========================================
+     Textos (Foregrounds)
+     ========================================= */
+  --hub-text-primary: #0F172A;
+  --hub-text-secondary: #334155;
+  --hub-text-muted: #64748B;
+  --hub-text-inverse: #FFFFFF;
+
+  /* =========================================
+     Bordas e Divisores (Borders)
+     ========================================= */
+  --hub-border-subtle: #DCE5F2;
+  --hub-border-strong: #CBD5E1;
+  
+  /* =========================================
+     Cores de Feedback (Semânticas)
+     ========================================= */
+  --hub-info: #0369A1;
+  --hub-info-bg: #E0F2FE;
+  
+  --hub-success: #15803D;
+  --hub-success-bg: #DCFCE7;
+  
+  --hub-warning: #B45309;
+  --hub-warning-bg: #FEF3C7;
+  
+  --hub-danger: #DC2626;
+  --hub-danger-bg: #FEE2E2;
+
+  /* =========================================
+     Tipografia (Typography)
+     ========================================= */
+  --hub-font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  
+  --hub-text-display: 2rem;       /* 32px */
+  --hub-text-h1: 1.5rem;          /* 24px */
+  --hub-text-h2: 1.25rem;         /* 20px */
+  --hub-text-h3: 1.125rem;        /* 18px */
+  --hub-text-body-lg: 1rem;       /* 16px */
+  --hub-text-body: 0.875rem;      /* 14px */
+  --hub-text-body-sm: 0.75rem;    /* 12px */
+
+  --hub-font-weight-regular: 400;
+  --hub-font-weight-medium: 500;
+  --hub-font-weight-semibold: 600;
+  --hub-font-weight-bold: 700;
+
+  --hub-line-height-tight: 1.2;
+  --hub-line-height-normal: 1.5;
+
+  /* =========================================
+     Espaçamentos (Spacing) - Base 4px
+     ========================================= */
+  --hub-space-1: 0.25rem;   /* 4px */
+  --hub-space-2: 0.5rem;    /* 8px */
+  --hub-space-3: 0.75rem;   /* 12px */
+  --hub-space-4: 1rem;      /* 16px */
+  --hub-space-5: 1.25rem;   /* 20px */
+  --hub-space-6: 1.5rem;    /* 24px */
+  --hub-space-8: 2rem;      /* 32px */
+  --hub-space-10: 2.5rem;   /* 40px */
+  --hub-space-12: 3rem;     /* 48px */
+  --hub-space-16: 4rem;     /* 64px */
+
+  /* =========================================
+     Raios de Borda (Border Radius)
+     ========================================= */
+  --hub-radius-sm: 4px;
+  --hub-radius-md: 6px;
+  --hub-radius-lg: 8px;
+  --hub-radius-xl: 12px;
+  --hub-radius-pill: 9999px;
+
+  /* =========================================
+     Sombras (Elevations)
+     ========================================= */
+  --hub-shadow-low: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --hub-shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --hub-shadow-high: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --hub-focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--hub-brand-sky);
+
+  /* =========================================
+     Animações e Transições (Motion)
+     ========================================= */
+  --hub-motion-fast: 100ms;
+  --hub-motion-normal: 200ms;
+  --hub-motion-slow: 250ms;
+  --hub-ease-in: ease-in;
+  --hub-ease-out: ease-out;
+  --hub-ease-in-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* =========================================
+     Z-Index Nominal
+     ========================================= */
+  --hub-z-base: 1;
+  --hub-z-sticky: 100;
+  --hub-z-dropdown: 200;
+  --hub-z-overlay: 300;
+  --hub-z-modal: 400;
+  --hub-z-toast: 500;
+  --hub-z-tooltip: 600;
+}

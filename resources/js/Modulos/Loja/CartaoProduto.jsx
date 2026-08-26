@@ -33,7 +33,7 @@ const SpinnerIcon = () => (
     </svg>
 );
 
-const ProductCard = ({ abrirModal, produtoId = 1 }) => {
+const CartaoProduto = ({ abrirModal, produto, produtoId = 1 }) => {
     const navigate = useNavigate();
 
     // Estados de Loading para melhoria da experiência do utilizador (UX)
@@ -51,21 +51,29 @@ const ProductCard = ({ abrirModal, produtoId = 1 }) => {
         }
     };
 
-    // 2. DADOS DO PRODUTO (Mock Dinâmico)
-    const produto = {
+    // 2. DADOS DO PRODUTO (Dinâmico)
+    const currentProduct = produto || {
         id: produtoId,
-        nome: "Caneca Mágica Personalizável Premium",
-        precoAntigo: 89.90,
-        precoAtual: 65.90,
-        imagem: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400&q=80",
-        avaliacoes: { total: 128, media: 4.8 },
-        ePersonalizavel: true,
-        badgesExtras: ["Pronta Entrega", "Novidade"] // Badges extras configuradas pelo lojista
+        nome: "Produto Não Encontrado",
+        precoAntigo: 0,
+        precoAtual: 0,
+        imagem: null,
+        avaliacoes: { total: 0, media: 0 },
+        ePersonalizavel: false,
+        badgesExtras: []
     };
 
+    const precoAtual = Number(currentProduct.preco_promocional || currentProduct.preco || currentProduct.precoAtual || 0);
+    const precoAntigo = currentProduct.preco_promocional ? Number(currentProduct.preco) : Number(currentProduct.precoAntigo || 0);
+    
+    // Calcula imagem (Considerando relação model Images ou mock)
+    const imagemUrl = currentProduct.images && currentProduct.images.length > 0 
+        ? `/storage/${currentProduct.images[0].caminho}` 
+        : (currentProduct.imagem || "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400&q=80");
+
     let descontoPercentual = 0;
-    if (produto.precoAntigo > produto.precoAtual) {
-        descontoPercentual = Math.round(((produto.precoAntigo - produto.precoAtual) / produto.precoAntigo) * 100);
+    if (precoAntigo > precoAtual) {
+        descontoPercentual = Math.round(((precoAntigo - precoAtual) / precoAntigo) * 100);
     }
 
     // --- TRACKING & HANDLERS ---
@@ -82,7 +90,7 @@ const ProductCard = ({ abrirModal, produtoId = 1 }) => {
         // if (window.gtag) window.gtag('event', 'select_item', { items: [{ item_id: produto.id, item_name: produto.nome, price: produto.precoAtual }] });
 
         setTimeout(() => {
-            navigate(`/produto/${produto.id}`);
+            navigate(`/produto/${currentProduct.id || currentProduct.slug || 1}`);
             setIsNavigating(false);
         }, 700);
     };
@@ -97,7 +105,7 @@ const ProductCard = ({ abrirModal, produtoId = 1 }) => {
 
         setTimeout(() => {
             if (typeof abrirModal === 'function') {
-                abrirModal(produto.id);
+                abrirModal(currentProduct.id);
             } else {
                 console.warn("Função abrirModal não foi fornecida ao ProductCard.");
             }
@@ -108,22 +116,22 @@ const ProductCard = ({ abrirModal, produtoId = 1 }) => {
     return (
         <article 
             className="w-[45vw] sm:w-[240px] bg-white rounded-[16px] border border-transparent hover:border-gray-100 hover:shadow-lg transition-all duration-500 relative flex flex-col group/card overflow-hidden select-none"
-            aria-label={`Produto: ${produto.nome}`}
+            aria-label={`Produto: ${currentProduct.nome}`}
         >
             <div className="flex flex-col flex-grow pointer-events-none">
                 
                 {/* --- ZONA DA IMAGEM --- */}
                 <div className={`relative w-full ${configLojista.aspetoImagem} bg-gray-50 overflow-hidden`}>
                     <img 
-                        src={produto.imagem} 
-                        alt={produto.nome} 
+                        src={imagemUrl} 
+                        alt={currentProduct.nome} 
                         loading="lazy"
                         draggable="false"
                         className="w-full h-full object-cover mix-blend-multiply transition-transform duration-1000 ease-out group-hover/card:scale-[1.03]" 
                     />
 
                     {/* Badge de Personalização */}
-                    {produto.ePersonalizavel && (
+                    {currentProduct.is_personalizable && (
                         <div className="absolute bottom-2 left-2 bg-[#111827]/80 backdrop-blur-md text-white text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-md shadow-sm z-10 tracking-wider uppercase border border-white/20">
                             Personalizável
                         </div>
@@ -155,15 +163,15 @@ const ProductCard = ({ abrirModal, produtoId = 1 }) => {
                 <div className="p-3 sm:p-4 flex flex-col flex-grow">
                     
                     {/* Estrelas e Avaliações */}
-                    {produto.avaliacoes.total > 0 && (
+                    {currentProduct.avaliacoes && currentProduct.avaliacoes.total > 0 && (
                         <div className="flex items-center space-x-1 mb-1.5 sm:mb-2">
                             <div className="flex">
                                 {[1, 2, 3, 4, 5].map((i) => (
-                                    <StarIcon key={i} preenchida={i <= Math.round(produto.avaliacoes.media)} />
+                                    <StarIcon key={i} preenchida={i <= Math.round(currentProduct.avaliacoes.media)} />
                                 ))}
                             </div>
                             <span className="text-[10px] sm:text-[11px] font-medium text-gray-400">
-                                ({produto.avaliacoes.total})
+                                ({currentProduct.avaliacoes.total})
                             </span>
                         </div>
                     )}
@@ -171,16 +179,16 @@ const ProductCard = ({ abrirModal, produtoId = 1 }) => {
                     {/* Título do Produto */}
                     {configLojista.exibirTitulo && (
                         <h3 className="text-gray-900 font-medium text-[12px] sm:text-[14px] mb-2 line-clamp-2 leading-snug">
-                            {produto.nome}
+                            {currentProduct.nome}
                         </h3>
                     )}
 
                     {/* Bloco de Preços, Frete e Badges */}
                     <div className="mt-auto flex flex-col">
-                        {produto.precoAntigo > produto.precoAtual && (
+                        {precoAntigo > precoAtual && (
                             <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
                                 <span className="text-gray-400 text-[10px] sm:text-[12px] line-through font-medium">
-                                    R$ {produto.precoAntigo.toFixed(2)}
+                                    R$ {precoAntigo.toFixed(2)}
                                 </span>
                                 {descontoPercentual > 0 && (
                                     <span className="text-orange-500 text-[9px] sm:text-[11px] font-semibold tracking-tight whitespace-nowrap">
@@ -191,7 +199,7 @@ const ProductCard = ({ abrirModal, produtoId = 1 }) => {
                         )}
                         
                         <p className="text-gray-900 font-bold text-[18px] sm:text-[22px] leading-none tracking-tight">
-                            R$ {produto.precoAtual.toFixed(2)}
+                            R$ {precoAtual.toFixed(2)}
                         </p>
 
                         {/* Texto de Frete Grátis com Cupom */}
@@ -203,9 +211,9 @@ const ProductCard = ({ abrirModal, produtoId = 1 }) => {
                         )}
 
                         {/* Badges Extras posicionadas ABAIXO do texto do Frete Grátis */}
-                        {produto.badgesExtras && produto.badgesExtras.length > 0 && (
+                        {currentProduct.badgesExtras && currentProduct.badgesExtras.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
-                                {produto.badgesExtras.map((badge, idx) => (
+                                {currentProduct.badgesExtras.map((badge, idx) => (
                                     <span 
                                         key={idx} 
                                         className="bg-gray-50 border border-gray-100 text-gray-600 text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold tracking-wider whitespace-nowrap"
@@ -244,4 +252,4 @@ const ProductCard = ({ abrirModal, produtoId = 1 }) => {
     );
 };
 
-export default ProductCard;
+export default CartaoProduto;

@@ -51,7 +51,7 @@ class AdminProductController extends Controller
             'galeria.*.mimes' => 'As imagens da galeria devem ser JPG, PNG ou WEBP.',
         ]);
 
-        $dados = $request->except(['img', 'galeria', 'video', 'variacoes', 'variaveis_json', 'galeria_urls', 'isNovo', 'cst', 'cfop', 'unidade', 'icmsPerc', 'ipiPerc', 'comp']);
+        $dados = $request->except(['img', 'galeria', 'video', 'variacoes', 'variaveis_json', 'galeria_urls', 'isNovo', 'cst', 'cfop', 'unidade', 'icmsPerc', 'ipiPerc', 'comp', 'metaTitle', 'metaDesc']);
         
         // Mapeamento de campos fiscais e logística
         if ($request->has('cst')) $dados['csosn'] = $request->cst;
@@ -60,11 +60,16 @@ class AdminProductController extends Controller
         if ($request->has('icmsPerc')) $dados['icms_perc'] = $request->icmsPerc;
         if ($request->has('ipiPerc')) $dados['ipi_perc'] = $request->ipiPerc;
         if ($request->has('comp')) $dados['comprimento'] = $request->comp;
+        if ($request->has('metaTitle')) $dados['meta_title'] = $request->metaTitle;
+        if ($request->has('metaDesc')) $dados['meta_desc'] = $request->metaDesc;
 
         // Geração automática do Slug para SEO
         if (empty($dados['slug'])) {
             $dados['slug'] = Str::slug($dados['nome']);
         }
+
+        // Garante que campos NOT NULL tenham valor padrão
+        $dados['descricao'] = $dados['descricao'] ?? '';
 
         $produto = Produto::find($request->id);
         

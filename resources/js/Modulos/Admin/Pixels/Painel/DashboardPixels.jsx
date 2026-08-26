@@ -93,16 +93,17 @@ const DashboardPixels = ({
             <ConfigMetricsModal isOpen={isConfigDashOpen} onClose={() => setIsConfigDashOpen(false)} config={dashboardConfig} setConfig={setDashboardConfig} cardProps={cardProps} />
 
             {/* Header com filtros */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-4 gap-4">
+            <div className="hub-dashboard-header">
                 <div>
-                    <h2 className="text-xl font-black text-slate-800">Seu Dashboard Personalizado</h2>
-                    <p className="text-sm text-slate-500 mt-1">Acompanhe as métricas de performance e funil da operação em tempo real.</p>
+                    <h2 className="hub-card-title">Seu Dashboard Personalizado</h2>
+                    <p className="hub-page-subtitle">Acompanhe as métricas de performance e funil da operação em tempo real.</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3 items-center w-full md:w-auto">
+                <div className="hub-dashboard-filters">
                     <select 
                         value={activeProvider} 
                         onChange={(e) => aplicarFiltroData(dashDateRange, e.target.value)}
-                        className="bg-white border border-slate-200 text-slate-600 font-bold text-xs rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all cursor-pointer h-10 w-full sm:w-auto"
+                        className="hub-select"
+                        style={{ width: '100%', minWidth: '200px' }}
                     >
                         <option value="all">Todos os Provedores</option>
                         <option value="meta">Meta Pixel</option>
@@ -111,10 +112,10 @@ const DashboardPixels = ({
                         <option value="pinterest">Pinterest Tag</option>
                     </select>
 
-                    <div className="relative w-full sm:w-auto shrink-0 z-[100]">
-                        <button onClick={() => setDashDateOpen(!dashDateOpen)} className="flex items-center justify-center gap-2 px-4 h-10 bg-white border border-slate-200 rounded-xl shadow-sm hover:text-blue-600 hover:border-blue-300 transition-all w-full">
-                            <Calendar className="w-4 h-4 text-slate-400" />
-                            <span className="text-xs font-bold text-slate-600">{dashFilterText || "Definir período"}</span>
+                    <div style={{ position: 'relative', width: '100%', zIndex: 100 }}>
+                        <button onClick={() => setDashDateOpen(!dashDateOpen)} className="hub-btn hub-btn-outline" style={{ width: '100%' }}>
+                            <Calendar style={{ width: '16px', height: '16px', color: 'var(--hub-text-muted)' }} />
+                            <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{dashFilterText || "Definir período"}</span>
                         </button>
                         <DateFilterPopup 
                             isOpen={dashDateOpen} 
@@ -131,36 +132,36 @@ const DashboardPixels = ({
                         />
                     </div>
 
-                    <button onClick={() => setIsConfigDashOpen(true)} className="flex items-center justify-center w-10 h-10 bg-white text-slate-600 rounded-xl border border-slate-200 shadow-sm hover:text-blue-600 hover:border-blue-300 transition-all flex-shrink-0" title="Personalizar Painel">
-                        <Settings2 className="w-4 h-4"/>
+                    <button onClick={() => setIsConfigDashOpen(true)} className="hub-btn hub-btn-outline hub-btn-icon" title="Personalizar Painel">
+                        <Settings2 style={{ width: '16px', height: '16px' }}/>
                     </button>
                 </div>
             </div>
 
             {/* MetricsRail */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm w-full overflow-hidden">
-                <div className="flex overflow-x-auto thin-scroll divide-x divide-slate-100">
+            <div className="hub-card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div className="hub-metrics-rail thin-scroll">
                     {/* EMQ Cell */}
-                    <div className="flex flex-col justify-center px-6 py-4 shrink-0 w-[200px] bg-white relative">
-                        <div className="flex items-center gap-1.5 mb-2">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">EMQ</span>
+                    <div className="hub-metric-item" style={{ width: '200px', backgroundColor: 'var(--hub-surface)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--hub-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>EMQ</span>
                             <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${credenciais?.meta_access_token ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                                 {credenciais?.meta_access_token ? '10/10' : '0/10'}
                             </span>
                         </div>
-                        <p className="text-xl font-bold text-slate-900 leading-none mb-1">
+                        <p style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--hub-text-primary)', lineHeight: 1, marginBottom: '4px', margin: 0 }}>
                             {credenciais?.meta_access_token ? 'Extrema' : 'Baixa'}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', margin: 0 }}>
                             {credenciais?.meta_access_token ? 'CAPI conectada' : 'Token faltando'}
                         </p>
                     </div>
 
                     {/* Skeleton */}
                     {isManualRefresh && dashboardConfig.map(key => (
-                        <div key={`sk-${key}`} className="shrink-0 w-[200px] px-6 py-4 animate-pulse bg-white">
-                            <div className="h-3 bg-slate-200 rounded w-1/2 mb-3" />
-                            <div className="h-6 bg-slate-100 rounded w-3/4 mb-2" />
+                        <div key={`sk-${key}`} style={{ flexShrink: 0, width: '200px', padding: '16px 24px', backgroundColor: 'var(--hub-surface)' }} className="animate-pulse">
+                            <div style={{ height: '12px', backgroundColor: 'var(--hub-border)', borderRadius: '4px', width: '50%', marginBottom: '12px' }} />
+                            <div style={{ height: '24px', backgroundColor: 'var(--hub-border-subtle)', borderRadius: '4px', width: '75%', marginBottom: '8px' }} />
                         </div>
                     ))}
 
@@ -182,33 +183,28 @@ const DashboardPixels = ({
                                 transition={{ duration: 0.2 }}
                                 onClick={() => clickable ? setMetricFilter(isActive ? null : key) : null}
                                 title={conf.tooltip}
-                                className={[
-                                    'group relative shrink-0 w-[200px] px-6 py-4 bg-white transition-all duration-200 overflow-hidden',
-                                    clickable ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-sm z-10' : 'cursor-default',
-                                    isActive ? 'bg-blue-50/50' : '',
-                                    metricFilter && !isActive ? 'opacity-50' : '',
-                                ].join(' ')}
+                                className={`hub-metric-item ${clickable ? 'is-clickable' : ''} ${isActive ? 'is-active' : ''} ${metricFilter && !isActive ? 'is-dimmed' : ''}`}
                             >
                                 {isActive && (
                                     <motion.div
                                         layoutId="activeMetricBar"
-                                        className="absolute top-0 left-0 right-0 h-1 bg-blue-500"
+                                        className="hub-metric-active-bar"
                                     />
                                 )}
 
-                                <div className="flex items-center gap-1.5 mb-2">
-                                    <IconComp className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-blue-500' : conf.color}`} />
-                                    <span className={`text-xs font-semibold uppercase tracking-wider ${isActive ? 'text-blue-700' : 'text-slate-500 group-hover:text-slate-700'}`}>
+                                <div className="hub-metric-title-wrap">
+                                    <IconComp style={{ width: '14px', height: '14px', flexShrink: 0, color: isActive ? 'var(--hub-brand-primary)' : 'inherit' }} />
+                                    <span className="hub-metric-title">
                                         {conf.label}
                                     </span>
                                 </div>
 
-                                <p className={`text-xl font-bold tracking-tight leading-none truncate ${isActive ? 'text-blue-700' : 'text-slate-900'}`}>
+                                <p className="hub-metric-value" style={{ color: isActive ? 'var(--hub-brand-primary)' : 'inherit' }}>
                                     {conf.valor}
                                 </p>
 
                                 {clickable && !isActive && (
-                                    <span className="absolute bottom-2 right-3 text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span style={{ position: 'absolute', bottom: '8px', right: '12px', fontSize: '10px', color: 'var(--hub-text-muted)', opacity: 0 }} className="hub-hover-show transition-opacity">
                                         Filtro ↵
                                     </span>
                                 )}
@@ -219,31 +215,39 @@ const DashboardPixels = ({
             </div>
 
             {/* Funil Real de Eventos */}
-            <div className="bg-white p-6 md:p-8 rounded-[24px] border border-slate-100 shadow-sm">
-                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-blue-500" /> Funil Real de Eventos
+            <div className="hub-card">
+                <h3 className="hub-card-title" style={{ marginBottom: '24px' }}>
+                    <Filter style={{ width: '20px', height: '20px', color: 'var(--hub-brand-primary)' }} /> Funil Real de Eventos
                 </h3>
-                <div className="flex flex-col gap-4">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {funnelData.map((etapa, idx) => {
                         const widthPct = Math.max(5, ((etapa.total || 0) / maxEventos) * 100);
                         const isStandard = standardFunnelEvents.includes(etapa.evento);
-                        const corSelecionada = isStandard ? baseColors[idx % baseColors.length] : 'bg-slate-100 border-slate-500 text-slate-700';
+                        
+                        // Removendo baseColors do tailwind e aplicando cores em hexadecimal baseadas no padrão original
+                        const colorsHex = [
+                            { bg: 'rgba(219,234,254,0.5)', border: '#3b82f6', text: '#1d4ed8' }, // blue
+                            { bg: 'rgba(209,250,229,0.5)', border: '#10b981', text: '#047857' }, // emerald
+                            { bg: 'rgba(255,237,213,0.5)', border: '#f97316', text: '#c2410c' }, // orange
+                            { bg: 'rgba(243,232,255,0.5)', border: '#a855f7', text: '#7e22ce' }  // purple
+                        ];
+                        const corSelecionada = isStandard ? colorsHex[idx % colorsHex.length] : { bg: 'var(--hub-bg-body)', border: 'var(--hub-text-secondary)', text: 'var(--hub-text-primary)' };
                         const isHighlighted = isFunnelHighlighted(etapa);
 
                         return (
-                            <div key={idx} className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 transition-opacity duration-300 ${isHighlighted ? 'opacity-100' : 'opacity-30'}`}>
-                                <div className="w-full sm:w-56 text-left sm:text-right flex-shrink-0 flex items-center sm:justify-end gap-2">
-                                    {!isStandard && <span className="text-[8px] bg-slate-800 text-white px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">Custom</span>}
-                                    <span className="text-xs font-bold text-slate-600 font-mono tracking-tight">{etapa.evento}</span>
+                            <div key={idx} className="hub-funnel-row" style={{ opacity: isHighlighted ? 1 : 0.3 }}>
+                                <div className="hub-funnel-label-col">
+                                    {!isStandard && <span style={{ fontSize: '8px', backgroundColor: 'var(--hub-text-primary)', color: 'var(--hub-text-inverse)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.05em' }}>Custom</span>}
+                                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-secondary)', fontFamily: 'monospace', letterSpacing: '-0.025em' }}>{etapa.evento}</span>
                                 </div>
-                                <div className="flex-1 h-10 bg-slate-50 rounded-lg sm:rounded-r-xl flex items-center relative overflow-hidden shadow-inner">
-                                    <motion.div initial={{ width: 0 }} animate={{ width: `${widthPct}%` }} transition={{ duration: 0.32, delay: idx * 0.05 }} className={`absolute left-0 top-0 h-full border-r-4 ${corSelecionada.split(' ')[0]} ${corSelecionada.split(' ')[1]}`} />
-                                    <span className={`relative z-10 ml-4 font-black text-sm ${corSelecionada.split(' ')[2]}`}>{etapa.total || 0}</span>
+                                <div className="hub-funnel-bar-wrap">
+                                    <motion.div initial={{ width: 0 }} animate={{ width: `${widthPct}%` }} transition={{ duration: 0.32, delay: idx * 0.05 }} className="hub-funnel-bar-fill" style={{ backgroundColor: corSelecionada.bg, borderColor: corSelecionada.border }} />
+                                    <span style={{ position: 'relative', zIndex: 10, marginLeft: '16px', fontWeight: '900', fontSize: '14px', color: corSelecionada.text }}>{etapa.total || 0}</span>
                                 </div>
                             </div>
                         );
                     })}
-                    {funnelData.length === 0 && <p className="text-center text-slate-400 text-sm py-4">Nenhum evento captado pela base de dados.</p>}
+                    {funnelData.length === 0 && <p style={{ textAlign: 'center', color: 'var(--hub-text-muted)', fontSize: '14px', padding: '16px 0' }}>Nenhum evento captado pela base de dados.</p>}
                 </div>
             </div>
         </motion.div>

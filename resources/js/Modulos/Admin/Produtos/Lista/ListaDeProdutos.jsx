@@ -1,24 +1,22 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Icons } from '../Compartilhado/Icones';
-import { FadeIn } from '../Compartilhado/ComponentesUI';
+import { Search, Image as ImageIcon, ChevronLeft, ChevronRight, Plus, PackageX, EyeOff } from 'lucide-react';
+import { Button } from '../../DesignSystem/primitives/Button';
+import { IconButton } from '../../DesignSystem/primitives/IconButton';
+import { Badge } from '../../DesignSystem/primitives/Badge';
 
 const ProductsSkeleton = () => (
-    <div className="animate-pulse space-y-4 p-5">
+    <div className="animate-pulse" style={{ display: 'flex', flexDirection: 'column' }}>
         {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-5 border-b border-slate-100 last:border-0">
-                <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-slate-200 rounded-lg"></div>
-                    <div className="space-y-2">
-                        <div className="h-5 w-48 bg-slate-200 rounded"></div>
-                        <div className="h-3 w-24 bg-slate-100 rounded"></div>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', borderBottom: '1px solid var(--hub-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '48px', height: '48px', backgroundColor: 'var(--hub-surface-subtle)', borderRadius: 'var(--hub-radius-md)' }}></div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ height: '16px', width: '192px', backgroundColor: 'var(--hub-surface-subtle)', borderRadius: '4px' }}></div>
+                        <div style={{ height: '12px', width: '96px', backgroundColor: 'var(--hub-surface-subtle)', borderRadius: '4px' }}></div>
                     </div>
                 </div>
-                <div className="hidden md:block h-4 w-24 bg-slate-100 rounded"></div>
-                <div className="hidden md:block h-4 w-16 bg-slate-100 rounded"></div>
-                <div className="flex gap-2">
-                    <div className="w-8 h-8 bg-slate-200 rounded-lg"></div>
-                    <div className="w-8 h-8 bg-slate-200 rounded-lg"></div>
-                </div>
+                <div style={{ height: '16px', width: '96px', backgroundColor: 'var(--hub-surface-subtle)', borderRadius: '4px' }}></div>
+                <div style={{ height: '16px', width: '64px', backgroundColor: 'var(--hub-surface-subtle)', borderRadius: '4px' }}></div>
             </div>
         ))}
     </div>
@@ -62,86 +60,141 @@ export default function ListaDeProdutos({
     const totalPages = Math.ceil(produtosFiltrados.length / itensPorPagina);
 
     return (
-        <FadeIn key="prodlist" className="pb-24 relative">
-            <div className="bg-white border border-slate-200/60 shadow-sm rounded-xl overflow-hidden flex flex-col z-0 relative">
-                <header className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between bg-white rounded-t-xl">
-                    <div className="relative w-full md:w-[400px] group/search">
-                        <label htmlFor="busca-produto" className="sr-only">Buscar Produto</label>
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/search:text-blue-500 transition-colors"><Icons.Search className="w-4 h-4" /></div>
-                        <input id="busca-produto" type="text" placeholder="Buscar Produto ou SKU..." value={termoPesquisa} onChange={e => setTermoPesquisa(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all text-slate-800" />
-                    </div>
-                    <div className="flex gap-3 w-full md:w-auto flex-col md:flex-row">
-                        <select value={itensPorPagina} onChange={(e) => setItensPorPagina(Number(e.target.value))} className="bg-slate-50 border border-slate-200 text-sm font-bold text-slate-700 rounded-xl px-4 py-2.5 outline-none cursor-pointer focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all">
-                            <option value={10}>10 por página</option>
-                            <option value={20}>20 por página</option>
-                            <option value={50}>50 por página</option>
-                            <option value={100}>100 por página</option>
-                        </select>
-                        <select value={filtroCategoria} onChange={(e) => setFiltroCategoria(e.target.value)} className="bg-slate-50 border border-slate-200 text-sm font-bold text-slate-700 rounded-xl px-4 py-2.5 outline-none cursor-pointer focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all max-w-[200px] truncate">
-                            <option value="TODAS">Todas Categorias</option>
-                            {categorias.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
-                        </select>
-                        <select value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)} className="bg-slate-50 border border-slate-200 text-sm font-bold text-slate-700 rounded-xl px-4 py-2.5 outline-none cursor-pointer focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all max-w-[200px] truncate">
-                            <option value="TODOS">Status: Todos</option>
-                            <option value="ATIVO">Ativo</option>
-                            <option value="INATIVO">Inativo</option>
-                            <option value="ESGOTADO">Esgotado</option>
-                            <option value="ENCOMENDA">Por Encomenda</option>
-                        </select>
-                    </div>
-                </header>
+        <div className="fade-in" style={{ paddingBottom: '48px' }}>
+            {/* Filter Bar */}
+            <div className="hub-panel modal-responsive-flex" style={{ display: 'flex', padding: '16px', marginBottom: '24px', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                <div style={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
+                    <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--hub-text-muted)' }} size={18} />
+                    <input 
+                        type="text" 
+                        placeholder="Buscar Produto ou SKU..." 
+                        value={termoPesquisa} 
+                        onChange={e => setTermoPesquisa(e.target.value)} 
+                        className="hub-input" 
+                        style={{ width: '100%', paddingLeft: '36px' }}
+                    />
+                </div>
+                <div className="modal-responsive-flex" style={{ display: 'flex', gap: '12px', width: 'auto' }}>
+                    <select 
+                        value={itensPorPagina} 
+                        onChange={(e) => setItensPorPagina(Number(e.target.value))} 
+                        className="hub-select"
+                    >
+                        <option value={10}>10 por página</option>
+                        <option value={20}>20 por página</option>
+                        <option value={50}>50 por página</option>
+                        <option value={100}>100 por página</option>
+                    </select>
+                    <select 
+                        value={filtroCategoria} 
+                        onChange={(e) => setFiltroCategoria(e.target.value)} 
+                        className="hub-select"
+                        style={{ maxWidth: '200px' }}
+                    >
+                        <option value="TODAS">Todas Categorias</option>
+                        {categorias.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+                    </select>
+                    <select 
+                        value={filtroStatus} 
+                        onChange={(e) => setFiltroStatus(e.target.value)} 
+                        className="hub-select"
+                        style={{ maxWidth: '200px' }}
+                    >
+                        <option value="TODOS">Status: Todos</option>
+                        <option value="ATIVO">Ativo</option>
+                        <option value="INATIVO">Inativo</option>
+                        <option value="ESGOTADO">Esgotado</option>
+                        <option value="ENCOMENDA">Por Encomenda</option>
+                    </select>
+                </div>
+            </div>
 
-                <div className="p-0 overflow-x-auto custom-scrollbar">
+            {/* Table Panel */}
+            <div className="hub-panel" style={{ overflow: 'hidden' }}>
+                <div className="custom-scrollbar" style={{ overflowX: 'auto' }}>
                     {isRefreshing ? (
                         <ProductsSkeleton />
                     ) : currentProdutos.length > 0 ? (
-                        <table className="w-full text-left text-sm text-slate-600 whitespace-nowrap min-w-[1000px]">
-                            <thead className="bg-slate-50 border-y border-slate-200 text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                        <table style={{ width: '100%', textAlign: 'left', fontSize: '14px', color: 'var(--hub-text-secondary)', whiteSpace: 'nowrap', minWidth: '1000px', borderCollapse: 'collapse' }}>
+                            <thead className="hub-table-header">
                                 <tr>
-                                    <th className="px-6 py-4">Produto & SKU</th>
-                                    <th className="px-6 py-4 text-center">Categoria</th>
-                                    <th className="px-6 py-4 text-right">Preço</th>
-                                    <th className="px-6 py-4 text-center">Status</th>
-                                    <th className="px-6 py-4 text-center">Estoque</th>
+                                    <th className="hub-table-cell">Produto & SKU</th>
+                                    <th className="hub-table-cell" style={{ textAlign: 'center' }}>Categoria</th>
+                                    <th className="hub-table-cell" style={{ textAlign: 'right' }}>Preço</th>
+                                    <th className="hub-table-cell" style={{ textAlign: 'center' }}>Status</th>
+                                    <th className="hub-table-cell" style={{ textAlign: 'center' }}>Estoque</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody style={{ borderTop: '1px solid var(--hub-border-subtle)' }}>
                                 {currentProdutos.map(p => {
                                     const valPromo = parseFloat(p.precoPromo);
+                                    
+                                    let statusVariant = 'success';
+                                    if (p.status === 'INATIVO') statusVariant = 'neutral';
+                                    if (p.status === 'OCULTO') statusVariant = 'warning';
+
+                                    let estoqueBadge = null;
+                                    if (p.preVenda) {
+                                        estoqueBadge = <Badge variant="special">Encomenda</Badge>;
+                                    } else if (p.controlarEstoque) {
+                                        if (p.estoque === 0) {
+                                            estoqueBadge = <Badge variant="danger">Esgotado</Badge>;
+                                        } else if (p.estoque <= (p.alertaEstoque || 5)) {
+                                            estoqueBadge = <Badge variant="warning">{p.estoque} (Baixo)</Badge>;
+                                        } else {
+                                            estoqueBadge = <span style={{ fontWeight: '500', color: 'var(--hub-text-primary)' }}>{p.estoque} un</span>;
+                                        }
+                                    } else {
+                                        estoqueBadge = <span style={{ fontSize: '13px', color: 'var(--hub-text-muted)' }}>Infinito</span>;
+                                    }
+
                                     return (
-                                        <tr key={p.id} className="hover:bg-slate-50/80 transition-colors group cursor-pointer" onClick={() => abrirEdicaoProduto(p)}>
-                                            <td className="px-6 py-4 flex items-center gap-4 text-left">
-                                                <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 bg-white flex items-center justify-center shrink-0 shadow-sm">
-                                                    {p.img ? <img src={p.img} className="w-full h-full object-cover" alt="" /> : <Icons.Image className="w-5 h-5 text-slate-300" />}
+                                        <tr 
+                                            key={p.id} 
+                                            className="hub-tr group" 
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => abrirEdicaoProduto(p)}
+                                        >
+                                            <td className="hub-table-cell" style={{ display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left' }}>
+                                                <div style={{ width: '48px', height: '48px', borderRadius: 'var(--hub-radius-md)', overflow: 'hidden', border: '1px solid var(--hub-border-subtle)', backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                    {p.img ? (
+                                                        <img src={p.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                                                    ) : (
+                                                        <ImageIcon size={20} style={{ color: 'var(--hub-text-muted)', opacity: 0.5 }} />
+                                                    )}
                                                 </div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="font-bold text-slate-900 text-sm truncate w-56 block group-hover:text-blue-600 transition-colors">{p.nome}</span>
-                                                    <span className="text-xs text-slate-500 mt-0.5">{p.skuRef}-{p.skuSufixo}</span>
+                                                <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                    <span style={{ fontWeight: '600', color: 'var(--hub-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '240px', display: 'block', transition: 'color 0.2s' }} className="group-hover:text-[var(--hub-primary)]">
+                                                        {p.nome}
+                                                    </span>
+                                                    <span style={{ fontSize: '13px', color: 'var(--hub-text-muted)', marginTop: '2px' }}>
+                                                        {p.skuRef}-{p.skuSufixo}
+                                                    </span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex flex-col items-center">
-                                                    <span className="font-medium text-slate-900 text-sm">{p.categoriaPrincipal || 'Sem Categoria'}</span>
+                                            <td className="hub-table-cell" style={{ textAlign: 'center' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                    <span style={{ fontWeight: '500', color: 'var(--hub-text-primary)' }}>{p.categoriaPrincipal || 'Sem Categoria'}</span>
                                                     {p.categoriasSecundarias && p.categoriasSecundarias.length > 0 && (
-                                                        <span className="text-xs font-medium text-slate-500 mt-0.5">+ {p.categoriasSecundarias.length} extras</span>
+                                                        <span style={{ fontSize: '12px', color: 'var(--hub-text-muted)', marginTop: '2px' }}>+ {p.categoriasSecundarias.length} extras</span>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="hub-table-cell" style={{ textAlign: 'right' }}>
                                                 {valPromo > 0 ? (
-                                                    <div className="flex flex-col items-end">
-                                                        <span className="text-xs text-slate-400 line-through">R$ {parseFloat(p.preco).toFixed(2)}</span>
-                                                        <span className="font-semibold text-emerald-600 text-sm">R$ {valPromo.toFixed(2)}</span>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                                        <span style={{ fontSize: '12px', color: 'var(--hub-text-muted)', textDecoration: 'line-through' }}>R$ {parseFloat(p.preco).toFixed(2)}</span>
+                                                        <span style={{ fontWeight: 'bold', color: 'var(--hub-success)' }}>R$ {valPromo.toFixed(2)}</span>
                                                     </div>
-                                                ) : <span className="font-semibold text-slate-900 text-sm">R$ {parseFloat(p.preco).toFixed(2)}</span>}
+                                                ) : (
+                                                    <span style={{ fontWeight: 'bold', color: 'var(--hub-text-primary)' }}>R$ {parseFloat(p.preco).toFixed(2)}</span>
+                                                )}
                                             </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex justify-center">
-                                                    {p.status === 'INATIVO' ? <span className="px-3 py-1 inline-flex items-center justify-center text-[11px] font-semibold rounded-full border shadow-sm bg-slate-50 text-slate-500 border-slate-200">INATIVO</span> : p.status === 'OCULTO' ? <span className="px-3 py-1 inline-flex items-center justify-center text-[11px] font-semibold rounded-full border shadow-sm bg-amber-50 text-amber-600 border-amber-200">OCULTO</span> : <span className="px-3 py-1 inline-flex items-center justify-center text-[11px] font-semibold rounded-full border shadow-sm bg-emerald-50 text-emerald-600 border-emerald-200">ATIVO</span>}
-                                                </div>
+                                            <td className="hub-table-cell" style={{ textAlign: 'center' }}>
+                                                <Badge variant={statusVariant}>{p.status}</Badge>
                                             </td>
-                                            <td className="px-6 py-4 text-center">
-                                                {p.preVenda ? <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-md border border-purple-100">Encomenda</span> : (p.controlarEstoque ? (p.estoque === 0 ? <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded-md border border-rose-100">Esgotado</span> : p.estoque <= (p.alertaEstoque || 5) ? <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100">{p.estoque} (Baixo)</span> : <span className="text-sm font-semibold text-slate-700">{p.estoque} un</span>) : <span className="text-xs font-medium text-slate-400">Infinito</span>)}
+                                            <td className="hub-table-cell" style={{ textAlign: 'center' }}>
+                                                {estoqueBadge}
                                             </td>
                                         </tr>
                                     );
@@ -149,40 +202,64 @@ export default function ListaDeProdutos({
                             </tbody>
                         </table>
                     ) : (
-                        <div className="p-16 flex flex-col items-center justify-center text-center">
-                            <div className="w-20 h-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-full flex items-center justify-center mb-4">
-                                <Icons.Search className="w-8 h-8 text-slate-300" />
+                        <div style={{ padding: '64px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                            <div style={{ width: '64px', height: '64px', backgroundColor: 'var(--hub-surface-subtle)', border: '1px solid var(--hub-border-subtle)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                                <Search size={24} style={{ color: 'var(--hub-text-muted)', opacity: 0.7 }} />
                             </div>
-                            <h3 className="text-lg font-bold text-slate-800 mb-2">Nenhum produto encontrado</h3>
-                            <p className="text-sm text-slate-500 max-w-sm mb-6">Não encontramos produtos com os filtros atuais. Limpe a busca ou crie um novo produto.</p>
-                            <div className="flex gap-4">
+                            <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--hub-text-primary)', margin: '0 0 8px 0' }}>Nenhum produto encontrado</h3>
+                            <p style={{ fontSize: '14px', color: 'var(--hub-text-secondary)', maxWidth: '24rem', margin: '0 0 24px 0' }}>Não encontramos produtos com os filtros atuais. Limpe a busca ou crie um novo produto.</p>
+                            <div style={{ display: 'flex', gap: '12px' }}>
                                 {(termoPesquisa !== '' || filtroCategoria !== 'TODAS' || filtroStatus !== 'TODOS') && (
-                                    <button onClick={() => { setTermoPesquisa(''); setFiltroCategoria('TODAS'); setFiltroStatus('TODOS'); }} className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-sm">
+                                    <Button 
+                                        variant="outline"
+                                        onClick={(e) => { 
+                                            e.stopPropagation();
+                                            setTermoPesquisa(''); 
+                                            setFiltroCategoria('TODAS'); 
+                                            setFiltroStatus('TODOS'); 
+                                        }} 
+                                    >
                                         Limpar Filtros
-                                    </button>
+                                    </Button>
                                 )}
-                                <button onClick={abrirNovoProduto} className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200 text-sm flex items-center gap-2">
-                                    <Icons.Plus className="w-4 h-4" /> Novo Produto
-                                </button>
+                                <Button 
+                                    variant="primary"
+                                    icon={Plus}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        abrirNovoProduto();
+                                    }}
+                                >
+                                    Novo Produto
+                                </Button>
                             </div>
                         </div>
                     )}
                 </div>
 
+                {/* Pagination */}
                 {totalPages > 1 && (
-                    <footer className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between rounded-b-xl">
-                        <span className="text-sm font-medium text-slate-500">Página {paginaAtual} de {totalPages}</span>
-                        <div className="flex gap-2">
-                            <button onClick={() => setPaginaAtual(p => Math.max(1, p - 1))} disabled={paginaAtual === 1} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-slate-600 transition-colors shadow-sm">
-                                <Icons.ChevronLeft className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => setPaginaAtual(p => Math.min(totalPages, p + 1))} disabled={paginaAtual === totalPages} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-slate-600 transition-colors shadow-sm">
-                                <Icons.ChevronRight className="w-4 h-4" />
-                            </button>
+                    <div style={{ padding: '16px', borderTop: '1px solid var(--hub-border-subtle)', backgroundColor: 'var(--hub-surface-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--hub-text-secondary)' }}>Página {paginaAtual} de {totalPages}</span>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <IconButton 
+                                icon={ChevronLeft} 
+                                label="Página anterior"
+                                onClick={() => setPaginaAtual(p => Math.max(1, p - 1))} 
+                                disabled={paginaAtual === 1}
+                                style={{ backgroundColor: '#fff', border: '1px solid var(--hub-border-subtle)' }}
+                            />
+                            <IconButton 
+                                icon={ChevronRight} 
+                                label="Próxima página"
+                                onClick={() => setPaginaAtual(p => Math.min(totalPages, p + 1))} 
+                                disabled={paginaAtual === totalPages}
+                                style={{ backgroundColor: '#fff', border: '1px solid var(--hub-border-subtle)' }}
+                            />
                         </div>
-                    </footer>
+                    </div>
                 )}
             </div>
-        </FadeIn>
+        </div>
     );
 }

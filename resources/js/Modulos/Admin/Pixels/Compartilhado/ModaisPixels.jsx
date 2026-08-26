@@ -36,14 +36,14 @@ export const ConfigMetricsModal = ({ isOpen, onClose, config, setConfig, cardPro
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+                    style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                 >
                     <div
-                        style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)' }}
+                        style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)' }}
                         onClick={onClose}
                     />
                     <motion.div
@@ -51,21 +51,21 @@ export const ConfigMetricsModal = ({ isOpen, onClose, config, setConfig, cardPro
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.95, opacity: 0, y: 16 }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
-                        style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '64rem', height: 'min(600px, calc(100dvh - 2rem))' }}
-                        className="bg-white rounded-[24px] shadow-2xl flex flex-col md:flex-row overflow-hidden"
+                        style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '1024px', height: 'min(600px, calc(100vh - 32px))', backgroundColor: 'var(--hub-background)', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', display: 'flex', overflow: 'hidden' }}
+                        className="modal-responsive-flex"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Coluna esquerda — lista de métricas */}
-                        <div className="w-full md:w-1/2 flex flex-col border-r border-slate-100 min-h-0">
-                            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
-                                <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                                    <Settings2 className="w-5 h-5 text-blue-600" /> Métricas e Eventos Ativos
+                        <div style={{ flex: '1', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--hub-border)', minHeight: 0 }} className="modal-col-left">
+                            <div style={{ padding: '20px', borderBottom: '1px solid var(--hub-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--hub-surface)', flexShrink: 0 }}>
+                                <h2 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--hub-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                    <Settings2 size={20} style={{ color: '#2563eb' }} /> Métricas e Eventos Ativos
                                 </h2>
-                                <button onClick={onClose} className="md:hidden p-1 text-slate-400 hover:bg-slate-200 rounded-full">
-                                    <X className="w-5 h-5"/>
+                                <button onClick={onClose} className="md-hidden" style={{ padding: '4px', color: 'var(--hub-text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: '50%' }}>
+                                    <X size={20}/>
                                 </button>
                             </div>
-                            <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+                            <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }} className="custom-scrollbar">
                                 {displayKeys.map(key => {
                                     if (!cardProps[key]) return null;
                                     const conf = cardProps[key];
@@ -77,28 +77,28 @@ export const ConfigMetricsModal = ({ isOpen, onClose, config, setConfig, cardPro
                                             key={key}
                                             onMouseEnter={() => setHoveredMetric(key)}
                                             onClick={() => toggleMetric(key)}
-                                            className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isChecked ? 'bg-blue-50/50 border-blue-200 shadow-sm' : 'bg-white border-slate-100 hover:border-slate-300'}`}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', border: `1px solid ${isChecked ? '#bfdbfe' : 'var(--hub-border)'}`, backgroundColor: isChecked ? '#eff6ff' : 'var(--hub-background)' }}
                                         >
-                                            <div className={`w-5 h-5 rounded flex items-center justify-center border shrink-0 ${isChecked ? 'bg-blue-600 border-blue-600' : 'bg-white border-slate-300'}`}>
-                                                {isChecked && <Check className="w-3 h-3 text-white" />}
+                                            <div style={{ width: '20px', height: '20px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${isChecked ? '#2563eb' : 'var(--hub-border)'}`, backgroundColor: isChecked ? '#2563eb' : 'var(--hub-background)' }}>
+                                                {isChecked && <Check size={12} style={{ color: '#fff' }} />}
                                             </div>
-                                            <span className={`text-sm font-bold flex-1 ${isChecked ? 'text-blue-900' : 'text-slate-700'}`}>{conf.label}</span>
-                                            {conf.icon && <conf.icon className={`w-4 h-4 ${isChecked ? 'text-blue-500' : 'text-slate-400'}`} />}
+                                            <span style={{ fontSize: '14px', fontWeight: 'bold', flex: 1, color: isChecked ? '#1e3a8a' : 'var(--hub-text-primary)' }}>{conf.label}</span>
+                                            {conf.icon && <conf.icon size={16} style={{ color: isChecked ? '#3b82f6' : 'var(--hub-text-secondary)' }} />}
                                             {isChecked && (
-                                                <div className="flex flex-col ml-2 border-l border-blue-200 pl-2" onClick={e => e.stopPropagation()}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '8px', borderLeft: '1px solid #bfdbfe', paddingLeft: '8px' }} onClick={e => e.stopPropagation()}>
                                                     <button
                                                         onClick={(e) => moveMetric(configIndex, 'up', e)}
                                                         disabled={configIndex === 0}
-                                                        className={`p-0.5 rounded transition-colors ${configIndex === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-100'}`}
+                                                        style={{ padding: '2px', borderRadius: '4px', background: 'transparent', border: 'none', cursor: configIndex === 0 ? 'not-allowed' : 'pointer', color: configIndex === 0 ? '#cbd5e1' : '#2563eb' }}
                                                     >
-                                                        <svg className="w-3 h-3 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                                                        <svg style={{ width: '12px', height: '12px', transform: 'rotate(180deg)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
                                                     </button>
                                                     <button
                                                         onClick={(e) => moveMetric(configIndex, 'down', e)}
                                                         disabled={configIndex === config.length - 1}
-                                                        className={`p-0.5 rounded transition-colors ${configIndex === config.length - 1 ? 'text-slate-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-100'}`}
+                                                        style={{ padding: '2px', borderRadius: '4px', background: 'transparent', border: 'none', cursor: configIndex === config.length - 1 ? 'not-allowed' : 'pointer', color: configIndex === config.length - 1 ? '#cbd5e1' : '#2563eb' }}
                                                     >
-                                                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                                                        <svg style={{ width: '12px', height: '12px' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
                                                     </button>
                                                 </div>
                                             )}
@@ -109,9 +109,9 @@ export const ConfigMetricsModal = ({ isOpen, onClose, config, setConfig, cardPro
                         </div>
 
                         {/* Coluna direita — preview da métrica */}
-                        <div className="w-full md:w-1/2 bg-slate-50 p-8 flex-col justify-center relative hidden md:flex min-h-0 overflow-y-auto">
-                            <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-200 rounded-full transition-colors">
-                                <X className="w-5 h-5"/>
+                        <div className="modal-col-right md-flex" style={{ flex: '1', backgroundColor: 'var(--hub-surface)', padding: '32px', display: 'none', flexDirection: 'column', justifyContent: 'center', position: 'relative', minHeight: 0, overflowY: 'auto' }}>
+                            <button onClick={onClose} style={{ position: 'absolute', top: '16px', right: '16px', padding: '8px', color: 'var(--hub-text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: '50%' }}>
+                                <X size={20}/>
                             </button>
                             <AnimatePresence mode="wait">
                                 {hoveredMetric && cardProps[hoveredMetric] ? (
@@ -121,16 +121,16 @@ export const ConfigMetricsModal = ({ isOpen, onClose, config, setConfig, cardPro
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -10 }}
                                         transition={{ duration: 0.15 }}
-                                        className="flex flex-col"
+                                        style={{ display: 'flex', flexDirection: 'column' }}
                                     >
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-white bg-white ${cardProps[hoveredMetric].color}`}>
-                                            {cardProps[hoveredMetric].icon && React.createElement(cardProps[hoveredMetric].icon, { className: "w-7 h-7" })}
+                                        <div style={{ width: '56px', height: '56px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: '1px solid #fff', backgroundColor: '#fff', color: '#0f172a' }} className={cardProps[hoveredMetric].color}>
+                                            {cardProps[hoveredMetric].icon && React.createElement(cardProps[hoveredMetric].icon, { size: 28 })}
                                         </div>
-                                        <h3 className="text-2xl font-black text-slate-900 mb-2">{cardProps[hoveredMetric].label}</h3>
-                                        <p className="text-slate-600 leading-relaxed text-sm mb-6">{cardProps[hoveredMetric].tooltip}</p>
-                                        <div className="bg-blue-100/50 border border-blue-200 p-4 rounded-xl">
-                                            <span className="text-[10px] font-bold text-blue-800 uppercase tracking-widest block mb-1">Cálculo Interno / Fonte</span>
-                                            <span className="font-mono text-xs text-blue-900 font-semibold">{cardProps[hoveredMetric].formula}</span>
+                                        <h3 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--hub-text-primary)', marginBottom: '8px', margin: 0 }}>{cardProps[hoveredMetric].label}</h3>
+                                        <p style={{ color: 'var(--hub-text-secondary)', lineHeight: 1.6, fontSize: '14px', marginBottom: '24px', margin: 0 }}>{cardProps[hoveredMetric].tooltip}</p>
+                                        <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', padding: '16px', borderRadius: '12px' }}>
+                                            <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>Cálculo Interno / Fonte</span>
+                                            <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#1e3a8a', fontWeight: 'bold' }}>{cardProps[hoveredMetric].formula}</span>
                                         </div>
                                     </motion.div>
                                 ) : (
@@ -139,10 +139,10 @@ export const ConfigMetricsModal = ({ isOpen, onClose, config, setConfig, cardPro
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                        className="text-center flex flex-col items-center opacity-50"
+                                        style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.5 }}
                                     >
-                                        <Info className="w-12 h-12 text-slate-400 mb-4" />
-                                        <p className="text-slate-500 font-medium">Passe o mouse sobre uma métrica para ver sua definição e cálculo exato.</p>
+                                        <Info size={48} style={{ color: 'var(--hub-text-secondary)', marginBottom: '16px' }} />
+                                        <p style={{ color: 'var(--hub-text-secondary)', fontWeight: 500, margin: 0 }}>Passe o mouse sobre uma métrica para ver sua definição e cálculo exato.</p>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -160,28 +160,30 @@ export const MetricsDictionaryModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} className="relative bg-white rounded-[24px] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row h-[600px]">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} style={{ position: 'relative', backgroundColor: 'var(--hub-background)', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '100%', maxWidth: '1024px', overflow: 'hidden', display: 'flex', height: '600px' }} className="modal-responsive-flex">
                 
-                <div className="w-full md:w-1/2 flex flex-col border-r border-slate-100">
-                    <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h2 className="text-lg font-black text-slate-800 flex items-center gap-2"><BookMarked className="w-5 h-5 text-blue-600" /> Catálogo de Métricas</h2>
-                        <button onClick={onClose} className="md:hidden p-1 text-slate-400 hover:bg-slate-200 rounded-full"><X className="w-5 h-5"/></button>
+                <div style={{ flex: '1', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--hub-border)' }} className="modal-col-left">
+                    <div style={{ padding: '20px', borderBottom: '1px solid var(--hub-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--hub-surface)' }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--hub-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}><BookMarked size={20} style={{ color: '#2563eb' }} /> Catálogo de Métricas</h2>
+                        <button onClick={onClose} className="md-hidden" style={{ padding: '4px', color: 'var(--hub-text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: '50%' }}><X size={20}/></button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }} className="custom-scrollbar">
                         {['KPIs Executivos', 'Funil & Conversão', 'Tracking Health'].map(group => (
                             <div key={group}>
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">{group}</h3>
-                                <div className="space-y-2">
+                                <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', padding: '0 8px', margin: '0 0 8px 0' }}>{group}</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                     {dictionaryData.filter(d => d.group === group).map(item => (
                                         <div 
                                             key={item.id} 
                                             onMouseEnter={() => setHoveredItem(item)}
-                                            className="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border bg-white border-slate-100 hover:border-slate-300 hover:bg-slate-50"
+                                            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s', border: '1px solid var(--hub-border)', backgroundColor: 'var(--hub-background)' }}
+                                            onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--hub-border-subtle)'; e.currentTarget.style.backgroundColor = 'var(--hub-surface)'; }}
+                                            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--hub-border)'; e.currentTarget.style.backgroundColor = 'var(--hub-background)'; }}
                                         >
-                                            <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></div>
-                                            <span className="text-sm font-bold flex-1 text-slate-700">{item.title}</span>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6', flexShrink: 0 }}></div>
+                                            <span style={{ fontSize: '14px', fontWeight: 'bold', flex: 1, color: 'var(--hub-text-primary)' }}>{item.title}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -190,25 +192,25 @@ export const MetricsDictionaryModal = ({ isOpen, onClose }) => {
                     </div>
                 </div>
 
-                <div className="w-full md:w-1/2 bg-slate-50 p-8 flex flex-col justify-center relative hidden md:flex">
-                    <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-200 rounded-full transition-colors"><X className="w-5 h-5"/></button>
+                <div className="modal-col-right md-flex" style={{ flex: '1', backgroundColor: 'var(--hub-surface)', padding: '32px', display: 'none', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
+                    <button onClick={onClose} style={{ position: 'absolute', top: '16px', right: '16px', padding: '8px', color: 'var(--hub-text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: '50%' }}><X size={20}/></button>
                     <AnimatePresence mode="wait">
                         {hoveredItem ? (
-                            <motion.div key={hoveredItem.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-col">
-                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-200 bg-white">
-                                    <BookMarked className="w-7 h-7 text-blue-600" />
+                            <motion.div key={hoveredItem.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ width: '56px', height: '56px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: '1px solid var(--hub-border-subtle)', backgroundColor: 'var(--hub-background)' }}>
+                                    <BookMarked size={28} style={{ color: '#2563eb' }} />
                                 </div>
-                                <h3 className="text-2xl font-black text-slate-900 mb-2">{hoveredItem.title}</h3>
-                                <p className="text-slate-600 leading-relaxed text-sm mb-6">{hoveredItem.desc}</p>
-                                <div className="bg-blue-100/50 border border-blue-200 p-4 rounded-xl">
-                                    <span className="text-[10px] font-bold text-blue-800 uppercase tracking-widest block mb-1">Cálculo Interno / Fórmula</span>
-                                    <span className="font-mono text-xs text-blue-900 font-semibold">{hoveredItem.formula}</span>
+                                <h3 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--hub-text-primary)', marginBottom: '8px', margin: 0 }}>{hoveredItem.title}</h3>
+                                <p style={{ color: 'var(--hub-text-secondary)', lineHeight: 1.6, fontSize: '14px', marginBottom: '24px', margin: 0 }}>{hoveredItem.desc}</p>
+                                <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', padding: '16px', borderRadius: '12px' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>Cálculo Interno / Fórmula</span>
+                                    <span style={{ fontFamily: 'monospace', fontSize: '12px', color: '#1e3a8a', fontWeight: 'bold' }}>{hoveredItem.formula}</span>
                                 </div>
                             </motion.div>
                         ) : (
-                            <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center flex flex-col items-center opacity-50">
-                                <Info className="w-12 h-12 text-slate-400 mb-4" />
-                                <p className="text-slate-500 font-medium">Passe o mouse sobre um item do catálogo para ver sua definição detalhada.</p>
+                            <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: 0.5 }}>
+                                <Info size={48} style={{ color: 'var(--hub-text-secondary)', marginBottom: '16px' }} />
+                                <p style={{ color: 'var(--hub-text-secondary)', fontWeight: 500, margin: 0 }}>Passe o mouse sobre um item do catálogo para ver sua definição detalhada.</p>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -224,31 +226,31 @@ export const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loa
     <AnimatePresence mode="wait">
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-hidden="true"></div>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 90 }} onClick={(e) => { e.stopPropagation(); onClose(); }} aria-hidden="true"></div>
           <motion.div 
              initial={{ opacity: 0, y: 10, scale: 0.95 }} 
              animate={{ opacity: 1, y: 0, scale: 1 }} 
              exit={{ opacity: 0, y: 10, scale: 0.95 }} 
              transition={{ duration: 0.2, ease: "easeOut" }}
-             className="absolute right-0 top-full mt-2 origin-top-right bg-white border border-slate-200 rounded-3xl shadow-2xl p-5 w-80 z-[100]" 
+             style={{ position: 'absolute', right: 0, top: '100%', marginTop: '8px', transformOrigin: 'top right', backgroundColor: 'var(--hub-background)', border: '1px solid var(--hub-border)', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', padding: '20px', width: '320px', zIndex: 100 }} 
              role="dialog" aria-modal="true" aria-label="Filtrar Período"
           >
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Calendar className="w-4 h-4"/> Filtrar Período</p>
-            <div className="space-y-4">
-              <div className="relative z-10">
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Inicial</label>
-                  <input type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all cursor-pointer" />
+            <p style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 16px 0' }}><Calendar size={16}/> Filtrar Período</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ position: 'relative', zIndex: 10 }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-primary)', marginBottom: '6px' }}>Data Inicial</label>
+                  <input type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} style={{ width: '100%', backgroundColor: 'var(--hub-surface)', border: '1px solid var(--hub-border)', borderRadius: '12px', padding: '8px 12px', fontSize: '14px', outline: 'none', fontWeight: 500, color: 'var(--hub-text-primary)', transition: 'all 0.2s', cursor: 'pointer' }} />
               </div>
-              <div className="relative z-10">
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Data Final</label>
-                  <input type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-medium text-slate-800 transition-all cursor-pointer" />
+              <div style={{ position: 'relative', zIndex: 10 }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-primary)', marginBottom: '6px' }}>Data Final</label>
+                  <input type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} style={{ width: '100%', backgroundColor: 'var(--hub-surface)', border: '1px solid var(--hub-border)', borderRadius: '12px', padding: '8px 12px', fontSize: '14px', outline: 'none', fontWeight: 500, color: 'var(--hub-text-primary)', transition: 'all 0.2s', cursor: 'pointer' }} />
               </div>
-              <div className="pt-2 flex gap-2 relative z-10">
-                <button type="button" onClick={onClear} disabled={loading} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-sm py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors flex justify-center items-center h-10">
+              <div style={{ paddingTop: '8px', display: 'flex', gap: '8px', position: 'relative', zIndex: 10 }}>
+                <button type="button" onClick={onClear} disabled={loading} style={{ width: '33.33%', backgroundColor: 'var(--hub-surface)', color: 'var(--hub-text-primary)', fontWeight: 'bold', fontSize: '14px', padding: '10px', borderRadius: '12px', border: '1px solid var(--hub-border)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background-color 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40px', cursor: 'pointer' }}>
                     Limpar
                 </button>
-                <button type="button" onClick={onApply} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-2.5 rounded-xl shadow-sm transition-colors flex justify-center items-center h-10">
-                    {loading ? <PixelIcons.Spinner className="w-5 h-5 text-white/80" /> : 'Aplicar Filtro'}
+                <button type="button" onClick={onApply} disabled={loading} style={{ width: '66.66%', backgroundColor: 'var(--hub-accent)', color: '#fff', fontWeight: 'bold', fontSize: '14px', padding: '10px', borderRadius: '12px', border: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'background-color 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40px', cursor: 'pointer' }}>
+                    {loading ? <PixelIcons.Spinner size={20} style={{ color: 'rgba(255,255,255,0.8)' }} /> : 'Aplicar Filtro'}
                 </button>
               </div>
             </div>
@@ -263,13 +265,13 @@ export const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loa
 export const PixelNotification = ({ show, status, titulo }) => (
     <AnimatePresence>
         {show && (
-            <motion.div initial={{ opacity: 0, y: -50, scale: 0.9 }} animate={{ opacity: 1, y: 20, scale: 1 }} exit={{ opacity: 0, y: -50, scale: 0.9 }} className="fixed top-4 right-4 z-[999999] bg-white rounded-[20px] shadow-xl border border-slate-200 p-3 flex items-center gap-4 min-w-[300px]" role="alert">
-                <div className="relative w-10 h-10 flex-shrink-0 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center">
-                    {status === 'loading' ? <PixelIcons.Spinner className="text-blue-500 w-5 h-5" /> : status === 'error' ? <AlertTriangle className="text-rose-500 w-5 h-5"/> : <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-emerald-500"><Check className="w-5 h-5"/></motion.div>}
+            <motion.div initial={{ opacity: 0, y: -50, scale: 0.9 }} animate={{ opacity: 1, y: 20, scale: 1 }} exit={{ opacity: 0, y: -50, scale: 0.9 }} style={{ position: 'fixed', top: '16px', right: '16px', zIndex: 999999, backgroundColor: 'var(--hub-background)', borderRadius: '20px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)', border: '1px solid var(--hub-border)', padding: '12px', display: 'flex', alignItems: 'center', gap: '16px', minWidth: '300px' }} role="alert">
+                <div style={{ position: 'relative', width: '40px', height: '40px', flexShrink: 0, backgroundColor: 'var(--hub-surface)', border: '1px solid var(--hub-border-subtle)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {status === 'loading' ? <PixelIcons.Spinner style={{ color: '#3b82f6', width: '20px', height: '20px' }} /> : status === 'error' ? <AlertTriangle size={20} style={{ color: '#f43f5e' }}/> : <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} style={{ color: '#10b981' }}><Check size={20}/></motion.div>}
                 </div>
-                <div className="pr-4">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{status === 'loading' ? 'A Processar...' : status === 'error' ? 'Atenção' : 'Concluído'}</p>
-                    <p className="text-sm font-black text-slate-800 line-clamp-1">{titulo}</p>
+                <div style={{ paddingRight: '16px' }}>
+                    <p style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--hub-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 2px 0' }}>{status === 'loading' ? 'A Processar...' : status === 'error' ? 'Atenção' : 'Concluído'}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 900, color: 'var(--hub-text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{titulo}</p>
                 </div>
             </motion.div>
         )}
@@ -284,14 +286,15 @@ export class PixelErrorBoundary extends Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="p-8 bg-rose-50 border border-rose-200 rounded-2xl text-center mt-6 shadow-sm">
-                    <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-black text-rose-900 mb-2">Erro de Renderização do Tracking</h3>
-                    <p className="text-sm text-rose-700 max-w-lg mx-auto mb-6">Encontramos uma falha estrutural. Verifique a base de dados ou tente novamente.<br/><code className="bg-white px-2 py-1 rounded mt-2 block text-xs overflow-auto border border-rose-100">{this.state.errorInfo}</code></p>
-                    <button onClick={() => window.location.reload()} className="bg-rose-600 text-white font-bold px-6 py-2.5 rounded-xl shadow-md hover:bg-rose-700 transition-colors">Recarregar</button>
+                <div style={{ padding: '32px', backgroundColor: '#fff1f2', border: '1px solid #fecdd3', borderRadius: '16px', textAlign: 'center', marginTop: '24px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                    <AlertTriangle size={48} style={{ color: '#f43f5e', margin: '0 auto 16px auto' }} />
+                    <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#881337', marginBottom: '8px', margin: '0 0 8px 0' }}>Erro de Renderização do Tracking</h3>
+                    <p style={{ fontSize: '14px', color: '#be123c', maxWidth: '32rem', margin: '0 auto 24px auto' }}>Encontramos uma falha estrutural. Verifique a base de dados ou tente novamente.<br/><code style={{ backgroundColor: '#fff', padding: '4px 8px', borderRadius: '4px', marginTop: '8px', display: 'block', fontSize: '12px', overflow: 'auto', border: '1px solid #ffe4e6' }}>{this.state.errorInfo}</code></p>
+                    <button onClick={() => window.location.reload()} style={{ backgroundColor: '#e11d48', color: '#fff', fontWeight: 'bold', padding: '10px 24px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', cursor: 'pointer', border: 'none' }}>Recarregar</button>
                 </div>
             );
         }
         return this.props.children;
     }
 }
+

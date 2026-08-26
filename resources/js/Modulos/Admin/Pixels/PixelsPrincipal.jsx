@@ -7,14 +7,14 @@ import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'; 
 import { Activity, RotateCcw, BookMarked } from 'lucide-react';
-import api from '../../api';
+import api from '../../../api';
 
 // Imports de Submódulos
-import { CustomStyles, AnimatedNotification } from './Pixels/Compartilhado/ComponentesUIPixels';
-import { MetricsDictionaryModal, PixelErrorBoundary } from './Pixels/Compartilhado/ModaisPixels';
-import DashboardPixels from './Pixels/Painel/DashboardPixels';
-import AppStorePixels from './Pixels/Integracoes/AppStorePixels';
-import DataLayerPixels from './Pixels/Acionadores/DataLayerPixels';
+import { CustomStyles, AnimatedNotification } from './Compartilhado/ComponentesUIPixels';
+import { MetricsDictionaryModal, PixelErrorBoundary } from './Compartilhado/ModaisPixels';
+import DashboardPixels from './Painel/DashboardPixels';
+import AppStorePixels from './Integracoes/AppStorePixels';
+import DataLayerPixels from './Acionadores/DataLayerPixels';
 
 const queryClient = new QueryClient({
     defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 1000 * 60 * 5 } },
@@ -243,26 +243,16 @@ const AdminPixelsContent = () => {
     };
 
     const TabSkeleton = () => (
-        <div className="space-y-6 animate-pulse p-4">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                <div className="space-y-2">
-                    <div className="h-6 w-48 bg-slate-200 rounded-lg" />
-                    <div className="h-4 w-72 bg-slate-100 rounded-lg" />
-                </div>
-                <div className="flex gap-2">
-                    <div className="h-10 w-32 bg-slate-200 rounded-xl" />
-                    <div className="h-10 w-10 bg-slate-200 rounded-xl" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '16px', opacity: 0.6 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--hub-border-subtle)', paddingBottom: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ height: '24px', width: '200px', backgroundColor: 'var(--hub-border-strong)', borderRadius: '8px' }} />
+                    <div style={{ height: '16px', width: '300px', backgroundColor: 'var(--hub-border-subtle)', borderRadius: '8px' }} />
                 </div>
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
                 {[...Array(6)].map((_, i) => (
-                    <div key={i} className="flex-1 min-w-[200px] h-32 bg-slate-100 rounded-2xl p-5 flex flex-col justify-between">
-                        <div className="w-10 h-10 bg-slate-200 rounded-xl" />
-                        <div className="space-y-1.5">
-                            <div className="h-2.5 bg-slate-200 rounded w-3/4" />
-                            <div className="h-7 bg-slate-200 rounded w-1/2" />
-                        </div>
-                    </div>
+                    <div key={i} style={{ flex: '1', minWidth: '200px', height: '120px', backgroundColor: 'var(--hub-surface)', borderRadius: '24px', padding: '20px', border: '1px solid var(--hub-border-subtle)' }} />
                 ))}
             </div>
         </div>
@@ -273,38 +263,38 @@ const AdminPixelsContent = () => {
     // ------------------------------------------------------------------------
     return (
         <PixelErrorBoundary>
-            <div className="w-full max-w-7xl mx-auto pb-16 relative">
+            <div className="hub-layout-container">
                 <Helmet><title>Central de Tracking | HUB Admin</title></Helmet>
                 <CustomStyles />
                 <AnimatedNotification show={toast.show} status={toast.status} titulo={toast.message} />
                 <MetricsDictionaryModal isOpen={isDictOpen} onClose={() => setIsDictOpen(false)} />
 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 px-4 sm:px-0">
+                <div className="hub-page-header">
                     <div>
-                        <h1 className="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-                            <Activity className="w-6 h-6 text-blue-600" /> Tracking Hub (CDP)
+                        <h1 className="hub-page-title">
+                            <Activity className="w-6 h-6 text-blue-600" style={{ color: 'var(--hub-brand-primary)' }} /> Tracking Hub (CDP)
                         </h1>
-                        <p className="text-slate-500 mt-1 text-sm">Plataforma de coleta, validação e distribuição inteligente de eventos.</p>
+                        <p className="hub-page-subtitle">Plataforma de coleta, validação e distribuição inteligente de eventos.</p>
                     </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        <button onClick={handleRefreshManual} disabled={isManualRefresh || isLoading} className="flex items-center justify-center w-10 h-10 bg-white text-slate-600 rounded-lg shadow-sm hover:text-blue-600 border border-slate-200 hover:border-blue-300 transition-all focus:ring-2 focus:ring-blue-500/20" title="Sincronizar Agora">
-                            <RotateCcw className={`w-4 h-4 ${(isManualRefresh || isLoading) ? 'animate-spin text-blue-600' : ''}`} />
+                    <div className="hub-header-actions">
+                        <button onClick={handleRefreshManual} disabled={isManualRefresh || isLoading} className="hub-btn hub-btn-outline hub-btn-icon" title="Sincronizar Agora">
+                            <RotateCcw className={`w-4 h-4 ${(isManualRefresh || isLoading) ? 'animate-spin' : ''}`} style={{ color: (isManualRefresh || isLoading) ? 'var(--hub-brand-primary)' : 'inherit' }} />
                         </button>
-                        <button onClick={() => setIsDictOpen(true)} className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 shadow-sm rounded-lg text-sm font-medium text-slate-700 hover:text-blue-600 hover:border-blue-200 transition-all focus:ring-2 focus:ring-blue-500/20">
+                        <button onClick={() => setIsDictOpen(true)} className="hub-btn hub-btn-outline">
                             <BookMarked className="w-4 h-4" /> Catálogo
                         </button>
                     </div>
                 </div>
 
-                <div className="flex overflow-x-auto no-scrollbar bg-slate-100/80 p-1 rounded-xl mb-8 w-max max-w-full border border-slate-200/50 mx-4 sm:mx-0">
+                <div className="hub-tabs-container no-scrollbar">
                     {[
                         { id: 'PAINEL', label: 'Funil e Métricas' },
                         { id: 'INTEGRACOES', label: 'App Store' },
                         { id: 'ACIONADORES', label: 'Data Layer' }
                     ].map((tab) => (
-                        <button key={tab.id} onClick={() => { setActiveTab(tab.id); setTriggerView('LIST'); }} className={`relative px-5 py-2.5 rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap outline-none ${activeTab === tab.id ? 'bg-white text-slate-800 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
-                            {activeTab === tab.id && <motion.div layoutId="activeTabPixels" className="absolute inset-0 bg-white rounded-lg shadow-sm border border-slate-200/50" transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
-                            <span className="relative z-10">{tab.label}</span>
+                        <button key={tab.id} onClick={() => { setActiveTab(tab.id); setTriggerView('LIST'); }} className={`hub-tab-item ${activeTab === tab.id ? 'is-active' : ''}`}>
+                            {activeTab === tab.id && <motion.div layoutId="activeTabPixels" className="hub-tab-indicator" transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                            <span className="hub-tab-label">{tab.label}</span>
                         </button>
                     ))}
                 </div>

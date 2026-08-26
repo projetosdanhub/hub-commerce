@@ -4,32 +4,40 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../api';
 
-const CategoryGrid = () => {
+const GradeCategorias = ({ titulo = "Explore por Categorias", estilo = 'card', mostrarSecao = true }) => {
     const carouselRef = useRef(null);
     const navigate = useNavigate();
     
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
+    const [categorias, setCategorias] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // 1. Configurações do Lojista (Painel HQ Admin)
+    // Configuração mesclada via props (Construtor Vitrine)
     const config = {
-        tituloSecao: "Explore por Categorias",
-        mostrarSecao: true,
-        estilo: 'card', // Opções: 'redondo' (Estilo Shopee) OU 'card' (Estilo Retangular)
+        tituloSecao: titulo,
+        mostrarSecao: mostrarSecao,
+        estilo: estilo, // 'redondo' ou 'card'
     };
 
-    // 2. Dados das Categorias (Mock - Virão da Base de Dados)
-    const categorias = [
-        { id: 1, nome: "Eletrónicos", slug: "eletronicos", imagem: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=200&q=80" },
-        { id: 2, nome: "Moda & Acessórios", slug: "moda", imagem: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=200&q=80" },
-        { id: 3, nome: "Casa & Jardim", slug: "casa", imagem: null }, // Teste sem imagem (Gera degradê)
-        { id: 4, nome: "Beleza", slug: "beleza", imagem: "https://images.unsplash.com/photo-1522335789203-aabd1fc54c28?w=200&q=80" },
-        { id: 5, nome: "Desporto", slug: "desporto", imagem: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=200&q=80" },
-        { id: 6, nome: "Brinquedos", slug: "brinquedos", imagem: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=200&q=80" },
-        { id: 7, nome: "Livros", slug: "livros", imagem: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=200&q=80" },
-        { id: 8, nome: "Pets", slug: "pets", imagem: "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=200&q=80" },
-    ];
+    // Carregar categorias reais da API
+    useEffect(() => {
+        const fetchCategorias = async () => {
+            try {
+                const response = await api.get('/storefront/categories');
+                if (response.data && response.data.data) {
+                    setCategorias(response.data.data);
+                }
+            } catch (error) {
+                console.error("Erro ao buscar categorias", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchCategorias();
+    }, []);
 
     // Deteção de Limites de Scroll (Setas Desktop)
     const checkScrollPosition = () => {
@@ -80,7 +88,8 @@ const CategoryGrid = () => {
         return cores[id % cores.length];
     };
 
-    if (!config.mostrarSecao || categorias.length === 0) return null;
+    if (!config.mostrarSecao || isLoading) return null;
+    if (categorias.length === 0) return null;
 
     return (
         <section 
@@ -178,4 +187,4 @@ const CategoryGrid = () => {
     );
 };
 
-export default CategoryGrid;
+export default GradeCategorias;

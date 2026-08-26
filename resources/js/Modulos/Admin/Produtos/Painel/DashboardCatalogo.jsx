@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Icons } from '../Compartilhado/Icones';
+import { Download } from 'lucide-react';
 import { gerarCSV } from '../Compartilhado/ComponentesUI';
+import { Button } from '../../DesignSystem/primitives/Button';
+import { Badge } from '../../DesignSystem/primitives/Badge';
 
 const DashboardSkeleton = () => (
-    <div className="animate-pulse space-y-6">
-        <div className="bg-slate-100 border border-slate-200 rounded-2xl w-full h-[100px] mb-6"></div>
-        <div className="bg-slate-100 border border-slate-200 rounded-xl w-full h-[300px]"></div>
+    <div className="animate-pulse" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ backgroundColor: 'var(--hub-surface-subtle)', border: '1px solid var(--hub-border-subtle)', borderRadius: 'var(--hub-radius-lg)', width: '100%', height: '100px', marginBottom: '24px' }}></div>
+        <div style={{ backgroundColor: 'var(--hub-surface-subtle)', border: '1px solid var(--hub-border-subtle)', borderRadius: 'var(--hub-radius-lg)', width: '100%', height: '300px' }}></div>
     </div>
 );
 
@@ -24,127 +26,144 @@ export default function DashboardCatalogo({ produtos, isRefreshing, abrirEdicaoP
     const topSellers = [...produtos].sort((a, b) => (b.vendas || 0) - (a.vendas || 0)).slice(0, 10);
 
     return (
-        <div key="dash" className="space-y-6 pb-10 animate-fade-in-up">
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-end pb-4 gap-4">
+        <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '40px' }}>
+            <div className="modal-responsive-flex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '16px' }}>
                 <div>
-                    <h2 className="text-xl font-bold text-slate-800">Visão Geral do Catálogo</h2>
-                    <p className="text-sm text-slate-500 mt-1">Métricas em tempo real de produtos e faturamento.</p>
+                    <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--hub-text-primary)', margin: 0 }}>Visão Geral do Catálogo</h2>
+                    <p style={{ fontSize: '14px', color: 'var(--hub-text-secondary)', marginTop: '4px', margin: 0 }}>Métricas em tempo real de produtos e faturamento.</p>
                 </div>
-                <div className="flex gap-3 w-full md:w-auto">
-                    <select value={filtroDashboard} onChange={e => setFiltroDashboard(e.target.value)} className="bg-white border border-slate-200 text-sm font-bold text-slate-700 rounded-xl px-4 py-2.5 outline-none cursor-pointer focus:ring-4 focus:ring-blue-500/20 hover:border-blue-300 transition-all shadow-sm">
+                <div className="modal-responsive-flex" style={{ display: 'flex', gap: '12px', width: 'auto' }}>
+                    <select 
+                        value={filtroDashboard} 
+                        onChange={e => setFiltroDashboard(e.target.value)} 
+                        className="hub-select"
+                    >
                         <option value="7D">Últimos 7 dias</option>
                         <option value="30D">Últimos 30 dias</option>
                         <option value="365D">Último Ano</option>
                     </select>
-                    <button onClick={() => gerarCSV(produtos)} className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-blue-600 hover:border-blue-200 shadow-sm transition-all font-bold text-sm flex items-center gap-2">
-                        <Icons.Download className="w-4 h-4"/> Baixar CSV
-                    </button>
+                    <Button 
+                        variant="outline"
+                        icon={Download}
+                        onClick={() => gerarCSV(produtos)}
+                    >
+                        Baixar CSV
+                    </Button>
                 </div>
-            </header>
+            </div>
 
             {isRefreshing ? (
                 <DashboardSkeleton />
             ) : (
                 <>
-                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm w-full overflow-hidden mb-6 flex overflow-x-auto custom-scrollbar">
-                        <div className="flex flex-col justify-center px-6 py-5 shrink-0 min-w-[240px] hover:bg-slate-50 transition-colors cursor-default border-r border-slate-100">
-                            <div className="flex items-center justify-between mb-1">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Receita Bruta</span>
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${aumentoReceita >= 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
+                    <div className="hub-panel custom-scrollbar" style={{ width: '100%', overflowX: 'auto', display: 'flex', marginBottom: '24px' }}>
+                        <div className="hub-metric-item" style={{ flexShrink: 0, minWidth: '240px', padding: '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '1px solid var(--hub-border-subtle)', cursor: 'default' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--hub-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Receita Bruta</span>
+                                <Badge variant={aumentoReceita >= 0 ? 'success' : 'danger'}>
                                     {aumentoReceita >= 0 ? '+' : ''}{aumentoReceita.toFixed(1)}%
-                                </span>
+                                </Badge>
                             </div>
-                            <p className="text-2xl font-black text-slate-800 tracking-tight leading-none truncate block">
+                            <p style={{ fontSize: '28px', fontWeight: '900', color: 'var(--hub-text-primary)', letterSpacing: '-0.02em', lineHeight: 1, margin: '4px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 R$ {totalReceita.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
 
-                        <div className="shrink-0 w-[200px] px-6 py-5 border-r border-slate-100 flex flex-col justify-center hover:bg-slate-50 transition-colors">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Total Produtos</span>
+                        <div className="hub-metric-item" style={{ flexShrink: 0, width: '200px', padding: '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '1px solid var(--hub-border-subtle)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--hub-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Produtos</span>
                             </div>
-                            <p className="text-xl font-bold tracking-tight leading-none truncate text-slate-800">
+                            <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--hub-text-primary)', letterSpacing: '-0.02em', lineHeight: 1, margin: '4px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {produtos.length}
                             </p>
                         </div>
 
-                        <div className="shrink-0 w-[200px] px-6 py-5 border-r border-slate-100 flex flex-col justify-center hover:bg-slate-50 transition-colors">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Ativos</span>
+                        <div className="hub-metric-item" style={{ flexShrink: 0, width: '200px', padding: '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '1px solid var(--hub-border-subtle)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--hub-success)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ativos</span>
                             </div>
-                            <p className="text-xl font-bold tracking-tight leading-none truncate text-emerald-700">
+                            <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--hub-success)', letterSpacing: '-0.02em', lineHeight: 1, margin: '4px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {produtos.filter(p => p.status === 'ATIVO').length}
                             </p>
                         </div>
 
-                        <div className="shrink-0 w-[200px] px-6 py-5 border-r border-slate-100 flex flex-col justify-center hover:bg-slate-50 transition-colors">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-rose-600">Esgotados</span>
+                        <div className="hub-metric-item" style={{ flexShrink: 0, width: '200px', padding: '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '1px solid var(--hub-border-subtle)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--hub-danger)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Esgotados</span>
                             </div>
-                            <p className="text-xl font-bold tracking-tight leading-none truncate text-rose-700">
+                            <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--hub-danger)', letterSpacing: '-0.02em', lineHeight: 1, margin: '4px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {produtos.filter(p => p.controlarEstoque && p.estoque === 0 && !p.preVenda).length}
                             </p>
                         </div>
 
-                        <div className="shrink-0 w-[200px] px-6 py-5 flex flex-col justify-center hover:bg-slate-50 transition-colors">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Unid. Vendidas</span>
+                        <div className="hub-metric-item" style={{ flexShrink: 0, width: '200px', padding: '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--hub-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unid. Vendidas</span>
                             </div>
-                            <p className="text-xl font-bold tracking-tight leading-none truncate text-blue-700">
+                            <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--hub-primary)', letterSpacing: '-0.02em', lineHeight: 1, margin: '4px 0 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {totalVendas}
                             </p>
                         </div>
                     </div>
 
-                    <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mt-6" aria-label="Top 10 Mais Vendidos">
-                        <header className="p-5 border-b border-slate-100 flex items-center justify-between">
-                            <h3 className="text-[15px] font-bold text-slate-800 flex items-center gap-2">Top 10 Mais Vendidos</h3>
+                    <section className="hub-panel" style={{ overflow: 'hidden', marginTop: '24px' }} aria-label="Top 10 Mais Vendidos">
+                        <header className="hub-table-header" style={{ padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--hub-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>Top 10 Mais Vendidos</h3>
                         </header>
-                        <div className="overflow-x-auto custom-scrollbar">
-                            <table className="w-full text-left border-collapse min-w-[900px]">
+                        <div className="custom-scrollbar" style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', minWidth: '900px' }}>
                                 <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-100 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                                        <th className="p-4 pl-6">Produto</th>
-                                        <th className="p-4 text-center">Vendas</th>
-                                        <th className="p-4 text-center">Status</th>
-                                        <th className="p-4 text-center">Estoque</th>
-                                        <th className="p-4 text-center">Última Venda</th>
-                                        <th className="p-4 text-right pr-6">Receita Bruta</th>
+                                    <tr className="hub-table-header">
+                                        <th className="hub-table-cell" style={{ paddingLeft: '24px' }}>Produto</th>
+                                        <th className="hub-table-cell" style={{ textAlign: 'center' }}>Vendas</th>
+                                        <th className="hub-table-cell" style={{ textAlign: 'center' }}>Status</th>
+                                        <th className="hub-table-cell" style={{ textAlign: 'center' }}>Estoque</th>
+                                        <th className="hub-table-cell" style={{ textAlign: 'center' }}>Última Venda</th>
+                                        <th className="hub-table-cell" style={{ textAlign: 'right', paddingRight: '24px' }}>Receita Bruta</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody style={{ borderTop: '1px solid var(--hub-border-subtle)' }}>
                                     {topSellers.map((p, idx) => {
                                         const v = Math.floor((p.vendas || 0) * (filtroDashboard === '7D' ? 0.25 : filtroDashboard === '365D' ? 12 : 1));
                                         const r = (p.receitaGerada || 0) * (filtroDashboard === '7D' ? 0.25 : filtroDashboard === '365D' ? 12 : 1);
+                                        
+                                        let statusVariant = 'success';
+                                        if (p.status === 'INATIVO') statusVariant = 'neutral';
+                                        if (p.status === 'OCULTO') statusVariant = 'warning';
+
                                         return (
-                                        <tr key={p.id} onClick={() => abrirEdicaoProduto(p)} className="hover:bg-slate-50 cursor-pointer transition-colors group">
-                                            <td className="p-4 pl-6 flex items-center gap-4 relative">
-                                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                                <span className="text-[11px] font-bold text-slate-400 w-4">{idx + 1}</span>
-                                                <img src={p.img || 'https://via.placeholder.com/40'} className="w-9 h-9 rounded-md object-cover border border-slate-200 bg-white" alt="" />
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-slate-700 text-[13px] line-clamp-1 group-hover:text-blue-600 transition-colors">{p.nome}</span>
-                                                    <span className="text-[11px] text-slate-500">{p.skuRef}-{p.skuSufixo}</span>
+                                        <tr key={p.id} onClick={() => abrirEdicaoProduto(p)} className="hub-tr group" style={{ cursor: 'pointer' }}>
+                                            <td className="hub-table-cell" style={{ paddingLeft: '24px', display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
+                                                <div className="hub-hover-show" style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', backgroundColor: 'var(--hub-primary)', opacity: 0, transition: 'opacity 0.2s' }}></div>
+                                                <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-muted)', width: '16px' }}>{idx + 1}</span>
+                                                <img src={p.img || 'https://via.placeholder.com/40'} alt="" style={{ width: '40px', height: '40px', borderRadius: 'var(--hub-radius-sm)', objectFit: 'cover', border: '1px solid var(--hub-border-subtle)', backgroundColor: '#fff' }} />
+                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <span style={{ fontWeight: 'bold', color: 'var(--hub-text-primary)', fontSize: '14px', transition: 'color 0.2s' }}>{p.nome}</span>
+                                                    <span style={{ fontSize: '12px', color: 'var(--hub-text-muted)', marginTop: '2px' }}>{p.skuRef}-{p.skuSufixo}</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 text-center">
-                                                <span className="text-[13px] font-bold text-slate-700">{v}</span>
+                                            <td className="hub-table-cell" style={{ textAlign: 'center' }}>
+                                                <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--hub-text-primary)' }}>{v}</span>
                                             </td>
-                                            <td className="p-4 text-center">
-                                                {p.status === 'INATIVO' ? <span className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Inativo</span> : <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Ativo</span>}
+                                            <td className="hub-table-cell" style={{ textAlign: 'center' }}>
+                                                <Badge variant={statusVariant}>{p.status === 'INATIVO' ? 'Inativo' : p.status === 'OCULTO' ? 'Oculto' : 'Ativo'}</Badge>
                                             </td>
-                                            <td className="p-4 text-center">
-                                                {p.preVenda ? <span className="text-[11px] font-medium text-purple-700">Encomenda</span> : p.estoque === 0 ? <span className="text-[11px] font-medium text-amber-600">Esgotado</span> : <span className="font-medium text-slate-700 text-[13px]">{p.estoque} un</span>}
+                                            <td className="hub-table-cell" style={{ textAlign: 'center' }}>
+                                                {p.preVenda ? <Badge variant="special">Encomenda</Badge> : p.estoque === 0 ? <Badge variant="danger">Esgotado</Badge> : <span style={{ fontWeight: '500', color: 'var(--hub-text-primary)', fontSize: '14px' }}>{p.estoque} un</span>}
                                             </td>
-                                            <td className="p-4 text-center text-[12px] text-slate-500">
+                                            <td className="hub-table-cell" style={{ textAlign: 'center', fontSize: '13px', color: 'var(--hub-text-muted)' }}>
                                                 Hoje, 10:42
                                             </td>
-                                            <td className="p-4 pr-6 text-right">
-                                                <span className="font-bold text-slate-800 text-[14px]">R$ {parseFloat(r || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                            <td className="hub-table-cell" style={{ paddingRight: '24px', textAlign: 'right' }}>
+                                                <span style={{ fontWeight: 'bold', color: 'var(--hub-text-primary)', fontSize: '15px' }}>R$ {parseFloat(r || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                                             </td>
                                         </tr>
                                     )})}
-                                    {topSellers.length === 0 && <tr><td colSpan="6" className="p-8 text-center text-slate-500 text-sm font-medium">Nenhuma venda registrada no período.</td></tr>}
+                                    {topSellers.length === 0 && (
+                                        <tr>
+                                            <td colSpan="6" className="hub-table-cell" style={{ padding: '32px', textAlign: 'center', color: 'var(--hub-text-secondary)', fontSize: '14px', fontWeight: '500' }}>Nenhuma venda registrada no período.</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>

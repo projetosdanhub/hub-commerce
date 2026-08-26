@@ -56,43 +56,44 @@ export default function AbaMidia({ p, setP }) {
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Imagem Principal</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '1024px', margin: '0 auto' }}>
+            <div className="hub-card">
+                <div style={{ marginBottom: '16px' }}>
+                    <h3 className="hub-card-title">Imagem Principal</h3>
                 </div>
                 
-                <div className="flex items-start gap-6">
-                    <div className="w-48 h-48 rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center relative group shrink-0">
+                <div className="md-flex" style={{ gap: '24px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '192px', height: '192px', borderRadius: 'var(--hub-radius-lg)', border: '1px solid var(--hub-border-subtle)', overflow: 'hidden', backgroundColor: 'var(--hub-surface-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 }}>
                         {p.img ? (
                             <>
-                                <img src={p.img} alt="Principal" className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <label className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-700 hover:text-blue-600 cursor-pointer shadow-sm hover:scale-110 transition-transform">
-                                        <Icons.Edit className="w-5 h-5" />
-                                        <input type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleMainImageChange} />
+                                <img src={p.img} alt="Principal" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0, transition: 'opacity 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}>
+                                    <label style={{ width: '40px', height: '40px', backgroundColor: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--hub-text-secondary)', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', transition: 'transform 0.2s' }} onMouseEnter={(e) => {e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.color = 'var(--hub-primary)'}} onMouseLeave={(e) => {e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.color = 'var(--hub-text-secondary)'}}>
+                                        <Icons.Edit style={{ width: '20px', height: '20px' }} />
+                                        <input type="file" style={{ display: 'none' }} accept="image/png, image/jpeg, image/webp" onChange={handleMainImageChange} />
                                     </label>
                                     <button 
                                         onClick={() => setP({...p, img: null, imgObject: null})}
-                                        className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-700 hover:text-rose-600 shadow-sm hover:scale-110 transition-transform"
+                                        style={{ width: '40px', height: '40px', backgroundColor: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--hub-text-secondary)', cursor: 'pointer', border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', transition: 'transform 0.2s' }}
+                                        onMouseEnter={(e) => {e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.color = 'var(--hub-danger)'}} onMouseLeave={(e) => {e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.color = 'var(--hub-text-secondary)'}}
                                     >
-                                        <Icons.Trash className="w-5 h-5" />
+                                        <Icons.Trash style={{ width: '20px', height: '20px' }} />
                                     </button>
                                 </div>
                             </>
                         ) : (
-                            <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer text-slate-400 hover:text-blue-500 hover:bg-blue-50/50 transition-colors">
-                                <Icons.Image className="w-10 h-10 mb-2" />
-                                <span className="text-xs font-bold">Adicionar Imagem</span>
-                                <input type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleMainImageChange} />
+                            <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--hub-text-muted)', transition: 'colors 0.2s' }} onMouseEnter={(e) => {e.currentTarget.style.color = 'var(--hub-primary)'; e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)'}} onMouseLeave={(e) => {e.currentTarget.style.color = 'var(--hub-text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'}}>
+                                <Icons.Image style={{ width: '40px', height: '40px', marginBottom: '8px' }} />
+                                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Adicionar Imagem</span>
+                                <input type="file" style={{ display: 'none' }} accept="image/png, image/jpeg, image/webp" onChange={handleMainImageChange} />
                             </label>
                         )}
                     </div>
                     
-                    <div className="flex-1 space-y-4">
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div>
-                            <h4 className="text-sm font-bold text-slate-700">Dicas de formato</h4>
-                            <ul className="text-xs text-slate-500 mt-2 space-y-1 list-disc list-inside">
+                            <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--hub-text-primary)' }}>Dicas de formato</h4>
+                            <ul style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px', listStyleType: 'disc', listStylePosition: 'inside' }}>
                                 <li>Formato JPG, PNG ou WEBP</li>
                                 <li>Tamanho máximo: 5MB</li>
                                 <li>Recomendado: 1200x1200px para zoom de qualidade</li>
@@ -103,45 +104,46 @@ export default function AbaMidia({ p, setP }) {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
+            <div className="hub-card">
+                <div style={{ marginBottom: '16px' }}>
                     <div>
-                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Vídeo Principal</h3>
-                        <p className="text-xs text-slate-500 mt-1">Aumente a conversão exibindo seu produto em movimento.</p>
+                        <h3 className="hub-card-title">Vídeo Principal</h3>
+                        <p style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', marginTop: '4px' }}>Aumente a conversão exibindo seu produto em movimento.</p>
                     </div>
                 </div>
                 
-                <div className="flex items-start gap-6">
-                    <div className="w-48 h-48 rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center relative group shrink-0">
+                <div className="md-flex" style={{ gap: '24px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '192px', height: '192px', borderRadius: 'var(--hub-radius-lg)', border: '1px solid var(--hub-border-subtle)', overflow: 'hidden', backgroundColor: 'var(--hub-surface-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 }}>
                         {p.video ? (
                             <>
-                                <video src={p.video} className="w-full h-full object-cover" muted loop autoPlay />
-                                <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <label className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-700 hover:text-blue-600 cursor-pointer shadow-sm hover:scale-110 transition-transform">
-                                        <Icons.Edit className="w-5 h-5" />
-                                        <input type="file" className="hidden" accept="video/mp4, video/webm" onChange={handleVideoChange} />
+                                <video src={p.video} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted loop autoPlay />
+                                <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0, transition: 'opacity 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}>
+                                    <label style={{ width: '40px', height: '40px', backgroundColor: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--hub-text-secondary)', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', transition: 'transform 0.2s' }} onMouseEnter={(e) => {e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.color = 'var(--hub-primary)'}} onMouseLeave={(e) => {e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.color = 'var(--hub-text-secondary)'}}>
+                                        <Icons.Edit style={{ width: '20px', height: '20px' }} />
+                                        <input type="file" style={{ display: 'none' }} accept="video/mp4, video/webm" onChange={handleVideoChange} />
                                     </label>
                                     <button 
                                         onClick={() => setP({...p, video: null, videoObject: null})}
-                                        className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-700 hover:text-rose-600 shadow-sm hover:scale-110 transition-transform"
+                                        style={{ width: '40px', height: '40px', backgroundColor: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--hub-text-secondary)', cursor: 'pointer', border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', transition: 'transform 0.2s' }}
+                                        onMouseEnter={(e) => {e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.color = 'var(--hub-danger)'}} onMouseLeave={(e) => {e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.color = 'var(--hub-text-secondary)'}}
                                     >
-                                        <Icons.Trash className="w-5 h-5" />
+                                        <Icons.Trash style={{ width: '20px', height: '20px' }} />
                                     </button>
                                 </div>
                             </>
                         ) : (
-                            <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer text-slate-400 hover:text-blue-500 hover:bg-blue-50/50 transition-colors">
-                                <Icons.Play className="w-10 h-10 mb-2" />
-                                <span className="text-xs font-bold text-center">Adicionar<br/>Vídeo</span>
-                                <input type="file" className="hidden" accept="video/mp4, video/webm" onChange={handleVideoChange} />
+                            <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--hub-text-muted)', transition: 'colors 0.2s' }} onMouseEnter={(e) => {e.currentTarget.style.color = 'var(--hub-primary)'; e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)'}} onMouseLeave={(e) => {e.currentTarget.style.color = 'var(--hub-text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'}}>
+                                <Icons.Play style={{ width: '40px', height: '40px', marginBottom: '8px' }} />
+                                <span style={{ fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>Adicionar<br/>Vídeo</span>
+                                <input type="file" style={{ display: 'none' }} accept="video/mp4, video/webm" onChange={handleVideoChange} />
                             </label>
                         )}
                     </div>
                     
-                    <div className="flex-1 space-y-4">
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <div>
-                            <h4 className="text-sm font-bold text-slate-700">Dicas de formato de Vídeo</h4>
-                            <ul className="text-xs text-slate-500 mt-2 space-y-1 list-disc list-inside">
+                            <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--hub-text-primary)' }}>Dicas de formato de Vídeo</h4>
+                            <ul style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px', listStyleType: 'disc', listStylePosition: 'inside' }}>
                                 <li>Formato MP4 ou WEBM</li>
                                 <li>Tamanho máximo: 20MB</li>
                                 <li>Duração sugerida: até 15 segundos</li>
@@ -152,38 +154,39 @@ export default function AbaMidia({ p, setP }) {
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
+            <div className="hub-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                     <div>
-                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">Galeria de Imagens</h3>
-                        <p className="text-xs text-slate-500 mt-1">Imagens secundárias do produto (máx. 10).</p>
+                        <h3 className="hub-card-title">Galeria de Imagens</h3>
+                        <p style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', marginTop: '4px' }}>Imagens secundárias do produto (máx. 10).</p>
                     </div>
-                    <label className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer">
-                        <Icons.Plus className="w-4 h-4" /> Adicionar Fotos
-                        <input type="file" multiple className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleGalleryChange} />
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'var(--hub-surface)', color: 'var(--hub-text-primary)', borderRadius: 'var(--hub-radius-lg)', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', transition: 'background-color 0.2s', border: '1px solid var(--hub-border)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hub-surface-subtle)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--hub-surface)'}>
+                        <Icons.Plus style={{ width: '16px', height: '16px' }} /> Adicionar Fotos
+                        <input type="file" multiple style={{ display: 'none' }} accept="image/png, image/jpeg, image/webp" onChange={handleGalleryChange} />
                     </label>
                 </div>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
                     {p.galeriaObjects && p.galeriaObjects.map((item, index) => (
-                        <div key={index} className="aspect-square rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 relative group">
-                            <img src={item.url || URL.createObjectURL(item.file)} alt={`Galeria ${index}`} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div key={index} style={{ aspectRatio: '1 / 1', borderRadius: 'var(--hub-radius-lg)', border: '1px solid var(--hub-border-subtle)', overflow: 'hidden', backgroundColor: 'var(--hub-surface-subtle)', position: 'relative' }} onMouseEnter={(e) => {e.currentTarget.querySelector('.overlay').style.opacity = '1'}} onMouseLeave={(e) => {e.currentTarget.querySelector('.overlay').style.opacity = '0'}}>
+                            <img src={item.url || URL.createObjectURL(item.file)} alt={`Galeria ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <div className="overlay" style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s' }}>
                                 <button 
                                     onClick={() => removeGalleryImage(index)}
-                                    className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-slate-700 hover:text-rose-600 shadow-sm hover:scale-110 transition-transform"
+                                    style={{ width: '32px', height: '32px', backgroundColor: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--hub-text-secondary)', cursor: 'pointer', border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', transition: 'transform 0.2s' }}
+                                    onMouseEnter={(e) => {e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.color = 'var(--hub-danger)'}} onMouseLeave={(e) => {e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.color = 'var(--hub-text-secondary)'}}
                                 >
-                                    <Icons.Trash className="w-4 h-4" />
+                                    <Icons.Trash style={{ width: '16px', height: '16px' }} />
                                 </button>
                             </div>
                         </div>
                     ))}
                     
                     {(!p.galeriaObjects || p.galeriaObjects.length < 10) && (
-                        <label className="aspect-square border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center bg-slate-50/50 text-slate-400 hover:bg-slate-50 hover:border-blue-300 transition-colors cursor-pointer group">
-                            <Icons.Upload className="w-6 h-6 mb-2 text-slate-300 group-hover:text-blue-400 transition-colors" />
-                            <span className="text-[10px] font-bold text-slate-500 text-center px-2">Adicionar<br/>mais imagens</span>
-                            <input type="file" multiple className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleGalleryChange} />
+                        <label style={{ aspectRatio: '1 / 1', border: '2px dashed var(--hub-border-subtle)', borderRadius: 'var(--hub-radius-lg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--hub-surface-subtle)', color: 'var(--hub-text-muted)', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = 'var(--hub-surface)'; e.currentTarget.style.borderColor = 'var(--hub-primary-light)'}} onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = 'var(--hub-surface-subtle)'; e.currentTarget.style.borderColor = 'var(--hub-border-subtle)'}}>
+                            <Icons.Upload style={{ width: '24px', height: '24px', marginBottom: '8px', color: 'var(--hub-border-dark)' }} />
+                            <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--hub-text-secondary)', textAlign: 'center', padding: '0 8px' }}>Adicionar<br/>mais imagens</span>
+                            <input type="file" multiple style={{ display: 'none' }} accept="image/png, image/jpeg, image/webp" onChange={handleGalleryChange} />
                         </label>
                     )}
                 </div>

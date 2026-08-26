@@ -96,6 +96,7 @@ const AdminLayout = ({ children }) => {
             items: [
                 { label: 'Produtos', path: '/admin/produtos', icon: Icons.Products },
                 { label: 'Categorias', path: '/admin/categorias', icon: Icons.Categorias },
+                { label: 'Menus', path: '/admin/menus', icon: Icons.Menu },
                 { label: 'Precificadora', path: '/admin/precificadora', icon: Icons.Calculator }, 
                 { label: 'Estoque', path: '/admin/estoque', icon: Icons.Estoque },
             ]
