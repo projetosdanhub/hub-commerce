@@ -1383,6 +1383,7 @@ export default function AdminCustomers() {
     
     // Lê se existe um cliente aberto
     const customerIdUrl = searchParams.get('id');
+    const [isRefreshing, setIsRefreshing] = React.useState(false);
 
     const abasDisponiveis = ['PAINEL', 'CLIENTES (CRM)', 'BENEFÍCIOS', 'CONFIGURAÇÕES'];
 
@@ -1409,6 +1410,12 @@ export default function AdminCustomers() {
         setSearchParams(newParams);
     };
 
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await queryClient.invalidateQueries();
+        setTimeout(() => setIsRefreshing(false), 500);
+    };
+
     return (
         <QueryClientProvider client={queryClient}>
             <ErrorBoundary>
@@ -1423,8 +1430,8 @@ export default function AdminCustomers() {
                             </div>
                         </div>
                         
-                        <nav className="border-b border-slate-200 mt-6 pb-6 overflow-x-auto no-scrollbar relative w-full flex items-center" aria-label="Navegação do CRM">
-                            <div className="flex overflow-x-auto no-scrollbar bg-slate-100 p-1.5 rounded-2xl shadow-inner border border-slate-200/60 w-max max-w-full">
+                        <nav className="border-b border-slate-200 mt-6 pb-6 overflow-x-auto no-scrollbar relative w-full flex items-center justify-between" aria-label="Navegação do CRM">
+                            <div className="flex overflow-x-auto no-scrollbar bg-slate-100/80 p-1 rounded-xl w-max max-w-full border border-slate-200/50">
                                 {abasDisponiveis.map(tab => (
                                     <button 
                                         type="button" 
@@ -1432,12 +1439,15 @@ export default function AdminCustomers() {
                                         aria-label={`Aba ${tab}`} 
                                         aria-current={mainTabUrl === tab ? "page" : undefined} 
                                         onClick={() => handleMainTabChange(tab)} 
-                                        className={`px-5 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all focus:outline-none ${mainTabUrl === tab ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800'}`}
+                                        className={`relative px-5 py-2.5 rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap outline-none ${mainTabUrl === tab ? 'bg-white text-slate-800 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
                                     >
                                         {tab}
                                     </button>
                                 ))}
                             </div>
+                            <button onClick={handleRefresh} disabled={isRefreshing} className="bg-white border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 p-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center ml-4 shrink-0" title="Atualizar Dados">
+                                <div className={`${isRefreshing ? 'animate-spin text-blue-600' : ''}`}><Icons.Refresh /></div>
+                            </button>
                         </nav>
                     </header>
 

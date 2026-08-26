@@ -17,8 +17,8 @@ const queryClient = new QueryClient({
 
 const tabTransition = {
     initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } },
-    exit: { opacity: 0, y: -10, transition: { duration: 0.2, ease: "easeInOut" } }
+    animate: { opacity: 1, y: 0, transition: { duration: 0.24, ease: [0.25, 1, 0.5, 1] } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.12, ease: "easeInOut" } }
 };
 
 class ErrorBoundary extends Component {
@@ -27,7 +27,7 @@ class ErrorBoundary extends Component {
     componentDidCatch(error, errorInfo) { this.setState({ error, errorInfo }); console.error("Erro no módulo:", error); }
     render() {
         if (this.state.hasError) return (
-            <div className="p-8 m-8 bg-rose-50 border border-rose-200 rounded-[24px] shadow-sm">
+            <div className="p-8 m-8 bg-rose-50 border border-rose-200 rounded-2xl shadow-sm">
                 <h2 className="text-xl font-black text-rose-600 mb-4 flex items-center gap-2">
                     <Icons.AlertTriangle className="w-6 h-6" /> Erro de Renderização Contido
                 </h2>
@@ -246,10 +246,10 @@ const OrdersSkeleton = () => (
             <div className="h-6 w-64 bg-slate-200 rounded-lg"></div>
             <div className="h-8 w-8 bg-slate-200 rounded-full"></div>
         </div>
-        <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-slate-100 overflow-hidden mb-6 h-[100px]">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-slate-100 overflow-hidden mb-6 h-[100px]">
             {[1,2,3,4,5,6].map(i => <div key={i} className="flex-1 bg-slate-100/50 p-5"></div>)}
         </div>
-        <div className="bg-white rounded-[32px] shadow-sm border border-slate-200 flex flex-col flex-1 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-1 p-6">
             <div className="h-12 bg-slate-100 rounded-xl mb-6 flex justify-between px-4 items-center">
                 <div className="h-6 w-1/3 bg-slate-200 rounded-lg"></div>
                 <div className="h-8 w-24 bg-slate-200 rounded-lg"></div>
@@ -269,8 +269,8 @@ const OrdersSkeleton = () => (
 );
 
 const ProgressButton = ({ onClick, loading, text, className, disabled = false }) => (
-    <button type="button" onClick={onClick} disabled={loading || disabled} className={`relative overflow-hidden ${className} disabled:opacity-90 disabled:cursor-not-allowed transition-all focus:ring-2 focus:ring-blue-500/20`}>
-        {loading && <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1.5, ease: "linear" }} className="absolute left-0 top-0 h-full bg-black/10 z-0" />}
+    <button type="button" onClick={onClick} disabled={loading || disabled} className={`relative overflow-hidden ${className} disabled:opacity-90 disabled:cursor-not-allowed transition-all focus:ring-2 focus:ring-blue-500/20 rounded-lg`}>
+        {loading && <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 0.24, ease: "linear" }} className="absolute left-0 top-0 h-full bg-black/10 z-0" />}
         <span className="relative z-10 flex items-center justify-center gap-2">{loading ? <><Icons.Spinner className="w-4 h-4" /> Processando...</> : text}</span>
     </button>
 );
@@ -287,14 +287,14 @@ const HoverProgressRoundButton = ({ text, onClick, loading, icon: Icon, ariaLabe
       >
           {loading && (
              <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 38 38">
-                 <motion.circle cx="19" cy="19" r="17" fill="none" stroke="#3B82F6" strokeWidth="2" strokeDasharray="106" initial={{ strokeDashoffset: 106 }} animate={{ strokeDashoffset: 0 }} transition={{ duration: 1.5, ease: "linear" }} />
+                 <motion.circle cx="19" cy="19" r="17" fill="none" stroke="#3B82F6" strokeWidth="2" strokeDasharray="106" initial={{ strokeDashoffset: 106 }} animate={{ strokeDashoffset: 0 }} transition={{ duration: 0.24, ease: "linear" }} />
              </svg>
           )}
           <div className="relative z-10 flex items-center gap-2 whitespace-nowrap">
               {loading ? <Icons.Spinner className="w-5 h-5 text-blue-500 shrink-0" /> : <Icon className={`w-5 h-5 shrink-0 transition-colors ${shouldExpand ? 'text-blue-600' : 'text-slate-500'}`} />}
               <AnimatePresence>
                   {shouldExpand && !loading && (
-                      <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }} exit={{ opacity: 0, width: 0 }} className="text-[11px] font-bold text-slate-700 truncate pr-2">
+                      <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }} exit={{ opacity: 0, width: 0 }} transition={{ duration: 0.18 }} className="text-[11px] font-bold text-slate-700 truncate pr-2">
                           {text}
                       </motion.span>
                   )}
@@ -311,20 +311,20 @@ const DateFilterPopup = ({ dateRange, setDateRange, onApply, onClear, loading, i
       {isOpen && (
         <>
           <div className="fixed inset-0 z-[90]" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-hidden="true"></div>
-          <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 top-full mt-2 origin-top-right bg-white border border-slate-200 rounded-[24px] shadow-2xl p-5 w-80 z-[100]" role="dialog" aria-modal="true" aria-label="Filtro de Data">
+          <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 top-full mt-2 origin-top-right bg-white border border-slate-200 rounded-2xl shadow-2xl p-5 w-80 z-[100]" role="dialog" aria-modal="true" aria-label="Filtro de Data">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2"><Icons.Calendar className="w-4 h-4"/> Filtrar Período</p>
             <div className="space-y-4">
               <div className="relative z-10">
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" htmlFor="data-inicio">Data Inicial</label>
-                  <input id="data-inicio" type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
+                  <input id="data-inicio" type="date" value={dateRange.start} onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-400 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
               </div>
               <div className="relative z-10">
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5" htmlFor="data-fim">Data Final</label>
-                  <input id="data-fim" type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
+                  <input id="data-fim" type="date" value={dateRange.end} onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-400 font-bold text-slate-800 cursor-pointer transition-all shadow-sm" />
               </div>
               <div className="pt-2 flex gap-2 relative z-10">
-                <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs py-2.5 rounded-xl border border-slate-200 shadow-sm transition-colors">Limpar</button>
-                <button type="button" onClick={onApply} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-sm transition-colors">{loading ? 'Aplicando...' : 'Aplicar Filtro'}</button>
+                <button type="button" onClick={onClear} className="w-1/3 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-xs py-2.5 rounded-lg border border-slate-200 shadow-sm transition-colors">Limpar</button>
+                <button type="button" onClick={onApply} disabled={loading} className="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs py-2.5 rounded-lg shadow-sm transition-colors">{loading ? 'Aplicando...' : 'Aplicar Filtro'}</button>
               </div>
             </div>
           </motion.div>
@@ -704,9 +704,11 @@ const AdminOrdersContent = () => {
     if (carregandoPedidos && pedidosDaApi.length === 0) {
         return (
             <div className="w-full min-h-screen pb-20 relative font-sans">
-                <header className="mb-6 pt-4 px-4 sm:px-8">
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Gestão de Pedidos</h1>
-                    <p className="text-sm font-medium text-slate-500 mt-1">Acompanhe transações, status logístico e fluxo de caixa.</p>
+                <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gestão de Pedidos</h1>
+                        <p className="text-sm font-medium text-slate-500 mt-1">Acompanhe transações, status logístico e fluxo de caixa.</p>
+                    </div>
                 </header>
                 <div className="px-4 sm:px-8"><OrdersSkeleton /></div>
             </div>
@@ -746,7 +748,7 @@ const AdminOrdersContent = () => {
             <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm cursor-pointer" onClick={() => setModalAcao({...modalAcao, isOpen: false})} />
                 
-                <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className={`bg-white rounded-[24px] shadow-2xl p-8 w-full relative z-10 border border-slate-200 overflow-y-auto custom-scrollbar ${isDespacho ? 'max-w-4xl max-h-[90vh]' : 'max-w-md max-h-[95vh]'}`}>
+                <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className={`bg-white rounded-2xl shadow-2xl p-8 w-full relative z-10 border border-slate-200 overflow-y-auto custom-scrollbar ${isDespacho ? 'max-w-4xl max-h-[90vh]' : 'max-w-md max-h-[95vh]'}`}>
                     
                     <div className="flex items-center gap-3 mb-2">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isCancelar || isProcessaReembolso || isCancelarMeCart ? 'bg-rose-50 text-rose-500' : isIniciaReembolso ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-600'}`}>{iconTitle}</div>
@@ -982,39 +984,39 @@ const AdminOrdersContent = () => {
                       <Icons.Info className="w-4 h-4" />
                  </button>
             </div>
-            <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-slate-100 overflow-hidden mb-6">
-                <div onClick={() => { setAbaAtiva('TUDO'); setPaginaAtual(1); }} className="flex-[1.2] p-5 bg-gradient-to-br from-emerald-50 to-teal-50/50 flex flex-col justify-center border-l-4 border-emerald-500 cursor-pointer group">
-                    <span className="text-[10px] font-bold text-emerald-600/70 uppercase tracking-widest mb-1 group-hover:text-emerald-700 transition-colors">LTV Total (Receita)</span>
-                    <span className="text-2xl font-black text-emerald-700">{formatSmartCurrency(metricasCalculadas.ltv)}</span>
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+                <div onClick={() => { setAbaAtiva('TUDO'); setPaginaAtual(1); }} className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-center cursor-pointer hover:shadow-md hover:-translate-y-1 hover:border-blue-200 transition-all group">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-blue-600 transition-colors">LTV Total</span>
+                    <span className="text-xl font-black text-slate-800">{formatSmartCurrency(metricasCalculadas.ltv)}</span>
                 </div>
-                <div onClick={() => { setAbaAtiva('TUDO'); setPaginaAtual(1); }} className="flex-1 p-5 flex flex-col justify-center hover:bg-slate-50/50 transition-colors cursor-pointer group">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-blue-500 transition-colors">Conversão PIX</span>
-                    <span className="text-2xl font-black text-blue-600">{metricasCalculadas.conversaoPix}%</span>
-                    <span className="text-[10px] font-medium text-slate-400 mt-1">{metricasCalculadas.pixGerados} gerados / {metricasCalculadas.pixPagos} pagos</span>
+                <div onClick={() => { setAbaAtiva('TUDO'); setPaginaAtual(1); }} className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-center cursor-pointer hover:shadow-md hover:-translate-y-1 hover:border-blue-200 transition-all group">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-blue-600 transition-colors">Conversão PIX</span>
+                    <span className="text-xl font-black text-slate-800">{metricasCalculadas.conversaoPix}%</span>
+                    <span className="text-[10px] font-medium text-slate-400 mt-1">{metricasCalculadas.pixPagos} pagos</span>
                 </div>
-                <div onClick={() => { setAbaAtiva('TUDO'); setPaginaAtual(1); }} className="flex-1 p-5 flex flex-col justify-center hover:bg-slate-50/50 transition-colors cursor-pointer group">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-slate-800 transition-colors">Pedidos Totais</span>
-                    <span className="text-2xl font-black text-slate-800">{metricasCalculadas.totais}</span>
-                    <span className="text-[10px] font-medium text-slate-400 mt-1">{metricasCalculadas.aEnviar} aguardando envio</span>
+                <div onClick={() => { setAbaAtiva('TUDO'); setPaginaAtual(1); }} className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-center cursor-pointer hover:shadow-md hover:-translate-y-1 hover:border-blue-200 transition-all group">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-blue-600 transition-colors">Pedidos Totais</span>
+                    <span className="text-xl font-black text-slate-800">{metricasCalculadas.totais}</span>
+                    <span className="text-[10px] font-medium text-slate-400 mt-1">{metricasCalculadas.aEnviar} a enviar</span>
                 </div>
-                <div onClick={() => { setAbaAtiva('CANCELADO'); setPaginaAtual(1); }} className="flex-1 p-5 flex flex-col justify-center hover:bg-slate-50/50 transition-colors cursor-pointer group">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-slate-800 transition-colors">Cancelados</span>
-                    <span className="text-2xl font-black text-slate-800">{metricasCalculadas.taxaCancelamento}%</span>
-                    <span className="text-[10px] font-medium text-slate-400 mt-1">{metricasCalculadas.cancelados} pedidos cancelados</span>
+                <div onClick={() => { setAbaAtiva('CANCELADO'); setPaginaAtual(1); }} className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-center cursor-pointer hover:shadow-md hover:-translate-y-1 hover:border-blue-200 transition-all group">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-blue-600 transition-colors">Cancelados</span>
+                    <span className="text-xl font-black text-slate-800">{metricasCalculadas.taxaCancelamento}%</span>
+                    <span className="text-[10px] font-medium text-slate-400 mt-1">{metricasCalculadas.cancelados} perdidos</span>
                 </div>
-                <div onClick={() => { setAbaAtiva('REEMBOLSADO'); setPaginaAtual(1); }} className="flex-[1.2] p-5 flex flex-col justify-center hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                <div onClick={() => { setAbaAtiva('REEMBOLSADO'); setPaginaAtual(1); }} className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-center cursor-pointer hover:shadow-md hover:-translate-y-1 hover:border-blue-200 transition-all group">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 group-hover:text-rose-500 transition-colors">Reembolsados</span>
-                    <span className="text-2xl font-black text-rose-600">{metricasCalculadas.taxaReembolso}%</span>
-                    <span className="text-[10px] font-medium text-slate-400 mt-1">{metricasCalculadas.qtdReembolsados} pedidos ({formatSmartCurrency(metricasCalculadas.valorReembolsado)})</span>
+                    <span className="text-xl font-black text-slate-800">{metricasCalculadas.taxaReembolso}%</span>
+                    <span className="text-[10px] font-medium text-slate-400 mt-1">{metricasCalculadas.qtdReembolsados} perdidos</span>
                 </div>
-                <div onClick={() => { setAbaAtiva('EM_ANALISE_REEMBOLSO'); setPaginaAtual(1); }} className="flex-1 p-5 flex flex-col justify-center hover:bg-slate-50/50 transition-colors cursor-pointer group">
+                <div onClick={() => { setAbaAtiva('EM_ANALISE_REEMBOLSO'); setPaginaAtual(1); }} className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-center cursor-pointer hover:shadow-md hover:-translate-y-1 hover:border-blue-200 transition-all group">
                     <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1 group-hover:text-amber-600 transition-colors">Em Análise</span>
-                    <span className="text-2xl font-black text-amber-600">{metricasCalculadas.emAnalise}</span>
-                    <span className="text-[10px] font-medium text-slate-400 mt-1">Aguardando ação</span>
+                    <span className="text-xl font-black text-amber-600">{metricasCalculadas.emAnalise}</span>
+                    <span className="text-[10px] font-medium text-slate-400 mt-1">Ações Pendentes</span>
                 </div>
             </div>
 
-            <div className="bg-white rounded-[32px] shadow-sm border border-slate-200 flex flex-col flex-1">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-1">
                 <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 rounded-t-[32px]">
                     <div className="relative w-full lg:w-[450px]">
                         <Icons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -1037,19 +1039,27 @@ const AdminOrdersContent = () => {
                     </div>
                 </div>
 
-                <div className="px-6 py-4 border-b border-slate-100 bg-white overflow-hidden flex items-center justify-start md:justify-center">
-                    <div className="flex overflow-x-auto no-scrollbar bg-slate-100 p-1.5 rounded-2xl shadow-inner border border-slate-200/60 w-max max-w-full">
+                <div className="px-6 border-b border-slate-200 bg-white overflow-hidden flex items-center justify-start md:justify-center">
+                    <div className="flex overflow-x-auto no-scrollbar w-max max-w-full">
                         {TABS_INTELIGENTES.map(tab => (
-                            <button type="button" key={tab.key} onClick={() => {setAbaAtiva(tab.key); setPaginaAtual(1);}} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${abaAtiva === tab.key ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60' : 'text-slate-500 hover:text-slate-800'}`}>
+                            <button
+                                type="button"
+                                key={tab.key}
+                                onClick={() => {setAbaAtiva(tab.key); setPaginaAtual(1);}}
+                                className={`whitespace-nowrap py-4 px-2 mx-3 text-sm font-semibold transition-all relative ${abaAtiva === tab.key ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+                            >
                                 {tab.label}
+                                {abaAtiva === tab.key && (
+                                    <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
+                                )}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                <div className="overflow-x-auto flex-1 custom-scrollbar">
+                <div className="overflow-x-auto flex-1 custom-scrollbar w-full">
                     <table className="w-full text-left text-sm text-slate-600 whitespace-nowrap min-w-[1000px]">
-                        <thead className="bg-slate-50/50 text-slate-400 uppercase font-black text-[10px] tracking-widest border-b border-slate-100">
+                        <thead className="bg-slate-50 border-y border-slate-200 text-slate-500 text-xs font-semibold uppercase tracking-wider">
                             <tr>
                                 <th className="px-6 py-4">Pedido & Data</th>
                                 <th className="px-6 py-4">Cliente</th>
@@ -1058,34 +1068,34 @@ const AdminOrdersContent = () => {
                                 <th className="px-6 py-4 text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50">
+                        <tbody className="divide-y divide-slate-100">
                             <AnimatePresence mode="wait">
                                 {pedidosPaginados.length > 0 ? pedidosPaginados.map(o => (
-                                    <motion.tr layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key={o.id} className="hover:bg-slate-50 transition-colors cursor-pointer group" onClick={() => setPedidoSelecionado(o)}>
+                                    <motion.tr layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key={o.id} className="hover:bg-slate-50/80 transition-colors cursor-pointer group" onClick={() => setPedidoSelecionado(o)}>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="font-black text-slate-800 text-sm group-hover:text-blue-600 transition-colors">#{prefixo}{o.id}</span>
-                                                <span className="text-[10px] font-medium text-slate-500 mt-1">{formatDateTimeBR(o.data_raw || o.created_at)}</span>
+                                                <span className="font-bold text-slate-900 text-sm group-hover:text-blue-600 transition-colors">#{prefixo}{o.id}</span>
+                                                <span className="text-xs text-slate-500 mt-1">{formatDateTimeBR(o.data_raw || o.created_at)}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="font-bold text-slate-800 text-sm">{o.cliente?.nome}</span>
+                                                <span className="font-medium text-slate-900 text-sm">{o.cliente?.nome}</span>
                                                 <span className="text-xs text-slate-500">{o.cliente?.email}</span>
-                                                <span className="text-[10px] font-medium text-slate-400 mt-0.5">CPF: {o.cliente?.cpf || '-'}</span>
+                                                <span className="text-xs font-medium text-slate-400 mt-0.5">CPF: {o.cliente?.cpf || '-'}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-center font-bold text-slate-700">{o.items?.reduce((a, b) => a + safeNum(b.quantidade || b.qtd), 0) || 0} un</td>
-                                        <td className="px-6 py-4 text-right font-black text-emerald-600">{formatCurrency(o.total)}</td>
+                                        <td className="px-6 py-4 text-center font-medium text-slate-700">{o.items?.reduce((a, b) => a + safeNum(b.quantidade || b.qtd), 0) || 0} un</td>
+                                        <td className="px-6 py-4 text-right font-semibold text-emerald-600">{formatCurrency(o.total)}</td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg border shadow-sm ${statusConfig[o.status]?.cor || 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                                            <span className={`px-3 py-1 inline-flex items-center justify-center text-xs font-semibold rounded-full border shadow-sm ${statusConfig[o.status]?.cor || 'bg-slate-50 text-slate-500 border-slate-200'}`}>
                                                 {statusConfig[o.status]?.label || o.status}
                                             </span>
                                         </td>
                                     </motion.tr>
                                 )) : (
                                     <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                        <td colSpan="5" className="p-16 text-center text-slate-400 font-bold uppercase tracking-widest">Nenhum pedido atende aos filtros atuais.</td>
+                                        <td colSpan="5" className="p-16 text-center text-slate-500 font-medium">Nenhum pedido atende aos filtros atuais.</td>
                                     </motion.tr>
                                 )}
                             </AnimatePresence>
@@ -1155,7 +1165,7 @@ const AdminOrdersContent = () => {
 
         return (
             <motion.div key="detail" {...tabTransition} className="space-y-6 max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-4">
                         <button type="button" onClick={handleFecharPedido} className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-white hover:border-blue-200 transition-all">
                             <Icons.ChevronLeft className="w-5 h-5" />
@@ -1181,7 +1191,7 @@ const AdminOrdersContent = () => {
                             <>
                                 <button type="button" onClick={() => abrirModal('CANCELAR')} className="group relative h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-rose-50 hover:border-rose-200 text-rose-500 rounded-xl shadow-sm transition-all px-4">
                                     <Icons.Close className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Cancelar Pedido</span></span>
+                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-200 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Cancelar Pedido</span></span>
                                 </button>
                                 <button type="button" onClick={() => abrirModal('PAGAR')} className="h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
                                     <Icons.Check className="w-5 h-5" />
@@ -1193,7 +1203,7 @@ const AdminOrdersContent = () => {
                             <>
                                 <button type="button" onClick={() => abrirModal('INICIAR_REEMBOLSO')} className="group relative h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-amber-50 hover:border-amber-200 text-amber-500 rounded-xl shadow-sm transition-all px-4">
                                     <Icons.AlertTriangle className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Cancelar & Reembolsar</span></span>
+                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-200 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Cancelar & Reembolsar</span></span>
                                 </button>
                                 <button type="button" onClick={() => abrirModal('SEPARAR')} className="h-12 flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
                                     <Icons.Package className="w-5 h-5" />
@@ -1205,7 +1215,7 @@ const AdminOrdersContent = () => {
                             <>
                                 <button type="button" onClick={() => abrirModal('INICIAR_REEMBOLSO')} className="group relative h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-amber-50 hover:border-amber-200 text-amber-500 rounded-xl shadow-sm transition-all px-4">
                                     <Icons.AlertTriangle className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Iniciar Reembolso</span></span>
+                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-200 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Iniciar Reembolso</span></span>
                                 </button>
                                 <button type="button" onClick={() => abrirModal('CONFIGURAR_ENVIO')} className="h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
                                     <Icons.Truck className="w-5 h-5" />
@@ -1217,7 +1227,7 @@ const AdminOrdersContent = () => {
                             <>
                                 <button type="button" onClick={() => abrirModal('INICIAR_REEMBOLSO')} className="group relative h-12 flex items-center justify-center bg-white border border-slate-200 hover:bg-amber-50 hover:border-amber-200 text-amber-500 rounded-xl shadow-sm transition-all px-4">
                                     <Icons.AlertTriangle className="w-5 h-5" />
-                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Iniciar Reembolso</span></span>
+                                    <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-200 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Iniciar Reembolso</span></span>
                                 </button>
                                 <button type="button" onClick={() => abrirModal('ENTREGAR')} className="h-12 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition-all px-4 gap-2">
                                     <Icons.Check className="w-5 h-5" />
@@ -1228,7 +1238,7 @@ const AdminOrdersContent = () => {
                         {o.status === 'ENTREGUE' && (
                             <button type="button" onClick={() => abrirModal('INICIAR_REEMBOLSO')} className="group relative h-12 flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-sm transition-all px-4">
                                 <Icons.AlertTriangle className="w-5 h-5" />
-                                <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Iniciar Reembolso</span></span>
+                                <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-200 ease-in-out whitespace-nowrap font-bold text-sm"><span className="pl-2">Iniciar Reembolso</span></span>
                             </button>
                         )}
                         {o.status === 'EM_ANALISE_REEMBOLSO' && (
@@ -1260,7 +1270,7 @@ const AdminOrdersContent = () => {
                     {detailTab === 'RESUMO' && (
                         <motion.div key="RESUMO" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2 space-y-6 flex flex-col">
-                                <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-fit">
+                                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-fit">
                                     <div className="p-6 border-b border-slate-100 bg-slate-50/50">
                                         <h3 className="text-lg font-black text-slate-800 flex items-center gap-2"><Icons.Package className="w-5 h-5 text-blue-500"/> Produtos do Pedido</h3>
                                     </div>
@@ -1389,7 +1399,7 @@ const AdminOrdersContent = () => {
 
                                     return (
                                         <>
-                                            <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 shadow-sm flex flex-col max-h-[340px]">
+                                            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col max-h-[340px]">
                                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 shrink-0"><Icons.Tag className="w-4 h-4" /> Cupons e Vantagens</h4>
                                                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3 mb-2">
                                                     {cuponsReaisAplicados.length > 0 ? (
@@ -1419,7 +1429,7 @@ const AdminOrdersContent = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8">
+                                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
                                                 <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-5"><Icons.DollarSign className="w-4 h-4 text-emerald-500"/> Composição Fin. & Auditoria</h3>
                                                 <div className="space-y-3.5 text-xs font-medium text-slate-600">
                                                     <div className="flex justify-between items-center pb-2.5 border-b border-slate-100">
@@ -1475,7 +1485,7 @@ const AdminOrdersContent = () => {
                                             </div>
 
                                             {/* GATEWAY & COMPROVANTE (Se Houver) */}
-                                            <div className="bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
+                                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                                                 <div className="flex items-center justify-between mb-4">
                                                     <div className="space-y-1">
                                                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Gateway de Pagamento</span>
@@ -1510,7 +1520,7 @@ const AdminOrdersContent = () => {
                     {detailTab === 'LOGISTICA' && (
                         <motion.div key="LOGISTICA" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             
-                            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-6 sm:p-8">
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
                                 <h3 className="font-black text-slate-800 flex items-center gap-2 mb-6 text-base"><Icons.MapPin className="w-5 h-5 text-rose-500"/> Endereço do Destinatário</h3>
                                 <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-3 shadow-sm">
                                     <div className="flex justify-between items-center border-b border-slate-200/60 pb-3"><span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Destinatário:</span> <span className="text-slate-800 font-black text-sm">{o.cliente?.nome}</span></div>
@@ -1526,7 +1536,7 @@ const AdminOrdersContent = () => {
                             </div>
 
                             {/* CAIXA DE INFORMAÇÕES DA TRANSPORTADORA SUPERIOR */}
-                            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm p-5 sm:p-6 relative overflow-hidden">
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10"></div>
                                 <h3 className="font-black text-slate-800 flex items-center gap-2 mb-4 text-sm relative z-10"><Icons.Truck className="w-4 h-4 text-blue-500"/> Informações da Logística</h3>
                                 
@@ -1589,7 +1599,7 @@ const AdminOrdersContent = () => {
 
                             {/* 🟢 PAINEL DE GESTÃO DE ETIQUETAS E FISCAL */}
                             {['DESPACHADO', 'ENTREGUE'].includes(o.status) && (
-                                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-[24px] border border-slate-700 shadow-xl p-6 sm:p-8 mt-6 col-span-1 md:col-span-2 relative overflow-hidden">
+                                <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-700 shadow-xl p-6 sm:p-8 mt-6 col-span-1 md:col-span-2 relative overflow-hidden">
                                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent pointer-events-none"></div>
                                     
                                     <h3 className="font-black text-white flex items-center gap-2 mb-6 text-lg relative z-10"><Icons.Printer className="w-6 h-6 text-blue-400"/> Central Fiscal e Etiquetas</h3>
@@ -1705,7 +1715,7 @@ const AdminOrdersContent = () => {
                     )}
 
                     {detailTab === 'AUDITORIA' && (
-                        <motion.div key="AUDIT" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+                        <motion.div key="AUDIT" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
                             <header className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0"><Icons.Activity className="w-5 h-5"/></div>
@@ -1783,9 +1793,14 @@ const AdminOrdersContent = () => {
             <Helmet><title>Gestão de Pedidos | HUB ADMIN</title></Helmet>
             <AnimatedNotification show={toast.show} status={toast.status} titulo={toast.message} />
             
-            <header className="mb-6 pt-4 px-4 sm:px-8">
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight">Gestão de Pedidos</h1>
-                <p className="text-sm font-medium text-slate-500 mt-1">Acompanhe transações, status logístico e fluxo de caixa.</p>
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gestão de Pedidos</h1>
+                    <p className="text-sm font-medium text-slate-500 mt-1">Acompanhe transações, status logístico e fluxo de caixa.</p>
+                </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <HoverProgressRoundButton text="Atualizar" onClick={handleRefresh} loading={isManualRefresh} icon={Icons.Refresh} ariaLabel="Atualizar dados" />
+                </div>
             </header>
             
             <div className="px-4 sm:px-8">
@@ -1802,7 +1817,7 @@ const AdminOrdersContent = () => {
                 {showMetricsHelp && (
                     <div className="fixed inset-0 z-[400] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm cursor-pointer" onClick={() => setShowMetricsHelp(false)} />
-                        <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-white rounded-[24px] shadow-2xl p-8 w-full max-w-xl relative z-10 border border-slate-200" role="dialog">
+                        <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-xl relative z-10 border border-slate-200" role="dialog">
                             <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
                                 <h3 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.Info className="w-6 h-6 text-blue-500"/> Dicionário de Métricas</h3>
                                 <button type="button" onClick={() => setShowMetricsHelp(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-700 transition-colors"><Icons.Close className="w-5 h-5"/></button>
@@ -1855,7 +1870,7 @@ const RenderStepper = ({ status, pedido, getLogDate }) => {
     const progressPercentage = currentIndex === -1 ? 0 : (currentIndex / (steps.length - 1)) * 100;
 
     if (status === 'EM_ANALISE_REEMBOLSO') return (
-        <div className="text-amber-700 font-bold text-sm bg-amber-50 p-6 rounded-[24px] border border-amber-200 text-center shadow-sm mb-6">
+        <div className="text-amber-700 font-bold text-sm bg-amber-50 p-6 rounded-2xl border border-amber-200 text-center shadow-sm mb-6">
             <span className="text-amber-600 font-black uppercase text-xs tracking-widest block mb-2 flex items-center justify-center gap-2"><Icons.AlertTriangle className="w-5 h-5"/> Reembolso Em Análise</span>
             Motivo Solicitado: {pedido?.motivo_cancelamento || 'Aguardando justificativa.'}
         </div>
@@ -1880,7 +1895,7 @@ const RenderStepper = ({ status, pedido, getLogDate }) => {
         }
 
         return (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-rose-50 border border-rose-200 rounded-[24px] p-6 sm:p-8 mb-6 shadow-sm flex flex-col items-center text-center">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-rose-50 border border-rose-200 rounded-2xl p-6 sm:p-8 mb-6 shadow-sm flex flex-col items-center text-center">
                 <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-4 text-rose-500 shadow-sm"><Icons.AlertTriangle className="w-8 h-8" /></div>
                 <h3 className="text-xl font-black text-rose-700 mb-2">Pedido Cancelado / Devolvido</h3>
                 <p className="text-sm font-medium text-rose-600 max-w-2xl leading-relaxed mb-6">O pedido foi cancelado e o pagamento aprovado. Confira a área de devoluções.</p>
@@ -1907,10 +1922,10 @@ const RenderStepper = ({ status, pedido, getLogDate }) => {
     }
 
     return (
-        <div className="relative overflow-hidden p-6 sm:p-8 bg-slate-50/50 rounded-[24px] border border-slate-100 mb-6">
+        <div className="relative overflow-hidden p-6 sm:p-8 bg-slate-50/50 rounded-2xl border border-slate-100 mb-6">
             <div className="relative z-10 w-full max-w-3xl mx-auto flex items-start justify-between pb-8 pt-2">
                 <div className="absolute top-[18px] left-0 w-full h-1 bg-slate-200 rounded-full z-0" />
-                <motion.div className="absolute top-[18px] left-0 h-1 bg-sky-400 rounded-full z-0 shadow-[0_0_10px_rgba(56,189,248,0.4)]" initial={isInitialMount ? { width: 0 } : false} animate={{ width: `${progressPercentage}%` }} transition={{ duration: 1, ease: "easeOut" }} />
+                <motion.div className="absolute top-[18px] left-0 h-1 bg-sky-400 rounded-full z-0 shadow-[0_0_10px_rgba(56,189,248,0.4)]" initial={isInitialMount ? { width: 0 } : false} animate={{ width: `${progressPercentage}%` }} transition={{ duration: 0.24, ease: "easeOut" }} />
                 {steps.map((step, idx) => {
                     const isCompleted = idx <= currentIndex;
                     const isCurrent = idx === currentIndex;
@@ -1926,7 +1941,7 @@ const RenderStepper = ({ status, pedido, getLogDate }) => {
 
                     return (
                         <div key={step} className="relative z-10 flex flex-col items-center px-2 bg-slate-50/50 w-24">
-                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 20, delay: idx * 0.15 }} className={`w-8 h-8 rounded-full border-4 flex items-center justify-center transition-colors duration-500 mb-2 ${isCompleted ? 'bg-sky-400 border-white text-white shadow-md ring-4 ring-sky-100' : 'bg-white border-slate-200 text-slate-300'}`}>
+                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 20, delay: idx * 0.15 }} className={`w-8 h-8 rounded-full border-4 flex items-center justify-center transition-colors duration-200 mb-2 ${isCompleted ? 'bg-sky-400 border-white text-white shadow-md ring-4 ring-sky-100' : 'bg-white border-slate-200 text-slate-300'}`}>
                                 {isCompleted ? <Icons.Check className="w-4 h-4"/> : <Icons.Box className="w-4 h-4"/>}
                             </motion.div>
                             <span className={`text-[10px] font-black uppercase tracking-widest text-center leading-tight mb-1 ${isCurrent ? 'text-sky-600' : isCompleted ? 'text-slate-700' : 'text-slate-400'}`}>{flowLabels[idx]}</span>

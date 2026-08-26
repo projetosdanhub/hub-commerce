@@ -14,6 +14,8 @@ class Categoria extends Model
         'slug',
         'descricao',
         'ativo',
+        'img',      // 🟢 Adicionado
+        'status',   // 🟢 Adicionado
     ];
 
     /**

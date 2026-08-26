@@ -64,6 +64,11 @@ class TrackingCollectorController extends Controller
                 if (!empty($credentials['ga4_measurement_id'])) {
                     \App\Jobs\SendToGa4Job::dispatch($payload, $request->ip(), $request->userAgent(), $credentials)->onQueue('default');
                 }
+
+                // 🔴 PINTEREST CAPI (Adicione isto!)
+                if (!empty($credentials['pinterest_pixel_id']) && !empty($credentials['pinterest_access_token'])) {
+                    \App\Jobs\SendToPinterestCapiJob::dispatch($payload, $request->ip(), $request->userAgent(), $credentials)->onQueue('default');
+                }
                 
                 return response()->json([
                     'status' => 'success', 

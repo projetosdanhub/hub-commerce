@@ -1,7 +1,7 @@
 // ============================================================================
 // FICHEIRO: resources/js/tracking.js
 // ARQUITETURA: Motor Universal de Eventos (Event Gateway / Tracking Hub)
-// ESPECIFICAÇÃO: Versão 2.0 (Meta, GA4, TikTok, Server-Side Ready VIP)
+// ESPECIFICAÇÃO: Versão 2.1 (Meta, GA4, TikTok, Pinterest, Server-Side Ready VIP)
 // ============================================================================
 import api from './api';
 
@@ -56,7 +56,6 @@ export const captureAttribution = () => {
         }
     });
 
-    // Captura FBP e FBC (Cookies da Meta) caso existam nativamente
     const getCookie = (name) => {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -117,13 +116,25 @@ export const initTracking = (settings) => {
             ttq.load(settings.tiktok_pixel_id);
         }(window, document, 'ttq');
     }
+
+    // PINTEREST PIXEL (Browser)
+    if (settings.pinterest_pixel_id && typeof window !== 'undefined') {
+        !function(e){if(!window.pintrk){window.pintrk=function()
+        {window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var
+        n=window.pintrk;n.queue=[],n.version="3.0";var
+        t=document.createElement("script");t.async=!0,t.src=e;var
+        r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}
+        ("https://s.pinimg.com/ct/core.js");
+        
+        window.pintrk('load', settings.pinterest_pixel_id);
+        window.pintrk('page');
+    }
 };
 
 // ============================================================================
 // 4. MAPEADORES DE DESTINO (Adapters) - TRADUTORES PARA CADA REDE
 // ============================================================================
 const mapToMeta = (eventName, commerce) => {
-    // MAPEAMENTO OFICIAL DE EVENTOS STANDARD DA META PARA E-COMMERCE
     const eventMap = {
         'page_view': 'PageView', 
         'view_item_list': 'ViewContent', 
@@ -216,21 +227,42 @@ const mapToTikTok = (eventName, commerce) => {
     return { event: ttEvent, data };
 };
 
+const mapToPinterest = (eventName, commerce) => {
+    const eventMap = {
+        'page_view': 'page_visit', 
+        'view_item': 'page_visit', 
+        'add_to_cart': 'add_to_cart',
+        'begin_checkout': 'checkout', 
+        'purchase': 'checkout', 
+        'search': 'search',
+        'generate_lead': 'lead', 
+        'complete_registration': 'signup'
+    };
+    const pinEvent = eventMap[eventName];
+    if (!pinEvent) return null;
+
+    const data = {};
+    if (commerce) {
+        if (commerce.value) data.value = commerce.value;
+        if (commerce.currency) data.currency = commerce.currency;
+        if (commerce.items && commerce.items.length > 0) {
+            data.line_items = commerce.items.map(i => ({ product_id: i.item_id || i.product_id, product_price: i.price, product_quantity: i.quantity || 1 }));
+        }
+    }
+    return { event: pinEvent, data };
+};
+
 // ============================================================================
 // 5. MOTOR CANÔNICO CENTRAL (DATA LAYER E CAPI)
 // ============================================================================
 const processEvent = async (eventName, payloadData, isNative = true) => {
     if (!trackingConfig || !trackingConfig.is_active) return;
 
-    // Normalização Canônica
     const canonicalName = eventName.toLowerCase().replace(/ /g, '_');
-
-    // Essenciais CAPI
     const eventId = generateUUID();
     const eventTime = Math.floor(Date.now() / 1000);
     const attribution = captureAttribution();
 
-    // 5.1. MONTAR O EVENT ENVELOPE CANÔNICO DO HUB (O "Deus" de todos os dados)
     const canonicalPayload = {
         event: {
             name: canonicalName,
@@ -241,7 +273,6 @@ const processEvent = async (eventName, payloadData, isNative = true) => {
             source_url: window.location.href,
             environment: 'production'
         },
-        // Dados sensíveis do cliente (O Laravel transformará em Hash SHA256 na API)
         user: {
             anonymous_id: getAnonymousId(),
             em: payloadData.user?.email || null,
@@ -257,12 +288,10 @@ const processEvent = async (eventName, payloadData, isNative = true) => {
             external_id: payloadData.user?.id ? String(payloadData.user.id) : null,
             ...payloadData.user
         },
-        // Dados de Sessão Browser-Side (IP é capturado pelo Laravel automaticamente)
         session: {
             session_id: getSessionId(),
             user_agent: navigator.userAgent
         },
-        // Atribuição (fbp, fbc, UTMs)
         attribution: attribution, 
         consent: { analytics: true, ads: true, personalization: true }, 
         commerce: payloadData.commerce || {},
@@ -273,26 +302,22 @@ const processEvent = async (eventName, payloadData, isNative = true) => {
         }
     };
 
-    // 5.2. ENVIAR PARA O NOSSO EVENT COLLECTOR SERVER-SIDE (CAPI)
     try {
         await api.post('/tracking/collect', canonicalPayload);
     } catch (e) {
         console.warn(`[Tracking] Falha ao enviar ${canonicalName} para o CAPI Collector.`, e);
     }
 
-    // 5.3. DISTRIBUIR PARA OS PIXELS DO NAVEGADOR
-    
     // Meta Pixel
     if (window.fbq) {
         const metaPayload = mapToMeta(canonicalName, payloadData.commerce);
         if (metaPayload) {
-            // Se houver dados de usuário (Email/Phone), mandamos também no browser para aumentar Match Quality
             const userData = {};
             if (canonicalPayload.user.em) userData.em = canonicalPayload.user.em;
             if (canonicalPayload.user.ph) userData.ph = canonicalPayload.user.ph;
             
             if(Object.keys(userData).length > 0) {
-                window.fbq('init', trackingConfig.meta_pixel_id, userData); // Re-init com dados
+                window.fbq('init', trackingConfig.meta_pixel_id, userData); 
             }
             window.fbq(isNative ? 'track' : 'trackCustom', metaPayload.event, metaPayload.data, { eventID: eventId });
         }
@@ -314,13 +339,19 @@ const processEvent = async (eventName, payloadData, isNative = true) => {
         else if (!isNative) window.ttq.track(eventName, payloadData.commerce || {}, { event_id: eventId });
     }
 
+    // Pinterest Pixel
+    if (window.pintrk) {
+        const pinPayload = mapToPinterest(canonicalName, payloadData.commerce);
+        if (pinPayload) window.pintrk('track', pinPayload.event, { ...pinPayload.data, event_id: eventId });
+        else if (!isNative) window.pintrk('track', 'custom', { custom_event_name: eventName, event_id: eventId });
+    }
+
     console.log(`[DataLayer] Processed Event: ${canonicalName}`, canonicalPayload);
 };
 
 // ============================================================================
 // 6. CATÁLOGO DE AÇÕES DE NEGÓCIO (API PÚBLICA PARA OS COMPONENTES REACT)
 // ============================================================================
-
 export const trackPageView = () => processEvent('page_view', {});
 
 export const trackViewItem = (item) => {
@@ -379,10 +410,9 @@ export const trackAddPaymentInfo = (paymentType, cartData) => {
     });
 };
 
-// COMPRAS (Purchase Core Event)
 export const trackPurchase = (orderData, userData) => {
     processEvent('purchase', {
-        user: userData, // Essencial para CAPI (Match Rate Extremo)
+        user: userData, 
         commerce: {
             transaction_id: orderData.transaction_id,
             order_id: orderData.order_id,
@@ -442,7 +472,6 @@ export const trackSubscribe = (value, currency = "BRL", subscription_id = null) 
     processEvent('subscribe', { commerce: { value, currency, subscription_id } });
 };
 
-// Motor Direto para Eventos Customizados do GTM
 export const trackCustomTrigger = (eventName, payloadData = {}) => {
     processEvent(eventName, payloadData, false);
 };

@@ -9,22 +9,36 @@ class Produto extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'categoria_id',
-        'nome',
-        'slug',
-        'descricao',
-        'preco',
-        'quantidade_estoque',
-        'destaque',
-        'ativo',
-    ];
+    protected $guarded = ['id']; // Libera todos os campos para mass assignment
 
-    /**
-     * Um produto pertence a uma Categoria
-     */
+    protected function casts(): array
+    {
+        return [
+            'preco' => 'decimal:2',
+            'preco_promo' => 'decimal:2',
+            'peso' => 'decimal:3',
+            'altura' => 'decimal:2',
+            'largura' => 'decimal:2',
+            'comprimento' => 'decimal:2',
+            'controlar_estoque' => 'boolean',
+            'pre_venda' => 'boolean',
+            'personalizado' => 'boolean',
+            'frete_gratis' => 'boolean',
+            'agrupavel' => 'boolean',
+            'badges' => 'array',
+            'ficha_tecnica' => 'array',
+            'categorias_secundarias' => 'array',
+            'galeria' => 'array',
+        ];
+    }
+
     public function categoria()
     {
         return $this->belongsTo(Categoria::class, 'categoria_id');
+    }
+
+    public function variacoes()
+    {
+        return $this->hasMany(ProdutoVariacao::class, 'produto_id');
     }
 }

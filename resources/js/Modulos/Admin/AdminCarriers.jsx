@@ -1,13 +1,19 @@
-// ============================================================================
-// FICHEIRO: resources/js/Modulos/Admin/AdminCarriers.jsx
-// ARQUITETURA: SaaS Premium In-Screen Forms | Token Sync | Gestão de Caixas e Remetente
-// ============================================================================
-
 import React, { useState, useEffect, Component } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient, QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import api from '../../api';
+
+// Components
+import { CarriersIcons, screenTransition, SuccessOverlay } from './Carriers/Compartilhado/CarriersUI';
+import PartnersTab from './Carriers/Parceiros/PartnersTab';
+import CarrierEditor from './Carriers/Parceiros/CarrierEditor';
+import CarrierDetail from './Carriers/Parceiros/CarrierDetail';
+import MelhorEnvioTab from './Carriers/MelhorEnvio/MelhorEnvioTab';
+import SenderTab from './Carriers/Remetente/SenderTab';
+import PackagesTab from './Carriers/Embalagens/PackagesTab';
+import PackageEditor from './Carriers/Embalagens/PackageEditor';
+import CarrierAuditTab from './Carriers/Auditoria/CarrierAuditTab';
 
 // =========================================================
 // CONFIGURAÇÃO REACT QUERY & ERROR BOUNDARY
@@ -29,71 +35,22 @@ class ErrorBoundary extends Component {
 }
 
 // =========================================================
-// ÍCONES BLINDADOS
-// =========================================================
-const Icons = {
-    Truck: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>,
-    Plus: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>,
-    Edit: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
-    Trash: ({className="w-4 h-4"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
-    ArrowLeft: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>,
-    Upload: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>,
-    Spinner: ({className="w-5 h-5"}) => <svg className={`${className} animate-spin`} fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>,
-    Refresh: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
-    MapPin: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-    Lock: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>,
-    CheckCircle: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
-    PowerOff: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636a9 9 0 11-12.728 0M12 3v9" /></svg>,
-    Key: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>,
-    Box: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
-    User: ({className="w-5 h-5"}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
-};
-
-// =========================================================
-// COMPONENTES AUXILIARES DE ANIMAÇÃO
-// =========================================================
-const CarriersSkeleton = () => (
-    <div className="animate-pulse space-y-6 w-full">
-        <div className="h-14 bg-slate-200 rounded-xl w-full max-w-md"></div>
-        <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 p-6 space-y-4">
-            {[1,2,3].map(i => (
-                <div key={i} className="h-20 bg-slate-50 rounded-xl border border-slate-100 flex items-center px-6 gap-6">
-                    <div className="h-12 w-12 bg-slate-200 rounded-xl"></div>
-                    <div className="h-4 w-1/3 bg-slate-200 rounded"></div>
-                    <div className="h-8 w-24 bg-slate-200 rounded-lg ml-auto"></div>
-                </div>
-            ))}
-        </div>
-    </div>
-);
-
-const screenTransition = {
-    initial: { opacity: 0, x: 20, scale: 0.98 },
-    animate: { opacity: 1, x: 0, scale: 1 },
-    exit: { opacity: 0, x: -20, scale: 0.98 },
-    transition: { type: "spring", stiffness: 300, damping: 25 }
-};
-
-// =========================================================
 // COMPONENTE PRINCIPAL
 // =========================================================
 const AdminCarriersContent = () => {
     const queryClientLocal = useQueryClient();
     
-    // VIEWS: 'LIST' | 'FORM_MANUAL' | 'FORM_PACKAGE'
+    // VIEWS: 'LIST' | 'FORM_MANUAL' | 'FORM_PACKAGE' | 'CARRIER_DETAIL'
     const [currentView, setCurrentView] = useState('LIST');
     const [activeTab, setActiveTab] = useState('MANUAIS'); // MANUAIS, MELHOR_ENVIO, REMETENTE, EMBALAGENS
     const [isManualRefresh, setIsManualRefresh] = useState(false);
     const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
-    const [isFetchingCep, setIsFetchingCep] = useState(false);
+    const [isOpeningForm, setIsOpeningForm] = useState(false);
 
     // 🟢 FORMS STATES
-    const defaultCarrier = { id: null, nome: '', tempo_entrega: '', status: 'ATIVA', imagemUrl: null, file: null, cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '', referencia: '' };
-    const [carrierForm, setCarrierForm] = useState(defaultCarrier);
-
-    const defaultPackage = { id: null, nome: '', altura: '', largura: '', comprimento: '', peso_vazio: '', is_default: false };
-    const [packageForm, setPackageForm] = useState(defaultPackage);
-
+    const [carrierToEdit, setCarrierToEdit] = useState(null);
+    const [packageToEdit, setPackageToEdit] = useState(null);
+    
     const [senderForm, setSenderForm] = useState({ nome: '', documento: '', email: '', telefone: '', cep: '', rua: '', numero: '', bairro: '', cidade: '', uf: '' });
 
     // Dicionário Visual Master do Melhor Envio
@@ -102,14 +59,13 @@ const AdminCarriersContent = () => {
         { id: '2', key: 'Correios SEDEX', logo: 'https://logospng.org/download/correios/logo-correios-2048.png', color: 'from-blue-500 to-blue-600' },
         { id: '3', key: 'Jadlog', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/25/Jadlog_logo.png', color: 'from-red-600 to-red-700' },
         { id: '4', key: 'Loggi', logo: 'https://logospng.org/download/loggi/logo-loggi-2048.png', color: 'from-sky-400 to-sky-500' },
-        { id: '5', key: 'Azul Cargo', logo: 'https://www.azulcargoexpress.com.br/images/logo.png', color: 'from-indigo-600 to-indigo-800' },
+        { id: '5', key: 'Azul Cargo', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Azul_Linhas_Aereas_Brasileiras_logo.svg', color: 'from-indigo-600 to-indigo-800' },
         { id: '6', key: 'LATAM Cargo', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/05/LATAM_Cargo_logo.svg', color: 'from-red-700 to-red-900' }
     ];
 
     const [meTokenInput, setMeTokenInput] = useState('');
     const [meCarriersAtivas, setMeCarriersAtivas] = useState([]);
     const [isAuthenticatedME, setIsAuthenticatedME] = useState(false);
-    const [isAuthenticatingME, setIsAuthenticatingME] = useState(false);
 
     // 🟢 FETCH QUERIES
     const { data: fetchResult, isLoading, refetch } = useQuery({ queryKey: ['adminCarriers'], queryFn: async () => { const res = await api.get('/admin/carriers'); return res.data; } });
@@ -149,80 +105,42 @@ const AdminCarriersContent = () => {
     };
 
     // 🟢 MUTAÇÕES MANUAIS
-    const mutacaoSalvar = useMutation({ mutationFn: async (formData) => await api.post('/admin/carriers', formData, { headers: { 'Content-Type': 'multipart/form-data' } }), onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['adminCarriers'] }); setCurrentView('LIST'); } });
+    const mutacaoSalvar = useMutation({ mutationFn: async (formData) => await api.post('/admin/carriers', formData, { headers: { 'Content-Type': 'multipart/form-data' } }), onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['adminCarriers'] }); setCurrentView('LIST'); setCarrierToEdit(null); } });
     const mutacaoDeletar = useMutation({ mutationFn: async (id) => await api.delete(`/admin/carriers/${id}`), onSuccess: () => queryClientLocal.invalidateQueries({ queryKey: ['adminCarriers'] }) });
+    const mutacaoToggleStatus = useMutation({ mutationFn: async ({ id, data }) => await api.post(`/admin/carriers/${id}/status`, data), onSuccess: () => queryClientLocal.invalidateQueries({ queryKey: ['adminCarriers'] }) });
 
     // 🟢 MUTAÇÕES MELHOR ENVIO
     const mutacaoVerifyToken = useMutation({
         mutationFn: async (token) => await api.post('/admin/melhorenvio/verify-token', { access_token: token }),
         onSuccess: () => { setShowSuccessOverlay(true); setTimeout(() => { setShowSuccessOverlay(false); queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); setIsAuthenticatedME(true); }, 2500); },
-        onError: (err) => { alert(err.response?.data?.message || "Token inválido."); setIsAuthenticatingME(false); }
+        onError: (err) => { alert(err.response?.data?.message || "Token inválido."); }
     });
     const mutacaoSaveCarriersME = useMutation({ mutationFn: async (carriers) => await api.post('/admin/melhorenvio/carriers', { carriers_ativas: carriers }), onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); } });
     const mutacaoDesconectarME = useMutation({ mutationFn: async () => await api.post('/admin/melhorenvio/disconnect'), onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); setIsAuthenticatedME(false); setMeTokenInput(''); } });
     
     // 🟢 MUTAÇÕES REMETENTE E EMBALAGENS
     const mutacaoSaveSender = useMutation({ mutationFn: async (dados) => await api.post('/admin/melhorenvio/sender', dados), onSuccess: () => { alert("Remetente atualizado!"); queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); } });
-    const mutacaoSavePackage = useMutation({ mutationFn: async (dados) => await api.post('/admin/shipping-packages', dados), onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['adminPackages'] }); setCurrentView('LIST'); } });
+    const mutacaoSavePackage = useMutation({ mutationFn: async (dados) => await api.post('/admin/shipping-packages', dados), onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['adminPackages'] }); setCurrentView('LIST'); setPackageToEdit(null); } });
     const mutacaoDeletePackage = useMutation({ mutationFn: async (id) => await api.delete(`/admin/shipping-packages/${id}`), onSuccess: () => queryClientLocal.invalidateQueries({ queryKey: ['adminPackages'] }) });
 
     // 🟢 HANDLERS DE TELA
-    const abrirNovo = () => { setCarrierForm(defaultCarrier); setCurrentView('FORM_MANUAL'); };
-    const abrirEdicao = (c) => { setCarrierForm({ id: c.id, nome: c.nome, tempo_entrega: c.tempo_entrega, status: c.status, imagemUrl: c.imagem, file: null, cep: c.cep||'', rua: c.rua||'', numero: c.numero||'', complemento: c.complemento||'', bairro: c.bairro||'', cidade: c.cidade||'', uf: c.uf||'', referencia: c.referencia||'' }); setCurrentView('FORM_MANUAL'); };
-
-    const abrirNovaEmbalagem = () => { setPackageForm(defaultPackage); setCurrentView('FORM_PACKAGE'); };
-    const abrirEdicaoEmbalagem = (p) => { setPackageForm({ ...p }); setCurrentView('FORM_PACKAGE'); };
-
-    const salvarManual = () => {
-        if (!carrierForm.nome || !carrierForm.tempo_entrega) return alert("Preencha o Nome e o Prazo de Entrega.");
-        const formData = new FormData();
-        Object.keys(carrierForm).forEach(key => { if (key !== 'file' && key !== 'imagemUrl' && carrierForm[key] !== null) formData.append(key, carrierForm[key]); });
-        if (carrierForm.file) formData.append('arquivo', carrierForm.file);
-        mutacaoSalvar.mutate(formData);
+    const abrirNovo = () => {
+        setIsOpeningForm(true);
+        setTimeout(() => {
+            setIsOpeningForm(false);
+            setCarrierToEdit(null);
+            setCurrentView('FORM_MANUAL');
+        }, 100);
     };
+    const abrirEdicao = (c) => { setCarrierToEdit(c); setCurrentView('FORM_MANUAL'); };
+    const abrirDetalhe = (c) => { setCarrierToEdit(c); setCurrentView('CARRIER_DETAIL'); };
 
-    const salvarEmbalagem = () => {
-        if (!packageForm.nome || !packageForm.altura || !packageForm.largura || !packageForm.comprimento || !packageForm.peso_vazio) return alert("Preencha todas as dimensões da caixa.");
-        mutacaoSavePackage.mutate(packageForm);
-    };
+    const abrirNovaEmbalagem = () => { setPackageToEdit(null); setCurrentView('FORM_PACKAGE'); };
+    const abrirEdicaoEmbalagem = (p) => { setPackageToEdit(p); setCurrentView('FORM_PACKAGE'); };
 
-    const salvarRemetente = (e) => {
-        e.preventDefault();
-        mutacaoSaveSender.mutate(senderForm);
-    };
-
-    const handleSincronizarME = () => { if (!meTokenInput) return alert("Cole o seu Personal Access Token."); setIsAuthenticatingME(true); mutacaoVerifyToken.mutate(meTokenInput); };
+    const handleSincronizarME = () => { if (!meTokenInput) return alert("Cole o seu Personal Access Token."); mutacaoVerifyToken.mutate(meTokenInput); };
     const handleDesconectarME = () => { if (window.confirm("Deseja realmente desconectar?")) mutacaoDesconectarME.mutate(); };
     const toggleMeCarrier = (id) => { const novosCarriers = meCarriersAtivas.map(c => c.id === id ? { ...c, ativo: !c.ativo } : c); setMeCarriersAtivas(novosCarriers); mutacaoSaveCarriersME.mutate(novosCarriers); };
-
-    // Auto CEP genérico
-    const fetchCepData = async (cepStr, setFormCallback) => {
-        const novoCep = cepStr.replace(/\D/g, '');
-        setFormCallback(prev => ({ ...prev, cep: novoCep }));
-        if (novoCep.length === 8) {
-            setIsFetchingCep(true);
-            try {
-                const response = await fetch(`https://viacep.com.br/ws/${novoCep}/json/`);
-                const data = await response.json();
-                if (!data.erro) { setFormCallback(prev => ({ ...prev, rua: data.logradouro, bairro: data.bairro, cidade: data.localidade, uf: data.uf })); } 
-            } catch (error) { console.error("Erro CEP", error); } 
-            finally { setIsFetchingCep(false); }
-        }
-    };
-
-    // ============================================================================
-    // RENDER: OVERLAY DE SUCESSO (2.5 Segundos)
-    // ============================================================================
-    const renderSuccessOverlay = () => (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[999] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="bg-white rounded-[32px] p-10 max-w-md w-full text-center shadow-2xl flex flex-col items-center relative overflow-hidden">
-                <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6"><Icons.CheckCircle className="w-10 h-10" /></div>
-                <h2 className="text-2xl font-black text-slate-800 mb-2">Conectado com Sucesso!</h2>
-                <p className="text-sm font-medium text-slate-500 mb-8 leading-relaxed">A sua loja virtual já está sincronizada e autorizada a realizar cotações automatizadas.</p>
-                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><motion.div initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: 2.2, ease: "linear" }} className="h-full bg-emerald-500" /></div>
-            </motion.div>
-        </motion.div>
-    );
 
     // ============================================================================
     // RENDER: LISTA E ABAS
@@ -232,361 +150,182 @@ const AdminCarriersContent = () => {
             
             {/* Abas Superiores */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                <div className="flex flex-wrap bg-slate-100 p-1.5 rounded-2xl shadow-inner w-full lg:w-auto border border-slate-200/60">
-                    <button onClick={() => setActiveTab('MANUAIS')} className={`px-6 py-3 rounded-xl text-xs sm:text-sm font-black tracking-wide transition-all ${activeTab === 'MANUAIS' ? 'bg-white text-slate-800 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}>Parceiros</button>
-                    <button onClick={() => setActiveTab('MELHOR_ENVIO')} className={`px-6 py-3 rounded-xl text-xs sm:text-sm font-black tracking-wide transition-all flex items-center justify-center gap-1.5 ${activeTab === 'MELHOR_ENVIO' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'text-slate-500 hover:text-blue-600'}`}>
-                        <Icons.Truck className="w-4 h-4 sm:w-5 sm:h-5" /> Melhor Envio
-                    </button>
-                    <button onClick={() => setActiveTab('REMETENTE')} className={`px-6 py-3 rounded-xl text-xs sm:text-sm font-black tracking-wide transition-all ${activeTab === 'REMETENTE' ? 'bg-white text-slate-800 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}>Loja / Remetente</button>
-                    <button onClick={() => setActiveTab('EMBALAGENS')} className={`px-6 py-3 rounded-xl text-xs sm:text-sm font-black tracking-wide transition-all flex items-center justify-center gap-1.5 ${activeTab === 'EMBALAGENS' ? 'bg-white text-slate-800 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}>
-                        <Icons.Box className="w-4 h-4 sm:w-5 sm:h-5" /> Caixas Salvas
-                    </button>
+                <div className="flex bg-slate-100/80 p-1 rounded-xl w-full lg:w-auto overflow-x-auto no-scrollbar border border-slate-200/50">
+                    {[
+                        { id: 'MANUAIS', label: 'Parceiros' },
+                        { id: 'MELHOR_ENVIO', label: 'Melhor Envio', icon: <CarriersIcons.Truck className="w-3.5 h-3.5 mb-0.5" /> },
+                        { id: 'REMETENTE', label: 'Loja / Remetente' },
+                        { id: 'EMBALAGENS', label: 'Caixas Salvas', icon: <CarriersIcons.Box className="w-3.5 h-3.5 mb-0.5" /> },
+                        { id: 'AUDITORIA', label: 'Auditoria', icon: <CarriersIcons.History className="w-3.5 h-3.5 mb-0.5" /> }
+                    ].map((tab) => (
+                        <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative px-5 py-2.5 rounded-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap outline-none ${activeTab === tab.id ? 'text-blue-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
+                            {activeTab === tab.id && <motion.div layoutId="activeTabCarriers" className="absolute inset-0 bg-white rounded-lg shadow-sm border border-slate-200/50" transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                            <span className="relative z-10 flex items-center gap-1.5">{tab.icon}{tab.label}</span>
+                        </button>
+                    ))}
                 </div>
                 
                 {activeTab === 'MANUAIS' && (
-                    <button onClick={abrirNovo} className="bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-xl flex items-center gap-2 shadow-sm transition-colors w-full sm:w-auto justify-center"><Icons.Plus /> Nova Transportadora</button>
+                    <button onClick={abrirNovo} disabled={isOpeningForm} className="bg-slate-900 hover:bg-black text-white font-bold h-10 px-5 rounded-xl flex items-center gap-2 shadow-sm transition-all w-full sm:w-auto justify-center relative overflow-hidden active:scale-95 disabled:opacity-80">
+                        {isOpeningForm ? (
+                            <>
+                                <div className="absolute inset-0 bg-blue-600/20 w-full animate-pulse" />
+                                <CarriersIcons.Spinner className="w-4 h-4" /> <span className="relative z-10 text-xs tracking-widest uppercase">Carregando...</span>
+                            </>
+                        ) : (
+                            <><CarriersIcons.Plus className="w-4 h-4" /> <span className="text-xs tracking-widest uppercase">Nova Transportadora</span></>
+                        )}
+                    </button>
                 )}
                 {activeTab === 'EMBALAGENS' && (
-                    <button onClick={abrirNovaEmbalagem} className="bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-xl flex items-center gap-2 shadow-sm transition-colors w-full sm:w-auto justify-center"><Icons.Plus /> Cadastrar Embalagem</button>
+                    <button onClick={abrirNovaEmbalagem} className="bg-slate-900 hover:bg-black text-white font-bold h-10 px-5 rounded-xl flex items-center gap-2 shadow-sm transition-all w-full sm:w-auto justify-center active:scale-95">
+                        <CarriersIcons.Plus className="w-4 h-4" /> <span className="text-xs tracking-widest uppercase">Nova Embalagem</span>
+                    </button>
                 )}
             </div>
 
             <AnimatePresence mode="wait">
-                {/* ABA: PARCEIROS MANUAIS */}
                 {activeTab === 'MANUAIS' && (
-                    <motion.div key="TAB_MANUAIS" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white border border-slate-200 rounded-[24px] shadow-sm overflow-hidden">
-                        <div className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50">
-                            <h2 className="text-xl font-black text-slate-800">Cotação Própria</h2>
-                            <p className="text-sm font-medium text-slate-500 mt-1">Configure transportadoras avulsas para opções manuais de despacho.</p>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse min-w-[800px]">
-                                <thead>
-                                    <tr className="bg-white border-b border-slate-200 text-[10px] text-slate-500 uppercase tracking-widest font-black">
-                                        <th className="p-5 pl-8">Logo & Detalhes</th>
-                                        <th className="p-5 text-center">Tempo Médio</th>
-                                        <th className="p-5 text-center">Status</th>
-                                        <th className="p-5 pr-8 text-right">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {isLoading ? (
-                                        <tr><td colSpan="4" className="p-16"><CarriersSkeleton /></td></tr>
-                                    ) : transportadoras.length === 0 ? (
-                                        <tr><td colSpan="4" className="p-16 text-center text-slate-400 font-bold uppercase tracking-wider">Nenhuma transportadora manual cadastrada.</td></tr>
-                                    ) : transportadoras.map(t => (
-                                        <tr key={t.id} className="hover:bg-slate-50 transition-colors group">
-                                            <td className="p-5 pl-8 flex items-center gap-4">
-                                                <div className="w-14 h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-2 shadow-sm shrink-0">
-                                                    {t.imagem ? <img src={t.imagem} className="w-full h-full object-contain mix-blend-multiply" alt=""/> : <Icons.Truck className="w-6 h-6 text-slate-300"/>}
-                                                </div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="font-black text-slate-800 text-sm truncate">{t.nome}</span>
-                                                    {t.cidade && <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-0.5 truncate"><Icons.MapPin className="w-3 h-3"/> {t.cidade} - {t.uf}</span>}
-                                                </div>
-                                            </td>
-                                            <td className="p-5 text-center font-bold text-slate-600">{t.tempo_entrega}</td>
-                                            <td className="p-5 text-center">
-                                                <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${t.status === 'ATIVA' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 shadow-sm' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                                                    {t.status}
-                                                </span>
-                                            </td>
-                                            <td className="p-5 pr-8 text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <button onClick={() => abrirEdicao(t)} className="w-10 h-10 flex items-center justify-center bg-sky-50 text-sky-600 rounded-xl hover:bg-sky-100 transition-colors border border-sky-100 shadow-sm" title="Editar"><Icons.Edit /></button>
-                                                    <button onClick={() => window.confirm('Deseja excluir?') && mutacaoDeletar.mutate(t.id)} className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-100 transition-colors border border-rose-100 shadow-sm" title="Excluir"><Icons.Trash /></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </motion.div>
+                    <PartnersTab 
+                        transportadoras={transportadoras} 
+                        isLoading={isLoading || isManualRefresh} 
+                        onEdit={abrirEdicao} 
+                        onDetail={abrirDetalhe}
+                        onDelete={(id) => mutacaoDeletar.mutate(id)} 
+                        onToggleStatus={(id, data) => mutacaoToggleStatus.mutate({ id, data })}
+                    />
                 )}
 
-                {/* ABA: MELHOR ENVIO */}
                 {activeTab === 'MELHOR_ENVIO' && (
-                    <motion.div key="TAB_MELHOR_ENVIO" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
-                        {!isAuthenticatedME ? (
-                            <div className="bg-slate-900 rounded-[32px] p-8 sm:p-10 shadow-xl text-white relative overflow-hidden">
-                                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-96 h-96 bg-blue-500 opacity-20 blur-[100px] rounded-full pointer-events-none"></div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h2 className="text-2xl sm:text-3xl font-black flex items-center gap-3"><Icons.Lock className="w-8 h-8 text-blue-400"/> Integração Melhor Envio</h2>
-                                    </div>
-                                    <p className="text-sm text-slate-300 mb-8 max-w-3xl leading-relaxed">Gere o seu <strong>Token de Acesso Pessoal (Bearer Token)</strong> no painel de controle do Melhor Envio e cole-o abaixo. Esta integração elimina redirecionamentos complexos e estabelece comunicação permanente.</p>
-                                    <div className="mb-8">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 flex items-center gap-2"><Icons.Key className="w-4 h-4"/> Personal Access Token</label>
-                                        <input type="text" autoComplete="off" value={meTokenInput} onChange={e=>setMeTokenInput(e.target.value)} className="w-full bg-slate-800/50 border border-slate-700 text-white rounded-xl px-5 py-4 text-sm font-mono outline-none focus:border-blue-400 focus:bg-slate-800 transition-all placeholder-slate-600 shadow-inner" placeholder="eyJ0eXAiOiJKV1QiLCJhbGci..." />
-                                    </div>
-                                    <button onClick={handleSincronizarME} disabled={isAuthenticatingME} className="bg-blue-600 hover:bg-blue-500 text-white font-bold h-14 px-10 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 w-full md:w-auto">
-                                        {isAuthenticatingME ? <><Icons.Spinner className="text-white"/> Validando...</> : 'Sincronizar Melhor Envio'}
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="space-y-6">
-                                <div className="bg-white border border-slate-200 rounded-[24px] p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
-                                    <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-50 rounded-full blur-3xl opacity-50 -mr-10 -mt-10"></div>
-                                    <div className="relative z-10">
-                                        <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
-                                            Transportadoras Parceiras
-                                            <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] uppercase tracking-widest px-2.5 py-1 rounded shadow-sm flex items-center gap-1.5 ml-2"><Icons.CheckCircle className="w-3.5 h-3.5"/> Sincronizado</span>
-                                        </h2>
-                                        <p className="text-sm font-medium text-slate-500 mt-1">Ative as transportadoras que deseja disponibilizar para cotação na hora do despacho.</p>
-                                    </div>
-                                    <button onClick={handleDesconectarME} disabled={mutacaoDesconectarME.isPending} className="relative z-10 flex items-center gap-2 bg-white hover:bg-rose-50 text-rose-500 font-bold px-6 py-3.5 rounded-xl transition-colors border border-rose-200 shadow-sm shrink-0">
-                                        {mutacaoDesconectarME.isPending ? <Icons.Spinner className="w-4 h-4"/> : <Icons.PowerOff className="w-4 h-4"/>} Desconectar
-                                    </button>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {meCarriersAtivas.map(c => (
-                                        <div key={c.id} onClick={() => toggleMeCarrier(c.id)} className={`relative aspect-[16/9] rounded-[24px] overflow-hidden cursor-pointer group transition-all duration-500 border-4 shadow-sm hover:shadow-xl ${c.ativo ? 'border-blue-500' : 'border-transparent bg-white'}`}>
-                                            <div className={`absolute inset-0 transition-opacity duration-500 ${c.ativo ? `bg-gradient-to-br ${c.color}` : 'bg-slate-100 group-hover:bg-slate-200'}`}></div>
-                                            <div className="absolute inset-0 flex items-center justify-center p-8 z-10 mix-blend-multiply">
-                                                {c.logo ? <img src={c.logo} alt={c.nome} className={`max-w-full max-h-full object-contain transition-all duration-500 ${c.ativo ? 'scale-110 filter brightness-0 invert opacity-90' : 'grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105'}`} /> : <span className={`text-2xl font-black ${c.ativo ? 'text-white' : 'text-slate-400'}`}>{c.nome}</span>}
-                                            </div>
-                                            <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 transition-opacity duration-500 ${c.ativo ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'}`}></div>
-                                            <div className="absolute bottom-0 left-0 right-0 p-5 z-20 flex justify-between items-end transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                                                <div>
-                                                    <span className={`block text-[10px] uppercase tracking-widest font-bold mb-0.5 ${c.ativo ? 'text-white/70' : 'text-slate-400'}`}>Transportadora</span>
-                                                    <span className={`block text-lg font-black leading-tight ${c.ativo ? 'text-white' : 'text-slate-800'}`}>{c.nome}</span>
-                                                </div>
-                                                <div className={`relative w-12 h-6 rounded-full transition-colors duration-300 shadow-inner border border-transparent ${c.ativo ? 'bg-white border-white/20' : 'bg-slate-300'}`}>
-                                                    <motion.div layout className={`absolute top-1 w-4 h-4 rounded-full shadow-sm ${c.ativo ? 'bg-blue-600 right-1' : 'bg-white left-1'}`} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </motion.div>
+                    <MelhorEnvioTab 
+                        isAuthenticatedME={isAuthenticatedME}
+                        meTokenInput={meTokenInput}
+                        setMeTokenInput={setMeTokenInput}
+                        isAuthenticatingME={mutacaoVerifyToken.isPending}
+                        handleSincronizarME={handleSincronizarME}
+                        handleDesconectarME={handleDesconectarME}
+                        isDisconnecting={mutacaoDesconectarME.isPending}
+                        meCarriersAtivas={meCarriersAtivas}
+                        toggleMeCarrier={toggleMeCarrier}
+                        isLoading={isManualRefresh}
+                    />
                 )}
 
-                {/* ABA: DADOS DO REMETENTE */}
                 {activeTab === 'REMETENTE' && (
-                    <motion.div key="TAB_REMETENTE" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white border border-slate-200 rounded-[24px] shadow-sm overflow-hidden p-6 sm:p-8">
-                        <div className="mb-8 border-b border-slate-100 pb-6">
-                            <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.User className="w-6 h-6 text-blue-500"/> Configuração do Remetente (Loja)</h2>
-                            <p className="text-sm font-medium text-slate-500 mt-1">Dados obrigatórios para o Melhor Envio gerar as etiquetas de despacho a partir do seu endereço.</p>
-                        </div>
-                        <form onSubmit={salvarRemetente} className="max-w-4xl space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Nome / Razão Social *</label><input type="text" required value={senderForm.nome} onChange={e=>setSenderForm({...senderForm, nome: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500" placeholder="Minha Loja LTDA" /></div>
-                                <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ *</label><input type="text" required value={senderForm.documento} onChange={e=>setSenderForm({...senderForm, documento: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500" /></div>
-                                <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">E-mail *</label><input type="email" required value={senderForm.email} onChange={e=>setSenderForm({...senderForm, email: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500" /></div>
-                                <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Telefone *</label><input type="text" required value={senderForm.telefone} onChange={e=>setSenderForm({...senderForm, telefone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500" /></div>
-                            </div>
-                            <div className="border-t border-slate-100 pt-6 mt-6 grid grid-cols-1 md:grid-cols-6 gap-6">
-                                <div className="md:col-span-2 relative">
-                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">CEP (Auto) *</label>
-                                    <input type="text" required maxLength={8} value={senderForm.cep} onChange={(e) => fetchCepData(e.target.value, setSenderForm)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono font-bold text-slate-800 outline-none focus:border-blue-500" placeholder="00000000" />
-                                    {isFetchingCep && <div className="absolute right-4 top-9"><Icons.Spinner className="text-blue-500 w-5 h-5"/></div>}
-                                </div>
-                                <div className="md:col-span-3"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Rua *</label><input type="text" required value={senderForm.rua} onChange={e=>setSenderForm({...senderForm, rua: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500" /></div>
-                                <div className="md:col-span-1"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Nº *</label><input type="text" required value={senderForm.numero} onChange={e=>setSenderForm({...senderForm, numero: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 text-center" /></div>
-                                <div className="md:col-span-3"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Bairro *</label><input type="text" required value={senderForm.bairro} onChange={e=>setSenderForm({...senderForm, bairro: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500" /></div>
-                                <div className="md:col-span-2"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Cidade *</label><input type="text" required value={senderForm.cidade} onChange={e=>setSenderForm({...senderForm, cidade: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500" /></div>
-                                <div className="md:col-span-1"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">UF *</label><input type="text" required maxLength={2} value={senderForm.uf} onChange={e=>setSenderForm({...senderForm, uf: e.target.value.toUpperCase()})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 text-center uppercase" /></div>
-                            </div>
-                            <div className="flex justify-end pt-4">
-                                <button type="submit" disabled={mutacaoSaveSender.isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 px-10 rounded-xl transition-all shadow-md flex items-center gap-2">
-                                    {mutacaoSaveSender.isPending ? <Icons.Spinner className="text-white"/> : <Icons.CheckCircle />} Salvar Remetente
-                                </button>
-                            </div>
-                        </form>
-                    </motion.div>
+                    <SenderTab 
+                        senderForm={senderForm}
+                        setSenderForm={setSenderForm}
+                        onSave={() => mutacaoSaveSender.mutate(senderForm)}
+                        isSaving={mutacaoSaveSender.isPending}
+                        isLoading={isManualRefresh}
+                    />
                 )}
 
-                {/* ABA: EMBALAGENS PADRÃO */}
                 {activeTab === 'EMBALAGENS' && (
-                    <motion.div key="TAB_EMBALAGENS" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white border border-slate-200 rounded-[24px] shadow-sm overflow-hidden">
-                        <div className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50">
-                            <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Icons.Box className="w-6 h-6 text-blue-500"/> Minhas Caixas e Embalagens</h2>
-                            <p className="text-sm font-medium text-slate-500 mt-1">Crie as embalagens que você mais usa para preencher a volumetria com 1 clique na hora do envio.</p>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse min-w-[700px]">
-                                <thead>
-                                    <tr className="bg-white border-b border-slate-200 text-[10px] text-slate-500 uppercase tracking-widest font-black">
-                                        <th className="p-5 pl-8">Identificação</th>
-                                        <th className="p-5 text-center">Dimensões (A x L x C)</th>
-                                        <th className="p-5 text-center">Peso Vazia</th>
-                                        <th className="p-5 text-center">Padrão?</th>
-                                        <th className="p-5 pr-8 text-right">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {loadingPackages ? (
-                                        <tr><td colSpan="5" className="p-16 text-center"><Icons.Spinner className="w-8 h-8 text-blue-500 mx-auto" /></td></tr>
-                                    ) : embalagens.length === 0 ? (
-                                        <tr><td colSpan="5" className="p-16 text-center text-slate-400 font-bold uppercase tracking-wider">Nenhuma embalagem cadastrada.</td></tr>
-                                    ) : embalagens.map(p => (
-                                        <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
-                                            <td className="p-5 pl-8 font-black text-slate-800 text-sm">{p.nome}</td>
-                                            <td className="p-5 text-center font-mono font-bold text-slate-600">{p.altura} x {p.largura} x {p.comprimento} cm</td>
-                                            <td className="p-5 text-center font-bold text-slate-600">{p.peso_vazio} kg</td>
-                                            <td className="p-5 text-center">
-                                                {p.is_default ? <span className="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[9px] font-black uppercase px-2 py-1 rounded shadow-sm">Padrão</span> : <span className="text-slate-300">-</span>}
-                                            </td>
-                                            <td className="p-5 pr-8 text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <button onClick={() => abrirEdicaoEmbalagem(p)} className="w-9 h-9 flex items-center justify-center bg-sky-50 text-sky-600 rounded-lg hover:bg-sky-100 transition-colors border border-sky-100 shadow-sm"><Icons.Edit /></button>
-                                                    <button onClick={() => window.confirm('Deseja excluir esta caixa?') && mutacaoDeletePackage.mutate(p.id)} className="w-9 h-9 flex items-center justify-center bg-rose-50 text-rose-500 rounded-lg hover:bg-rose-100 transition-colors border border-rose-100 shadow-sm"><Icons.Trash /></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </motion.div>
+                    <PackagesTab 
+                        embalagens={embalagens}
+                        loadingPackages={loadingPackages || isManualRefresh}
+                        onEdit={abrirEdicaoEmbalagem}
+                        onDelete={(id) => mutacaoDeletePackage.mutate(id)}
+                    />
+                )}
+
+                {activeTab === 'AUDITORIA' && (
+                    <CarrierAuditTab />
                 )}
             </AnimatePresence>
         </motion.div>
     );
 
-    // ============================================================================
-    // RENDER: FORMULÁRIO IN-SCREEN PREMIUM (TRANSPORTADORA MANUAL)
-    // ============================================================================
-    const renderFormManual = () => (
-        <motion.div key="FORM" {...screenTransition} className="w-full bg-white border border-slate-200 rounded-[32px] shadow-2xl overflow-hidden flex flex-col min-h-[600px] absolute inset-x-0 top-0 z-50">
-            <header className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-20">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => setCurrentView('LIST')} className="w-12 h-12 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-sm"><Icons.ArrowLeft /></button>
-                    <div>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-800">{carrierForm.id ? 'Editar Parceiro Logístico' : 'Novo Parceiro Logístico'}</h2>
-                        <p className="text-xs font-medium text-slate-500 mt-1">Configuração de transportadora e rotas manuais.</p>
-                    </div>
-                </div>
-            </header>
-            <div className="p-6 sm:p-8 flex-1 overflow-y-auto custom-scrollbar">
-                <div className="max-w-4xl mx-auto space-y-8 pb-10">
-                    <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-slate-100 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 opacity-50 rounded-full blur-3xl -mr-10 -mt-10"></div>
-                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest mb-8 flex items-center gap-2 relative z-10"><Icons.Truck className="w-5 h-5 text-blue-500"/> Identificação Principal</h3>
-                        <div className="flex flex-col sm:flex-row gap-8 relative z-10">
-                            <label className="w-32 h-32 bg-slate-50 border-2 border-dashed border-slate-300 rounded-[20px] flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors relative overflow-hidden group shadow-sm shrink-0">
-                                <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files[0]; if(f) setCarrierForm({...carrierForm, file: f, imagemUrl: URL.createObjectURL(f)}); }} />
-                                {carrierForm.imagemUrl ? (
-                                    <><img src={carrierForm.imagemUrl} className="w-full h-full object-contain p-3 mix-blend-multiply absolute inset-0" alt=""/><div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><span className="text-[10px] text-white font-bold uppercase tracking-widest">Trocar</span></div></>
-                                ) : (
-                                    <><Icons.Upload className="w-8 h-8 text-slate-400 mb-2"/><span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Subir Logo</span></>
-                                )}
-                            </label>
-                            <div className="flex-1 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Nome da Transportadora *</label><input type="text" value={carrierForm.nome} onChange={e => setCarrierForm({...carrierForm, nome: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all shadow-inner" placeholder="Ex: Transportes Rápidos Lda" /></div>
-                                    <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Prazo Médio Simulado *</label><input type="text" value={carrierForm.tempo_entrega} onChange={e => setCarrierForm({...carrierForm, tempo_entrega: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:bg-white transition-all shadow-inner" placeholder="Ex: 2 a 4 dias úteis" /></div>
-                                </div>
-                                <div><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Status no Checkout</label><select value={carrierForm.status} onChange={e => setCarrierForm({...carrierForm, status: e.target.value})} className="w-full sm:w-1/2 bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition-all cursor-pointer shadow-inner"><option value="ATIVA">Transportadora Ativa (Visível)</option><option value="INATIVA">Desativada (Oculta)</option></select></div>
+    return (
+        <div className="min-h-screen bg-slate-50/50 p-4 sm:p-8 font-sans text-slate-800 selection:bg-blue-500 selection:text-white">
+            <Helmet><title>Transportadoras & Rotas | Hub Commerce</title></Helmet>
+            
+            <AnimatePresence>
+                {showSuccessOverlay && <SuccessOverlay />}
+            </AnimatePresence>
+
+            <div className="max-w-7xl mx-auto space-y-6">
+                
+                {/* HEADER */}
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 sm:p-8 rounded-[32px] shadow-sm border border-slate-200">
+                    {currentView !== 'LIST' ? (
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => setCurrentView('LIST')} className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-500 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-2xl transition-all shadow-sm group">
+                                <CarriersIcons.ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                            </button>
+                            <div>
+                                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+                                    {currentView === 'FORM_MANUAL' ? (carrierToEdit ? 'Editar Transportadora' : 'Nova Transportadora') : ''}
+                                    {currentView === 'CARRIER_DETAIL' ? 'Detalhes da Transportadora' : ''}
+                                    {currentView === 'FORM_PACKAGE' ? 'Cadastro de Embalagem' : ''}
+                                </h1>
                             </div>
                         </div>
-                    </div>
-                    <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-slate-100 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 opacity-50 rounded-full blur-3xl -mr-10 -mt-10"></div>
-                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest mb-8 flex items-center gap-2 relative z-10"><Icons.MapPin className="w-5 h-5 text-emerald-500"/> Sede / Endereço de Coleta</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 relative z-10">
-                            <div className="md:col-span-2 relative"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">CEP (Automático)</label><input type="text" maxLength={8} value={carrierForm.cep} onChange={(e) => fetchCepData(e.target.value, setCarrierForm)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-mono font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="00000000" />{isFetchingCep && <div className="absolute right-4 top-10"><Icons.Spinner className="text-emerald-500 w-5 h-5"/></div>}</div>
-                            <div className="md:col-span-3"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Rua / Logradouro</label><div className="flex gap-3"><input type="text" value={carrierForm.rua} onChange={e => setCarrierForm({...carrierForm, rua: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="Nome da Rua" /><input type="text" value={carrierForm.numero} onChange={e => setCarrierForm({...carrierForm, numero: e.target.value})} className="w-28 bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner text-center" placeholder="Nº" /></div></div>
-                            <div className="md:col-span-3"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Complemento</label><input type="text" value={carrierForm.complemento} onChange={e => setCarrierForm({...carrierForm, complemento: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="Galpão 3, Sala 2..." /></div>
-                            <div className="md:col-span-3"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Bairro</label><input type="text" value={carrierForm.bairro} onChange={e => setCarrierForm({...carrierForm, bairro: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" /></div>
-                            <div className="md:col-span-3"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Cidade / Estado (UF)</label><div className="flex gap-3"><input type="text" value={carrierForm.cidade} onChange={e => setCarrierForm({...carrierForm, cidade: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="Cidade" /><input type="text" value={carrierForm.uf} maxLength={2} onChange={e => setCarrierForm({...carrierForm, uf: e.target.value.toUpperCase()})} className="w-24 bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner uppercase text-center" placeholder="UF" /></div></div>
-                            <div className="md:col-span-6"><label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Ponto de Referência</label><input type="text" value={carrierForm.referencia} onChange={e => setCarrierForm({...carrierForm, referencia: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner" placeholder="Próximo ao viaduto..." /></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <footer className="p-6 sm:p-8 border-t border-slate-100 bg-white flex justify-end gap-4 sticky bottom-0 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
-                <button onClick={() => setCurrentView('LIST')} className="px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors shadow-sm">Cancelar</button>
-                <button onClick={salvarManual} disabled={mutacaoSalvar.isPending} className="px-10 py-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-colors shadow-md disabled:opacity-70">{mutacaoSalvar.isPending ? <Icons.Spinner className="text-white w-5 h-5"/> : <Icons.CheckCircle className="w-5 h-5"/>}{carrierForm.id ? 'Atualizar Transportadora' : 'Registrar Transportadora'}</button>
-            </footer>
-        </motion.div>
-    );
+                    ) : (
+                        <>
+                            <div>
+                                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">Transportadoras & Logística</h1>
+                                <p className="text-sm font-medium text-slate-500 mt-1">Configure suas transportadoras próprias ou integre com o Melhor Envio.</p>
+                            </div>
+                            <button onClick={handleRefresh} disabled={isManualRefresh} className={`flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 font-bold px-3 py-1.5 text-[11px] uppercase tracking-wider rounded-lg hover:bg-slate-50 transition-all shadow-sm ${isManualRefresh ? 'opacity-50 cursor-wait' : ''}`}>
+                                <CarriersIcons.Refresh className={`w-3.5 h-3.5 ${isManualRefresh ? "animate-spin" : ""}`} /> {isManualRefresh ? 'Atualizando' : 'Atualizar Dados'}
+                            </button>
+                        </>
+                    )}
+                </header>
 
-    // ============================================================================
-    // RENDER: FORMULÁRIO IN-SCREEN PREMIUM (EMBALAGENS)
-    // ============================================================================
-    const renderFormPackage = () => (
-        <motion.div key="FORM_PACKAGE" {...screenTransition} className="w-full bg-white border border-slate-200 rounded-[32px] shadow-2xl overflow-hidden flex flex-col min-h-[500px] absolute inset-x-0 top-0 z-50">
-            <header className="p-6 sm:p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center sticky top-0 z-20">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => setCurrentView('LIST')} className="w-12 h-12 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-sm"><Icons.ArrowLeft /></button>
-                    <div>
-                        <h2 className="text-xl sm:text-2xl font-black text-slate-800">{packageForm.id ? 'Editar Embalagem' : 'Cadastrar Embalagem'}</h2>
-                        <p className="text-xs font-medium text-slate-500 mt-1">Defina as caixas que você utiliza com mais frequência na sua loja.</p>
-                    </div>
-                </div>
-            </header>
-            <div className="p-6 sm:p-8 flex-1 overflow-y-auto custom-scrollbar">
-                <div className="max-w-3xl mx-auto space-y-6 pb-10">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="md:col-span-2">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Nome da Embalagem *</label>
-                            <input type="text" value={packageForm.nome} onChange={e => setPackageForm({...packageForm, nome: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 shadow-inner" placeholder="Ex: Caixa Padrão Média" />
-                        </div>
-                        <div className="relative">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Altura (cm) *</label>
-                            <input type="number" min="1" step="0.1" value={packageForm.altura} onChange={e => setPackageForm({...packageForm, altura: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-5 pr-10 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 shadow-inner" placeholder="Ex: 10" />
-                            <span className="absolute right-4 top-[38px] text-[10px] text-slate-400 font-bold">cm</span>
-                        </div>
-                        <div className="relative">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Largura (cm) *</label>
-                            <input type="number" min="11" step="0.1" value={packageForm.largura} onChange={e => setPackageForm({...packageForm, largura: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-5 pr-10 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 shadow-inner" placeholder="Mín: 11" />
-                            <span className="absolute right-4 top-[38px] text-[10px] text-slate-400 font-bold">cm</span>
-                        </div>
-                        <div className="relative">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Comprimento (cm) *</label>
-                            <input type="number" min="16" step="0.1" value={packageForm.comprimento} onChange={e => setPackageForm({...packageForm, comprimento: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-5 pr-10 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 shadow-inner" placeholder="Mín: 16" />
-                            <span className="absolute right-4 top-[38px] text-[10px] text-slate-400 font-bold">cm</span>
-                        </div>
-                        <div className="relative">
-                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Peso da Caixa Vazia (kg) *</label>
-                            <input type="number" min="0" step="0.001" value={packageForm.peso_vazio} onChange={e => setPackageForm({...packageForm, peso_vazio: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-5 pr-10 py-4 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 shadow-inner" placeholder="Ex: 0.150" />
-                            <span className="absolute right-4 top-[38px] text-[10px] text-slate-400 font-bold">kg</span>
-                        </div>
-                        <div className="md:col-span-2 pt-2">
-                            <label className="flex items-center gap-3 cursor-pointer p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl hover:bg-emerald-50 transition-colors">
-                                <input type="checkbox" checked={packageForm.is_default} onChange={e => setPackageForm({...packageForm, is_default: e.target.checked})} className="accent-emerald-600 w-5 h-5 shrink-0" />
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-emerald-900">Embalagem Padrão</span>
-                                    <span className="text-[10px] text-emerald-700">Ao marcar, esta caixa virá pré-selecionada na tela de despacho de pedidos.</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <footer className="p-6 sm:p-8 border-t border-slate-100 bg-white flex justify-end gap-4 sticky bottom-0 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
-                <button onClick={() => setCurrentView('LIST')} className="px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors shadow-sm">Cancelar</button>
-                <button onClick={salvarEmbalagem} disabled={mutacaoSavePackage.isPending} className="px-10 py-4 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-colors shadow-md disabled:opacity-70">{mutacaoSavePackage.isPending ? <Icons.Spinner className="text-white w-5 h-5"/> : <Icons.CheckCircle className="w-5 h-5"/>} Salvar Embalagem</button>
-            </footer>
-        </motion.div>
-    );
+                {/* AREA DE CONTEÚDO */}
+                <main className="relative">
+                    <AnimatePresence mode="wait">
+                        {currentView === 'LIST' && renderListaTabs()}
+                        
+                        {currentView === 'FORM_MANUAL' && (
+                            <motion.div 
+                                key="FORM_MANUAL"
+                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                className="w-full"
+                            >
+                                <CarrierEditor 
+                                    carrierToEdit={carrierToEdit} 
+                                    onCancel={() => setCurrentView('LIST')} 
+                                    onSave={(formData) => mutacaoSalvar.mutate(formData)} 
+                                    isSaving={mutacaoSalvar.isPending} 
+                                />
+                            </motion.div>
+                        )}
 
-    return (
-        <div className="w-full min-h-screen pb-20 font-sans relative">
-            <Helmet><title>Transportadoras e Embalagens | HUB ADMIN</title></Helmet>
-            <AnimatePresence>{showSuccessOverlay && renderSuccessOverlay()}</AnimatePresence>
-
-            <header className="mb-8 pt-4 px-4 sm:px-8 flex justify-between items-end relative z-10">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Logística & Envios</h1>
-                    <p className="text-slate-500 text-sm mt-1">Gerencie integrações, caixas padrão e o endereço de remetente da sua loja.</p>
-                </div>
-                {currentView === 'LIST' && (
-                    <button onClick={handleRefresh} className={`w-12 h-12 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-600 hover:text-blue-600 shadow-sm transition-all ${isManualRefresh ? 'animate-spin border-blue-400 text-blue-500' : ''}`} title="Atualizar Dados"><Icons.Refresh className="w-5 h-5" /></button>
-                )}
-            </header>
-
-            <div className="px-4 sm:px-8 relative">
-                <AnimatePresence mode="wait">
-                    {currentView === 'LIST' && renderListaTabs()}
-                    {currentView === 'FORM_MANUAL' && renderFormManual()}
-                    {currentView === 'FORM_PACKAGE' && renderFormPackage()}
-                </AnimatePresence>
+                        {currentView === 'CARRIER_DETAIL' && (
+                            <motion.div 
+                                key="CARRIER_DETAIL"
+                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                className="w-full"
+                            >
+                                <CarrierDetail 
+                                    carrier={carrierToEdit} 
+                                    onEdit={() => abrirEdicao(carrierToEdit)}
+                                    onBack={() => setCurrentView('LIST')}
+                                />
+                            </motion.div>
+                        )}
+                        
+                        {/* We will leave FORM_PACKAGE as modal overlay for now, or make it inline too? Let's make it inline. */}
+                        {currentView === 'FORM_PACKAGE' && (
+                            <motion.div 
+                                key="FORM_PACKAGE"
+                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                className="w-full"
+                            >
+                                <PackageEditor 
+                                    packageToEdit={packageToEdit} 
+                                    onCancel={() => setCurrentView('LIST')} 
+                                    onSave={(formData) => mutacaoSavePackage.mutate(formData)} 
+                                    isSaving={mutacaoSavePackage.isPending} 
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </main>
             </div>
         </div>
     );
@@ -594,10 +333,10 @@ const AdminCarriersContent = () => {
 
 export default function AdminCarriers() {
     return (
-        <QueryClientProvider client={queryClient}>
-            <ErrorBoundary>
+        <ErrorBoundary>
+            <QueryClientProvider client={queryClient}>
                 <AdminCarriersContent />
-            </ErrorBoundary>
-        </QueryClientProvider>
+            </QueryClientProvider>
+        </ErrorBoundary>
     );
 }

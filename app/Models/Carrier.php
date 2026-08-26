@@ -22,7 +22,15 @@ class Carrier extends Model
         'bairro',
         'cidade',
         'uf',
-        'referencia'
+        'referencia',
+        // 🟢 Novos campos de status e detalhamento
+        'status_reason',
+        'vehicle_plate',
+        'vehicle_model',
+        'vehicle_type',
+        'document_rg_front',
+        'document_rg_back',
+        'document_cnh'
     ];
 
     public function orders()

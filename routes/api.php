@@ -9,12 +9,14 @@ use App\Http\Controllers\Api\CustomerController as ApiCustomerController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TrackingCollectorController; // 🟢 IMPORTAÇÃO ATUALIZADA
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CarrierController; 
 use App\Http\Controllers\Admin\ShippingPackageController;
 use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
 use App\Http\Controllers\Admin\TrackingController;
+use App\Http\Controllers\Admin\NavigationMenuController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +47,7 @@ Route::get('/customers', [ApiCustomerController::class, 'index']);
 
 // 🟢 LEITURA PÚBLICA: O React carrega a vitrine e as configs do Pixel sem precisar de login
 Route::get('/storefront', [StorefrontController::class, 'getVitrine']);
+Route::get('/storefront/menu', [StorefrontController::class, 'getMenu']);
 Route::get('/tracking', [TrackingController::class, 'getSettings']);
 
 // 🟢 INGESTÃO DE DADOS (DATA LAYER): Recebe os eventos de conversão da loja pública
@@ -56,6 +59,8 @@ Route::post('/tracking/collect', [TrackingCollectorController::class, 'collect']
 // ==========================================
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     
+    // (A rota mock de /audit-logs foi removida, pois agora usamos /products/audits real)
+
     // --- MÓDULO: CRM DE CLIENTES ---
     Route::prefix('customers')->group(function () {
         Route::get('/', [AdminCustomerController::class, 'index']);
@@ -93,6 +98,19 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::post('/', [CategoryController::class, 'store']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
     });
+    // --- MÓDULO: MEGA MENU ---
+    Route::prefix('menu')->group(function () {
+        Route::get('/', [NavigationMenuController::class, 'index']);
+        Route::post('/sync', [NavigationMenuController::class, 'sync']);
+    });
+    // --- MÓDULO: PRODUTOS ---
+    Route::prefix('products')->group(function () {
+        Route::get('/audits', [AdminProductController::class, 'getAudits']);
+        Route::get('/', [AdminProductController::class, 'index']);
+        Route::post('/validate-skus', [AdminProductController::class, 'validateSkus']);
+        Route::post('/', [AdminProductController::class, 'store']);
+        Route::delete('/{id}', [AdminProductController::class, 'destroy']);
+    });
 
     // --- MÓDULO: PEDIDOS ---
     Route::prefix('orders')->group(function () {
@@ -109,12 +127,18 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         // Cancelar Etiqueta no Carrinho do Melhor Envio
         Route::post('/{id}/cancel-me-cart', [OrderController::class, 'cancelMelhorEnvioCart']);
     });
+    
 
     // --- MÓDULO: TRANSPORTADORAS ---
     Route::prefix('carriers')->group(function () {
+        Route::get('/audits', [CarrierController::class, 'getAudits']);
         Route::get('/', [CarrierController::class, 'index']);
         Route::post('/', [CarrierController::class, 'store']); 
+        Route::post('/{id}/status', [CarrierController::class, 'updateStatus']);
         Route::delete('/{id}', [CarrierController::class, 'destroy']);
+        
+        Route::get('/{id}/orders', [CarrierController::class, 'getOrders']);
+        Route::post('/orders/{orderId}/romaneio', [CarrierController::class, 'uploadRomaneio']);
     });
 
     // --- MÓDULO: EMBALAGENS PADRÃO ---

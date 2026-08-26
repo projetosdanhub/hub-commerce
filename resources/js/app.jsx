@@ -263,14 +263,20 @@ const AppContent = () => {
     );
 };
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const globalQueryClient = new QueryClient();
+
 // ============================================================================
 // PONTO DE ENTRADA DO REACT (O HelmetProvider "liga" a funcionalidade para toda a app)
 // ============================================================================
 const App = () => (
     <HelmetProvider>
-        <BrowserRouter>
-            <AppContent />
-        </BrowserRouter>
+        <QueryClientProvider client={globalQueryClient}>
+            <BrowserRouter>
+                <AppContent />
+            </BrowserRouter>
+        </QueryClientProvider>
     </HelmetProvider>
 );
 
