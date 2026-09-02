@@ -42,7 +42,8 @@ Route::post('/clientes/processar-senha', [AdminCustomerController::class, 'proce
 // ==========================================
 // ROTAS DO FRONT-END (VITRINE PÚBLICA / REACT)
 // ==========================================
-// 🟢 LEITURA PÚBLICA: O React carrega a vitrine e as configs do Pixel sem precisar de login
+// 🟢 LEITURA PÚBLICA: o domínio verificado resolve a loja antes de qualquer query.
+Route::middleware('tenant')->group(function (): void {
 Route::get('/storefront', [StorefrontController::class, 'getVitrine']);
 Route::get('/storefront/menu', [StorefrontController::class, 'getMenu']);
 Route::get('/storefront/categories', [StorefrontController::class, 'getCategories']);
@@ -53,12 +54,13 @@ Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middl
 
 // 🟢 INGESTÃO DE DADOS (DATA LAYER): Recebe os eventos de conversão da loja pública
 Route::post('/tracking/collect', [TrackingCollectorController::class, 'collect'])->middleware('throttle:60,1');
+});
 
 
 // ==========================================
 // ROTAS DO HUB COMMERCE: ADMIN (PROTEGIDAS)
 // ==========================================
-Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'tenant'])->prefix('admin')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     
     // (A rota mock de /audit-logs foi removida, pois agora usamos /products/audits real)

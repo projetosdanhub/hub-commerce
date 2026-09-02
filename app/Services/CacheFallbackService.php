@@ -2,41 +2,47 @@
 
 namespace App\Services;
 
+use App\Domain\Tenancy\TenantContextStore;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class CacheFallbackService
 {
-    /**
-     * Tenta usar Redis, se falhar ou não estiver disponível, usa o File cache automaticamente.
-     */
-    public static function remember(string $key, $ttl, \Closure $callback)
+    public static function remember(string $key, $ttl, \Closure $callback): mixed
     {
+        $tenantKey = self::tenantKey($key);
+
         try {
-            // Tenta usar Redis (primeira opção)
-            return Cache::store('redis')->remember($key, $ttl, $callback);
-        } catch (\Throwable $e) {
-            // Se Redis falhar (ex: porta bloqueada ou não instalado na hospedagem)
-            // Logamos silenciosamente apenas para debug e caímos pro FILE.
-            Log::warning("Redis Indisponível (Key: {$key}). Fallback para File Cache ativado. Erro: " . $e->getMessage());
-            
-            return Cache::store('file')->remember($key, $ttl, $callback);
+            return Cache::store('redis')->remember($tenantKey, $ttl, $callback);
+        } catch (\Throwable $exception) {
+            Log::warning('Redis indisponível; fallback tenant-aware ativado.', [
+                'key' => $tenantKey,
+                'exception' => $exception::class,
+            ]);
+
+            return Cache::store('file')->remember($tenantKey, $ttl, $callback);
         }
     }
 
-    public static function forget(string $key)
+    public static function forget(string $key): void
     {
+        $tenantKey = self::tenantKey($key);
+
         try {
-            Cache::store('redis')->forget($key);
-        } catch (\Throwable $e) {
-            // Se falhou no redis, não fazemos nada lá
+            Cache::store('redis')->forget($tenantKey);
+        } catch (\Throwable) {
         }
-        
+
         try {
-            Cache::store('file')->forget($key);
-        } catch (\Throwable $e) {
-            // Se falhou no file, não fazemos nada lá
+            Cache::store('file')->forget($tenantKey);
+        } catch (\Throwable) {
         }
+    }
+
+    public static function tenantKey(string $key): string
+    {
+        $context = app(TenantContextStore::class)->require();
+
+        return 'tenant:' . $context->tenantUuid . ':' . ltrim($key, ':');
     }
 }

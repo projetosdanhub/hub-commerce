@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Domain\Tenancy\Concerns\BelongsToTenant;
+
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +11,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class TrackingDestination extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     private const PUBLIC_KEYS = [
         'meta_pixel_id',

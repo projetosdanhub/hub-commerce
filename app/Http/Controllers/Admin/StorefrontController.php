@@ -131,7 +131,7 @@ class StorefrontController extends Controller
             'active_menu_id' => 'nullable|exists:menu_configs,id'
         ]);
 
-        $config = StorefrontConfig::firstOrCreate(['id' => 1]);
+        $config = StorefrontConfig::firstOrCreate([]);
         $config->layout_blocks = $request->layout_blocks;
         
         if ($request->has('active_menu_id')) {

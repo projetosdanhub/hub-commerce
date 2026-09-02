@@ -2,15 +2,47 @@
 
 namespace Tests\Feature\Catalog;
 
+use App\Domain\Tenancy\TenantContext;
+use App\Domain\Tenancy\TenantContextStore;
 use App\Models\Categoria;
 use App\Models\Produto;
 use App\Models\ProdutoVariacao;
+use App\Models\Tenant;
+use App\Models\TenantDomain;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProdutoStorefrontTest extends TestCase
 {
     use RefreshDatabase;
+
+    private Tenant $tenant;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->tenant = Tenant::query()->create([
+            'name' => 'Loja catálogo',
+            'slug' => 'loja-catalogo',
+        ]);
+
+        TenantDomain::query()->create([
+            'tenant_id' => $this->tenant->getKey(),
+            'domain' => 'catalogo.test',
+            'is_primary' => true,
+            'verified_at' => now(),
+        ]);
+
+        app(TenantContextStore::class)->set(TenantContext::fromTenant($this->tenant, 'catalogo.test'));
+    }
+
+    protected function tearDown(): void
+    {
+        app(TenantContextStore::class)->clear();
+
+        parent::tearDown();
+    }
 
     public function test_storefront_consulta_o_modelo_produto_canonico(): void
     {
@@ -43,14 +75,16 @@ class ProdutoStorefrontTest extends TestCase
             'estoque' => 4,
         ]);
 
-        $this->getJson('/api/storefront/products?is_featured=1')
+        $this->withServerVariables(['HTTP_HOST' => 'catalogo.test'])
+            ->getJson('/api/storefront/products?is_featured=1')
             ->assertOk()
             ->assertJsonPath('status', 'success')
             ->assertJsonPath('data.data.0.id', $produto->id)
             ->assertJsonPath('data.data.0.categoria.id', $categoria->id)
             ->assertJsonPath('data.data.0.variacoes.0.sku', 'CAMISETA-AZUL');
 
-        $this->getJson('/api/storefront/products/' . $produto->slug)
+        $this->withServerVariables(['HTTP_HOST' => 'catalogo.test'])
+            ->getJson('/api/storefront/products/' . $produto->slug)
             ->assertOk()
             ->assertJsonPath('status', 'success')
             ->assertJsonPath('data.id', $produto->id)
