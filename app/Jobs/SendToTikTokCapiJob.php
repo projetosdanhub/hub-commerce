@@ -77,6 +77,6 @@ class SendToTikTokCapiJob implements ShouldQueue
                     ],
                 ])
                 ->throw();
-        }
         });
+    }
 }

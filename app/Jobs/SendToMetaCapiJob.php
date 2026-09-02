@@ -89,6 +89,6 @@ class SendToMetaCapiJob implements ShouldQueue
                     ]],
                 ])
                 ->throw();
-        }
         });
+    }
 }

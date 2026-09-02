@@ -83,6 +83,6 @@ class SendToPinterestCapiJob implements ShouldQueue
                     ]],
                 ])
                 ->throw();
-        }
         });
+    }
 }

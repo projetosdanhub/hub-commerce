@@ -54,6 +54,6 @@ class SendToGa4Job implements ShouldQueue
                     ]],
                 ])
                 ->throw();
-        }
         });
+    }
 }
