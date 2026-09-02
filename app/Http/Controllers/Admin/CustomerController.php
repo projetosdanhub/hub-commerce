@@ -64,7 +64,7 @@ class CustomerController extends Controller
     // =========================================================================
     public function index(Request $request)
     {
-        $query = User::where('role', 'cliente')->with(['orders.items', 'orders.history', 'orders.address', 'addresses', 'auditLogs' => function($q) {
+        $query = $this->tenantCustomerQuery()->with(['orders.items', 'orders.history', 'orders.address', 'addresses', 'auditLogs' => function($q) {
             $q->orderBy('created_at', 'desc');
         }])->orderBy('id', 'desc');
 
@@ -232,7 +232,7 @@ class CustomerController extends Controller
     // =========================================================================
     public function show($id)
     {
-        $cliente = User::with(['addresses', 'orders.items', 'orders.history', 'orders.address', 'auditLogs' => function($q) {
+        $cliente = $this->tenantCustomerQuery()->with(['addresses', 'orders.items', 'orders.history', 'orders.address', 'auditLogs' => function($q) {
             $q->orderBy('created_at', 'desc');
         }])->findOrFail($id);
 
@@ -250,7 +250,7 @@ class CustomerController extends Controller
             'motivo' => 'required|string'
         ]);
 
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
         $nomeAntigo = $cliente->name;
         
         $cliente->name = $request->nome;
@@ -272,7 +272,7 @@ class CustomerController extends Controller
             'motivo'   => 'required|string'
         ]);
 
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
         $telefoneAntigo = $cliente->telefone;
         
         $cliente->telefone = $request->telefone;
@@ -295,9 +295,9 @@ class CustomerController extends Controller
             'nascimento' => ['nullable', 'date'],
         ]);
 
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
         $uploadedFile = $request->file('arquivo');
-        $path = $uploadedFile->store("customer-documents/{$cliente->id}", 'local');
+        $path = $uploadedFile->store(app(TenantStorage::class)->path("customer-documents/{$cliente->id}"), 'local');
 
         $document = CustomerSensitiveDocument::create([
             'customer_id' => $cliente->id,
@@ -394,7 +394,7 @@ class CustomerController extends Controller
         }
 
         // Aplica a alteração no Banco de Dados
-        $user = User::findOrFail($dados['user_id']);
+        $user = $this->findTenantCustomerOrFail($dados['user_id']);
         $emailAntigo = $user->email;
         $user->email = $dados['novo_email'];
         $user->save();
@@ -448,7 +448,7 @@ class CustomerController extends Controller
     public function sendEmailUpdateLink(Request $request, $id)
     {
         $request->validate(['email' => 'required|email']);
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
         
         $token = Str::random(60); 
 
@@ -470,7 +470,7 @@ class CustomerController extends Controller
     // =========================================================================
     public function generateTempPassword($id)
     {
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
         
         $senhaProvisoria = strtoupper(Str::random(8));
         $cliente->password = Hash::make($senhaProvisoria);
@@ -489,7 +489,7 @@ class CustomerController extends Controller
 
     public function sendPasswordResetLink($id)
     {
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
         $token = Str::random(60);
         
         // 🟢 GUARDA O PEDIDO DE SENHA NO CACHE
@@ -679,7 +679,7 @@ class CustomerController extends Controller
             ', 400, ['Content-Type' => 'text/html']);
         }
 
-        $user = User::findOrFail($dados['user_id']);
+        $user = $this->findTenantCustomerOrFail($dados['user_id']);
         $user->password = Hash::make($novaSenha);
         $user->save();
 
@@ -727,7 +727,7 @@ class CustomerController extends Controller
     // =========================================================================
     public function updateNotes(Request $request, $id)
     {
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
         $cliente->notas = $request->notas;
         $cliente->save();
 
@@ -746,7 +746,7 @@ class CustomerController extends Controller
             'motivo' => 'required|string'
         ]);
 
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
         $novoStatus = $request->acao === 'SUSPENDER' ? 'BLOQUEADA' : 'ATIVO';
         $cliente->status = $novoStatus;
         $cliente->save();
@@ -770,7 +770,7 @@ class CustomerController extends Controller
             'motivo' => 'required|string'
         ]);
 
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
 
         if ($request->tipo === 'Hub Coins') {
             $cliente->coins = ($cliente->coins ?? 0) + $request->valor;
@@ -820,8 +820,8 @@ class CustomerController extends Controller
             $crescimentoReceita = 100;
         }
 
-        $clientesTotais = User::where('role', 'cliente')->count();
-        $clientesMesAtual = User::where('role', 'cliente')
+        $clientesTotais = $this->tenantCustomerQuery()->count();
+        $clientesMesAtual = $this->tenantCustomerQuery()
                                 ->whereMonth('created_at', now()->month)
                                 ->whereYear('created_at', now()->year)
                                 ->count();
@@ -884,7 +884,7 @@ class CustomerController extends Controller
         ]);
 
         if ($request->hasFile('imagem')) {
-            $path = $request->file('imagem')->store('vip_badges', 'public');
+            $path = $request->file('imagem')->store(app(TenantStorage::class)->path('vip_badges'), 'public');
             $fields['imagem'] = asset('storage/' . $path);
         }
 
@@ -937,7 +937,7 @@ class CustomerController extends Controller
     {
         $request->validate(['tags' => 'array']);
 
-        $cliente = User::findOrFail($id);
+        $cliente = $this->findTenantCustomerOrFail($id);
         $cliente->tags = $request->tags;
         $cliente->save();
 
@@ -945,4 +945,21 @@ class CustomerController extends Controller
 
         return response()->json(['status' => 'success', 'message' => 'Tags atualizadas com sucesso!']);
     }
+
+
+    private function tenantCustomerQuery()
+    {
+        return User::query()
+            ->where('role', 'cliente')
+            ->where(function ($query): void {
+                $query->whereHas('orders')
+                    ->orWhereHas('addresses');
+            });
+    }
+
+    private function findTenantCustomerOrFail(int|string $id): User
+    {
+        return $this->tenantCustomerQuery()->findOrFail($id);
+    }
+
 }

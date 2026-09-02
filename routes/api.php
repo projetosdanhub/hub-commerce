@@ -192,7 +192,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 });
 
 // URLs de curta duracao. Somente rotas administrativas autenticadas podem gera-las.
-Route::middleware(['signed', 'throttle:30,1'])->prefix('secure-download')->group(function () {
+Route::middleware(['signed', 'throttle:30,1', 'tenant'])->prefix('secure-download')->group(function () {
     Route::get('/customers/{customer}/documents/{document}', [AdminCustomerController::class, 'downloadSensitiveDocument'])
         ->name('admin.customers.documents.download');
     Route::get('/carriers/{carrier}/documents/{type}', [CarrierController::class, 'downloadDocument'])

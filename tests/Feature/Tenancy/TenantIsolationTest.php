@@ -95,6 +95,18 @@ class TenantIsolationTest extends TestCase
             ->assertStatus(423);
     }
 
+    public function test_file_path_is_namespaced_by_tenant(): void
+    {
+        [$tenantA, $tenantB] = $this->twoTenants();
+
+        $pathA = $this->inTenant($tenantA, fn (): string => app(TenantStorage::class)->path('documents/proof.pdf'));
+        $pathB = $this->inTenant($tenantB, fn (): string => app(TenantStorage::class)->path('documents/proof.pdf'));
+
+        $this->assertSame('tenants/' . $tenantA->uuid . '/documents/proof.pdf', $pathA);
+        $this->assertSame('tenants/' . $tenantB->uuid . '/documents/proof.pdf', $pathB);
+        $this->assertNotSame($pathA, $pathB);
+    }
+
     public function test_cache_key_is_namespaced_by_tenant(): void
     {
         [$tenantA, $tenantB] = $this->twoTenants();
