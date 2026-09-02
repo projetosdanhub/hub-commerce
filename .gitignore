@@ -22,3 +22,14 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Artefatos temporários de agentes/IDE
+/brain/
+/scratch/
+/scratch_transcript*.txt
+/recovered*.txt
+/search_results.md
+
+# Scripts locais avulsos de manutenção
+/drop_cols.php
+/test.php
