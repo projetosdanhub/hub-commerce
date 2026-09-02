@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\StorefrontConfig;
 use App\Models\NavigationMenu;
 use App\Models\Category;
-use App\Models\Product;
+use App\Models\Produto;
 use App\Services\CacheFallbackService;
 use App\Services\PaymentGatewayService;
 use Illuminate\Support\Facades\Log;
@@ -79,24 +79,27 @@ class StorefrontController extends Controller
     // Retorna produtos para a loja (com paginação e filtros)
     public function getProducts(Request $request)
     {
-        $query = Product::with(['images', 'variations', 'category'])
-            ->where('status', 'ativo')
-            ->where('estoque_atual', '>', 0); // Opcional, dependendo da regra
+        $query = Produto::query()
+            ->with(['categoria', 'variacoes'])
+            ->where('ativo', true)
+            ->where('status_vitrine', 'ATIVO')
+            ->where('quantidade_estoque', '>', 0);
 
-        if ($request->has('category_id')) {
-            $query->where('categoria_id', $request->category_id);
+        if ($request->filled('category_id')) {
+            $query->where('categoria_id', $request->integer('category_id'));
         }
 
-        if ($request->has('is_featured')) {
-            $query->where('is_featured', true);
-        }
-        
-        // Pesquisa
-        if ($request->has('q')) {
-            $query->where('nome', 'like', '%' . $request->q . '%');
+        if ($request->boolean('is_featured')) {
+            $query->where('destaque', true);
         }
 
-        $products = $query->orderBy('created_at', 'desc')->paginate(12);
+        $searchTerm = trim((string) $request->query('q', ''));
+
+        if ($searchTerm !== '') {
+            $query->where('nome', 'like', '%' . $searchTerm . '%');
+        }
+
+        $products = $query->orderByDesc('created_at')->paginate(12);
 
         return response()->json(['status' => 'success', 'data' => $products]);
     }
@@ -104,14 +107,16 @@ class StorefrontController extends Controller
     // Retorna um produto detalhado por ID ou slug
     public function getProduct($id)
     {
-        $product = Product::with(['images', 'variations', 'category'])
-            ->where('status', 'ativo')
-            ->where(function($query) use ($id) {
+        $product = Produto::query()
+            ->with(['categoria', 'variacoes'])
+            ->where('ativo', true)
+            ->where('status_vitrine', 'ATIVO')
+            ->where(function ($query) use ($id): void {
                 $query->where('id', $id)->orWhere('slug', $id);
             })
             ->first();
 
-        if (!$product) {
+        if (! $product) {
             return response()->json(['status' => 'error', 'message' => 'Produto não encontrado'], 404);
         }
 
@@ -198,21 +203,21 @@ class StorefrontController extends Controller
             $itemsToSave = [];
 
             foreach ($request->input('items') as $itemInput) {
-                $product = Product::find($itemInput['id']);
+                $product = Produto::find($itemInput['id']);
                 if (!$product) continue;
                 
-                $price = $product->preco_promocional ?: $product->preco;
+                $price = $product->preco_promo ?: $product->preco;
                 $quantity = $itemInput['quantity'];
                 
                 $subtotal += $price * $quantity;
                 
                 $itemsToSave[] = [
                     'product_id' => $product->id, // Para referência futura, mas salvaremos os dados reais.
-                    'sku' => $product->sku ?? ('SKU-'.$product->id),
+                    'sku' => $product->sku_ref ?? ('SKU-'.$product->id),
                     'product_name' => $product->nome,
                     'quantity' => $quantity,
                     'price' => $price,
-                    'product_image' => null, // Pegaria da primeira imagem
+                    'product_image' => $product->img,
                 ];
             }
 
