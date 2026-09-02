@@ -8,10 +8,10 @@
 
 O HUB Commerce evoluirá de uma aplicação de loja única para uma plataforma SaaS B2B multitenant. Cada loja precisa ter dados, domínio, configurações, equipe, catálogo, pedidos, integrações e permissões isolados.
 
-Também há dois níveis de autoridade que não podem ser confundidos:
+A plataforma possui dois planos independentes de autoridade:
 
-1. **Superadmin da plataforma**: dono do painel geral do HUB Commerce, com visão operacional de todos os tenants.
-2. **Membro do tenant**: usuário que atua em uma ou mais lojas, inclusive o lojista proprietário, administradores e colaboradores de setores específicos.
+1. **Plataforma (landlord)**: gerencia o próprio HUB Commerce, seus tenants, planos, cobrança, bloqueios, suporte e equipe interna.
+2. **Tenant (loja)**: gerencia uma loja específica, sua equipe, catálogo, pedidos, clientes e configurações.
 
 O campo legado `users.role` representa uma autorização global de aplicação única e não suporta com segurança usuários em múltiplos tenants, cargos customizados ou permissões por menu.
 
@@ -19,7 +19,7 @@ O campo legado `users.role` representa uma autorização global de aplicação �
 
 Sem uma separação explícita entre autoridade de plataforma, vínculo com a loja e cargo da loja, um usuário pode obter acesso cruzado entre tenants ou um lojista pode, por engano, receber poderes de plataforma.
 
-A plataforma também precisa permitir que cada lojista crie cargos para seus setores e controle o acesso a menus e submenus sem permitir que ele invente rotas, permissões sensíveis ou privilégios acima da própria autorização.
+A plataforma também precisa permitir que cada lojista crie cargos para seus setores e controle o acesso a menus e submenus, sem permitir que ele invente rotas, permissões sensíveis ou privilégios acima da própria autorização.
 
 ## Decisão
 
@@ -27,24 +27,29 @@ A plataforma também precisa permitir que cada lojista crie cargos para seus set
 
 A plataforma adotará **banco compartilhado e schema compartilhado**, com `tenant_id` obrigatório nas entidades tenant-owned.
 
-Dados landlord, que pertencem à plataforma, incluem:
+Dados de plataforma incluem:
 
 - `users`: identidade global;
 - `tenants` e `tenant_domains`;
-- a concessão auditável de acesso de plataforma ao superadmin;
-- catálogo canônico de permissões de aplicação.
+- memberships, cargos e permissões da equipe interna;
+- catálogo canônico de permissões de aplicação;
+- planos, billing, suporte, risco, auditoria e configurações globais.
 
-Dados de uma loja incluem, por padrão, catálogo, pedidos, clientes, configurações, integrações, tracking, arquivos, cache, equipes e cargos.
+Dados de uma loja incluem, por padrão, catálogo, pedidos, clientes, configurações, integrações, tracking, arquivos, cache, equipe e cargos.
 
-### Superadmin
+### Autoridade da plataforma
 
-Superadmin será uma autoridade **de plataforma**, separada das roles de tenant:
+O **superadmin** é o dono e a autoridade máxima do HUB Commerce. Ele administra tenants, estado da conta, planos, cobrança dos lojistas, recursos da plataforma, suporte, risco e auditoria. Essa autoridade é separada de qualquer cargo de loja:
 
-- não é concedido por header, parâmetro de rota ou payload controlado pelo cliente;
+- não é concedida por header, parâmetro de rota ou payload controlado pelo cliente;
 - não é editável por lojistas;
 - usa guard/ability e trilha de auditoria próprios;
-- pode acessar o painel geral e consultar tenants conforme permissões de plataforma;
-- não recebe automaticamente acesso operacional a uma loja: qualquer atuação dentro de um tenant é explicitamente auditada e usa contexto de tenant.
+- não recebe automaticamente acesso operacional a uma loja: qualquer atuação em tenant exige contexto explícito e auditoria;
+- não recebe secrets completos de tenants por padrão.
+
+A plataforma também terá **cargos internos customizáveis**, por exemplo `financeiro_da_plataforma`, `suporte` ou `operacoes`. Eles serão modelados por memberships e roles de plataforma, usando o mesmo catálogo canônico de permissões, porém em namespace próprio, como `platform.billing.view` e `platform.tenants.suspend`.
+
+Somente um superadmin ativo pode criar, conceder, revogar ou alterar cargos de plataforma. Um colaborador de plataforma só pode executar capacidades explicitamente concedidas; cargo de plataforma não concede acesso implícito aos dados operacionais de uma loja.
 
 A coluna legada `users.role` não será a fonte de autoridade do superadmin após a migração para Identity/Tenancy.
 
@@ -58,15 +63,27 @@ A autorização dentro de uma loja será modelada por:
 - `tenant_role_permissions`: associação entre cargo e capacidade;
 - cargos de sistema como `owner` e `admin`, protegidos contra exclusão ou alteração indevida.
 
-O proprietário da loja pode criar cargos e atribuí-los a membros do próprio tenant quando possuir as permissões de gestão de equipe e cargos. A delegação não pode conceder uma capacidade de plataforma nem uma capacidade que exceda a autorização delegável do ator.
+O lojista proprietário e administradores autorizados podem criar contas e cargos dentro do próprio tenant, apenas se possuírem as permissões de gestão de equipe e cargos. A delegação não pode conceder capacidade de plataforma, permissão fora do catálogo ou capacidade que exceda a autorização delegável do ator.
 
 Menus e submenus serão definidos pela aplicação; sua visibilidade será derivada das permissões concedidas no backend. Nenhum tenant poderá cadastrar rotas arbitrárias, chaves de permissão globais ou esconder a verificação de autorização apenas no frontend.
+
+### Proprietário inicial da loja
+
+Na criação de cada tenant, o primeiro administrador é registrado como **owner protegido**:
+
+- existe exatamente um owner ativo por tenant;
+- nenhum membro do tenant, inclusive outro `admin`, pode excluir, desativar, remover cargos ou reduzir as permissões do owner;
+- somente um superadmin ativo pode suspender, remover ou transferir a titularidade;
+- remoção definitiva do owner exige, na mesma operação auditada, transferir a titularidade a outro membership ativo ou suspender o tenant; o sistema nunca deixa tenant operacional sem owner;
+- toda criação, transferência, suspensão e tentativa negada é registrada em auditoria com ator, tenant, alvo e resultado.
+
+Assim, `admin` é um papel administrativo da loja, enquanto `owner` é uma proteção de titularidade e não apenas um conjunto de permissões.
 
 ### Contexto e resolução
 
 - A vitrine resolve o tenant pelo domínio verificado.
 - O painel da loja opera com um tenant ativo que pertence ao usuário autenticado.
-- O painel geral do superadmin usa domínio/rota de plataforma e não aceita seleção de tenant controlada pelo navegador como prova de autorização.
+- O painel geral usa domínio/rota de plataforma e nunca aceita seleção de tenant controlada pelo navegador como prova de autorização.
 - Toda leitura e escrita tenant-owned recebe `TenantContext` imutável antes de consultar dados.
 - Trocar de loja exige membership válido, tenant ativo e registro de auditoria quando aplicável.
 
@@ -82,7 +99,7 @@ Rejeitada. Duplicaria identidade, complicaria login, recuperação de senha, con
 
 ### Permitir cargos e menus livres por tenant
 
-Rejeitada. Um tenant não pode criar endpoints, permissões globais ou regras de autorização. Cargos são customizáveis, mas usam um catálogo canônico de capacidades e menus definidos pela aplicação.
+Rejeitada. Um tenant não pode criar endpoints, permissões globais ou regras de autorização. Cargos são customizáveis, mas usam catálogo canônico de capacidades e menus definidos pela aplicação.
 
 ### Banco ou schema exclusivo por tenant
 
@@ -91,38 +108,39 @@ Adiada. Essa opção aumenta custo operacional, migrações e observabilidade an
 ## Consequências positivas
 
 - Um usuário pode participar de várias lojas sem duplicar conta.
+- A equipe interna pode operar finanças, suporte e operações sem receber superadmin.
 - Superadmin fica separado da administração do lojista.
+- O owner da loja não pode ser removido por um administrador comum.
 - Cargos por setor suportam operação real sem expor privilégios de plataforma.
 - Menus e submenus obedecem à mesma autorização server-side das APIs.
-- A estrutura permite adicionar tenants e equipes gradualmente.
 
 ## Riscos e consequências negativas
 
 - Shared-schema exige disciplina rigorosa de `tenant_id`, índices, scopes, cache, filas e testes negativos.
 - A transição do legado precisará conviver temporariamente com `users.role`.
 - Cargos customizados exigem prevenção de escalonamento de privilégio e auditoria de mudanças.
-- A implementação não pode migrar todas as entidades de uma vez; será feita em blocos reversíveis.
+- A implementação deve migrar entidades em blocos reversíveis.
 
 ## Segurança, privacidade e multitenancy
 
-- IDs de tenants e domínios públicos usam UUID/ULID ou identificador opaco.
-- Todas as ações de plataforma e gestão de equipe são auditáveis com ator, tenant-alvo, ação e resultado.
+- IDs públicos de tenants e domínios usam UUID/ULID ou identificador opaco.
+- Ações de plataforma e gestão de equipe são auditáveis com ator, escopo, ação, alvo e resultado.
 - Um usuário de tenant não vê dados, menus, métricas ou erros de outro tenant.
 - Cache, arquivos, jobs, eventos e unicidades usam o tenant resolvido.
-- Superadmin não recebe secrets completos de tenants por padrão.
 - Nenhuma autorização depende apenas da ocultação de menu no frontend.
+- Falhas de autorização são deny-by-default.
 
 ## Migração e compatibilidade
 
 A transição seguirá expand/migrate/contract:
 
 1. criar tenants, domínios e contexto sem alterar o comportamento atual;
-2. criar memberships, cargos e permissões sem remover a role legada;
+2. criar memberships, cargos e permissões de plataforma e tenant sem remover a role legada;
 3. adicionar `tenant_id`, backfill, constraints e escopos por módulo;
 4. migrar rotas administrativas para policies de membership;
 5. remover a dependência de `users.role` apenas após cobertura de testes e validação de produção.
 
-Nenhuma migration publicada será reescrita para acomodar esta mudança. Bancos existentes receberão migrations novas, idempotentes quando necessário, com estratégia de backfill e rollback documentada.
+Nenhuma migration publicada será reescrita. Bancos existentes receberão migrations novas, idempotentes quando necessário, com estratégia de backfill e rollback documentada.
 
 ## Plano de rollback
 
@@ -131,12 +149,12 @@ Cada bloco de migração deve ser compatível com o código anterior durante a j
 - interromper a ativação do novo fluxo;
 - preservar a leitura do legado enquanto não houver contração de schema;
 - reverter apenas o código/feature flag do bloco;
-- nunca remover `tenant_id` ou memberships com dados já utilizados sem backup e plano aprovado.
+- nunca remover `tenant_id`, memberships ou titularidade com dados já utilizados sem backup e plano aprovado.
 
 ## Critérios de validação
 
 - A estratégia shared-schema está registrada e aceita.
-- Superadmin é definido como autoridade de plataforma separada de roles de tenant.
-- Membership, cargos customizados, permissões e menus seguem o modelo desta ADR.
-- O task board mantém TEN-002 como próximo passo de implementação.
+- Superadmin, equipe da plataforma e cargos de tenant estão separados.
+- O owner inicial possui proteção contra exclusão por administrador de loja.
+- Membership, cargos customizados, permissões e menus seguem este modelo.
 - Todas as migrations futuras de tenant declaram backfill, índices e rollback.
