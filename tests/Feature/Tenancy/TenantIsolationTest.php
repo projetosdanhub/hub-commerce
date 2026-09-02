@@ -7,11 +7,14 @@ use App\Domain\Tenancy\TenantContextStore;
 use App\Domain\Tenancy\TenantStorage;
 use App\Models\Categoria;
 use App\Models\Produto;
+use App\Models\ProdutoVariacao;
+use App\Models\User;
 use App\Models\Tenant;
 use App\Models\TenantDomain;
 use App\Services\CacheFallbackService;
 use Closure;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class TenantIsolationTest extends TestCase
@@ -70,9 +73,42 @@ class TenantIsolationTest extends TestCase
             ->assertJsonPath('data.data.0.id', $productA->getKey())
             ->assertJsonMissing(['id' => $productB->getKey()]);
 
+        $this->inTenant($tenantA, fn () => ProdutoVariacao::query()->create([
+            'produto_id' => $productA->getKey(),
+            'tipo' => 'Cor',
+            'nome' => 'Azul',
+            'sku' => 'SKU-COMPARTILHADO',
+            'estoque' => 1,
+        ]));
+        $this->inTenant($tenantB, fn () => ProdutoVariacao::query()->create([
+            'produto_id' => $productB->getKey(),
+            'tipo' => 'Cor',
+            'nome' => 'Azul',
+            'sku' => 'SKU-COMPARTILHADO',
+            'estoque' => 1,
+        ]));
+
         $this->withServerVariables(['HTTP_HOST' => 'loja-a.test', 'SERVER_NAME' => 'loja-a.test'])
             ->getJson('http://loja-a.test/api/storefront/products/' . $productB->getKey())
             ->assertNotFound();
+
+        $admin = User::query()->create([
+            'name' => 'Admin da loja A',
+            'email' => 'admin-loja-a@example.test',
+            'password' => Hash::make('Password123!'),
+            'role' => 'admin',
+            'status' => 'ATIVO',
+        ]);
+
+        $token = $admin->createToken('tenant-isolation', ['admin'])->plainTextToken;
+
+        $this->withToken($token)
+            ->withServerVariables(['HTTP_HOST' => 'loja-a.test', 'SERVER_NAME' => 'loja-a.test'])
+            ->deleteJson('http://loja-a.test/api/admin/products/' . $productB->getKey())
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('produtos', ['id' => $productB->getKey()]);
+
     }
 
     public function test_unverified_domain_is_not_resolved_and_suspended_tenant_cannot_operate(): void
