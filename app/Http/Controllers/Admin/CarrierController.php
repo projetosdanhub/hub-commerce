@@ -75,11 +75,11 @@ class CarrierController extends Controller
         }
         if ($request->hasFile('file_rg_back')) {
             if ($carrier && $carrier->document_rg_back) Storage::disk('local')->delete($carrier->document_rg_back);
-            $fields['document_rg_back'] = $request->file('file_rg_back')->store('carriers/docs', 'public');
+            $fields['document_rg_back'] = $request->file('file_rg_back')->store('carrier-documents', 'local');
         }
         if ($request->hasFile('file_cnh')) {
             if ($carrier && $carrier->document_cnh) Storage::disk('local')->delete($carrier->document_cnh);
-            $fields['document_cnh'] = $request->file('file_cnh')->store('carriers/docs', 'public');
+            $fields['document_cnh'] = $request->file('file_cnh')->store('carrier-documents', 'local');
         }
 
         $isNew = !$request->filled('id');
@@ -124,9 +124,9 @@ class CarrierController extends Controller
         }
 
         if ($carrier->imagem) Storage::disk('public')->delete($carrier->imagem);
-        if ($carrier->document_rg_front) Storage::disk('public')->delete($carrier->document_rg_front);
-        if ($carrier->document_rg_back) Storage::disk('public')->delete($carrier->document_rg_back);
-        if ($carrier->document_cnh) Storage::disk('public')->delete($carrier->document_cnh);
+        if ($carrier->document_rg_front) Storage::disk('local')->delete($carrier->document_rg_front);
+        if ($carrier->document_rg_back) Storage::disk('local')->delete($carrier->document_rg_back);
+        if ($carrier->document_cnh) Storage::disk('local')->delete($carrier->document_cnh);
 
         CarrierAuditLog::create([
             'admin_id' => Auth::id(),
