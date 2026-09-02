@@ -4,6 +4,7 @@ namespace Tests\Feature\Tenancy;
 
 use App\Domain\Tenancy\TenantContext;
 use App\Domain\Tenancy\TenantContextStore;
+use App\Domain\Tenancy\TenantStorage;
 use App\Models\Categoria;
 use App\Models\Produto;
 use App\Models\Tenant;
