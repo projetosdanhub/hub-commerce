@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Services\CacheFallbackService;
 use App\Services\PaymentGatewayService;
+use Illuminate\Support\Facades\Log;
 
 class StorefrontController extends Controller
 {
@@ -158,9 +159,24 @@ class StorefrontController extends Controller
             'items' => 'required|array',
             'items.*.id' => 'required',
             'items.*.quantity' => 'required|integer|min:1',
-            'pagamento.metodo' => 'required|string',
-            'pagamento.parcelas' => 'nullable|integer',
+            'pagamento.metodo' => 'required|string|in:tokenized_card,pix,boleto',
+            'pagamento.parcelas' => 'nullable|integer|min:1|max:24',
+            'pagamento.provider' => 'nullable|string|max:50',
+            'pagamento.token' => 'nullable|string|max:4096',
         ]);
+
+        $paymentData = $request->input('pagamento', []);
+        $forbiddenCardFields = [
+            'card_number', 'numero_cartao', 'numeroCartao', 'pan',
+            'cvv', 'cvc', 'cvvCartao', 'validadeCartao', 'nomeCartao',
+        ];
+
+        if (array_intersect($forbiddenCardFields, array_keys($paymentData)) !== []) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Dados brutos de cartao nao sao aceitos. Use tokenizacao do gateway.',
+            ], 422);
+        }
 
         \DB::beginTransaction();
 
@@ -249,12 +265,17 @@ class StorefrontController extends Controller
                 $request->input('endereco')
             );
 
-            if ($paymentResult['status'] === 'error') {
-                throw new \Exception($paymentResult['message']);
+            if (($paymentResult['status'] ?? null) !== 'approved') {
+                \DB::rollBack();
+
+                return response()->json([
+                    'status' => 'error',
+                    'code' => $paymentResult['code'] ?? 'PAYMENT_UNAVAILABLE',
+                    'message' => 'Pagamento temporariamente indisponivel.',
+                ], 503);
             }
 
-            // Atualiza status do pedido após pagamento
-            $order->status = 'paid'; // ou 'processing' dependendo do gateway
+            $order->status = 'paid';
             $order->payment_gateway = $paymentResult['gateway'];
             $order->save();
             
@@ -270,11 +291,17 @@ class StorefrontController extends Controller
                 ]
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $exception) {
             \DB::rollBack();
+
+            Log::error('Falha interna no checkout.', [
+                'exception' => $exception::class,
+                'request_id' => $request->header('X-Request-ID'),
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Erro ao processar o checkout: ' . $e->getMessage(),
+                'message' => 'Nao foi possivel processar o checkout.',
             ], 500);
         }
     }

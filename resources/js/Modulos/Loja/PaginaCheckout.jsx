@@ -29,7 +29,7 @@ const CheckoutPage = () => {
     const [formData, setFormData] = useState({
         cliente: { email: '', nome: '', cpf: '', telefone: '' },
         endereco: { cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '' },
-        pagamento: { metodo: 'credit_card', parcelas: 1, numeroCartao: '', nomeCartao: '', validadeCartao: '', cvvCartao: '' }
+        pagamento: { metodo: 'unavailable', parcelas: 1 }
     });
 
     useEffect(() => {
@@ -272,11 +272,22 @@ const CheckoutPage = () => {
                                         <button onClick={() => setCurrentStep(2)} className="text-sm text-blue-600 hover:underline">Voltar</button>
                                     </div>
                                     
-                                    {/* Opções de Pagamento (Abas) */}
-                                    <div className="flex gap-4 mb-8">
-                                        <button onClick={() => handleChange('pagamento', 'metodo', 'credit_card')} className={`flex-1 py-3 border-2 font-bold rounded-lg flex items-center justify-center gap-2 ${formData.pagamento.metodo === 'credit_card' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
-                                            <CreditCardIcon /> Cartão
-                                        </button>
+                                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-6">
+                                        <h3 className="font-bold text-amber-900">Pagamento temporariamente indisponivel</h3>
+                                        <p className="mt-2 text-sm leading-6 text-amber-800">
+                                            A captura de cartao foi desativada ate que Stripe, Mercado Pago ou Pagar.me
+                                            estejam homologados com tokenizacao segura. A HUB Commerce nao coleta PAN,
+                                            validade ou CVV diretamente.
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        disabled
+                                        className="w-full mt-8 bg-gray-300 text-gray-600 font-bold py-4 rounded-xl cursor-not-allowed"
+                                    >
+                                        Checkout aguardando gateway seguro
+                                    </button>
                                         <button onClick={() => handleChange('pagamento', 'metodo', 'pix')} className={`flex-1 py-3 border-2 font-medium rounded-lg ${formData.pagamento.metodo === 'pix' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
                                             Pix
                                         </button>

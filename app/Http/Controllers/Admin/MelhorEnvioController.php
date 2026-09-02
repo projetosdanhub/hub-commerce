@@ -148,6 +148,6 @@ class MelhorEnvioController extends Controller
             return response()->json(['status' => 'success', 'data' => $validRates]);
         }
 
-        return response()->json(['status' => 'error', 'message' => 'Erro ao calcular. Verifique as dimensões.', 'details' => $response->json()], 400);
+        return response()->json(['status' => 'error', 'message' => 'Nao foi possivel calcular o frete. Verifique os dados informados.'], 502);
     }
 }

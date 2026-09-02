@@ -19,5 +19,28 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Throwable $exception, \Illuminate\Http\Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            if (
+                $exception instanceof \Illuminate\Validation\ValidationException
+                || $exception instanceof \Illuminate\Auth\AuthenticationException
+                || $exception instanceof \Illuminate\Auth\Access\AuthorizationException
+                || $exception instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
+            ) {
+                return null;
+            }
+
+            \Illuminate\Support\Facades\Log::error('Erro nao tratado na API.', [
+                'exception' => $exception::class,
+                'request_id' => $request->header('X-Request-ID'),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Ocorreu um erro interno.',
+            ], 500);
+        });
     })->create();
