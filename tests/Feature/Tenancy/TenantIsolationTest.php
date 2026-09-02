@@ -67,7 +67,7 @@ class TenantIsolationTest extends TestCase
             ->getJson('http://loja-a.test/api/storefront/products')
             ->assertOk()
             ->assertJsonPath('data.data.0.id', $productA->getKey())
-            ->assertJsonMissingPath('data.data.0.id', $productB->getKey());
+            ->assertJsonMissing(['id' => $productB->getKey()]);
 
         $this->withServerVariables(['HTTP_HOST' => 'loja-a.test', 'SERVER_NAME' => 'loja-a.test'])
             ->getJson('http://loja-a.test/api/storefront/products/' . $productB->getKey())
@@ -85,7 +85,7 @@ class TenantIsolationTest extends TestCase
         ]);
 
         $this->withServerVariables(['HTTP_HOST' => 'nao-verificado.test', 'SERVER_NAME' => 'nao-verificado.test'])
-            ->getJson('http://loja-a.test/api/storefront/products/' . $productB->getKey())
+            ->getJson('http://nao-verificado.test/api/storefront/products')
             ->assertNotFound();
 
         $tenantB->forceFill(['status' => Tenant::STATUS_SUSPENDED])->save();
