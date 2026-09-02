@@ -32,9 +32,9 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | GOV-004 | P1 | Organizar documentação de arquitetura, segurança e pagamentos | GOV-002 | Estrutura docs criada |
 | [x] | GOV-005 | P1 | Criar este task board | GOV-001 | Board versionado |
 | [x] | GOV-006 | P1 | Remover regras e prompts antigos de layout | GOV-002 | Sem fontes normativas conflitantes |
-| [ ] | GOV-007 | P2 | Revisar arquivos scratch, brain e transcrições | GOV-006 | Artefatos classificados, arquivados ou removidos |
-| [ ] | GOV-008 | P1 | Criar ADR do modular monolith | GOV-004 | ADR aprovada |
-| [ ] | GOV-009 | P1 | Criar mapa de domínios e dependências permitidas | GOV-008 | Diagrama e regras documentados |
+| [x] | GOV-007 | P2 | Revisar arquivos scratch, brain e transcrições | GOV-006 | Artefatos removidos e padrões adicionados ao .gitignore |
+| [x] | GOV-008 | P1 | Criar ADR do modular monolith | GOV-004 | ADR-0001 aprovada |
+| [x] | GOV-009 | P1 | Criar mapa de domínios e dependências permitidas | GOV-008 | Mapa e regras documentados |
 
 ## Fase 1 — Contenção de segurança crítica
 

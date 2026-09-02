@@ -1,17 +1,19 @@
 # Arquitetura do HUB Commerce
 
-A documentação arquitetural deve descrever o estado aprovado, não apenas intenções.
+A documentação arquitetural descreve o estado aprovado, não apenas intenções.
 
-## Estrutura documental
+## Índice
 
-- docs/adr: decisões permanentes e seus trade-offs.
+- docs/adr/0001-modular-monolith.md: arquitetura implantável aprovada.
+- docs/architecture/domain-map.md: propriedade e colaboração entre módulos.
+- docs/architecture/dependency-rules.md: dependências permitidas e proibidas.
 - .ai/rules: invariantes obrigatórias para implementação.
-- design-system: direção visual e tokens.
 - docs/security: modelo de ameaças, dados e controles.
 - docs/payments: contratos, estados, webhooks e reconciliação.
+- docs/ui: implementação do design system.
 
 ## Direção atual
 
-A aplicação evoluirá como modular monolith Laravel + React, com Storefront e Admin separados, banco compartilhado com isolamento por tenant e integrações externas atrás de adapters.
+A aplicação evoluirá como modular monolith Laravel + React, com Storefront e Admin separados por contrato e bundle. A decisão detalhada de multitenancy será formalizada na Fase 3.
 
-Antes de reestruturar pastas de código, criar ADR contendo mapa de módulos, dependências permitidas, sequência de migração e estratégia para imports legados. Não fazer reorganização massiva junto de correções funcionais.
+Antes de reestruturar pastas de código, seguir a ADR-0001, o mapa de domínios, as regras de dependência e a sequência do task-board. Não misturar reorganização massiva, correção funcional e mudança de banco no mesmo commit.
