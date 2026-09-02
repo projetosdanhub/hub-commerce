@@ -75,7 +75,7 @@ class ProdutoStorefrontTest extends TestCase
             'estoque' => 4,
         ]);
 
-        $this->withServerVariables(['HTTP_HOST' => 'catalogo.test'])
+        $this->withServerVariables(['HTTP_HOST' => 'catalogo.test', 'SERVER_NAME' => 'catalogo.test'])
             ->getJson('/api/storefront/products?is_featured=1')
             ->assertOk()
             ->assertJsonPath('status', 'success')
@@ -83,7 +83,7 @@ class ProdutoStorefrontTest extends TestCase
             ->assertJsonPath('data.data.0.categoria.id', $categoria->id)
             ->assertJsonPath('data.data.0.variacoes.0.sku', 'CAMISETA-AZUL');
 
-        $this->withServerVariables(['HTTP_HOST' => 'catalogo.test'])
+        $this->withServerVariables(['HTTP_HOST' => 'catalogo.test', 'SERVER_NAME' => 'catalogo.test'])
             ->getJson('/api/storefront/products/' . $produto->slug)
             ->assertOk()
             ->assertJsonPath('status', 'success')

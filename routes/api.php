@@ -60,8 +60,10 @@ Route::post('/tracking/collect', [TrackingCollectorController::class, 'collect']
 // ==========================================
 // ROTAS DO HUB COMMERCE: ADMIN (PROTEGIDAS)
 // ==========================================
-Route::middleware(['auth:sanctum', 'admin', 'tenant'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::middleware('tenant')->group(function (): void {
     
     // (A rota mock de /audit-logs foi removida, pois agora usamos /products/audits real)
 
@@ -186,6 +188,7 @@ Route::middleware(['auth:sanctum', 'admin', 'tenant'])->prefix('admin')->group(f
 
     // --- MÓDULO: CONSTRUTOR DE VITRINE ---
     Route::post('/storefront/publish', [StorefrontController::class, 'publishVitrine']);
+    });
 });
 
 // URLs de curta duracao. Somente rotas administrativas autenticadas podem gera-las.

@@ -63,13 +63,13 @@ class TenantIsolationTest extends TestCase
             ]);
         });
 
-        $this->withServerVariables(['HTTP_HOST' => 'loja-a.test'])
+        $this->withServerVariables(['HTTP_HOST' => 'loja-a.test', 'SERVER_NAME' => 'loja-a.test'])
             ->getJson('/api/storefront/products')
             ->assertOk()
             ->assertJsonPath('data.data.0.id', $productA->getKey())
             ->assertJsonMissingPath('data.data.0.id', $productB->getKey());
 
-        $this->withServerVariables(['HTTP_HOST' => 'loja-a.test'])
+        $this->withServerVariables(['HTTP_HOST' => 'loja-a.test', 'SERVER_NAME' => 'loja-a.test'])
             ->getJson('/api/storefront/products/' . $productB->getKey())
             ->assertNotFound();
     }
@@ -84,13 +84,13 @@ class TenantIsolationTest extends TestCase
             'is_primary' => false,
         ]);
 
-        $this->withServerVariables(['HTTP_HOST' => 'nao-verificado.test'])
+        $this->withServerVariables(['HTTP_HOST' => 'nao-verificado.test', 'SERVER_NAME' => 'nao-verificado.test'])
             ->getJson('/api/storefront/products')
             ->assertNotFound();
 
         $tenantB->forceFill(['status' => Tenant::STATUS_SUSPENDED])->save();
 
-        $this->withServerVariables(['HTTP_HOST' => 'loja-b.test'])
+        $this->withServerVariables(['HTTP_HOST' => 'loja-b.test', 'SERVER_NAME' => 'loja-b.test'])
             ->getJson('/api/storefront/products')
             ->assertStatus(423);
     }

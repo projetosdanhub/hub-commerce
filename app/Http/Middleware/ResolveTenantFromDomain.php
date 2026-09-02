@@ -13,7 +13,7 @@ class ResolveTenantFromDomain
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $domain = TenantDomain::normalizeHost($request->getHost());
+            $domain = TenantDomain::normalizeHost((string) ($request->server('HTTP_HOST') ?: $request->getHost()));
         } catch (\InvalidArgumentException) {
             abort(404, 'Loja não encontrada.');
         }
