@@ -2,58 +2,55 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, MustVerifyEmailTrait, Notifiable;
 
-    /**
-     * Atributos preenchíveis em massa.
-     */
     protected $fillable = [
         'name',
         'email',
-        'avatar',     // <--- ADICIONADO AQUI
+        'avatar',
         'password',
-        'role',       
+        'role',
         'telefone',
         'cpf',
         'nascimento',
-        'sexo',       
-        'origem',     
-        'tags',       
+        'sexo',
+        'origem',
+        'tags',
         'status',
         'notas',
         'coins',
         'cashback',
     ];
-    /**
-     * Atributos ocultos.
-     */
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Casts de tipos.
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'tags' => 'array', // <--- A MÁGICA ESTÁ AQUI (Transforma JSON do banco em Lista no React)
+            'tags' => 'array',
         ];
     }
 
-    // ==========================================
-    // MÉTODOS DE SEGURANÇA (VERIFICAÇÃO DE ROLE)
-    // ==========================================
+    /**
+     * Compatibilidade temporária com o modelo de autorização anterior.
+     * Novas autorizações administrativas devem usar memberships e permissions.
+     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -69,36 +66,58 @@ class User extends Authenticatable
         return $this->isAdmin() && $this->isActive();
     }
 
-    public function isCliente()
+    public function isCliente(): bool
     {
         return $this->role === 'cliente';
     }
 
-    // ==========================================
-    // RELACIONAMENTOS DO BANCO DE DADOS
-    // ==========================================
-    public function addresses()
+    public function addresses(): HasMany
     {
         return $this->hasMany(Address::class, 'user_id');
     }
 
-    public function auditLogs()
+    public function auditLogs(): HasMany
     {
         return $this->hasMany(CustomerAuditLog::class, 'cliente_id');
     }
 
-    public function walletTransactions()
+    public function walletTransactions(): HasMany
     {
         return $this->hasMany(WalletTransaction::class, 'user_id');
     }
 
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'user_id');
     }
 
-    public function pedidos()
+    public function pedidos(): HasMany
     {
         return $this->hasMany(Order::class, 'user_id');
+    }
+
+    public function platformMembership(): HasOne
+    {
+        return $this->hasOne(PlatformMembership::class);
+    }
+
+    public function tenantMemberships(): HasMany
+    {
+        return $this->hasMany(TenantMembership::class);
+    }
+
+    public function mfaMethods(): HasMany
+    {
+        return $this->hasMany(UserMfaMethod::class);
+    }
+
+    public function mfaRecoveryCodes(): HasMany
+    {
+        return $this->hasMany(UserMfaRecoveryCode::class);
+    }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(UserSession::class);
     }
 }
