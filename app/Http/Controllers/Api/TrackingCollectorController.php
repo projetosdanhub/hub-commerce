@@ -78,7 +78,13 @@ class TrackingCollectorController extends Controller
         }
 
         $credentials = $destination->credentials ?? [];
-        $jobArguments = [$payload, (string) $request->ip(), (string) $request->userAgent(), $destination->id];
+        $jobArguments = [
+            $payload,
+            (string) $request->ip(),
+            (string) $request->userAgent(),
+            $destination->id,
+            app(TenantContextStore::class)->require()->tenantId,
+        ];
 
         if (! empty($credentials['meta_pixel_id']) && ! empty($credentials['meta_access_token'])) {
             SendToMetaCapiJob::dispatch(...$jobArguments);

@@ -81,21 +81,21 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
 | [x] | TEN-001 | P0 | Aprovar ADR da estratégia shared-schema | GOV-008 | Decisão e trade-offs aprovados |
-| [ ] | TEN-002 | P0 | Criar tenants | TEN-001 | Tenant possui UUID, status e configurações básicas |
-| [ ] | TEN-003 | P0 | Criar tenant_domains | TEN-002 | Domínio único e verificável |
-| [ ] | TEN-004 | P0 | Implementar TenantContext imutável | TEN-002 | Contexto disponível em request e jobs |
-| [ ] | TEN-005 | P0 | Resolver tenant por domínio | TEN-003 | Domínio inválido falha com segurança |
-| [ ] | TEN-006 | P0 | Adicionar tenant_id às entidades de negócio | TEN-004 | Backfill e constraints concluídos |
-| [ ] | TEN-007 | P0 | Aplicar escopo tenant a queries e route binding | TEN-006 | IDs de outro tenant não são encontrados |
-| [ ] | TEN-008 | P0 | Criar índices e unicidades compostas | TEN-006 | E-mail, SKU, slug e cupom isolados |
-| [ ] | TEN-009 | P0 | Isolar configurações globais por tenant | TEN-006 | Sem registros fixos id=1 globais |
-| [ ] | TEN-010 | P0 | Isolar cache por tenant | TEN-004 | Keys prefixadas e testes negativos |
-| [ ] | TEN-011 | P0 | Isolar arquivos por tenant | TEN-006 | Prefixo tenants/{uuid} aplicado |
-| [ ] | TEN-012 | P0 | Propagar tenant em filas e eventos | TEN-004 | Job rejeita contexto ausente/inválido |
-| [ ] | TEN-013 | P1 | Isolar métricas e tracking | TEN-006 | Dashboard nunca mistura lojas |
-| [ ] | TEN-014 | P1 | Criar onboarding de nova loja | TEN-009 | Tenant nasce com defaults válidos |
-| [ ] | TEN-015 | P1 | Implementar suspensão e lifecycle do tenant | TEN-005 | Tenant suspenso não opera |
-| [ ] | TEN-016 | P1 | Criar suíte automatizada de isolamento | TEN-007 | Testes cruzados em toda API crítica |
+| [x] | TEN-002 | P0 | Criar tenants | TEN-001 | Tenant possui UUID, status e configurações básicas |
+| [x] | TEN-003 | P0 | Criar tenant_domains | TEN-002 | Domínio único e verificável |
+| [x] | TEN-004 | P0 | Implementar TenantContext imutável | TEN-002 | Contexto disponível em request e jobs |
+| [x] | TEN-005 | P0 | Resolver tenant por domínio | TEN-003 | Domínio inválido falha com segurança |
+| [x] | TEN-006 | P0 | Adicionar tenant_id às entidades de negócio | TEN-004 | Backfill e constraints concluídos |
+| [x] | TEN-007 | P0 | Aplicar escopo tenant a queries e route binding | TEN-006 | IDs de outro tenant não são encontrados |
+| [x] | TEN-008 | P0 | Criar índices e unicidades compostas | TEN-006 | SKU, slug e cupom isolados; e-mail é identidade global |
+| [x] | TEN-009 | P0 | Isolar configurações globais por tenant | TEN-006 | Sem registros fixos id=1 globais |
+| [x] | TEN-010 | P0 | Isolar cache por tenant | TEN-004 | Keys prefixadas e testes negativos |
+| [x] | TEN-011 | P0 | Isolar arquivos por tenant | TEN-006 | Prefixo tenants/{uuid} aplicado |
+| [x] | TEN-012 | P0 | Propagar tenant em filas e eventos | TEN-004 | Job rejeita contexto ausente/inválido |
+| [x] | TEN-013 | P1 | Isolar métricas e tracking | TEN-006 | Dashboard nunca mistura lojas |
+| [x] | TEN-014 | P1 | Criar onboarding de nova loja | TEN-009 | Tenant nasce com defaults válidos |
+| [x] | TEN-015 | P1 | Implementar suspensão e lifecycle do tenant | TEN-005 | Tenant suspenso não opera |
+| [x] | TEN-016 | P1 | Criar suíte automatizada de isolamento | TEN-007 | Testes cruzados em toda API crítica |
 
 ## Fase 4 — Identidade, equipes e permissões
 

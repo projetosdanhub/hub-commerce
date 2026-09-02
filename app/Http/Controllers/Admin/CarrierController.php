@@ -67,19 +67,19 @@ class CarrierController extends Controller
 
         if ($request->hasFile('arquivo')) {
             if ($carrier && $carrier->imagem) Storage::disk('public')->delete($carrier->imagem);
-            $fields['imagem'] = $request->file('arquivo')->store('carriers', 'public');
+            $fields['imagem'] = $request->file('arquivo')->store($tenantStorage->path('carriers'), 'public');
         }
         if ($request->hasFile('file_rg_front')) {
             if ($carrier && $carrier->document_rg_front) Storage::disk('local')->delete($carrier->document_rg_front);
-            $fields['document_rg_front'] = $request->file('file_rg_front')->store('carrier-documents', 'local');
+            $fields['document_rg_front'] = $request->file('file_rg_front')->store($tenantStorage->path('carrier-documents'), 'local');
         }
         if ($request->hasFile('file_rg_back')) {
             if ($carrier && $carrier->document_rg_back) Storage::disk('local')->delete($carrier->document_rg_back);
-            $fields['document_rg_back'] = $request->file('file_rg_back')->store('carrier-documents', 'local');
+            $fields['document_rg_back'] = $request->file('file_rg_back')->store($tenantStorage->path('carrier-documents'), 'local');
         }
         if ($request->hasFile('file_cnh')) {
             if ($carrier && $carrier->document_cnh) Storage::disk('local')->delete($carrier->document_cnh);
-            $fields['document_cnh'] = $request->file('file_cnh')->store('carrier-documents', 'local');
+            $fields['document_cnh'] = $request->file('file_cnh')->store($tenantStorage->path('carrier-documents'), 'local');
         }
 
         $isNew = !$request->filled('id');
@@ -192,7 +192,7 @@ class CarrierController extends Controller
             Storage::disk('local')->delete($order->romaneio_url);
         }
         
-        $path = $request->file('arquivo')->store('romaneios', 'local');
+        $path = $request->file('arquivo')->store(app(TenantStorage::class)->path('romaneios'), 'local');
         $order->romaneio_url = $path;
         $order->save();
         

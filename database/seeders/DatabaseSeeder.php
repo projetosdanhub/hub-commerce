@@ -16,6 +16,15 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $tenant = Tenant::query()->firstOrCreate(
+            ['slug' => 'loja-inicial'],
+            ['name' => 'Loja inicial migrada', 'timezone' => 'America/Sao_Paulo', 'currency' => 'BRL']
+        );
+        $domain = TenantDomain::query()->firstOrCreate(
+            ['domain' => 'demo.hubcommerce.test'],
+            ['tenant_id' => $tenant->getKey(), 'is_primary' => true, 'verified_at' => now()]
+        );
+        app(TenantContextStore::class)->set(TenantContext::fromTenant($tenant, $domain->domain));
         // ==========================================
         // 1. CRIAR USUÁRIO ADMIN (GESTOR)
         // ==========================================

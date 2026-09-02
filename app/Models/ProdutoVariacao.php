@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Domain\Tenancy\Concerns\BelongsToTenant;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ProdutoVariacao extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $table = 'produto_variacoes';
     protected $guarded = ['id'];

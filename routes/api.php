@@ -42,7 +42,8 @@ Route::post('/clientes/processar-senha', [AdminCustomerController::class, 'proce
 // ==========================================
 // ROTAS DO FRONT-END (VITRINE PÚBLICA / REACT)
 // ==========================================
-// 🟢 LEITURA PÚBLICA: O React carrega a vitrine e as configs do Pixel sem precisar de login
+// 🟢 LEITURA PÚBLICA: o domínio verificado resolve a loja antes de qualquer query.
+Route::middleware('tenant')->group(function (): void {
 Route::get('/storefront', [StorefrontController::class, 'getVitrine']);
 Route::get('/storefront/menu', [StorefrontController::class, 'getMenu']);
 Route::get('/storefront/categories', [StorefrontController::class, 'getCategories']);
@@ -53,6 +54,7 @@ Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middl
 
 // 🟢 INGESTÃO DE DADOS (DATA LAYER): Recebe os eventos de conversão da loja pública
 Route::post('/tracking/collect', [TrackingCollectorController::class, 'collect'])->middleware('throttle:60,1');
+});
 
 
 // ==========================================
@@ -60,6 +62,8 @@ Route::post('/tracking/collect', [TrackingCollectorController::class, 'collect']
 // ==========================================
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::middleware('tenant')->group(function (): void {
     
     // (A rota mock de /audit-logs foi removida, pois agora usamos /products/audits real)
 
@@ -184,10 +188,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     // --- MÓDULO: CONSTRUTOR DE VITRINE ---
     Route::post('/storefront/publish', [StorefrontController::class, 'publishVitrine']);
+    });
 });
 
 // URLs de curta duracao. Somente rotas administrativas autenticadas podem gera-las.
-Route::middleware(['signed', 'throttle:30,1'])->prefix('secure-download')->group(function () {
+Route::middleware(['signed', 'throttle:30,1', 'tenant'])->prefix('secure-download')->group(function () {
     Route::get('/customers/{customer}/documents/{document}', [AdminCustomerController::class, 'downloadSensitiveDocument'])
         ->name('admin.customers.documents.download');
     Route::get('/carriers/{carrier}/documents/{type}', [CarrierController::class, 'downloadDocument'])
