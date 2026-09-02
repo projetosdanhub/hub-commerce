@@ -80,7 +80,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [ ] | TEN-001 | P0 | Aprovar ADR da estratégia shared-schema | GOV-008 | Decisão e trade-offs aprovados |
+| [x] | TEN-001 | P0 | Aprovar ADR da estratégia shared-schema | GOV-008 | Decisão e trade-offs aprovados |
 | [ ] | TEN-002 | P0 | Criar tenants | TEN-001 | Tenant possui UUID, status e configurações básicas |
 | [ ] | TEN-003 | P0 | Criar tenant_domains | TEN-002 | Domínio único e verificável |
 | [ ] | TEN-004 | P0 | Implementar TenantContext imutável | TEN-002 | Contexto disponível em request e jobs |
@@ -101,14 +101,14 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [ ] | IAM-001 | P0 | Separar usuário global e membership no tenant | TEN-002 | Usuário participa de múltiplas lojas |
-| [ ] | IAM-002 | P0 | Definir matriz de roles e permissions | IAM-001 | Matriz documentada e testada |
-| [ ] | IAM-003 | P0 | Aplicar Policies por recurso | IAM-002 | Permissões verificadas no backend |
+| [ ] | IAM-001 | P0 | Separar usuário global, membership de plataforma e membership no tenant | TEN-002 | Usuário participa de múltiplas lojas e pode receber acesso interno de plataforma |
+| [ ] | IAM-002 | P0 | Definir matriz de cargos e permissões de plataforma e tenant | IAM-001 | Matriz documentada, incluindo delegação limitada e owner protegido |
+| [ ] | IAM-003 | P0 | Aplicar Policies por recurso e proteção do owner | IAM-002 | Permissões verificadas no backend; admin de loja não remove owner |
 | [ ] | IAM-004 | P1 | Implementar convite de equipe | IAM-002 | Convite expira e é de uso único |
 | [ ] | IAM-005 | P1 | Implementar recuperação de senha segura | SEC-005 | Tokens hash/TTL/uso único |
 | [ ] | IAM-006 | P1 | Implementar verificação de e-mail segura | IAM-001 | Link assinado e idempotente |
 | [ ] | IAM-007 | P1 | Implementar MFA para administradores | IAM-003 | MFA habilitável e recuperável |
-| [ ] | IAM-008 | P1 | Criar trilha de auditoria administrativa | IAM-003 | Ator, tenant, ação e alvo registrados |
+| [ ] | IAM-008 | P1 | Criar trilha de auditoria administrativa | IAM-003 | Ator, escopo de plataforma/tenant, ação e alvo registrados |
 | [ ] | IAM-009 | P2 | Criar sessões/dispositivos e revogação | SEC-006 | Usuário encerra sessões remotas |
 
 ## Fase 5 — Catálogo e estoque
