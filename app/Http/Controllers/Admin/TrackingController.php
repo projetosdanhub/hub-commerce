@@ -3,131 +3,154 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\TrackingDestination;
-use App\Models\TrackingRule;
-use App\Models\TrackingLog;
 use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\TrackingDestination;
+use App\Models\TrackingLog;
+use App\Models\TrackingRule;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class TrackingController extends Controller
 {
-    // ==========================================
-    // APP STORE DE INTEGRAÇÕES E COFRE
-    // ==========================================
-    public function getSettings() {
-        $config = TrackingDestination::firstOrCreate(
-            ['provider' => 'global'],
-            ['name' => 'Cofre Principal', 'credentials' => [], 'settings' => [], 'is_active' => true]
-        );
-        return response()->json(['status' => 'success', 'data' => [
-            'credentials' => $config->credentials ?? [],
-            'settings' => $config->settings ?? []
-        ]]);
+    public function getPublicSettings(): JsonResponse
+    {
+        $config = TrackingDestination::where('provider', 'global')->first();
+
+        if (! $config || ! $config->is_active) {
+            return response()->json([
+                'status' => 'success',
+                'data' => ['is_active' => false],
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => array_merge(
+                ['is_active' => true],
+                $config->publicCredentials(),
+                $config->settings ?? []
+            ),
+        ]);
     }
 
-    public function updateSettings(Request $request) {
-        // FIX 1: firstOrCreate para impedir o Erro 500 caso o banco esteja vazio
+    public function getSettings(): JsonResponse
+    {
         $config = TrackingDestination::firstOrCreate(
             ['provider' => 'global'],
             ['name' => 'Cofre Principal', 'credentials' => [], 'settings' => [], 'is_active' => true]
         );
-        
-        if ($request->has('credentials')) {
-            $config->credentials = $request->credentials;
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'credentials' => $config->maskedCredentials(),
+                'configured' => $config->configuredCredentials(),
+                'settings' => $config->settings ?? [],
+                'is_active' => $config->is_active,
+            ],
+        ]);
+    }
+
+    public function updateSettings(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'credentials' => ['sometimes', 'array'],
+            'credentials.meta_pixel_id' => ['nullable', 'string', 'max:100'],
+            'credentials.meta_access_token' => ['nullable', 'string', 'max:4096'],
+            'credentials.tiktok_pixel_id' => ['nullable', 'string', 'max:100'],
+            'credentials.tiktok_access_token' => ['nullable', 'string', 'max:4096'],
+            'credentials.ga4_measurement_id' => ['nullable', 'string', 'max:100'],
+            'credentials.ga4_api_secret' => ['nullable', 'string', 'max:4096'],
+            'credentials.pinterest_pixel_id' => ['nullable', 'string', 'max:100'],
+            'credentials.pinterest_access_token' => ['nullable', 'string', 'max:4096'],
+            'settings' => ['sometimes', 'array'],
+            'settings.*' => ['boolean'],
+            'is_active' => ['sometimes', 'boolean'],
+        ]);
+
+        $config = TrackingDestination::firstOrCreate(
+            ['provider' => 'global'],
+            ['name' => 'Cofre Principal', 'credentials' => [], 'settings' => [], 'is_active' => true]
+        );
+
+        if (isset($validated['credentials'])) {
+            $credentials = $config->credentials ?? [];
+
+            foreach ($validated['credentials'] as $key => $value) {
+                if ($value === '********' || $value === null || $value === '') {
+                    continue;
+                }
+
+                $credentials[$key] = $value;
+            }
+
+            $config->credentials = $credentials;
         }
-        if ($request->has('settings')) {
-            $config->settings = $request->settings;
+
+        if (isset($validated['settings'])) {
+            $config->settings = $validated['settings'];
         }
-        
+
+        if (array_key_exists('is_active', $validated)) {
+            $config->is_active = $validated['is_active'];
+        }
+
         $config->save();
+
         return response()->json(['status' => 'success']);
     }
 
-    // ==========================================
-    // DATA WAREHOUSE: MÉTRICAS REAIS DE E-COMMERCE
-    // ==========================================
-    public function getDashboardData(Request $request) {
-        // FIX 2: Super Try-Catch para garantir que o React nunca receba 500
+    public function getDashboardData(Request $request): JsonResponse
+    {
         try {
             $inicio = $request->filled('inicio')
-                ? \Carbon\Carbon::parse($request->inicio)->setTimezone(config('app.timezone'))->format('Y-m-d H:i:s')
-                : now()->subDays(7)->startOfDay()->format('Y-m-d H:i:s');
-                
-            $fim = $request->filled('fim')
-                ? \Carbon\Carbon::parse($request->fim)->setTimezone(config('app.timezone'))->format('Y-m-d H:i:s')
-                : now()->endOfDay()->format('Y-m-d H:i:s');
+                ? Carbon::parse($request->input('inicio'))->setTimezone(config('app.timezone'))->startOfDay()
+                : now()->subDays(7)->startOfDay();
 
-            // FIX 3: toArray() para evitar crash do PHP na iteração da Collection
+            $fim = $request->filled('fim')
+                ? Carbon::parse($request->input('fim'))->setTimezone(config('app.timezone'))->endOfDay()
+                : now()->endOfDay();
+
             $eventosAgrupados = TrackingLog::select('event_name', DB::raw('count(*) as total'))
                 ->whereBetween('created_at', [$inicio, $fim])
                 ->groupBy('event_name')
                 ->pluck('total', 'event_name')
                 ->toArray();
 
-            $receitaBruta = 0;
-            $qtdPedidos = 0;
-            $ticketMedio = 0;
-            $itensVendidos = 0;
-            $novosClientes = 0;
-            $clientesRecorrentes = 0;
-
             $pedidosValidos = Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
-                                   ->whereBetween('created_at', [$inicio, $fim]);
-                                   
+                ->whereBetween('created_at', [$inicio, $fim]);
+
             $receitaBruta = (float) $pedidosValidos->sum('total');
             $qtdPedidos = $pedidosValidos->count();
             $ticketMedio = $qtdPedidos > 0 ? $receitaBruta / $qtdPedidos : 0;
-            
-            if (class_exists(\App\Models\OrderItem::class)) {
-                $itensVendidos = \App\Models\OrderItem::whereHas('order', function($q) use ($inicio, $fim) {
-                    $q->whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
-                      ->whereBetween('created_at', [$inicio, $fim]);
-                })->sum('quantity');
+            $itensVendidos = \App\Models\OrderItem::whereHas('order', function ($query) use ($inicio, $fim) {
+                $query->whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
+                    ->whereBetween('created_at', [$inicio, $fim]);
+            })->sum('quantity');
+
+            $novosClientes = 0;
+            $clientesRecorrentes = 0;
+            foreach ($pedidosValidos->pluck('user_id')->filter()->unique() as $userId) {
+                $hasOlderOrder = Order::where('user_id', $userId)->where('created_at', '<', $inicio)->exists();
+                $hasOlderOrder ? $clientesRecorrentes++ : $novosClientes++;
             }
 
-            $clientesNoPeriodo = $pedidosValidos->pluck('user_id')->filter()->unique();
-            
-            foreach ($clientesNoPeriodo as $userId) {
-                $comprasAntigas = Order::where('user_id', $userId)->where('created_at', '<', $inicio)->count();
-                if ($comprasAntigas > 0) {
-                    $clientesRecorrentes++;
-                } else {
-                    $novosClientes++;
-                }
-            }
+            $pageViews = $eventosAgrupados['PageView'] ?? $eventosAgrupados['page_view'] ?? 0;
+            $viewItem = $eventosAgrupados['ViewContent'] ?? $eventosAgrupados['view_item'] ?? 0;
+            $addCart = $eventosAgrupados['AddToCart'] ?? $eventosAgrupados['add_to_cart'] ?? 0;
+            $checkouts = $eventosAgrupados['InitiateCheckout'] ?? $eventosAgrupados['begin_checkout'] ?? 0;
+            $addPaymentInfo = $eventosAgrupados['AddPaymentInfo'] ?? $eventosAgrupados['add_payment_info'] ?? 0;
+            $purchasesLayer = $eventosAgrupados['Purchase'] ?? $eventosAgrupados['purchase'] ?? 0;
 
-            $pageViews = $eventosAgrupados['PageView'] ?? ($eventosAgrupados['page_view'] ?? 0);
-            $viewItem = $eventosAgrupados['ViewContent'] ?? ($eventosAgrupados['view_item'] ?? 0);
-            $addCart = $eventosAgrupados['AddToCart'] ?? ($eventosAgrupados['add_to_cart'] ?? 0);
-            $checkouts = $eventosAgrupados['InitiateCheckout'] ?? ($eventosAgrupados['begin_checkout'] ?? 0);
-            $addPaymentInfo = $eventosAgrupados['AddPaymentInfo'] ?? ($eventosAgrupados['add_payment_info'] ?? 0);
-            $purchasesLayer = $eventosAgrupados['Purchase'] ?? ($eventosAgrupados['purchase'] ?? 0);
-
-            $taxaConversao = $pageViews > 0 ? ($qtdPedidos / $pageViews) * 100 : 0;
-            $abandonoCarrinho = $addCart > 0 ? ((max(0, $addCart - $qtdPedidos)) / $addCart) * 100 : 0;
-            $abandonoCheckout = $checkouts > 0 ? ((max(0, $checkouts - $qtdPedidos)) / $checkouts) * 100 : 0;
-
-            $funilData = [];
-            foreach ($eventosAgrupados as $nome => $total) {
-                $nomeBonito = $nome;
-                if ($nome == 'page_view') $nomeBonito = 'PageView';
-                if ($nome == 'view_item') $nomeBonito = 'ViewContent';
-                if ($nome == 'add_to_cart') $nomeBonito = 'AddToCart';
-                if ($nome == 'begin_checkout') $nomeBonito = 'InitiateCheckout';
-                if ($nome == 'purchase') $nomeBonito = 'Purchase';
-
-                $keyIndex = array_search($nomeBonito, array_column($funilData, 'evento'));
-                if ($keyIndex !== false) {
-                    $funilData[$keyIndex]['total'] += $total;
-                } else {
-                    $funilData[] = ['evento' => $nomeBonito, 'total' => $total];
-                }
-            }
-
-            usort($funilData, function($a, $b) { return $b['total'] <=> $a['total']; });
+            $funilData = collect($eventosAgrupados)
+                ->map(fn ($total, $name) => ['evento' => $this->canonicalEventName($name), 'total' => (int) $total])
+                ->groupBy('evento')
+                ->map(fn ($items, $event) => ['evento' => $event, 'total' => $items->sum('total')])
+                ->sortByDesc('total')
+                ->values();
 
             return response()->json([
                 'status' => 'success',
@@ -138,89 +161,105 @@ class TrackingController extends Controller
                     'pedidos' => $qtdPedidos,
                     'itens_vendidos' => (int) $itensVendidos,
                     'ticket_medio' => $ticketMedio,
-                    'taxa_conversao' => $taxaConversao,
+                    'taxa_conversao' => $pageViews > 0 ? ($qtdPedidos / $pageViews) * 100 : 0,
                     'novos_clientes' => $novosClientes,
                     'clientes_recorrentes' => $clientesRecorrentes,
-                    'cac' => 0, 
-                    'roas' => 0, 
+                    'cac' => 0,
+                    'roas' => 0,
                     'ltv' => $ticketMedio,
-                    'margem_bruta' => 45.0, 
-                    'sessoes' => $pageViews, 
+                    'margem_bruta' => 0,
+                    'sessoes' => $pageViews,
                     'page_views' => $pageViews,
                     'view_item' => $viewItem,
                     'add_to_cart' => $addCart,
                     'begin_checkout' => $checkouts,
                     'add_payment_info' => $addPaymentInfo,
-                    'abandono_carrinho' => $abandonoCarrinho,
-                    'abandono_checkout' => $abandonoCheckout,
-                    'purchases_layer' => $purchasesLayer
-                ]
+                    'abandono_carrinho' => $addCart > 0 ? (max(0, $addCart - $qtdPedidos) / $addCart) * 100 : 0,
+                    'abandono_checkout' => $checkouts > 0 ? (max(0, $checkouts - $qtdPedidos) / $checkouts) * 100 : 0,
+                    'purchases_layer' => $purchasesLayer,
+                ],
             ]);
-        } catch (\Exception $e) {
-            Log::error("Tracking Hub Dashboard Error: " . $e->getMessage());
-            // Fallback impecável para o React nunca quebrar
+        } catch (\Throwable $exception) {
+            Log::warning('Falha ao montar dashboard de tracking.', [
+                'exception' => $exception::class,
+                'request_id' => $request->header('X-Request-ID'),
+            ]);
+
             return response()->json([
-                'status' => 'success',
-                'funil' => [],
-                'metrics' => [
-                    'receita_bruta' => 0, 'receita_liquida' => 0, 'pedidos' => 0, 'itens_vendidos' => 0,
-                    'ticket_medio' => 0, 'taxa_conversao' => 0, 'novos_clientes' => 0, 'clientes_recorrentes' => 0,
-                    'cac' => 0, 'roas' => 0, 'ltv' => 0, 'margem_bruta' => 0, 'sessoes' => 0, 'page_views' => 0,
-                    'view_item' => 0, 'add_to_cart' => 0, 'begin_checkout' => 0, 'add_payment_info' => 0,
-                    'abandono_carrinho' => 0, 'abandono_checkout' => 0, 'purchases_layer' => 0
-                ]
-            ]);
+                'status' => 'error',
+                'message' => 'Nao foi possivel carregar as metricas.',
+            ], 503);
         }
     }
 
-    // ==========================================
-    // MINI-GTM (ACELERADORES & REGRAS)
-    // ==========================================
-    public function getTriggers() {
+    public function getTriggers(): JsonResponse
+    {
         $triggers = TrackingRule::orderBy('priority', 'desc')->orderBy('id', 'desc')->get();
-        $formatado = $triggers->map(function($t) {
-            return [
-                'id' => $t->id,
-                'nome' => $t->name,
-                'evento' => $t->target_event,
-                'tipo_gatilho' => $t->conditions['tipo'] ?? 'click',
-                'valor_gatilho' => $t->conditions['valor'] ?? '',
-                'url_alvo' => $t->conditions['url_alvo'] ?? '*',
-                'payload' => $t->transformations ?? [],
-                'status' => $t->is_active
-            ];
-        });
 
-        return response()->json(['status' => 'success', 'data' => $formatado]);
+        return response()->json([
+            'status' => 'success',
+            'data' => $triggers->map(fn ($trigger) => [
+                'id' => $trigger->id,
+                'nome' => $trigger->name,
+                'evento' => $trigger->target_event,
+                'tipo_gatilho' => $trigger->conditions['tipo'] ?? 'click',
+                'valor_gatilho' => $trigger->conditions['valor'] ?? '',
+                'url_alvo' => $trigger->conditions['url_alvo'] ?? '*',
+                'payload' => $trigger->transformations ?? [],
+                'status' => $trigger->is_active,
+            ]),
+        ]);
     }
 
-    public function storeTrigger(Request $request) {
-        $request->validate(['nome' => 'required', 'evento' => 'required']);
-        
+    public function storeTrigger(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'id' => ['nullable', 'integer'],
+            'nome' => ['required', 'string', 'max:255'],
+            'evento' => ['required', 'string', 'max:100'],
+            'tipo_gatilho' => ['nullable', 'string', 'max:50'],
+            'valor_gatilho' => ['nullable', 'string', 'max:500'],
+            'url_alvo' => ['nullable', 'string', 'max:2048'],
+            'payload' => ['nullable', 'array'],
+            'status' => ['nullable', 'boolean'],
+        ]);
+
         $data = [
-            'name' => $request->nome, 
-            'target_event' => $request->evento, 
+            'name' => $validated['nome'],
+            'target_event' => $validated['evento'],
             'conditions' => [
-                'tipo' => $request->tipo_gatilho, 
-                'valor' => $request->valor_gatilho ?? '', 
-                'url_alvo' => $request->url_alvo ?? '*'
-            ], 
-            'transformations' => $request->payload ?? [],
-            'is_active' => $request->status ?? true
+                'tipo' => $validated['tipo_gatilho'] ?? 'click',
+                'valor' => $validated['valor_gatilho'] ?? '',
+                'url_alvo' => $validated['url_alvo'] ?? '*',
+            ],
+            'transformations' => $validated['payload'] ?? [],
+            'is_active' => $validated['status'] ?? true,
         ];
 
-        // FIX 4: Solução Segura para salvar acionadores sem violar integridade de chave primária nula
-        if ($request->filled('id')) {
-            TrackingRule::where('id', $request->id)->update($data);
-        } else {
-            TrackingRule::create($data);
-        }
+        isset($validated['id'])
+            ? TrackingRule::whereKey($validated['id'])->update($data)
+            : TrackingRule::create($data);
 
         return response()->json(['status' => 'success']);
     }
 
-    public function deleteTrigger($id) {
-        TrackingRule::destroy($id);
+    public function deleteTrigger(int $id): JsonResponse
+    {
+        TrackingRule::whereKey($id)->delete();
+
         return response()->json(['status' => 'success']);
+    }
+
+    private function canonicalEventName(string $name): string
+    {
+        return match ($name) {
+            'page_view' => 'PageView',
+            'view_item' => 'ViewContent',
+            'add_to_cart' => 'AddToCart',
+            'begin_checkout' => 'InitiateCheckout',
+            'add_payment_info' => 'AddPaymentInfo',
+            'purchase' => 'Purchase',
+            default => $name,
+        };
     }
 }

@@ -15,6 +15,7 @@ class MelhorEnvioSetting extends Model
     protected function casts(): array
     {
         return [
+            'access_token'    => 'encrypted',
             'carriers_ativas' => 'array',
             'sender_info'     => 'array',
         ];
