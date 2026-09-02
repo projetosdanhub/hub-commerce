@@ -17,4 +17,4 @@
 
 O login administrativo valida senha, role igual a admin e status igual a ATIVO. O token recebe apenas a ability admin, possui expiração e é revogado no logout.
 
-Todas as rotas sob /api/admin usam auth:sanctum e o middleware admin. A Fase 3 substituirá a autorização global por membership e permissões específicas do tenant.
+Todas as rotas sob /api/admin usam auth:sanctum e o middleware admin. A Fase 3 cria a fundação de tenants e memberships; a Fase 4 migra a autorização global para cargos e permissões específicas do tenant, conforme ADR-0002.
