@@ -8,18 +8,27 @@ Este arquivo se aplica a todo o repositório. KIA, Codex e qualquer agente autom
 2. Este arquivo.
 3. Regras específicas em .ai/rules.
 4. Decisões aprovadas em docs/adr.
-5. Documentação técnica e design-system/MASTER.md.
+5. Documentação técnica vigente.
 
 Em caso de conflito, pare, descreva o conflito e peça uma decisão. Não escolha silenciosamente.
+
+## Fontes canônicas
+
+- Planejamento e progresso: task-board.md.
+- Regras operacionais: .ai/README.md e .ai/rules.
+- Arquitetura permanente: docs/adr e docs/architecture.
+- Segurança e pagamentos: docs/security e docs/payments.
+- Implementação visual: .ai/rules/06-design-system.md e tokens em resources/css/tokens.css.
 
 ## Fluxo obrigatório
 
 1. Identifique os arquivos, contratos, rotas, migrations, testes e consumidores afetados.
 2. Leia as regras de domínio aplicáveis no índice .ai/README.md.
-3. Apresente um plano curto e altere apenas o escopo aprovado.
-4. Faça mudanças pequenas, reversíveis e sem reescrever módulos não relacionados.
-5. Execute os testes e verificações definidos em .ai/rules/09-testing-and-quality.md.
-6. Informe arquivos alterados, comportamento preservado, testes executados e pendências.
+3. Localize a tarefa no task-board.md e atualize seu estado.
+4. Apresente um plano curto e altere apenas o escopo aprovado.
+5. Faça mudanças pequenas, reversíveis e sem reescrever módulos não relacionados.
+6. Execute os testes e verificações definidos em .ai/rules/09-testing-and-quality.md.
+7. Informe arquivos alterados, comportamento preservado, testes executados e pendências.
 
 ## Invariantes não negociáveis
 
@@ -48,4 +57,4 @@ Em caso de conflito, pare, descreva o conflito e peça uma decisão. Não escolh
 
 ## Definition of Done
 
-Uma alteração só está concluída quando possui autorização correta, isolamento por tenant quando aplicável, validação de entrada, tratamento de erro seguro, testes relevantes, documentação atualizada e nenhuma regressão conhecida.
+Uma alteração só está concluída quando a tarefa correspondente foi atualizada no task-board, possui autorização correta, isolamento por tenant quando aplicável, validação de entrada, tratamento de erro seguro, testes relevantes, documentação atualizada e nenhuma regressão conhecida.

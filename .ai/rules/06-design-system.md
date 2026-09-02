@@ -1,6 +1,6 @@
 # Design system e UI/UX
 
-Este arquivo é o contrato técnico de interface. design-system/MASTER.md continua como referência de direção visual; em conflito de implementação, esta regra prevalece até uma ADR reconciliar os documentos.
+Este arquivo é a única regra normativa de layout e interface. Diretrizes antigas, prompts isolados e skills externas de UI não devem ser usados como fonte de verdade.
 
 ## Stack canônica
 
@@ -14,10 +14,12 @@ Este arquivo é o contrato técnico de interface. design-system/MASTER.md contin
 
 - Cores, espaçamentos, raios, sombras, tipografia, motion e z-index vêm de tokens.
 - Evitar valores arbitrários como hex, rounded-[...], shadow-[...] e durações soltas.
-- Novos padrões reutilizáveis entram em DesignSystem/primitives ou patterns.
+- Novos padrões reutilizáveis entram em resources/js/Modulos/Admin/DesignSystem/primitives ou patterns.
 - Não declarar blocos style dentro de componentes nem usar dangerouslySetInnerHTML para CSS.
 - Uma ação equivalente deve ter o mesmo componente, rótulo, estado e posição em todo o painel.
-- Loja pode receber tema do tenant, mas componentes e comportamento permanecem padronizados.
+- A Storefront pode receber tema do tenant, mas componentes e comportamento permanecem padronizados.
+- Não criar um novo padrão visual quando já existir primitive ou pattern equivalente.
+- Toda exceção visual reutilizável deve virar token ou variante documentada.
 
 ## Acessibilidade
 
@@ -29,11 +31,22 @@ Este arquivo é o contrato técnico de interface. design-system/MASTER.md contin
 - Diálogos controlam foco, Escape e retorno de foco.
 - Respeitar prefers-reduced-motion.
 - Ícones decorativos usam aria-hidden; botões de ícone usam nome acessível.
+- Estados não podem depender somente de cor.
 
 ## Layout
 
 - Mobile-first e sem rolagem horizontal da página.
 - Tabelas largas usam wrapper próprio e alternativa útil no mobile.
 - Estados devem preservar layout e evitar mudanças bruscas.
-- Painel privilegia densidade operacional; storefront privilegia clareza de compra e desempenho.
+- Painel privilegia densidade operacional; Storefront privilegia clareza de compra e desempenho.
 - Não carregar recursos externos de demonstração em produção.
+- Loading, vazio, erro, sucesso, bloqueado e sem permissão precisam de padrões consistentes.
+
+## Processo para qualquer tela
+
+1. Identificar primitive e pattern existentes.
+2. Mapear estados e ações antes de estilizar.
+3. Usar tokens e variantes canônicas.
+4. Validar desktop, mobile, teclado, zoom 200% e reduced motion.
+5. Registrar novo padrão compartilhado quando necessário.
+6. Atualizar task-board.md e testes visuais/funcionais aplicáveis.
