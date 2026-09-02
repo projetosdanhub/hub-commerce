@@ -87,6 +87,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::put('/{id}/basics', [AdminCustomerController::class, 'updateBasics']);
         Route::put('/{id}/phone', [AdminCustomerController::class, 'updatePhone']);
         Route::post('/{id}/sensitive-data', [AdminCustomerController::class, 'updateSensitiveData']);
+        Route::get('/{customer}/documents/{document}', [AdminCustomerController::class, 'downloadSensitiveDocument'])
+            ->middleware('signed')
+            ->name('admin.customers.documents.download');
         Route::put('/{id}/notes', [AdminCustomerController::class, 'updateNotes']);
         Route::put('/{id}/tags', [AdminCustomerController::class, 'syncTags']);
         Route::post('/{id}/status', [AdminCustomerController::class, 'toggleSuspension']);
@@ -148,6 +151,12 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         
         Route::get('/{id}/orders', [CarrierController::class, 'getOrders']);
         Route::post('/orders/{orderId}/romaneio', [CarrierController::class, 'uploadRomaneio']);
+        Route::get('/{carrier}/documents/{type}', [CarrierController::class, 'downloadDocument'])
+            ->middleware('signed')
+            ->name('admin.carriers.documents.download');
+        Route::get('/orders/{order}/romaneio', [CarrierController::class, 'downloadRomaneio'])
+            ->middleware('signed')
+            ->name('admin.orders.romaneio.download');
     });
 
     // --- MÓDULO: EMBALAGENS PADRÃO ---

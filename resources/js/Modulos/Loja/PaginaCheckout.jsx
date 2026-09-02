@@ -288,78 +288,7 @@ const CheckoutPage = () => {
                                     >
                                         Checkout aguardando gateway seguro
                                     </button>
-                                        <button onClick={() => handleChange('pagamento', 'metodo', 'pix')} className={`flex-1 py-3 border-2 font-medium rounded-lg ${formData.pagamento.metodo === 'pix' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
-                                            Pix
-                                        </button>
-                                        <button onClick={() => handleChange('pagamento', 'metodo', 'boleto')} className={`flex-1 py-3 border-2 font-medium rounded-lg ${formData.pagamento.metodo === 'boleto' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
-                                            Boleto
-                                        </button>
-                                    </div>
 
-                                    {/* Formulário do Cartão */}
-                                    {formData.pagamento.metodo === 'credit_card' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6 animate-fade-in">
-                                            <div className="sm:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Número do Cartão</label>
-                                                <input type="text" value={formData.pagamento.numeroCartao} onChange={e => handleChange('pagamento', 'numeroCartao', e.target.value)} placeholder="0000 0000 0000 0000" className="w-full border border-gray-300 rounded-lg py-2.5 px-3 focus:ring-2 focus:ring-blue-200 outline-none" />
-                                            </div>
-                                            <div className="sm:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Nome Impresso no Cartão</label>
-                                                <input type="text" value={formData.pagamento.nomeCartao} onChange={e => handleChange('pagamento', 'nomeCartao', e.target.value)} className="w-full border border-gray-300 rounded-lg py-2.5 px-3 focus:ring-2 focus:ring-blue-200 outline-none" />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Validade</label>
-                                                <input type="text" value={formData.pagamento.validadeCartao} onChange={e => handleChange('pagamento', 'validadeCartao', e.target.value)} placeholder="MM/AA" className="w-full border border-gray-300 rounded-lg py-2.5 px-3 focus:ring-2 focus:ring-blue-200 outline-none" />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Código (CVV)</label>
-                                                <input type="password" value={formData.pagamento.cvvCartao} onChange={e => handleChange('pagamento', 'cvvCartao', e.target.value)} placeholder="123" maxLength="4" className="w-full border border-gray-300 rounded-lg py-2.5 px-3 focus:ring-2 focus:ring-blue-200 outline-none" />
-                                            </div>
-                                            <div className="sm:col-span-2 mt-2">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Opções de Parcelamento</label>
-                                                <select value={formData.pagamento.parcelas} onChange={e => handleChange('pagamento', 'parcelas', e.target.value)} className="w-full border border-gray-300 rounded-lg py-2.5 px-3 focus:ring-2 focus:ring-blue-200 outline-none bg-white">
-                                                    <option value="1">1x de R$ {total.toFixed(2)} sem juros</option>
-                                                    <option value="2">2x de R$ {(total/2).toFixed(2)} sem juros</option>
-                                                    <option value="3">3x de R$ {(total/3).toFixed(2)} sem juros</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Opção Pix */}
-                                    {formData.pagamento.metodo === 'pix' && (
-                                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center animate-fade-in">
-                                            <svg className="w-12 h-12 text-emerald-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                                            <h4 className="font-bold text-gray-800 text-lg mb-2">Desconto de 5% no Pix!</h4>
-                                            <p className="text-gray-600 text-sm">O código QR será gerado na próxima tela após confirmar o pedido.</p>
-                                        </div>
-                                    )}
-
-                                    {/* Opção Boleto */}
-                                    {formData.pagamento.metodo === 'boleto' && (
-                                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center animate-fade-in">
-                                            <svg className="w-12 h-12 text-blue-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                            <h4 className="font-bold text-gray-800 text-lg mb-2">Boleto Bancário</h4>
-                                            <p className="text-gray-600 text-sm">Aprovação em até 2 dias úteis. O boleto será exibido após a conclusão do pedido.</p>
-                                        </div>
-                                    )}
-
-                                    <button 
-                                        onClick={handleProcessCheckout} 
-                                        disabled={loading}
-                                        className={`w-full mt-8 text-white font-bold py-4 rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-lg ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                                Processando...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <LockIcon /> Pagar R$ {total.toFixed(2)}
-                                            </>
-                                        )}
-                                    </button>
                                 </motion.div>
                             )}
                         </AnimatePresence>

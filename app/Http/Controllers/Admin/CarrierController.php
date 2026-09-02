@@ -8,6 +8,8 @@ use App\Models\Carrier;
 use App\Models\CarrierAuditLog;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
+use App\Support\Security\SensitiveData;
 
 class CarrierController extends Controller
 {
@@ -34,9 +36,9 @@ class CarrierController extends Controller
                 'vehicle_plate' => $c->vehicle_plate,
                 'vehicle_model' => $c->vehicle_model,
                 'vehicle_type' => $c->vehicle_type,
-                'document_rg_front' => $c->document_rg_front ? asset('storage/' . $c->document_rg_front) : null,
-                'document_rg_back' => $c->document_rg_back ? asset('storage/' . $c->document_rg_back) : null,
-                'document_cnh' => $c->document_cnh ? asset('storage/' . $c->document_cnh) : null,
+                'document_rg_front' => $c->document_rg_front ? URL::temporarySignedRoute('admin.carriers.documents.download', now()->addMinutes(5), ['carrier' => $c->id, 'type' => 'rg_front']) : null,
+                'document_rg_back' => $c->document_rg_back ? URL::temporarySignedRoute('admin.carriers.documents.download', now()->addMinutes(5), ['carrier' => $c->id, 'type' => 'rg_back']) : null,
+                'document_cnh' => $c->document_cnh ? URL::temporarySignedRoute('admin.carriers.documents.download', now()->addMinutes(5), ['carrier' => $c->id, 'type' => 'cnh']) : null,
                 'pedidos_count' => $c->orders_count,
                 'created_at' => $c->created_at ? $c->created_at->format('Y-m-d H:i:s') : null,
             ];
@@ -68,15 +70,15 @@ class CarrierController extends Controller
             $fields['imagem'] = $request->file('arquivo')->store('carriers', 'public');
         }
         if ($request->hasFile('file_rg_front')) {
-            if ($carrier && $carrier->document_rg_front) Storage::disk('public')->delete($carrier->document_rg_front);
-            $fields['document_rg_front'] = $request->file('file_rg_front')->store('carriers/docs', 'public');
+            if ($carrier && $carrier->document_rg_front) Storage::disk('local')->delete($carrier->document_rg_front);
+            $fields['document_rg_front'] = $request->file('file_rg_front')->store('carrier-documents', 'local');
         }
         if ($request->hasFile('file_rg_back')) {
-            if ($carrier && $carrier->document_rg_back) Storage::disk('public')->delete($carrier->document_rg_back);
+            if ($carrier && $carrier->document_rg_back) Storage::disk('local')->delete($carrier->document_rg_back);
             $fields['document_rg_back'] = $request->file('file_rg_back')->store('carriers/docs', 'public');
         }
         if ($request->hasFile('file_cnh')) {
-            if ($carrier && $carrier->document_cnh) Storage::disk('public')->delete($carrier->document_cnh);
+            if ($carrier && $carrier->document_cnh) Storage::disk('local')->delete($carrier->document_cnh);
             $fields['document_cnh'] = $request->file('file_cnh')->store('carriers/docs', 'public');
         }
 
@@ -107,7 +109,7 @@ class CarrierController extends Controller
         CarrierAuditLog::create([
             'admin_id' => Auth::id(),
             'acao' => "Transportadora {$request->status}",
-            'detalhes' => "O status da transportadora {$carrier->nome} foi alterado para {$request->status}. Motivo: {$request->status_reason}"
+            'detalhes' => SensitiveData::redactText("O status da transportadora {$carrier->nome} foi alterado para {$request->status}. Motivo: {$request->status_reason}")
         ]);
 
         return response()->json(['status' => 'success', 'message' => 'Status atualizado com sucesso!']);
@@ -173,7 +175,7 @@ class CarrierController extends Controller
                 'created_at' => $o->created_at->format('d/m/Y'),
                 'total' => (float) $o->total,
                 'cliente_nome' => $o->user ? $o->user->name : 'Cliente',
-                'romaneio_url' => $o->romaneio_url ? asset('storage/' . $o->romaneio_url) : null,
+                'romaneio_url' => $o->romaneio_url ? URL::temporarySignedRoute('admin.orders.romaneio.download', now()->addMinutes(5), ['order' => $o->id]) : null,
                 'tracking_code' => $o->tracking_code
             ];
         });
@@ -187,14 +189,46 @@ class CarrierController extends Controller
         $order = \App\Models\Order::findOrFail($orderId);
         
         if ($order->romaneio_url) {
-            Storage::disk('public')->delete($order->romaneio_url);
+            Storage::disk('local')->delete($order->romaneio_url);
         }
         
-        $path = $request->file('arquivo')->store('romaneios', 'public');
+        $path = $request->file('arquivo')->store('romaneios', 'local');
         $order->romaneio_url = $path;
         $order->save();
         
-        return response()->json(['status' => 'success', 'url' => asset('storage/' . $path)]);
+        return response()->json([
+            'status' => 'success',
+            'url' => URL::temporarySignedRoute('admin.orders.romaneio.download', now()->addMinutes(5), ['order' => $order->id]),
+        ]);
+    }
+
+    public function downloadDocument(Carrier $carrier, string $type)
+    {
+        $fields = [
+            'rg_front' => 'document_rg_front',
+            'rg_back' => 'document_rg_back',
+            'cnh' => 'document_cnh',
+        ];
+
+        abort_unless(isset($fields[$type]), 404);
+
+        $path = $carrier->{$fields[$type]};
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        CarrierAuditLog::create([
+            'admin_id' => Auth::id(),
+            'acao' => 'Download de Documento',
+            'detalhes' => "Documento {$type} da transportadora #{$carrier->id} acessado.",
+        ]);
+
+        return Storage::disk('local')->download($path);
+    }
+
+    public function downloadRomaneio(\App\Models\Order $order)
+    {
+        abort_unless($order->romaneio_url && Storage::disk('local')->exists($order->romaneio_url), 404);
+
+        return Storage::disk('local')->download($order->romaneio_url);
     }
 
     public function auditDownload(Request $request)

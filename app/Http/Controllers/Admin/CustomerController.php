@@ -10,9 +10,13 @@ use App\Models\WalletTransaction;
 use App\Models\VipLevel;
 use App\Models\CrmSetting;
 use App\Models\Order;
+use App\Models\CustomerSensitiveDocument;
+use App\Support\Security\SensitiveData;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 // Gerenciamento de E-mails
 use Illuminate\Support\Facades\Mail;
@@ -32,9 +36,9 @@ class CustomerController extends Controller
     {
         CustomerAuditLog::create([
             'cliente_id' => $customerId,
-            'admin_id'   => Auth::id() ?? 1,
+            'admin_id'   => Auth::id(),
             'acao'       => $acao,
-            'detalhes'   => $detalhes
+            'detalhes'   => SensitiveData::redactText($detalhes)
         ]);
     }
 
@@ -284,30 +288,73 @@ class CustomerController extends Controller
     // =========================================================================
     public function updateSensitiveData(Request $request, $id)
     {
-        $request->validate([
-            'arquivo' => 'required|file|mimes:jpeg,png,jpg,pdf|max:3072',
-            'motivo'  => 'required|string'
+        $validated = $request->validate([
+            'arquivo' => ['required', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:3072'],
+            'motivo' => ['required', 'string', 'max:1000'],
+            'cpf' => ['nullable', 'string', 'max:20'],
+            'nascimento' => ['nullable', 'date'],
         ]);
 
         $cliente = User::findOrFail($id);
-        $path = $request->file('arquivo')->store('comprovantes', 'public');
+        $uploadedFile = $request->file('arquivo');
+        $path = $uploadedFile->store("customer-documents/{$cliente->id}", 'local');
 
-        $alteracoes = [];
-        if ($request->filled('cpf')) {
-            $alteracoes[] = "CPF de {$cliente->cpf} para {$request->cpf}";
-            $cliente->cpf = $request->cpf;
+        $document = CustomerSensitiveDocument::create([
+            'customer_id' => $cliente->id,
+            'uploaded_by' => Auth::id(),
+            'path' => $path,
+            'original_name' => $uploadedFile->getClientOriginalName(),
+            'mime_type' => $uploadedFile->getMimeType() ?: 'application/octet-stream',
+        ]);
+
+        $changedFields = [];
+        if (! empty($validated['cpf'])) {
+            $changedFields[] = 'cpf';
+            $cliente->cpf = $validated['cpf'];
         }
-        if ($request->filled('nascimento')) {
-            $alteracoes[] = "Nascimento de {$cliente->nascimento} para {$request->nascimento}";
-            $cliente->nascimento = $request->nascimento;
+        if (! empty($validated['nascimento'])) {
+            $changedFields[] = 'nascimento';
+            $cliente->nascimento = $validated['nascimento'];
         }
-        
+
         $cliente->save();
 
-        $descLog = implode(" | ", $alteracoes) . ". Documento arquivado (Ref: {$path}). Motivo: {$request->motivo}";
-        $this->registrarLog($cliente->id, 'Alteração de Dados Sensíveis', $descLog, 'warning');
+        $this->registrarLog(
+            $cliente->id,
+            'Alteração de Dados Sensíveis',
+            'Campos alterados: '.implode(', ', $changedFields).'. Motivo: '.$validated['motivo'],
+            'warning'
+        );
 
-        return response()->json(['status' => 'success', 'message' => 'Dados sensíveis atualizados.']);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Dados sensíveis atualizados.',
+            'document_id' => $document->id,
+            'download_url' => URL::temporarySignedRoute(
+                'admin.customers.documents.download',
+                now()->addMinutes(5),
+                ['customer' => $cliente->id, 'document' => $document->id]
+            ),
+        ]);
+    }
+
+    public function downloadSensitiveDocument(User $customer, CustomerSensitiveDocument $document)
+    {
+        abort_unless($document->customer_id === $customer->id, 404);
+        abort_unless(Storage::disk('local')->exists($document->path), 404);
+
+        $this->registrarLog(
+            $customer->id,
+            'Download de Documento Sensível',
+            'Documento autorizado para download.',
+            'warning'
+        );
+
+        return Storage::disk('local')->download(
+            $document->path,
+            $document->original_name,
+            ['Content-Type' => $document->mime_type]
+        );
     }
 
     // =========================================================================

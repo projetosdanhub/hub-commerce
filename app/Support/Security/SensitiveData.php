@@ -52,6 +52,16 @@ class SensitiveData
             : hash('sha256', $normalized);
     }
 
+    public static function redactText(?string $text): string
+    {
+        $text = (string) $text;
+        $text = preg_replace('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i', '[email protegido]', $text);
+        $text = preg_replace('/(?<!\d)\d{3}\.?\d{3}\.?\d{3}-?\d{2}(?!\d)/', '[documento protegido]', $text);
+        $text = preg_replace('/(?<!\d)(?:\+?55\s*)?(?:\(?\d{2}\)?\s*)?\d{4,5}[-\s]?\d{4}(?!\d)/', '[telefone protegido]', $text);
+
+        return $text;
+    }
+
     public static function maskEmail(?string $email): string
     {
         if (! $email || ! str_contains($email, '@')) {
