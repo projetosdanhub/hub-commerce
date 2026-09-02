@@ -61,9 +61,9 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [ ] | BASE-001 | P0 | Corrigir migrations fiscais duplicadas | GOV-006 | migrate:fresh funciona |
+| [x] | BASE-001 | P0 | Corrigir migrations fiscais duplicadas | GOV-006 | migrate:fresh funciona |
 | [ ] | BASE-002 | P0 | Definir estratégia segura para bancos já existentes | BASE-001 | Migration de correção e rollback testados |
-| [ ] | BASE-003 | P0 | Unificar Product/Produto | BASE-001 | Model e imports únicos |
+| [x] | BASE-003 | P0 | Unificar Product/Produto | BASE-001 | Model e imports únicos |
 | [ ] | BASE-004 | P0 | Unificar Category/Categoria | BASE-001 | Tabela, model e API consistentes |
 | [ ] | BASE-005 | P0 | Corrigir cinco imports React inexistentes | GOV-006 | npm run build funciona |
 | [ ] | BASE-006 | P0 | Corrigir rota /api/customers ou removê-la | BASE-003 | Nenhuma action inexistente |
