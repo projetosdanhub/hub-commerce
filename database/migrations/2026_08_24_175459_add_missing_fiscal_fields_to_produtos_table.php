@@ -7,15 +7,17 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Esta migration foi publicada com colunas fiscais já criadas pela
+     * migration imediatamente anterior. Mantém somente a coluna que faltava.
      */
     public function up(): void
     {
-        Schema::table('produtos', function (Blueprint $table) {
-            $table->string('gtin', 14)->nullable()->after('ncm');
+        if (Schema::hasColumn('produtos', 'unidade_medida')) {
+            return;
+        }
+
+        Schema::table('produtos', function (Blueprint $table): void {
             $table->string('unidade_medida', 10)->default('UN')->after('gtin');
-            $table->decimal('icms_perc', 5, 2)->nullable()->after('unidade_medida');
-            $table->decimal('ipi_perc', 5, 2)->nullable()->after('icms_perc');
         });
     }
 
@@ -24,8 +26,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('produtos', function (Blueprint $table) {
-            $table->dropColumn(['gtin', 'unidade_medida', 'icms_perc', 'ipi_perc']);
+        if (! Schema::hasColumn('produtos', 'unidade_medida')) {
+            return;
+        }
+
+        Schema::table('produtos', function (Blueprint $table): void {
+            $table->dropColumn('unidade_medida');
         });
     }
 };
