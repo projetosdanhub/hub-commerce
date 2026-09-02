@@ -10,7 +10,7 @@
 | Alterar catálogo, pedidos e configurações | Não | Não | Sim |
 | Visualizar credenciais completas | Não | Não | Não |
 | Substituir credenciais | Não | Não | Sim |
-| Baixar documento sensível | Não | Não | Sim, com URL assinada |
+| Gerar link de documento sensível | Não | Não | Sim, com URL assinada de 5 minutos |
 | Aprovar pagamento manualmente pelo checkout | Não | Não | Não |
 
 ## Invariantes

@@ -36,7 +36,7 @@ class CustomerController extends Controller
     {
         CustomerAuditLog::create([
             'cliente_id' => $customerId,
-            'admin_id'   => Auth::id(),
+            'admin_id'   => Auth::id() ?? request()->integer('actor'),
             'acao'       => $acao,
             'detalhes'   => SensitiveData::redactText($detalhes)
         ]);
@@ -333,7 +333,7 @@ class CustomerController extends Controller
             'download_url' => URL::temporarySignedRoute(
                 'admin.customers.documents.download',
                 now()->addMinutes(5),
-                ['customer' => $cliente->id, 'document' => $document->id]
+                ['customer' => $cliente->id, 'document' => $document->id, 'actor' => Auth::id()]
             ),
         ]);
     }

@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 
 // Importando os Controllers
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
-use App\Http\Controllers\Api\CustomerController as ApiCustomerController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TrackingCollectorController; // 🟢 IMPORTAÇÃO ATUALIZADA
 use App\Http\Controllers\Admin\CategoryController;
@@ -43,8 +42,6 @@ Route::post('/clientes/processar-senha', [AdminCustomerController::class, 'proce
 // ==========================================
 // ROTAS DO FRONT-END (VITRINE PÚBLICA / REACT)
 // ==========================================
-Route::get('/customers', [ApiCustomerController::class, 'index']);
-
 // 🟢 LEITURA PÚBLICA: O React carrega a vitrine e as configs do Pixel sem precisar de login
 Route::get('/storefront', [StorefrontController::class, 'getVitrine']);
 Route::get('/storefront/menu', [StorefrontController::class, 'getMenu']);
@@ -87,9 +84,6 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::put('/{id}/basics', [AdminCustomerController::class, 'updateBasics']);
         Route::put('/{id}/phone', [AdminCustomerController::class, 'updatePhone']);
         Route::post('/{id}/sensitive-data', [AdminCustomerController::class, 'updateSensitiveData']);
-        Route::get('/{customer}/documents/{document}', [AdminCustomerController::class, 'downloadSensitiveDocument'])
-            ->middleware('signed')
-            ->name('admin.customers.documents.download');
         Route::put('/{id}/notes', [AdminCustomerController::class, 'updateNotes']);
         Route::put('/{id}/tags', [AdminCustomerController::class, 'syncTags']);
         Route::post('/{id}/status', [AdminCustomerController::class, 'toggleSuspension']);
@@ -151,12 +145,6 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         
         Route::get('/{id}/orders', [CarrierController::class, 'getOrders']);
         Route::post('/orders/{orderId}/romaneio', [CarrierController::class, 'uploadRomaneio']);
-        Route::get('/{carrier}/documents/{type}', [CarrierController::class, 'downloadDocument'])
-            ->middleware('signed')
-            ->name('admin.carriers.documents.download');
-        Route::get('/orders/{order}/romaneio', [CarrierController::class, 'downloadRomaneio'])
-            ->middleware('signed')
-            ->name('admin.orders.romaneio.download');
     });
 
     // --- MÓDULO: EMBALAGENS PADRÃO ---
@@ -196,4 +184,14 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     // --- MÓDULO: CONSTRUTOR DE VITRINE ---
     Route::post('/storefront/publish', [StorefrontController::class, 'publishVitrine']);
+});
+
+// URLs de curta duracao. Somente rotas administrativas autenticadas podem gera-las.
+Route::middleware(['signed', 'throttle:30,1'])->prefix('secure-download')->group(function () {
+    Route::get('/customers/{customer}/documents/{document}', [AdminCustomerController::class, 'downloadSensitiveDocument'])
+        ->name('admin.customers.documents.download');
+    Route::get('/carriers/{carrier}/documents/{type}', [CarrierController::class, 'downloadDocument'])
+        ->name('admin.carriers.documents.download');
+    Route::get('/orders/{order}/romaneio', [CarrierController::class, 'downloadRomaneio'])
+        ->name('admin.orders.romaneio.download');
 });

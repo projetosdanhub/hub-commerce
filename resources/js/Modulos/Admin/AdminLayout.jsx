@@ -143,7 +143,7 @@ const AdminLayout = ({ children }) => {
         } finally {
             sessionStorage.removeItem('hub_admin_token');
             setToken(null);
-            navigate('/admin/login');
+            navigate('/admin');
         }
     };
 

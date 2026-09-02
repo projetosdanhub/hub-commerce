@@ -36,9 +36,9 @@ class CarrierController extends Controller
                 'vehicle_plate' => $c->vehicle_plate,
                 'vehicle_model' => $c->vehicle_model,
                 'vehicle_type' => $c->vehicle_type,
-                'document_rg_front' => $c->document_rg_front ? URL::temporarySignedRoute('admin.carriers.documents.download', now()->addMinutes(5), ['carrier' => $c->id, 'type' => 'rg_front']) : null,
-                'document_rg_back' => $c->document_rg_back ? URL::temporarySignedRoute('admin.carriers.documents.download', now()->addMinutes(5), ['carrier' => $c->id, 'type' => 'rg_back']) : null,
-                'document_cnh' => $c->document_cnh ? URL::temporarySignedRoute('admin.carriers.documents.download', now()->addMinutes(5), ['carrier' => $c->id, 'type' => 'cnh']) : null,
+                'document_rg_front' => $c->document_rg_front ? URL::temporarySignedRoute('admin.carriers.documents.download', now()->addMinutes(5), ['carrier' => $c->id, 'type' => 'rg_front', 'actor' => Auth::id()]) : null,
+                'document_rg_back' => $c->document_rg_back ? URL::temporarySignedRoute('admin.carriers.documents.download', now()->addMinutes(5), ['carrier' => $c->id, 'type' => 'rg_back', 'actor' => Auth::id()]) : null,
+                'document_cnh' => $c->document_cnh ? URL::temporarySignedRoute('admin.carriers.documents.download', now()->addMinutes(5), ['carrier' => $c->id, 'type' => 'cnh', 'actor' => Auth::id()]) : null,
                 'pedidos_count' => $c->orders_count,
                 'created_at' => $c->created_at ? $c->created_at->format('Y-m-d H:i:s') : null,
             ];
@@ -175,7 +175,7 @@ class CarrierController extends Controller
                 'created_at' => $o->created_at->format('d/m/Y'),
                 'total' => (float) $o->total,
                 'cliente_nome' => $o->user ? $o->user->name : 'Cliente',
-                'romaneio_url' => $o->romaneio_url ? URL::temporarySignedRoute('admin.orders.romaneio.download', now()->addMinutes(5), ['order' => $o->id]) : null,
+                'romaneio_url' => $o->romaneio_url ? URL::temporarySignedRoute('admin.orders.romaneio.download', now()->addMinutes(5), ['order' => $o->id, 'actor' => Auth::id()]) : null,
                 'tracking_code' => $o->tracking_code
             ];
         });
@@ -198,7 +198,7 @@ class CarrierController extends Controller
         
         return response()->json([
             'status' => 'success',
-            'url' => URL::temporarySignedRoute('admin.orders.romaneio.download', now()->addMinutes(5), ['order' => $order->id]),
+            'url' => URL::temporarySignedRoute('admin.orders.romaneio.download', now()->addMinutes(5), ['order' => $order->id, 'actor' => Auth::id()]),
         ]);
     }
 
@@ -216,7 +216,7 @@ class CarrierController extends Controller
         abort_unless($path && Storage::disk('local')->exists($path), 404);
 
         CarrierAuditLog::create([
-            'admin_id' => Auth::id(),
+            'admin_id' => Auth::id() ?? request()->integer('actor'),
             'acao' => 'Download de Documento',
             'detalhes' => "Documento {$type} da transportadora #{$carrier->id} acessado.",
         ]);

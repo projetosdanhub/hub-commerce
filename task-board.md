@@ -49,7 +49,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | SEC-007 | P0 | Desativar aprovação fictícia de pagamentos | GOV-006 | Adapters mock retornam indisponível |
 | [x] | SEC-008 | P0 | Remover PAN/CVV do frontend e backend | SEC-007 | UI removida e backend rejeita campos brutos |
 | [x] | SEC-009 | P0 | Migrar documentos sensíveis para storage privado | GOV-006 | Novos uploads privados + comando de migração legado |
-| [x] | SEC-010 | P0 | Criar download temporário autorizado | SEC-009 | URL assinada, auth admin e vínculo validado |
+| [x] | SEC-010 | P0 | Criar download temporário autorizado | SEC-009 | Link gerado por admin, assinatura e vínculo validados |
 | [x] | SEC-011 | P0 | Remover exposição de exceções e bodies externos | GOV-006 | Handler seguro e respostas externas normalizadas |
 | [x] | SEC-012 | P1 | Criptografar credenciais em repouso | SEC-001 | Tracking, settings e Melhor Envio criptografados |
 | [x] | SEC-013 | P1 | Impedir secrets serializados em jobs | SEC-012 | Jobs serializam destinationId |

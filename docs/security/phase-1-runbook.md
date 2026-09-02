@@ -21,7 +21,7 @@ npm run build
 - /api/tracking nunca contém access token ou API secret.
 - A sétima tentativa de login dentro de um minuto recebe 429.
 - Checkout não mostra campos de PAN, validade ou CVV e não aprova pedido.
-- URLs de RG, CNH, comprovante e romaneio expiram e exigem admin autenticado.
+- URLs de RG, CNH, comprovante e romaneio expiram; somente uma rota admin autenticada pode gera-las e qualquer alteracao invalida a assinatura.
 - Banco não contém credenciais legíveis após as migrations.
 - Fila serializada contém destinationId, nunca credentials.
 - Respostas 5xx não incluem exception, stack trace ou body do fornecedor.
