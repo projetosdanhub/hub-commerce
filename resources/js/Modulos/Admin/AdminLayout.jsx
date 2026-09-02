@@ -6,7 +6,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { Home, ShoppingCart, Users, Star } from 'lucide-react';
-import AdminLogin from './AdminLogin'; // IMPORTAÇÃO DA TELA DE LOGIN
+import AdminLogin from './AdminLogin';
+import api from '../../api'; // IMPORTAÇÃO DA TELA DE LOGIN
 
 // =========================================================
 // ÍCONES SVG NATIVOS (Clean & Minimalistas)
@@ -57,7 +58,7 @@ const AdminLayout = ({ children }) => {
     const navigate = useNavigate();
     
     // Estados do Layout
-    const [token, setToken] = useState(localStorage.getItem('hub_admin_token'));
+    const [token, setToken] = useState(sessionStorage.getItem('hub_admin_token'));
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Estado de encolher menu
@@ -136,10 +137,14 @@ const AdminLayout = ({ children }) => {
         return location.pathname.startsWith(item.path);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('hub_admin_token');
-        setToken(null);
-        navigate('/admin');
+    const handleLogout = async () => {
+        try {
+            await api.post('/admin/logout');
+        } finally {
+            sessionStorage.removeItem('hub_admin_token');
+            setToken(null);
+            navigate('/admin/login');
+        }
     };
 
     const handleMenuClick = () => {
@@ -151,7 +156,7 @@ const AdminLayout = ({ children }) => {
     // PROTEÇÃO GLOBAL DE ROTAS (Segurança Master)
     if (!token) {
         return <AdminLogin onLoginSuccess={(newToken) => {
-            localStorage.setItem('hub_admin_token', newToken);
+            sessionStorage.setItem('hub_admin_token', newToken);
             setToken(newToken);
         }} />;
     }

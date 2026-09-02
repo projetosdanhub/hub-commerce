@@ -54,9 +54,19 @@ class User extends Authenticatable
     // ==========================================
     // MÉTODOS DE SEGURANÇA (VERIFICAÇÃO DE ROLE)
     // ==========================================
-    public function isAdmin()
+    public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function isActive(): bool
+    {
+        return strtoupper((string) $this->status) === 'ATIVO';
+    }
+
+    public function isActiveAdmin(): bool
+    {
+        return $this->isAdmin() && $this->isActive();
     }
 
     public function isCliente()

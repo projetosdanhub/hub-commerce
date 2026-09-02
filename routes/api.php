@@ -31,14 +31,14 @@ Route::get('/user', function (Request $request) {
 // ==========================================
 // ROTAS DE LOGIN (PÚBLICAS) E VALIDAÇÃO DE E-MAIL
 // ==========================================
-Route::post('/admin/login', [AuthController::class, 'login']);
+Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
 
 // Rota pública acionada quando o cliente clica no link do E-mail (Validar E-mail)
 Route::get('/clientes/confirmar-email', [AdminCustomerController::class, 'confirmEmailUpdate']);
 
 // Redefinição de Senha via Link
-Route::get('/clientes/redefinir-senha', [AdminCustomerController::class, 'showPasswordResetForm']);
-Route::post('/clientes/processar-senha', [AdminCustomerController::class, 'processPasswordReset']);
+Route::get('/clientes/redefinir-senha', [AdminCustomerController::class, 'showPasswordResetForm'])->middleware('throttle:10,1');
+Route::post('/clientes/processar-senha', [AdminCustomerController::class, 'processPasswordReset'])->middleware('throttle:5,1');
 
 // ==========================================
 // ROTAS DO FRONT-END (VITRINE PÚBLICA / REACT)
@@ -51,17 +51,18 @@ Route::get('/storefront/menu', [StorefrontController::class, 'getMenu']);
 Route::get('/storefront/categories', [StorefrontController::class, 'getCategories']);
 Route::get('/storefront/products', [StorefrontController::class, 'getProducts']);
 Route::get('/storefront/products/{id}', [StorefrontController::class, 'getProduct']);
-Route::post('/storefront/checkout', [StorefrontController::class, 'checkout']);
-Route::get('/tracking', [TrackingController::class, 'getSettings']);
+Route::post('/storefront/checkout', [StorefrontController::class, 'checkout'])->middleware('throttle:10,1');
+Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middleware('throttle:60,1');
 
 // 🟢 INGESTÃO DE DADOS (DATA LAYER): Recebe os eventos de conversão da loja pública
-Route::post('/tracking/collect', [TrackingCollectorController::class, 'collect']); // 🟢 ROTA ATUALIZADA
+Route::post('/tracking/collect', [TrackingCollectorController::class, 'collect'])->middleware('throttle:60,1');
 
 
 // ==========================================
 // ROTAS DO HUB COMMERCE: ADMIN (PROTEGIDAS)
 // ==========================================
-Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
     
     // (A rota mock de /audit-logs foi removida, pois agora usamos /products/audits real)
 

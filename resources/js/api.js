@@ -11,9 +11,19 @@ const api = axios.create({
 
 // Interceptor para injetar o Token de Login automaticamente
 api.interceptors.request.use(config => {
-    const token = localStorage.getItem('hub_admin_token');
+    const token = sessionStorage.getItem('hub_admin_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
 });
+
+api.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response?.status === 401) {
+            sessionStorage.removeItem('hub_admin_token');
+        }
+        return Promise.reject(error);
+    }
+);
 
 export default api;
