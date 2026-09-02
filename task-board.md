@@ -40,22 +40,22 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [ ] | SEC-001 | P0 | Separar configuração pública e privada de tracking | GOV-006 | Endpoint público não retorna credentials |
-| [ ] | SEC-002 | P0 | Rotacionar tokens de tracking potencialmente expostos | SEC-001 | Novas chaves testadas e antigas revogadas |
-| [ ] | SEC-003 | P0 | Exigir role/status administrativo no login | GOV-006 | Cliente nunca recebe token admin |
-| [ ] | SEC-004 | P0 | Criar middleware e Policies administrativas | SEC-003 | Rotas exigem permissão explícita |
-| [ ] | SEC-005 | P0 | Adicionar throttle a login, reset, checkout e tracking | SEC-001 | Limites testados com resposta 429 |
-| [ ] | SEC-006 | P0 | Implementar logout, expiração e revogação de tokens | SEC-003 | Token revogado falha imediatamente |
-| [ ] | SEC-007 | P0 | Desativar aprovação fictícia de pagamentos | GOV-006 | Nenhum mock altera pedido para paid |
-| [ ] | SEC-008 | P0 | Remover PAN/CVV do frontend e backend | SEC-007 | Payload não contém dados brutos de cartão |
-| [ ] | SEC-009 | P0 | Migrar documentos sensíveis para storage privado | GOV-006 | RG/CNH/comprovantes sem URL pública |
-| [ ] | SEC-010 | P0 | Criar download temporário autorizado | SEC-009 | Acesso cruzado retorna 403/404 |
-| [ ] | SEC-011 | P0 | Remover exposição de exceções e bodies externos | GOV-006 | Resposta externa usa erro seguro |
-| [ ] | SEC-012 | P1 | Criptografar credenciais em repouso | SEC-001 | Banco não contém secrets em texto legível |
-| [ ] | SEC-013 | P1 | Impedir secrets serializados em jobs | SEC-012 | Jobs resolvem credencial no handle |
-| [ ] | SEC-014 | P1 | Mascarar PII em logs e auditorias | SEC-009 | CPF, telefone e e-mail protegidos |
-| [ ] | SEC-015 | P1 | Adicionar cabeçalhos HTTP de segurança | SEC-011 | CSP/HSTS/nosniff/referrer testados |
-| [ ] | SEC-016 | P1 | Criar inventário LGPD e política de retenção | GOV-004 | Dados, finalidade e prazos documentados |
+| [x] | SEC-001 | P0 | Separar configuração pública e privada de tracking | GOV-006 | Endpoint público usa whitelist e não retorna secrets |
+| [ ] | SEC-002 | P0 | Rotacionar tokens de tracking potencialmente expostos | SEC-001 | Runbook pronto; revogação externa ainda obrigatória |
+| [x] | SEC-003 | P0 | Exigir role/status administrativo no login | GOV-006 | Login exige admin + ATIVO |
+| [x] | SEC-004 | P0 | Criar middleware e Policies administrativas | SEC-003 | Gate, Policy e middleware admin aplicados |
+| [x] | SEC-005 | P0 | Adicionar throttle a login, reset, checkout e tracking | SEC-001 | Limites explícitos e teste de resposta 429 |
+| [x] | SEC-006 | P0 | Implementar logout, expiração e revogação de tokens | SEC-003 | TTL 60 min, logout e teste de revogação |
+| [x] | SEC-007 | P0 | Desativar aprovação fictícia de pagamentos | GOV-006 | Adapters mock retornam indisponível |
+| [x] | SEC-008 | P0 | Remover PAN/CVV do frontend e backend | SEC-007 | UI removida e backend rejeita campos brutos |
+| [x] | SEC-009 | P0 | Migrar documentos sensíveis para storage privado | GOV-006 | Novos uploads privados + comando de migração legado |
+| [x] | SEC-010 | P0 | Criar download temporário autorizado | SEC-009 | URL assinada, auth admin e vínculo validado |
+| [x] | SEC-011 | P0 | Remover exposição de exceções e bodies externos | GOV-006 | Handler seguro e respostas externas normalizadas |
+| [x] | SEC-012 | P1 | Criptografar credenciais em repouso | SEC-001 | Tracking, settings e Melhor Envio criptografados |
+| [x] | SEC-013 | P1 | Impedir secrets serializados em jobs | SEC-012 | Jobs serializam destinationId |
+| [x] | SEC-014 | P1 | Mascarar PII em logs e auditorias | SEC-009 | Redator central e tracking pseudonimizado |
+| [x] | SEC-015 | P1 | Adicionar cabeçalhos HTTP de segurança | SEC-011 | Middleware e testes de headers |
+| [x] | SEC-016 | P1 | Criar inventário LGPD e política de retenção | GOV-004 | Inventário e retenção documentados |
 
 ## Fase 2 — Baseline executável e integridade
 
