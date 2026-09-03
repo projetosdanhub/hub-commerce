@@ -41,7 +41,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
 | [x] | SEC-001 | P0 | Separar configuração pública e privada de tracking | GOV-006 | Endpoint público usa whitelist e não retorna secrets |
-| [x] | SEC-002 | P0 | Rotacionar tokens de tracking potencialmente expostos | SEC-001 | Runbook pronto; revogação externa ainda obrigatória |
+| [!] | SEC-002 | P0 | Rotacionar tokens de tracking potencialmente expostos | SEC-001 | Runbook pronto; aguarda evidência verificável da revogação externa |
 | [x] | SEC-003 | P0 | Exigir role/status administrativo no login | GOV-006 | Login exige admin + ATIVO |
 | [x] | SEC-004 | P0 | Criar middleware e Policies administrativas | SEC-003 | Gate, Policy e middleware admin aplicados |
 | [x] | SEC-005 | P0 | Adicionar throttle a login, reset, checkout e tracking | SEC-001 | Limites explícitos e teste de resposta 429 |
@@ -72,9 +72,9 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | BASE-009 | P1 | Criar enums e transições de status de pedido | BASE-008 | Sem mistura pending/paid e estados antigos |
 | [x] | BASE-010 | P1 | Remover scripts manuais de schema da raiz | BASE-002 | Alterações somente por migrations |
 | [x] | BASE-011 | P1 | Padronizar respostas e códigos HTTP da API | SEC-011 | Contrato de erro documentado |
-| [x] | BASE-012 | P1 | Adicionar paginação e limites às listagens | BASE-011 | Listagens possuem limite máximo |
-| [x] | BASE-013 | P2 | Eliminar N+1 e queries redundantes | BASE-012 | Queries críticas medidas |
-| [x] | BASE-014 | P1 | Fazer PHP e frontend iniciarem por comandos documentados | BASE-005 | Setup reproduzível em máquina limpa |
+| [~] | BASE-012 | P1 | Adicionar paginação e limites às listagens | BASE-011 | Limite centralizado (1–100) e teste unitário; aguarda pipeline verde |
+| [~] | BASE-013 | P2 | Eliminar N+1 e queries redundantes | BASE-012 | LTV/VIP em lote; aguarda validação da pipeline |
+| [~] | BASE-014 | P1 | Fazer PHP e frontend iniciarem por comandos documentados | BASE-005 | Setup documentado; aguarda reprodução verde no CI |
 
 ## Fase 3 — Fundação multitenant
 
@@ -218,21 +218,25 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [ ] | STO-008 | P1 | Auditar checkout mobile e acessibilidade | ORD-001, UI-012 | Fluxo completo por teclado/mobile |
 | [ ] | STO-009 | P2 | Preparar internacionalização configurável | CRM-002 | Locale/moeda por tenant |
 
+## Auditoria da baseline — 2026-09-03
+
+Os estados abaixo foram corrigidos para refletir evidência verificável. Itens de qualidade fora do escopo da baseline seguem pendentes ou bloqueados; não impedem o encerramento de BASE-012 a BASE-014 quando os checks deste PR estiverem verdes.
+
 ## Fase 12 — Testes e CI
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [x] | QA-001 | P0 | Escrever testes de Feature base (saúde, endpoints cruciais) | BASE-012 | Implementado `BaselineTest.php`. |
-| [x] | QA-002 | P0 | Configurar PHPStan nível máximo compatível no pipeline | BASE-012 | Configurado `larastan` level 5 em `phpstan.neon`. |
-| [x] | QA-003 | P1 | Validar arquitetura no CI: Models não falam com Views | BASE-012 | Análise estática com Larastan impede acoplamentos graves. |
-| [x] | QA-004 | P1 | Garantir formatação via Laravel Pint automatizado | BASE-012 | Configurado via `tests.yml`. |
-| [x] | QA-005 | P0 | Testes de Policies: Bloquear vazamento entre roles (RBAC) | BASE-012 | Implementado `AuthorizationTest.php`. |
+| [~] | QA-001 | P0 | Escrever testes de Feature base (saúde, endpoints cruciais) | BASE-012 | Saúde coberta; faltam endpoints cruciais e execução verde |
+| [~] | QA-002 | P0 | Configurar PHPStan nível máximo compatível no pipeline | BASE-012 | Larastan nível 5 configurado; elevar/validar nível compatível e pipeline verde |
+| [ ] | QA-003 | P1 | Validar arquitetura no CI: Models não falam com Views | BASE-012 | Falta regra de arquitetura explícita no CI |
+| [~] | QA-004 | P1 | Garantir formatação via Laravel Pint automatizado | BASE-012 | Pint configurado, mas há dívida de formatação e falta execução verde |
+| [~] | QA-005 | P0 | Testes de Policies: Bloquear vazamento entre roles (RBAC) | BASE-012 | Há teste de autorização; falta matriz de Policies e execução verde |
 | [x] | QA-006 | P0 | Testes de Tenancy: Garantir que Tenant A não lê dados de Tenant B | BASE-012 | Confirmado com `TenantIsolationTest.php`. |
-| [x] | QA-007 | P0 | Testes de Webhooks: Pagamentos falsos ou re-enviados (Idempotência) | BASE-012 | Estrutura criada (`PaymentWebhookTest.php`). |
-| [x] | QA-008 | P1 | Configurar ESLint + Prettier falhando build frontend em erro | BASE-012 | Configurado `eslint` e rodando no pipeline. |
-| [x] | QA-009 | P0 | Teste E2E (Cypress/Playwright) do Checkout (Caminho Feliz) | BASE-012 | Criado teste base com `Playwright`. |
-| [x] | QA-010 | P1 | Teste de unidade para Store de Carrinho (Pinia/Zustand) | BASE-012 | Preparado `vitest` para testes da UI e Lógica. |
-| [x] | QA-011 | P0 | "Branch Protection" ativo no GitHub proibindo merge sem testes passando | BASE-012 | Pipeline documentado e exigido (`branch_protection.md`). |
+| [ ] | QA-007 | P0 | Testes de Webhooks: Pagamentos falsos ou re-enviados (Idempotência) | BASE-012 | Pendente da integração de gateway; teste está explicitamente ignorado |
+| [~] | QA-008 | P1 | Configurar ESLint + Prettier falhando build frontend em erro | BASE-012 | ESLint configurado; Prettier e execução verde pendentes |
+| [~] | QA-009 | P0 | Teste E2E (Cypress/Playwright) do Checkout (Caminho Feliz) | BASE-012 | Servidor CI estabilizado; falta cenário feliz de checkout e execução verde |
+| [ ] | QA-010 | P1 | Teste de unidade para Store de Carrinho (Pinia/Zustand) | BASE-012 | Não há store de carrinho coberta |
+| [!] | QA-011 | P0 | "Branch Protection" ativo no GitHub proibindo merge sem testes passando | BASE-012 | Não há evidência verificável da configuração externa do GitHub |
 
 ## Fase 13 — Infraestrutura e produção
 
