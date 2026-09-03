@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderHistory;
 use App\Models\VipLevel;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -336,8 +337,24 @@ class OrderController extends Controller
                         ->withHeaders(['Accept' => 'application/json', 'User-Agent' => 'HUB Commerce (suporte@hubcommerce.com)'])
                         ->post($baseUrl . '/api/v2/me/cart', $payloadEnvio);
 
-                    if (!$response->successful()) {
-                        return response()->json(['status' => 'error', 'message' => 'Erro do Melhor Envio: ' . $response->body()], 400);
+                    if (! $response->successful()) {
+                        $isClientError = $response->clientError();
+
+                        Log::warning('Melhor Envio recusou a geração de etiqueta.', [
+                            'tenant_id' => $order->tenant_id,
+                            'order_id' => $order->getKey(),
+                            'provider_status' => $response->status(),
+                        ]);
+
+                        return response()->json([
+                            'status' => 'error',
+                            'code' => $isClientError
+                                ? 'SHIPPING_PROVIDER_REJECTED'
+                                : 'SHIPPING_PROVIDER_UNAVAILABLE',
+                            'message' => $isClientError
+                                ? 'Não foi possível gerar a etiqueta com os dados informados. Revise o envio e tente novamente.'
+                                : 'Não foi possível gerar a etiqueta no momento. Tente novamente mais tarde.',
+                        ], $isClientError ? 422 : 502);
                     }
 
                     $respostaApi = $response->json();
