@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.APP_URL || 'http://localhost:8000',
+    baseURL: process.env.APP_URL || 'http://127.0.0.1:8000',
     trace: 'on-first-retry',
   },
   projects: [
@@ -19,7 +19,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'php artisan serve --host=127.0.0.1 --port=8000',
-    url: 'http://localhost:8000',
+    url: 'http://127.0.0.1:8000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
