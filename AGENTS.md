@@ -58,3 +58,12 @@ Em caso de conflito, pare, descreva o conflito e peça uma decisão. Não escolh
 ## Definition of Done
 
 Uma alteração só está concluída quando a tarefa correspondente foi atualizada no task-board, possui autorização correta, isolamento por tenant quando aplicável, validação de entrada, tratamento de erro seguro, testes relevantes, documentação atualizada e nenhuma regressão conhecida.
+
+## Coordenação entre agentes
+
+- Antes de iniciar, verifique o handoff mais recente em `.ai/agent-handoff.md` e confirme branch, escopo, estado do board e riscos abertos.
+- Um item só recebe `[x]` no board com evidência verificável: comando e resultado, URL de execução/PR quando aplicável, ou referência ao teste criado. Configurar um arquivo não comprova a execução.
+- Enquanto algum check obrigatório estiver vermelho, a tarefa fica `[~]` ou `[!]`; não a marque como concluída.
+- Mudanças normais entram por branch e pull request. Não faça push direto em `main`; exceções exigem autorização explícita do responsável e registro no handoff.
+- Antes de passar o trabalho a outra IA, atualize o handoff com os campos obrigatórios, incluindo tudo que não foi verificado.
+- Merge só é permitido após os checks obrigatórios atuais do PR estarem verdes e não houver bloqueio de segurança, tenancy ou pagamento.
