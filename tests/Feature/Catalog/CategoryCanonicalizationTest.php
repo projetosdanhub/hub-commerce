@@ -43,6 +43,7 @@ class CategoryCanonicalizationTest extends TestCase
             'status' => Categoria::STATUS_INATIVO,
         ]);
 
+        app(TenantContextStore::class)->clear();
         $this->setTenantContext($tenantB, 'loja-b.test');
         Categoria::query()->create([
             'nome' => 'Categoria da Loja B',

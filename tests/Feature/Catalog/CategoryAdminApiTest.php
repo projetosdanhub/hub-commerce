@@ -38,6 +38,7 @@ class CategoryAdminApiTest extends TestCase
             'status' => Categoria::STATUS_ATIVO,
         ]);
 
+        app(TenantContextStore::class)->clear();
         $this->setTenantContext($tenantB, 'loja-b.test');
         $categoryB = Categoria::query()->create([
             'nome' => 'Categoria restrita',
@@ -70,6 +71,7 @@ class CategoryAdminApiTest extends TestCase
             ])
             ->assertNotFound();
 
+        app(TenantContextStore::class)->clear();
         $this->setTenantContext($tenantB, 'loja-b.test');
         $this->assertSame('Categoria restrita', $categoryB->fresh()->nome);
     }
