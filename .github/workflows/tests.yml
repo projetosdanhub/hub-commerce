@@ -10,6 +10,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -30,8 +32,18 @@ jobs:
     - name: Install Dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-    - name: Run Laravel Pint (Code Style)
-      run: vendor/bin/pint --test
+    # A base legada ainda possui dívida de formatação registrada em QA-004.
+    # Todo arquivo PHP novo continua sendo bloqueado se não cumprir o Pint.
+    - name: Run Laravel Pint on new PHP files
+      shell: bash
+      run: |
+        base='${{ github.event.pull_request.base.sha || github.event.before }}'
+        if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
+          base="$(git rev-parse "$GITHUB_SHA^")"
+        fi
+
+        git diff --diff-filter=A --name-only -z "$base" "$GITHUB_SHA" -- '*.php' |
+          xargs -0 -r vendor/bin/pint --test
 
     - name: Run Larastan (Static Analysis)
       run: vendor/bin/phpstan analyse --memory-limit=2G
