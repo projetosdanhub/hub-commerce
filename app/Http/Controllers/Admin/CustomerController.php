@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Support\Http\Pagination;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Domain\Identity\IdentityPasswordResetService;
@@ -83,7 +84,7 @@ class CustomerController extends Controller
             $query->whereMonth('nascimento', $request->mes_aniversario);
         }
 
-        $limit = min(max($request->integer('limit', 15), 1), 100);
+        $limit = Pagination::perPage($request, 15);
         $paginator = $query->paginate($limit);
 
         $niveisVip = VipLevel::orderBy('gasto_requisito', 'desc')->get();
