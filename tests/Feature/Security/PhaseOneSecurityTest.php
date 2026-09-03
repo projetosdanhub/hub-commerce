@@ -15,6 +15,10 @@ class PhaseOneSecurityTest extends TestCase
     {
         parent::setUp();
 
+        // A suíte reutiliza users e tokens para testar limites de autenticação.
+        // A Fase 4 adiciona uma FK de user_sessions para tokens; remova a
+        // dependência antes de reconstruir estas tabelas isoladas.
+        Schema::dropIfExists('user_sessions');
         Schema::dropIfExists('personal_access_tokens');
         Schema::dropIfExists('users');
 
@@ -157,3 +161,4 @@ class PhaseOneSecurityTest extends TestCase
             ->assertHeader('Content-Security-Policy');
     }
 }
+

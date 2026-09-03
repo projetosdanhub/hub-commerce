@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class Tenant extends Model
@@ -44,6 +45,21 @@ class Tenant extends Model
     public function domains(): HasMany
     {
         return $this->hasMany(TenantDomain::class);
+    }
+
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(TenantMembership::class);
+    }
+
+    public function roles(): HasMany
+    {
+        return $this->hasMany(TenantRole::class);
+    }
+
+    public function ownership(): HasOne
+    {
+        return $this->hasOne(TenantOwnership::class);
     }
 
     public function isActive(): bool
