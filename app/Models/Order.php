@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Domain\Tenancy\Concerns\BelongsToTenant;
+use App\Enums\OrderStatus;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -37,6 +38,7 @@ class Order extends Model
     protected function casts(): array
     {
         return [
+            'status'               => OrderStatus::class,
             'subtotal'             => 'decimal:2',
             'frete'                => 'decimal:2',
             'desconto'             => 'decimal:2',
