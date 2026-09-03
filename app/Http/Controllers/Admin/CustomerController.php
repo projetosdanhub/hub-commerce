@@ -86,7 +86,7 @@ class CustomerController extends Controller
             $query->whereMonth('nascimento', $request->mes_aniversario);
         }
 
-        $limit = $request->integer('limit', 15);
+        $limit = min(max($request->integer('limit', 15), 1), 100);
         $paginator = $query->paginate($limit);
 
         $formatted = $paginator->getCollection()->map(function ($c) {
