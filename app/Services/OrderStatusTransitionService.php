@@ -10,22 +10,23 @@ use Illuminate\Validation\ValidationException;
 
 final class OrderStatusTransitionService
 {
-    public function transition(Order $order, OrderStatus $target, string $event): Order
+    public function assertCanTransition(Order $order, OrderStatus $target): void
     {
-        $current = $order->status instanceof OrderStatus
-            ? $order->status
-            : OrderStatus::tryFrom((string) $order->status);
+        $current = $this->currentStatus($order);
 
         if ($current === null || ! $current->canTransitionTo($target)) {
             throw ValidationException::withMessages([
                 'status' => sprintf(
                     'A transição de %s para %s não é permitida.',
-                    $current?->value ?? (string) $order->status,
+                    $current?->value ?? (string) $order->getRawOriginal('status'),
                     $target->value,
                 ),
             ]);
         }
+    }
 
+    public function transition(Order $order, OrderStatus $target, string $event): Order
+    {
         $pendingAttributes = $order->getDirty();
         unset($pendingAttributes['status'], $pendingAttributes['tenant_id'], $pendingAttributes['id']);
 
@@ -34,6 +35,8 @@ final class OrderStatusTransitionService
                 ->whereKey($order->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            $this->assertCanTransition($lockedOrder, $target);
 
             $lockedOrder->fill($pendingAttributes);
             $lockedOrder->status = $target;
@@ -46,5 +49,12 @@ final class OrderStatusTransitionService
 
             return $lockedOrder;
         });
+    }
+
+    private function currentStatus(Order $order): ?OrderStatus
+    {
+        return $order->status instanceof OrderStatus
+            ? $order->status
+            : OrderStatus::tryFrom((string) $order->getRawOriginal('status'));
     }
 }
