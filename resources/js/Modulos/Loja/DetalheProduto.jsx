@@ -155,8 +155,8 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
                 if (data.status === 'success') {
                     // Mapeia o produto da API para o formato esperado pela view
                     const prodApi = data.data;
-                    const preco = Number(prodApi.preco_promocional || prodApi.preco || 0);
-                    const precoAntigo = prodApi.preco_promocional ? Number(prodApi.preco) : 0;
+                    const preco = Number(prodApi.preco_promo || prodApi.preco || 0);
+                    const precoAntigo = prodApi.preco_promo ? Number(prodApi.preco) : 0;
                     
                     const p = {
                         id: prodApi.id,
@@ -170,14 +170,14 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
                         avaliacoes: { media: 4.8, total: 128, contagemImagens: 24, contagemVideos: 5, contagemTexto: 99 },
                         ePersonalizavel: prodApi.is_personalizable || false,
                         freteGratisAte: true,
-                        variacoes: prodApi.variations && prodApi.variations.length > 0 ? [
+                        variacoes: prodApi.variacoes && prodApi.variacoes.length > 0 ? [
                             {
                                 tipo: 'Variações',
                                 estilo: 'texto',
-                                opcoes: prodApi.variations.map(v => ({ nome: v.nome, preco_adicional: v.preco_adicional }))
+                                opcoes: prodApi.variacoes.map(v => ({ nome: v.nome, preco_adicional: v.preco_adicional }))
                             }
                         ] : [],
-                        estoque: prodApi.estoque_atual || 15
+                        estoque: Number(prodApi.quantidade_estoque ?? 0)
                     };
                     setProduto(p);
                     
