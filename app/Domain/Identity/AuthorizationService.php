@@ -145,4 +145,14 @@ final class AuthorizationService
             && $permission->is_delegable
             && $this->allowsTenant($actor, $tenant, $permissionKey);
     }
+
+    public function canDelegatePlatformPermission(User $actor, string $permissionKey): bool
+    {
+        $permission = Permission::query()->where('key', $permissionKey)->first();
+
+        return $permission !== null
+            && $permission->scope === Permission::SCOPE_PLATFORM
+            && $permission->is_delegable
+            && $this->allowsPlatform($actor, $permissionKey);
+    }
 }

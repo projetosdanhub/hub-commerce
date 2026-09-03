@@ -161,3 +161,4 @@ class PhaseOneSecurityTest extends TestCase
             ->assertHeader('Content-Security-Policy');
     }
 }
+

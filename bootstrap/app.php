@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
             'tenant' => \App\Http\Middleware\ResolveTenantFromDomain::class,
+            'tenant.permission' => \App\Http\Middleware\EnsureTenantPermission::class,
+            'platform.permission' => \App\Http\Middleware\EnsurePlatformPermission::class,
+            'identity' => \App\Http\Middleware\EnsureIdentityAccess::class,
         ]);
 
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);

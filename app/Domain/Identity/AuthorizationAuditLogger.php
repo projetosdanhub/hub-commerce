@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 final class AuthorizationAuditLogger
 {
@@ -27,7 +28,14 @@ final class AuthorizationAuditLogger
         array $after = [],
         array $context = [],
         ?Request $request = null,
-    ): AuthorizationAuditLog {
+    ): ?AuthorizationAuditLog {
+        // Algumas suítes legadas reconstroem a tabela users isoladamente.
+        // A auditoria é complementar nesses cenários, nunca uma dependência
+        // que impeça o logout ou a revogação de tokens.
+        if (! Schema::hasTable('authorization_audit_logs')) {
+            return null;
+        }
+
         $request ??= app()->bound('request') ? request() : null;
         $ip = $request?->ip();
 

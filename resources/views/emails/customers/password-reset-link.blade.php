@@ -8,10 +8,10 @@
                 <tr><td style="padding: 32px; color: #334155; font-size: 15px; line-height: 1.6;">
                     <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Olá, {{ explode(' ', trim($nomeCliente))[0] }}!</h2>
                     <p>Recebemos um pedido para redefinir a senha da sua conta.</p>
-                    <p>Para criar uma nova senha, clique no botão abaixo. Este link expira em <strong>7 minutos</strong>.</p>
+                    <p>Para criar uma nova senha, clique no botão abaixo. Este link expira conforme a política de segurança da plataforma e só pode ser usado uma vez.</p>
                     <table border="0" cellspacing="0" cellpadding="0" style="margin: 20px 0;">
                         <tr><td align="center" style="border-radius: 12px; background-color: #10b981;">
-                            <a href="{{ url('/api/clientes/redefinir-senha?token=' . $token) }}" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none;">Redefinir Minha Senha</a>
+                            <a href="{{ url('/api/clientes/redefinir-senha?token=' . urlencode($token) . '&email=' . urlencode($email)) }}" style="display: inline-block; padding: 14px 28px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none;">Redefinir minha senha</a>
                         </td></tr>
                     </table>
                     <p style="font-size: 13px; color: #94a3b8;">Se não foi você que solicitou, ignore este e-mail.</p>

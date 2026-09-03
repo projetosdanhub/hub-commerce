@@ -16,6 +16,15 @@ use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
 use App\Http\Controllers\Admin\TrackingController;
 use App\Http\Controllers\Admin\NavigationMenuController;
+use App\Http\Controllers\Identity\AuthorizationAuditController;
+use App\Http\Controllers\Identity\EmailVerificationController;
+use App\Http\Controllers\Identity\IdentityPasswordResetController;
+use App\Http\Controllers\Identity\InvitationAcceptanceController;
+use App\Http\Controllers\Identity\MfaController;
+use App\Http\Controllers\Identity\PlatformTeamController;
+use App\Http\Controllers\Identity\PlatformTenantOwnershipController;
+use App\Http\Controllers\Identity\TenantTeamController;
+use App\Http\Controllers\Identity\UserSessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,9 +44,34 @@ Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throt
 // Rota pública acionada quando o cliente clica no link do E-mail (Validar E-mail)
 Route::get('/clientes/confirmar-email', [AdminCustomerController::class, 'confirmEmailUpdate']);
 
-// Redefinição de Senha via Link
-Route::get('/clientes/redefinir-senha', [AdminCustomerController::class, 'showPasswordResetForm'])->middleware('throttle:10,1');
-Route::post('/clientes/processar-senha', [AdminCustomerController::class, 'processPasswordReset'])->middleware('throttle:5,1');
+// Redefinição de senha: token hashado, expiração pelo broker e uso único.
+Route::post('/clientes/esqueci-senha', [IdentityPasswordResetController::class, 'request'])->middleware('throttle:5,1');
+Route::get('/clientes/redefinir-senha', [IdentityPasswordResetController::class, 'form'])->middleware('throttle:10,1');
+Route::post('/clientes/processar-senha', [IdentityPasswordResetController::class, 'reset'])->middleware('throttle:5,1');
+
+// A assinatura e o hash do e-mail tornam a verificação idempotente.
+Route::get('/identity/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('verification.verify');
+
+Route::middleware('auth:sanctum')->prefix('identity')->group(function (): void {
+    Route::post('/tenant-invitations/accept', [InvitationAcceptanceController::class, 'acceptTenant'])->middleware('throttle:5,1');
+    Route::post('/platform-invitations/accept', [InvitationAcceptanceController::class, 'acceptPlatform'])->middleware('throttle:5,1');
+
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'send'])->middleware('throttle:1,1');
+
+    // Um token temporário de matrícula MFA só pode acessar estas duas ações.
+    Route::post('/mfa/enrollment', [MfaController::class, 'begin'])->middleware('throttle:5,1');
+    Route::post('/mfa/enrollment/confirm', [MfaController::class, 'confirm'])->middleware('throttle:5,1');
+
+    Route::get('/mfa', [MfaController::class, 'status']);
+    Route::post('/mfa/recovery-codes', [MfaController::class, 'regenerateRecoveryCodes'])->middleware('throttle:5,1');
+    Route::delete('/mfa', [MfaController::class, 'disable'])->middleware('throttle:5,1');
+
+    Route::get('/sessions', [UserSessionController::class, 'index']);
+    Route::delete('/sessions/{session}', [UserSessionController::class, 'revoke']);
+    Route::post('/sessions/revoke-others', [UserSessionController::class, 'revokeOthers'])->middleware('throttle:5,1');
+});
 
 // ==========================================
 // ROTAS DO FRONT-END (VITRINE PÚBLICA / REACT)
@@ -65,130 +99,170 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     Route::middleware('tenant')->group(function (): void {
     
+    // Identidade da loja: toda ação é autorizada por membership e permissão tenant-scoped.
+    Route::prefix('identity')->group(function (): void {
+        Route::get('/team/members', [TenantTeamController::class, 'members'])->middleware('tenant.permission:tenant.team.view');
+        Route::get('/roles', [TenantTeamController::class, 'roles'])->middleware('tenant.permission:tenant.roles.view');
+        Route::get('/permissions', [TenantTeamController::class, 'permissions'])->middleware('tenant.permission:tenant.roles.view');
+        Route::post('/roles', [TenantTeamController::class, 'createRole'])->middleware('tenant.permission:tenant.roles.manage');
+        Route::put('/roles/{role}', [TenantTeamController::class, 'updateRole'])->middleware('tenant.permission:tenant.roles.manage');
+        Route::delete('/roles/{role}', [TenantTeamController::class, 'deleteRole'])->middleware('tenant.permission:tenant.roles.manage');
+
+        Route::post('/team/invitations', [TenantTeamController::class, 'invite'])->middleware('tenant.permission:tenant.team.manage');
+        Route::get('/team/invitations', [TenantTeamController::class, 'invitations'])->middleware('tenant.permission:tenant.team.view');
+        Route::delete('/team/invitations/{invitation}', [TenantTeamController::class, 'revokeInvitation'])->middleware('tenant.permission:tenant.team.manage');
+        Route::put('/team/members/{membership}/roles', [TenantTeamController::class, 'assignMemberRoles'])->middleware('tenant.permission:tenant.team.manage');
+        Route::put('/team/members/{membership}/status', [TenantTeamController::class, 'updateMemberStatus'])->middleware('tenant.permission:tenant.team.manage');
+
+        Route::get('/audit-logs', [AuthorizationAuditController::class, 'tenant'])->middleware('tenant.permission:tenant.audit.view');
+    });
+
     // (A rota mock de /audit-logs foi removida, pois agora usamos /products/audits real)
 
     // --- MÓDULO: CRM DE CLIENTES ---
     Route::prefix('customers')->group(function () {
-        Route::get('/', [AdminCustomerController::class, 'index']);
+        Route::get('/', [AdminCustomerController::class, 'index'])->middleware('tenant.permission:tenant.customers.view');
         
         // Rotas estáticas precisam vir ANTES das rotas com {id}
-        Route::get('/metrics', [AdminCustomerController::class, 'getDashboardMetrics']);
+        Route::get('/metrics', [AdminCustomerController::class, 'getDashboardMetrics'])->middleware('tenant.permission:tenant.customers.view');
         
         // Níveis VIP
-        Route::get('/vip-levels', [AdminCustomerController::class, 'getVipLevels']);
-        Route::post('/vip-levels', [AdminCustomerController::class, 'storeOrUpdateVipLevel']);
-        Route::delete('/vip-levels/{id}', [AdminCustomerController::class, 'deleteVipLevel']);
+        Route::get('/vip-levels', [AdminCustomerController::class, 'getVipLevels'])->middleware('tenant.permission:tenant.customers.view');
+        Route::post('/vip-levels', [AdminCustomerController::class, 'storeOrUpdateVipLevel'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::delete('/vip-levels/{id}', [AdminCustomerController::class, 'deleteVipLevel'])->middleware('tenant.permission:tenant.customers.manage');
 
         // Configurações
-        Route::get('/settings', [AdminCustomerController::class, 'getSettings']);
-        Route::put('/settings', [AdminCustomerController::class, 'updateSettings']);
+        Route::get('/settings', [AdminCustomerController::class, 'getSettings'])->middleware('tenant.permission:tenant.customers.view');
+        Route::put('/settings', [AdminCustomerController::class, 'updateSettings'])->middleware('tenant.permission:tenant.customers.manage');
 
         // AÇÕES DE PERFIL DE CLIENTE (Usam o parâmetro {id})
-        Route::get('/{id}', [AdminCustomerController::class, 'show']);
-        Route::put('/{id}/basics', [AdminCustomerController::class, 'updateBasics']);
-        Route::put('/{id}/phone', [AdminCustomerController::class, 'updatePhone']);
-        Route::post('/{id}/sensitive-data', [AdminCustomerController::class, 'updateSensitiveData']);
-        Route::put('/{id}/notes', [AdminCustomerController::class, 'updateNotes']);
-        Route::put('/{id}/tags', [AdminCustomerController::class, 'syncTags']);
-        Route::post('/{id}/status', [AdminCustomerController::class, 'toggleSuspension']);
-        Route::post('/{id}/wallet-transaction', [AdminCustomerController::class, 'addWalletTransaction']);
-        Route::post('/{id}/email-link', [AdminCustomerController::class, 'sendEmailUpdateLink']);
-        Route::put('/{id}/force-email', [AdminCustomerController::class, 'forceEmailUpdate']);
-        Route::post('/{id}/generate-temp-password', [AdminCustomerController::class, 'generateTempPassword']);
-        Route::post('/{id}/password-link', [AdminCustomerController::class, 'sendPasswordResetLink']);
+        Route::get('/{id}', [AdminCustomerController::class, 'show'])->middleware('tenant.permission:tenant.customers.view');
+        Route::put('/{id}/basics', [AdminCustomerController::class, 'updateBasics'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::put('/{id}/phone', [AdminCustomerController::class, 'updatePhone'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::post('/{id}/sensitive-data', [AdminCustomerController::class, 'updateSensitiveData'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::put('/{id}/notes', [AdminCustomerController::class, 'updateNotes'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::put('/{id}/tags', [AdminCustomerController::class, 'syncTags'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::post('/{id}/status', [AdminCustomerController::class, 'toggleSuspension'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::post('/{id}/wallet-transaction', [AdminCustomerController::class, 'addWalletTransaction'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::post('/{id}/email-link', [AdminCustomerController::class, 'sendEmailUpdateLink'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::put('/{id}/force-email', [AdminCustomerController::class, 'forceEmailUpdate'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::post('/{id}/generate-temp-password', [AdminCustomerController::class, 'generateTempPassword'])->middleware('tenant.permission:tenant.customers.manage');
+        Route::post('/{id}/password-link', [AdminCustomerController::class, 'sendPasswordResetLink'])->middleware('tenant.permission:tenant.customers.manage');
     });
 
     // --- MÓDULO: CATEGORIAS ---
     Route::prefix('categories')->group(function () {
-        Route::get('/', [CategoryController::class, 'index']);
-        Route::post('/', [CategoryController::class, 'store']);
-        Route::delete('/{id}', [CategoryController::class, 'destroy']);
+        Route::get('/', [CategoryController::class, 'index'])->middleware('tenant.permission:tenant.catalog.view');
+        Route::post('/', [CategoryController::class, 'store'])->middleware('tenant.permission:tenant.catalog.manage');
+        Route::delete('/{id}', [CategoryController::class, 'destroy'])->middleware('tenant.permission:tenant.catalog.manage');
     });
     // --- MÓDULO: MEGA MENU ---
     Route::prefix('menu')->group(function () {
-        Route::get('/', [NavigationMenuController::class, 'getConfigs']);
-        Route::post('/', [NavigationMenuController::class, 'storeConfig']);
-        Route::put('/{id}', [NavigationMenuController::class, 'updateConfig']);
-        Route::delete('/{id}', [NavigationMenuController::class, 'destroyConfig']);
-        Route::get('/{id}/items', [NavigationMenuController::class, 'getItems']);
-        Route::post('/{id}/sync', [NavigationMenuController::class, 'syncItems']);
+        Route::get('/', [NavigationMenuController::class, 'getConfigs'])->middleware('tenant.permission:tenant.storefront.view');
+        Route::post('/', [NavigationMenuController::class, 'storeConfig'])->middleware('tenant.permission:tenant.storefront.manage');
+        Route::put('/{id}', [NavigationMenuController::class, 'updateConfig'])->middleware('tenant.permission:tenant.storefront.manage');
+        Route::delete('/{id}', [NavigationMenuController::class, 'destroyConfig'])->middleware('tenant.permission:tenant.storefront.manage');
+        Route::get('/{id}/items', [NavigationMenuController::class, 'getItems'])->middleware('tenant.permission:tenant.storefront.view');
+        Route::post('/{id}/sync', [NavigationMenuController::class, 'syncItems'])->middleware('tenant.permission:tenant.storefront.manage');
     });
     // --- MÓDULO: PRODUTOS ---
     Route::prefix('products')->group(function () {
-        Route::get('/audits', [AdminProductController::class, 'getAudits']);
-        Route::get('/', [AdminProductController::class, 'index']);
-        Route::post('/validate-skus', [AdminProductController::class, 'validateSkus']);
-        Route::post('/', [AdminProductController::class, 'store']);
-        Route::delete('/{id}', [AdminProductController::class, 'destroy']);
+        Route::get('/audits', [AdminProductController::class, 'getAudits'])->middleware('tenant.permission:tenant.catalog.view');
+        Route::get('/', [AdminProductController::class, 'index'])->middleware('tenant.permission:tenant.catalog.view');
+        Route::post('/validate-skus', [AdminProductController::class, 'validateSkus'])->middleware('tenant.permission:tenant.catalog.manage');
+        Route::post('/', [AdminProductController::class, 'store'])->middleware('tenant.permission:tenant.catalog.manage');
+        Route::delete('/{id}', [AdminProductController::class, 'destroy'])->middleware('tenant.permission:tenant.catalog.manage');
     });
 
     // --- MÓDULO: PEDIDOS ---
     Route::prefix('orders')->group(function () {
-        Route::get('/', [OrderController::class, 'index']);
-        Route::put('/{id}/status', [OrderController::class, 'updateStatus']);
-        Route::post('/{id}/dispatch', [OrderController::class, 'dispatchOrder']);
-        Route::post('/{id}/cancel', [OrderController::class, 'cancelOrder']);
+        Route::get('/', [OrderController::class, 'index'])->middleware('tenant.permission:tenant.orders.view');
+        Route::put('/{id}/status', [OrderController::class, 'updateStatus'])->middleware('tenant.permission:tenant.orders.manage');
+        Route::post('/{id}/dispatch', [OrderController::class, 'dispatchOrder'])->middleware('tenant.permission:tenant.orders.manage');
+        Route::post('/{id}/cancel', [OrderController::class, 'cancelOrder'])->middleware('tenant.permission:tenant.orders.manage');
         
         // Fluxo Manual e Integração Melhor Envio
-        Route::post('/{id}/status-manual', [OrderController::class, 'updateStatusManual']);
+        Route::post('/{id}/status-manual', [OrderController::class, 'updateStatusManual'])->middleware('tenant.permission:tenant.orders.manage');
         // Rota Oficial de Emissão Fiscal e Documentos
-        Route::get('/{id}/preview-doc', [OrderController::class, 'previewDoc']); 
+        Route::get('/{id}/preview-doc', [OrderController::class, 'previewDoc'])->middleware('tenant.permission:tenant.orders.view'); 
         
         // Cancelar Etiqueta no Carrinho do Melhor Envio
-        Route::post('/{id}/cancel-me-cart', [OrderController::class, 'cancelMelhorEnvioCart']);
+        Route::post('/{id}/cancel-me-cart', [OrderController::class, 'cancelMelhorEnvioCart'])->middleware('tenant.permission:tenant.orders.manage');
     });
     
 
     // --- MÓDULO: TRANSPORTADORAS ---
     Route::prefix('carriers')->group(function () {
-        Route::get('/audits', [CarrierController::class, 'getAudits']);
-        Route::get('/', [CarrierController::class, 'index']);
-        Route::post('/', [CarrierController::class, 'store']); 
-        Route::post('/{id}/status', [CarrierController::class, 'updateStatus']);
-        Route::delete('/{id}', [CarrierController::class, 'destroy']);
+        Route::get('/audits', [CarrierController::class, 'getAudits'])->middleware('tenant.permission:tenant.shipping.view');
+        Route::get('/', [CarrierController::class, 'index'])->middleware('tenant.permission:tenant.shipping.view');
+        Route::post('/', [CarrierController::class, 'store'])->middleware('tenant.permission:tenant.shipping.manage'); 
+        Route::post('/{id}/status', [CarrierController::class, 'updateStatus'])->middleware('tenant.permission:tenant.shipping.manage');
+        Route::delete('/{id}', [CarrierController::class, 'destroy'])->middleware('tenant.permission:tenant.shipping.manage');
         
-        Route::get('/{id}/orders', [CarrierController::class, 'getOrders']);
-        Route::post('/orders/{orderId}/romaneio', [CarrierController::class, 'uploadRomaneio']);
+        Route::get('/{id}/orders', [CarrierController::class, 'getOrders'])->middleware('tenant.permission:tenant.shipping.view');
+        Route::post('/orders/{orderId}/romaneio', [CarrierController::class, 'uploadRomaneio'])->middleware('tenant.permission:tenant.shipping.manage');
     });
 
     // --- MÓDULO: EMBALAGENS PADRÃO ---
     Route::prefix('shipping-packages')->group(function () {
-        Route::get('/', [ShippingPackageController::class, 'index']);
-        Route::post('/', [ShippingPackageController::class, 'store']);
-        Route::delete('/{id}', [ShippingPackageController::class, 'destroy']);
+        Route::get('/', [ShippingPackageController::class, 'index'])->middleware('tenant.permission:tenant.shipping.view');
+        Route::post('/', [ShippingPackageController::class, 'store'])->middleware('tenant.permission:tenant.shipping.manage');
+        Route::delete('/{id}', [ShippingPackageController::class, 'destroy'])->middleware('tenant.permission:tenant.shipping.manage');
     });
 
     // --- MÓDULO: MELHOR ENVIO ---
     Route::prefix('melhorenvio')->group(function () {
-        Route::get('/settings', [MelhorEnvioController::class, 'getSettings']);
-        Route::post('/verify-token', [MelhorEnvioController::class, 'verifyToken']);
-        Route::post('/carriers', [MelhorEnvioController::class, 'saveCarriers']);
-        Route::post('/sender', [MelhorEnvioController::class, 'saveSender']);
-        Route::post('/disconnect', [MelhorEnvioController::class, 'disconnect']);
-        Route::post('/calculate', [MelhorEnvioController::class, 'calculate']); 
+        Route::get('/settings', [MelhorEnvioController::class, 'getSettings'])->middleware('tenant.permission:tenant.shipping.view');
+        Route::post('/verify-token', [MelhorEnvioController::class, 'verifyToken'])->middleware('tenant.permission:tenant.shipping.manage');
+        Route::post('/carriers', [MelhorEnvioController::class, 'saveCarriers'])->middleware('tenant.permission:tenant.shipping.manage');
+        Route::post('/sender', [MelhorEnvioController::class, 'saveSender'])->middleware('tenant.permission:tenant.shipping.manage');
+        Route::post('/disconnect', [MelhorEnvioController::class, 'disconnect'])->middleware('tenant.permission:tenant.shipping.manage');
+        Route::post('/calculate', [MelhorEnvioController::class, 'calculate'])->middleware('tenant.permission:tenant.shipping.manage'); 
     });
 
     // --- MÓDULO: RASTREAMENTO & PIXELS (ÁREA DO PAINEL) ---
     Route::prefix('tracking')->group(function () {
-        Route::get('/settings', [TrackingController::class, 'getSettings']);
-        Route::post('/settings', [TrackingController::class, 'updateSettings']);
+        Route::get('/settings', [TrackingController::class, 'getSettings'])->middleware('tenant.permission:tenant.tracking.view');
+        Route::post('/settings', [TrackingController::class, 'updateSettings'])->middleware('tenant.permission:tenant.tracking.manage');
         
-        Route::get('/dashboard', [TrackingController::class, 'getDashboardData']);
+        Route::get('/dashboard', [TrackingController::class, 'getDashboardData'])->middleware('tenant.permission:tenant.tracking.view');
         
-        Route::get('/triggers', [TrackingController::class, 'getTriggers']);
-        Route::post('/triggers', [TrackingController::class, 'storeTrigger']);
-        Route::delete('/triggers/{id}', [TrackingController::class, 'deleteTrigger']);
+        Route::get('/triggers', [TrackingController::class, 'getTriggers'])->middleware('tenant.permission:tenant.tracking.view');
+        Route::post('/triggers', [TrackingController::class, 'storeTrigger'])->middleware('tenant.permission:tenant.tracking.manage');
+        Route::delete('/triggers/{id}', [TrackingController::class, 'deleteTrigger'])->middleware('tenant.permission:tenant.tracking.manage');
     });
 
     // --- MÓDULO: CONFIGURAÇÕES GERAIS (GATEWAYS E LOGÍSTICA) ---
     Route::prefix('settings')->group(function () {
-        Route::get('/{group}', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'getGroup']);
-        Route::post('/', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'setSetting']);
+        Route::get('/{group}', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'getGroup'])->middleware('tenant.permission:tenant.settings.view');
+        Route::post('/', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'setSetting'])->middleware('tenant.permission:tenant.settings.manage');
     });
 
     // --- MÓDULO: CONSTRUTOR DE VITRINE ---
-    Route::post('/storefront/publish', [StorefrontController::class, 'publishVitrine']);
+    Route::post('/storefront/publish', [StorefrontController::class, 'publishVitrine'])->middleware('tenant.permission:tenant.storefront.manage');
     });
+});
+
+// Administração da plataforma: não usa tenant do host nem o painel da loja.
+Route::middleware(['auth:sanctum', 'identity'])->prefix('platform')->group(function (): void {
+    Route::get('/team/members', [PlatformTeamController::class, 'members'])->middleware('platform.permission:platform.team.view');
+    Route::get('/roles', [PlatformTeamController::class, 'roles'])->middleware('platform.permission:platform.roles.view');
+    Route::get('/permissions', [PlatformTeamController::class, 'permissions'])->middleware('platform.permission:platform.roles.view');
+    Route::post('/roles', [PlatformTeamController::class, 'createRole'])->middleware('platform.permission:platform.roles.manage');
+    Route::put('/roles/{role}', [PlatformTeamController::class, 'updateRole'])->middleware('platform.permission:platform.roles.manage');
+    Route::delete('/roles/{role}', [PlatformTeamController::class, 'deleteRole'])->middleware('platform.permission:platform.roles.manage');
+
+    Route::post('/team/invitations', [PlatformTeamController::class, 'invite'])->middleware('platform.permission:platform.team.manage');
+    Route::get('/team/invitations', [PlatformTeamController::class, 'invitations'])->middleware('platform.permission:platform.team.view');
+    Route::delete('/team/invitations/{invitation}', [PlatformTeamController::class, 'revokeInvitation'])->middleware('platform.permission:platform.team.manage');
+    Route::put('/team/members/{membership}/roles', [PlatformTeamController::class, 'assignMemberRoles'])->middleware('platform.permission:platform.team.manage');
+    Route::put('/team/members/{membership}/status', [PlatformTeamController::class, 'updateMemberStatus'])->middleware('platform.permission:platform.team.manage');
+
+    // A troca do owner é intencionalmente restrita à plataforma.
+    Route::put('/tenants/{tenant}/owner', [PlatformTenantOwnershipController::class, 'transfer'])
+        ->middleware('platform.permission:platform.tenants.manage');
+
+    Route::get('/audit-logs', [AuthorizationAuditController::class, 'platform'])->middleware('platform.permission:platform.audit.view');
 });
 
 // URLs de curta duracao. Somente rotas administrativas autenticadas podem gera-las.

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Domain\Identity\IdentityPasswordResetService;
 use Illuminate\Http\Request;
 use App\Models\User; 
 use App\Models\CustomerAuditLog;
@@ -21,11 +22,9 @@ use Illuminate\Support\Facades\URL;
 // Gerenciamento de E-mails
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerifyEmailUpdate;
-use App\Mail\TemporaryPassword;
 use App\Mail\EmailForcedUpdate;
 
 use Illuminate\Support\Facades\Cache; // 🟢 IMPORTANTE PARA O TOKEN FUNCIONAR
-use App\Mail\PasswordResetLink;       // 🟢 IMPORTANTE
 
 class CustomerController extends Controller
 {
@@ -471,35 +470,26 @@ class CustomerController extends Controller
     public function generateTempPassword($id)
     {
         $cliente = $this->findTenantCustomerOrFail($id);
-        
-        $senhaProvisoria = strtoupper(Str::random(8));
-        $cliente->password = Hash::make($senhaProvisoria);
-        $cliente->save();
 
-        Mail::to($cliente->email)->send(new TemporaryPassword($senhaProvisoria, $cliente->name));
+        // A senha nunca é retornada pela API nem enviada em texto puro.
+        app(IdentityPasswordResetService::class)->send($cliente);
 
-        $this->registrarLog($cliente->id, 'Senha Provisória Gerada', 'Nova credencial temporária gerada e enviada por e-mail.', 'warning');
+        $this->registrarLog($cliente->id, 'Redefinição de Senha Solicitada', 'Link de redefinição segura enviado ao cliente.', 'warning');
 
         return response()->json([
-            'status'   => 'success', 
-            'password' => $senhaProvisoria,
-            'message'  => 'Senha gerada e enviada com sucesso.'
+            'status' => 'success',
+            'message' => 'Link de redefinição enviado com sucesso.',
         ]);
     }
 
     public function sendPasswordResetLink($id)
     {
         $cliente = $this->findTenantCustomerOrFail($id);
-        $token = Str::random(60);
-        
-        // 🟢 GUARDA O PEDIDO DE SENHA NO CACHE
-        Cache::put("password_reset_{$token}", ['user_id' => $cliente->id], now()->addMinutes(7));
+        app(IdentityPasswordResetService::class)->send($cliente);
 
-        Mail::to($cliente->email)->send(new PasswordResetLink($token, $cliente->name));
+        $this->registrarLog($cliente->id, 'Redefinição de Senha', 'Link de redefinição segura enviado ao cliente.', 'info');
 
-        $this->registrarLog($cliente->id, 'Redefinição de Senha', 'Link de redefinição de senha enviado ao cliente.', 'info');
-
-        return response()->json(['status' => 'success', 'message' => 'Link de redefinição enviado com sucesso!']);
+        return response()->json(['status' => 'success', 'message' => 'Link de redefinição enviado com sucesso.']);
     }
 
     // =========================================================================
@@ -963,3 +953,5 @@ class CustomerController extends Controller
     }
 
 }
+
+
