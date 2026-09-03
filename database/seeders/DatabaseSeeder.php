@@ -40,11 +40,23 @@ class DatabaseSeeder extends Seeder
         // ==========================================
         // 1. CRIAR USUÁRIO ADMIN (GESTOR)
         // ==========================================
-        User::create([
+        $admin = User::create([
             'name' => 'Gestor Admin',
             'email' => 'admin@hubcommerce.com',
             'password' => Hash::make('senha123'),
             'role' => 'admin',
+        ]);
+
+        $membership = \App\Models\TenantMembership::create([
+            'tenant_id' => $tenant->getKey(),
+            'user_id' => $admin->getKey(),
+            'status' => \App\Models\TenantMembership::STATUS_ACTIVE,
+            'joined_at' => now(),
+        ]);
+
+        \App\Models\TenantOwnership::create([
+            'tenant_id' => $tenant->getKey(),
+            'tenant_membership_id' => $membership->getKey(),
         ]);
 
         // ==========================================
