@@ -21,10 +21,21 @@ class Categoria extends Model
         'ativo',
         'img',
         'status',
+        'parent_id',
     ];
 
     public function produtos(): HasMany
     {
         return $this->hasMany(Produto::class, 'categoria_id');
+    }
+
+    public function parent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
     }
 }
