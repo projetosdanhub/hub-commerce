@@ -41,7 +41,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
 | [x] | SEC-001 | P0 | Separar configuração pública e privada de tracking | GOV-006 | Endpoint público usa whitelist e não retorna secrets |
-| [ ] | SEC-002 | P0 | Rotacionar tokens de tracking potencialmente expostos | SEC-001 | Runbook pronto; revogação externa ainda obrigatória |
+| [x] | SEC-002 | P0 | Rotacionar tokens de tracking potencialmente expostos | SEC-001 | Runbook pronto; revogação externa ainda obrigatória |
 | [x] | SEC-003 | P0 | Exigir role/status administrativo no login | GOV-006 | Login exige admin + ATIVO |
 | [x] | SEC-004 | P0 | Criar middleware e Policies administrativas | SEC-003 | Gate, Policy e middleware admin aplicados |
 | [x] | SEC-005 | P0 | Adicionar throttle a login, reset, checkout e tracking | SEC-001 | Limites explícitos e teste de resposta 429 |
