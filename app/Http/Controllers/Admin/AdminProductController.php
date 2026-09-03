@@ -45,7 +45,8 @@ class AdminProductController extends Controller
             }
         }
 
-        $produtos = $query->orderByDesc('id')->paginate($request->input('limit', 15));
+        $limit = min(max($request->integer('limit', 15), 1), 100);
+        $produtos = $query->orderByDesc('id')->paginate($limit);
 
         return response()->json([
             'status' => 'success',
