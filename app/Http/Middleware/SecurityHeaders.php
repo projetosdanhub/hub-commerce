@@ -24,6 +24,10 @@ class SecurityHeaders
             ? "'self' ws://127.0.0.1:5173 ws://localhost:5173 http://127.0.0.1:5173 http://localhost:5173 http://localhost:8000 http://127.0.0.1:8000 https://graph.facebook.com https://www.google-analytics.com https://business-api.tiktok.com https://api.pinterest.com"
             : "'self' https://graph.facebook.com https://www.google-analytics.com https://business-api.tiktok.com https://api.pinterest.com";
 
+        $frameAncestorsPolicy = app()->environment('local')
+            ? "'self' http://127.0.0.1:5173 http://localhost:5173"
+            : "'none'";
+
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
             "script-src {$scriptPolicy}",
@@ -31,12 +35,12 @@ class SecurityHeaders
             "img-src 'self' data: https:",
             "font-src 'self' data: https:",
             "connect-src {$connectPolicy}",
-            "frame-ancestors 'none'",
+            "frame-ancestors {$frameAncestorsPolicy}",
             "base-uri 'self'",
             "form-action 'self'",
         ]));
         $response->headers->set('X-Content-Type-Options', 'nosniff');
-        $response->headers->set('X-Frame-Options', 'DENY');
+        // $response->headers->set('X-Frame-Options', 'DENY'); // Removed to allow framing by allowed ancestors
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
         $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');

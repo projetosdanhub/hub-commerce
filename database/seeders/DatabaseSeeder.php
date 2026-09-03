@@ -11,6 +11,10 @@ use App\Models\OrderHistory;
 use App\Models\Address;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use App\Models\Tenant;
+use App\Models\TenantDomain;
+use App\Domain\Tenancy\TenantContextStore;
+use App\Domain\Tenancy\TenantContext;
 
 class DatabaseSeeder extends Seeder
 {
@@ -23,6 +27,14 @@ class DatabaseSeeder extends Seeder
         $domain = TenantDomain::query()->firstOrCreate(
             ['domain' => 'demo.hubcommerce.test'],
             ['tenant_id' => $tenant->getKey(), 'is_primary' => true, 'verified_at' => now()]
+        );
+        TenantDomain::query()->firstOrCreate(
+            ['domain' => 'localhost'],
+            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now()]
+        );
+        TenantDomain::query()->firstOrCreate(
+            ['domain' => '127.0.0.1'],
+            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now()]
         );
         app(TenantContextStore::class)->set(TenantContext::fromTenant($tenant, $domain->domain));
         // ==========================================

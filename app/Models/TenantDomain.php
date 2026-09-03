@@ -44,6 +44,10 @@ class TenantDomain extends Model
         $host = preg_replace('/:\d+$/', '', $host) ?? '';
         $host = rtrim($host, '.');
 
+        if ($host === 'localhost' || $host === '127.0.0.1') {
+            return $host;
+        }
+
         if (! preg_match('/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/', $host)) {
             throw new \InvalidArgumentException('Domínio inválido.');
         }
