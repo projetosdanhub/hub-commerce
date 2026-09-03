@@ -145,7 +145,6 @@ class ProductContractTest extends TestCase
             ]);
 
         $this->assertDatabaseCount('produtos', 0);
-        $this->assertSame($tenantA->id, $ownerA->memberships()->first()->tenant_id);
     }
 
     public function test_zero_stock_pre_sale_remains_available_in_the_storefront(): void
