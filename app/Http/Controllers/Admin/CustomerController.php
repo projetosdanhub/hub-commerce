@@ -86,9 +86,10 @@ class CustomerController extends Controller
             $query->whereMonth('nascimento', $request->mes_aniversario);
         }
 
-        $users = $query->get();
+        $limit = $request->integer('limit', 15);
+        $paginator = $query->paginate($limit);
 
-        $formatted = $users->map(function ($c) {
+        $formatted = $paginator->getCollection()->map(function ($c) {
             $pedidosValidos = $c->orders->filter(
                 fn (Order $order): bool => $order->status->countsTowardRevenue()
             );
@@ -228,7 +229,25 @@ class CustomerController extends Controller
             ];
         });
 
-        return response()->json(['status' => 'success', 'data' => $formatted]);
+        $paginator->setCollection($formatted);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'current_page' => $paginator->currentPage(),
+                'data' => $paginator->items(),
+                'first_page_url' => $paginator->url(1),
+                'from' => $paginator->firstItem(),
+                'last_page' => $paginator->lastPage(),
+                'last_page_url' => $paginator->url($paginator->lastPage()),
+                'next_page_url' => $paginator->nextPageUrl(),
+                'path' => $paginator->path(),
+                'per_page' => $paginator->perPage(),
+                'prev_page_url' => $paginator->previousPageUrl(),
+                'to' => $paginator->lastItem(),
+                'total' => $paginator->total(),
+            ],
+        ]);
     }
 
     // =========================================================================

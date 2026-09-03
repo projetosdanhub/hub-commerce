@@ -5,7 +5,8 @@
     "scripts": {
         "build": "vite build",
         "verify:imports": "node scripts/verify-local-imports.mjs",
-        "dev": "vite"
+        "dev": "vite",
+        "setup:local": "composer install && php artisan migrate --seed && npm install && npm run build"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

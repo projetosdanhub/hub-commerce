@@ -84,20 +84,44 @@ const AdminProductsContent = () => {
     const [categorias, setCategorias] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [termoPesquisa, setTermoPesquisa] = useState('');
+    const [filtroCategoria, setFiltroCategoria] = useState('TODAS');
+    const [filtroStatus, setFiltroStatus] = useState('TODOS');
+    const [itensPorPagina, setItensPorPagina] = useState(15);
+    const [paginaAtual, setPaginaAtual] = useState(1);
+    const [totalProdutos, setTotalProdutos] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+
     useEffect(() => {
         carregarDados();
-    }, []);
+    }, [termoPesquisa, filtroCategoria, filtroStatus, itensPorPagina, paginaAtual]);
 
     const carregarDados = async () => {
         setIsLoading(true);
         try {
             const [resProd, resCat] = await Promise.all([
-                api.get('/admin/products'),
+                api.get('/admin/products', {
+                    params: {
+                        busca: termoPesquisa,
+                        categoria: filtroCategoria,
+                        status: filtroStatus,
+                        limit: itensPorPagina,
+                        page: paginaAtual
+                    }
+                }),
                 api.get('/admin/categories')
             ]);
             
             if (resProd.data && resProd.data.data) {
-                setProdutos(resProd.data.data.map(toProductEditorModel));
+                let items = [];
+                if (Array.isArray(resProd.data.data)) {
+                    items = resProd.data.data;
+                } else if (resProd.data.data.data) {
+                    items = resProd.data.data.data;
+                    setTotalProdutos(resProd.data.data.total || items.length);
+                    setTotalPages(resProd.data.data.last_page || 1);
+                }
+                setProdutos(items.map(toProductEditorModel));
             }
             if (resCat.data && resCat.data.data) setCategorias(resCat.data.data);
         } catch (error) {
@@ -164,6 +188,13 @@ const AdminProductsContent = () => {
                                 isRefreshing={isLoading}
                                 abrirEdicaoProduto={onEditProduct} 
                                 abrirNovoProduto={onCreateProduct} 
+                                // Server-side filters
+                                termoPesquisa={termoPesquisa} setTermoPesquisa={setTermoPesquisa}
+                                filtroCategoria={filtroCategoria} setFiltroCategoria={setFiltroCategoria}
+                                filtroStatus={filtroStatus} setFiltroStatus={setFiltroStatus}
+                                itensPorPagina={itensPorPagina} setItensPorPagina={setItensPorPagina}
+                                paginaAtual={paginaAtual} setPaginaAtual={setPaginaAtual}
+                                totalPages={totalPages} totalProdutos={totalProdutos}
                             />
                         </motion.div>
                     )}

@@ -27,37 +27,16 @@ export default function ListaDeProdutos({
     categorias,
     isRefreshing, 
     abrirEdicaoProduto,
-    abrirNovoProduto 
+    abrirNovoProduto,
+    termoPesquisa, setTermoPesquisa,
+    filtroCategoria, setFiltroCategoria,
+    filtroStatus, setFiltroStatus,
+    itensPorPagina, setItensPorPagina,
+    paginaAtual, setPaginaAtual,
+    totalPages, totalProdutos
 }) {
-    const [termoPesquisa, setTermoPesquisa] = useState('');
-    const [filtroCategoria, setFiltroCategoria] = useState('TODAS');
-    const [filtroStatus, setFiltroStatus] = useState('TODOS');
-    const [itensPorPagina, setItensPorPagina] = useState(10);
-    const [paginaAtual, setPaginaAtual] = useState(1);
-
-    // Reseta paginação quando o filtro muda
-    useEffect(() => { setPaginaAtual(1); }, [termoPesquisa, filtroCategoria, filtroStatus, itensPorPagina]);
-
-    const produtosFiltrados = useMemo(() => {
-        return produtos.filter(p => {
-            const search = termoPesquisa.toLowerCase();
-            const fullSku = `${p.skuRef}-${p.skuSufixo}`.toLowerCase();
-            const matchBusca = p.nome.toLowerCase().includes(search) || fullSku.includes(search);
-            const matchCat = filtroCategoria === 'TODAS' || p.categoriaPrincipal === filtroCategoria;
-            let matchStatus = true;
-            if (filtroStatus === 'ATIVO') matchStatus = p.status === 'ATIVO';
-            if (filtroStatus === 'INATIVO') matchStatus = p.status === 'INATIVO';
-            if (filtroStatus === 'ESGOTADO') matchStatus = p.controlarEstoque && p.estoque === 0 && !p.preVenda;
-            if (filtroStatus === 'ENCOMENDA') matchStatus = p.preVenda === true;
-            
-            return matchBusca && matchCat && matchStatus;
-        });
-    }, [produtos, termoPesquisa, filtroCategoria, filtroStatus]);
-
-    const indexOfLastItem = paginaAtual * itensPorPagina;
-    const indexOfFirstItem = indexOfLastItem - itensPorPagina;
-    const currentProdutos = produtosFiltrados.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(produtosFiltrados.length / itensPorPagina);
+    // Client-side filtering removed. We rely on the `produtos` prop which is already filtered and paginated by the server.
+    const currentProdutos = produtos;
 
     return (
         <div className="fade-in" style={{ paddingBottom: '48px' }}>

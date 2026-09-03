@@ -401,13 +401,36 @@ const AdminOrdersContent = () => {
     const [isCalculatingME, setIsCalculatingME] = useState(false);
     const [navigatingOrder, setNavigatingOrder] = useState(null);
 
-    // 🟢 FETCH PEDIDOS
+    // 🟢 FETCH PEDIDOS PAGINADOS
     const { data: fetchResult = {}, isLoading: carregandoPedidos, refetch } = useQuery({
-        queryKey: ['adminOrders'],
-        queryFn: async () => { const res = await api.get('/admin/orders'); return res.data; },
+        queryKey: ['adminOrders', paginaAtual, itensPorPagina, termoPesquisa, abaAtiva, dashDateRange.start, dashDateRange.end],
+        queryFn: async () => { 
+            const res = await api.get('/admin/orders', {
+                params: {
+                    page: paginaAtual,
+                    limit: itensPorPagina,
+                    busca: termoPesquisa,
+                    status: abaAtiva,
+                    start_date: dashDateRange.start,
+                    end_date: dashDateRange.end
+                }
+            }); 
+            return res.data; 
+        },
         refetchInterval: 15000,
     });
-    const pedidosDaApi = fetchResult.data || [];
+    const pedidosPaginados = fetchResult.data || [];
+    const totalPaginas = fetchResult.last_page || 1;
+
+    // 🟢 FETCH METRICS GLOBAIS
+    const { data: metricasCalculadas = null, isLoading: carregandoMetricas } = useQuery({
+        queryKey: ['adminOrdersMetrics'],
+        queryFn: async () => {
+            const res = await api.get('/admin/orders/metrics');
+            return res.data;
+        },
+        refetchInterval: 15000,
+    });
 
     // 🟢 FETCH TRANSPORTADORAS MANUAIS
     const { data: carriersApi = [] } = useQuery({
@@ -446,22 +469,15 @@ const AdminOrdersContent = () => {
     };
 
     useEffect(() => {
-        if (orderIdUrl && pedidosDaApi.length > 0) {
-            const pedidoAlvo = pedidosDaApi.find(p => String(p.id) === String(orderIdUrl));
-            if (pedidoAlvo && (!pedidoSelecionado || pedidoSelecionado.id !== pedidoAlvo.id)) {
-                setPedidoSelecionado(pedidoAlvo);
-            } else if (!pedidoAlvo) { setSearchParams({}); }
-        }
-    }, [orderIdUrl, pedidosDaApi]); 
 
     useEffect(() => {
-        if (pedidoSelecionado && pedidosDaApi.length > 0) {
-            const pedidoAtualizado = pedidosDaApi.find(p => p.id === pedidoSelecionado.id);
+        if (pedidoSelecionado && pedidosPaginados.length > 0) {
+            const pedidoAtualizado = pedidosPaginados.find(p => p.id === pedidoSelecionado.id);
             if (pedidoAtualizado && JSON.stringify(pedidoAtualizado) !== JSON.stringify(pedidoSelecionado)) {
                 setPedidoSelecionado(pedidoAtualizado);
             }
         }
-    }, [pedidosDaApi]);
+    }, [pedidosPaginados]);
 
     const handleFecharPedido = () => {
         setPedidoSelecionado(null);
@@ -658,21 +674,6 @@ const AdminOrdersContent = () => {
         setModalAcao({ isOpen: true, tipo, data: pedidoSelecionado });
     };
 
-    const pedidosFiltrados = useMemo(() => {
-        let f = pedidosDaApi;
-        if (dashDateRange.start) { const s = new Date(dashDateRange.start); s.setHours(0,0,0,0); f = f.filter(p => new Date(p.data_raw || p.created_at) >= s); }
-        if (dashDateRange.end) { const e = new Date(dashDateRange.end); e.setHours(23,59,59,999); f = f.filter(p => new Date(p.data_raw || p.created_at) <= e); }
-        if (abaAtiva !== 'TUDO') f = f.filter(p => p.status === abaAtiva);
-        if (termoPesquisa) {
-            const t = termoPesquisa.toLowerCase();
-            f = f.filter(p => p.id.toString().includes(t) || (p.cliente?.nome || '').toLowerCase().includes(t));
-        }
-        return f.sort((a,b) => new Date(b.data_raw || b.created_at) - new Date(a.data_raw || a.created_at));
-    }, [pedidosDaApi, abaAtiva, termoPesquisa, dashDateRange]);
-
-    const pedidosPaginados = pedidosFiltrados.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina);
-    const totalPaginas = Math.ceil(pedidosFiltrados.length / itensPorPagina) || 1;
-
     const timelineFiltrada = useMemo(() => {
         if (!pedidoSelecionado || !pedidoSelecionado.timeline) return [];
         let logs = pedidoSelecionado.timeline;
@@ -683,25 +684,7 @@ const AdminOrdersContent = () => {
     const timelinePaginada = timelineFiltrada.slice((timelinePage - 1) * timelinePerPage, timelinePage * timelinePerPage);
     const totalPaginasTimeline = Math.ceil(timelineFiltrada.length / timelinePerPage) || 1;
 
-    const metricasCalculadas = useMemo(() => {
-        const totais = pedidosDaApi.length;
-        const aEnviar = pedidosDaApi.filter(p => p.status === 'SEPARACAO').length;
-        const pixTotais = pedidosDaApi.filter(p => String(p.pagamento_metodo).toLowerCase().includes('pix')).length;
-        const pixPagos = pedidosDaApi.filter(p => String(p.pagamento_metodo).toLowerCase().includes('pix') && !['A_PAGAR', 'CANCELADO'].includes(p.status)).length;
-        const conversaoPix = pixTotais > 0 ? ((pixPagos / pixTotais) * 100).toFixed(1) : 0;
-        const cancelados = pedidosDaApi.filter(p => p.status === 'CANCELADO').length;
-        const taxaCancelamento = totais > 0 ? ((cancelados / totais) * 100).toFixed(1) : 0;
-        const reembolsados = pedidosDaApi.filter(p => p.status === 'REEMBOLSADO');
-        const qtdReembolsados = reembolsados.length;
-        const valorReembolsado = reembolsados.reduce((acc, p) => acc + safeNum(p.total), 0);
-        const taxaReembolso = totais > 0 ? ((qtdReembolsados / totais) * 100).toFixed(1) : 0;
-        const emAnalise = pedidosDaApi.filter(p => p.status === 'EM_ANALISE_REEMBOLSO').length;
-        const ltv = pedidosDaApi.reduce((acc, p) => !['CANCELADO', 'REEMBOLSADO'].includes(p.status) ? acc + safeNum(p.total) : acc, 0);
-
-        return { totais, aEnviar, pixTotais, pixPagos, conversaoPix, cancelados, taxaCancelamento, qtdReembolsados, valorReembolsado, taxaReembolso, emAnalise, ltv };
-    }, [pedidosDaApi]);
-
-    if (carregandoPedidos && pedidosDaApi.length === 0) {
+    if (carregandoPedidos && pedidosPaginados.length === 0) {
         return (
             <div className="w-full min-h-screen pb-20 relative font-sans">
                 <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

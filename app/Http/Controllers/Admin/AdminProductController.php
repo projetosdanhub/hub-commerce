@@ -14,16 +14,42 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminProductController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $produtos = Produto::query()
-            ->with(['categoria', 'variacoes'])
-            ->orderByDesc('id')
-            ->get();
+        $query = Produto::query()->with(['categoria', 'variacoes']);
+
+        if ($request->filled('busca')) {
+            $busca = $request->input('busca');
+            $query->where(function ($q) use ($busca) {
+                $q->where('nome', 'like', "%{$busca}%")
+                  ->orWhereRaw("CONCAT(sku_ref, '-', sku_sufixo) like ?", ["%{$busca}%"]);
+            });
+        }
+
+        if ($request->filled('categoria') && $request->categoria !== 'TODAS') {
+            $query->whereHas('categoria', function ($q) use ($request) {
+                $q->where('nome', $request->categoria);
+            });
+        }
+
+        if ($request->filled('status') && $request->status !== 'TODOS') {
+            $status = $request->status;
+            if ($status === 'ATIVO') {
+                $query->where('status_vitrine', ProductStatus::ACTIVE->value);
+            } elseif ($status === 'INATIVO') {
+                $query->where('status_vitrine', ProductStatus::INACTIVE->value);
+            } elseif ($status === 'ESGOTADO') {
+                $query->where('controlar_estoque', true)->where('quantidade_estoque', 0)->where('is_pre_venda', false);
+            } elseif ($status === 'ENCOMENDA') {
+                $query->where('is_pre_venda', true);
+            }
+        }
+
+        $produtos = $query->orderByDesc('id')->paginate($request->input('limit', 15));
 
         return response()->json([
             'status' => 'success',
-            'data' => AdminProductResource::collection($produtos),
+            'data' => AdminProductResource::collection($produtos)->response()->getData(true),
         ]);
     }
 

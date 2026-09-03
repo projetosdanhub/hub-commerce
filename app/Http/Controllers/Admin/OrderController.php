@@ -19,36 +19,79 @@ class OrderController extends Controller
     ) {
     }
 
-    private function getRank($ltv, $compras) {
-        $niveis = VipLevel::orderBy('gasto_requisito', 'desc')->get();
-        foreach ($niveis as $nivel) {
-            if ($ltv >= $nivel->gasto_requisito && $compras >= $nivel->compras_requisito) { return $nivel->nome; }
-        }
-        $padrao = VipLevel::where('is_default', true)->first();
-        return $padrao ? $padrao->nome : 'Iniciante';
-    }
-
-    public function index()
+    public function index(Request $request)
     {
-        /** @var \Illuminate\Database\Eloquent\Collection $orders */
-        $orders = Order::with(['user', 'items', 'address', 'carrier', 'history' => function($q) {
+        $query = Order::with(['user', 'items', 'address', 'carrier', 'history' => function($q) {
             $q->orderBy('created_at', 'desc');
-        }])->orderBy('id', 'desc')->get();
+        }]);
 
-        $formatted = $orders->map(function ($order) {
+        if ($search = $request->input('busca')) {
+            $query->where(function($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($uq) use ($search) {
+                      $uq->where('name', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+        
+        if ($status = $request->input('status')) {
+            if ($status !== 'TUDO') {
+                $query->where('status', $status);
+            }
+        }
+
+        if ($start = $request->input('start_date')) {
+            $query->where('created_at', '>=', $start . ' 00:00:00');
+        }
+        if ($end = $request->input('end_date')) {
+            $query->where('created_at', '<=', $end . ' 23:59:59');
+        }
+
+        $query->orderBy('id', 'desc');
+
+        $limit = $request->input('limit', 10);
+        $paginator = $query->paginate($limit);
+
+        // Pre-fetch LTV for users in this page to avoid N+1
+        $userIds = $paginator->pluck('user_id')->filter()->unique();
+        $userMetrics = [];
+        if ($userIds->isNotEmpty()) {
+            $metrics = Order::whereIn('user_id', $userIds)
+                ->whereNotIn('status', [OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value])
+                ->selectRaw('user_id, SUM(total) as ltv, COUNT(*) as compras')
+                ->groupBy('user_id')
+                ->get();
+            foreach ($metrics as $m) {
+                $userMetrics[$m->user_id] = [
+                    'ltv' => (float)$m->ltv,
+                    'compras' => (int)$m->compras
+                ];
+            }
+        }
+
+        $niveisVip = VipLevel::orderBy('gasto_requisito', 'desc')->get();
+        $defaultVip = VipLevel::where('is_default', true)->first();
+
+        $formatted = $paginator->getCollection()->map(function ($order) use ($userMetrics, $niveisVip, $defaultVip) {
             $status = $order->status instanceof OrderStatus
                 ? $order->status
                 : OrderStatus::from((string) $order->getRawOriginal('status'));
 
-            // Ignora CANCELADO e REEMBOLSADO para não inflar as métricas do CRM
-            $historicoCliente = Order::where('user_id', $order->user_id)
-                                     ->whereNotIn('status', [
-                                         OrderStatus::CANCELLED->value,
-                                         OrderStatus::REFUNDED->value,
-                                     ]);
+            $ltv = $userMetrics[$order->user_id]['ltv'] ?? 0.0;
+            $compras = $userMetrics[$order->user_id]['compras'] ?? 0;
             
-            $ltv = (float) $historicoCliente->sum('total');
-            
+            $rank = 'Iniciante';
+            foreach ($niveisVip as $nivel) {
+                if ($ltv >= $nivel->gasto_requisito && $compras >= $nivel->compras_requisito) {
+                    $rank = $nivel->nome;
+                    break;
+                }
+            }
+            if ($rank === 'Iniciante' && $defaultVip) {
+                $rank = $defaultVip->nome;
+            }
+
             return [
                 'id' => $order->id,
                 'status' => $status->value,
@@ -56,7 +99,6 @@ class OrderController extends Controller
                 'hora' => $order->created_at->format('H:i'),
                 'data_raw' => $order->created_at->format('Y-m-d\TH:i:s'), 
                 
-                // MAPA FINANCEIRO ESTRITO
                 'subtotal' => (float) $order->subtotal,
                 'frete_valor' => (float) $order->frete,
                 'desconto' => (float) $order->desconto,
@@ -67,12 +109,9 @@ class OrderController extends Controller
                 'desconto_vip_frete' => 0, 
                 'desconto_frete' => 0,
 
-                // LOGÍSTICA E RASTREIO
                 'tracking_code' => $order->tracking_code,
-                // Puxa o nome real da transportadora do banco ou exibe status default
                 'carrier' => $order->carrier ? $order->carrier->nome : 'Aguardando Despacho', 
                 
-                // DETALHES DE CANCELAMENTO / REEMBOLSO E COMPROVANTES
                 'motivo_cancelamento' => $order->cancel_reason,
                 'comprovante_reembolso' => $order->refund_receipt ? asset('storage/' . $order->refund_receipt) : null,
                 'comprovante_pagamento' => $order->payment_receipt ? asset('storage/' . $order->payment_receipt) : null,
@@ -80,7 +119,6 @@ class OrderController extends Controller
                 'metodo_reembolso' => $order->refund_method ?? 'Estorno/Transferência',
                 'coupons' => is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : ($order->applied_coupons ?? []),
                 
-                // PAGAMENTO VIA
                 'pagamento_metodo' => $order->payment_method ?? 'A Vista',
                 'pagamento_parcelas' => (int) $order->payment_installments,
                 'juros' => (float) $order->gateway_fee > 0, 
@@ -95,7 +133,6 @@ class OrderController extends Controller
                     'isPago' => $status->isPaid()
                 ],
                 
-                // CLIENTE
                 'cliente' => [
                     'id' => $order->user ? $order->user->id : 0,
                     'nome' => $order->user ? $order->user->name : 'Cliente Excluído',
@@ -108,8 +145,8 @@ class OrderController extends Controller
                     'tags' => $order->user->tags ?? [],
                     'avatar' => $order->user->avatar ?? null,
                     'ltv' => $ltv,
-                    'cupons_usados' => $historicoCliente->whereNotNull('applied_coupons')->count(),
-                    'rank' => $this->getRank($ltv, $historicoCliente->count())
+                    'cupons_usados' => $compras,
+                    'rank' => $rank
                 ],
 
                 'endereco' => $order->address ? [
@@ -150,22 +187,50 @@ class OrderController extends Controller
             ];
         });
 
-        // CÁLCULO DAS MÉTRICAS DE PIX
-        $pixTotal = $orders->filter(function($q){ return stripos($q->payment_method ?? '', 'pix') !== false; })->count();
+        $paginator->setCollection($formatted);
+
+        return response()->json($paginator);
+    }
+
+    public function metrics(Request $request)
+    {
+        $orders = Order::select('status', 'payment_method', 'total')->get();
+
+        $totais = $orders->count();
+        $aEnviar = $orders->where('status', OrderStatus::SEPARATION->value)->count();
+        $pixTotais = $orders->filter(function($q){ return stripos($q->payment_method ?? '', 'pix') !== false; })->count();
         $pixPagos = $orders->filter(function ($order) {
-            return stripos($order->payment_method ?? '', 'pix') !== false
-                && $order->status instanceof OrderStatus
-                && $order->status->isPaid();
+            $isPago = !in_array($order->status, [OrderStatus::PENDING->value, OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value]);
+            return stripos($order->payment_method ?? '', 'pix') !== false && $isPago;
         })->count();
-        $conversaoPix = $pixTotal > 0 ? round(($pixPagos / $pixTotal) * 100, 1) : 0;
         
+        $conversaoPix = $pixTotais > 0 ? round(($pixPagos / $pixTotais) * 100, 1) : 0;
+        
+        $cancelados = $orders->where('status', OrderStatus::CANCELLED->value)->count();
+        $taxaCancelamento = $totais > 0 ? round(($cancelados / $totais) * 100, 1) : 0;
+        
+        $reembolsados = $orders->where('status', OrderStatus::REFUNDED->value);
+        $qtdReembolsados = $reembolsados->count();
+        $valorReembolsado = $reembolsados->sum('total');
+        $taxaReembolso = $totais > 0 ? round(($qtdReembolsados / $totais) * 100, 1) : 0;
+        
+        $emAnalise = $orders->where('status', OrderStatus::REFUND_ANALYSIS->value)->count();
+        
+        $ltv = $orders->whereNotIn('status', [OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value])->sum('total');
+
         return response()->json([
-            'status' => 'success', 
-            'data' => $formatted,
-            'metrics' => [
-                'conversao_pix' => $conversaoPix,
-                'total_pix_gerados' => $pixTotal
-            ]
+            'totais' => $totais,
+            'aEnviar' => $aEnviar,
+            'pixTotais' => $pixTotais,
+            'pixPagos' => $pixPagos,
+            'conversaoPix' => $conversaoPix,
+            'cancelados' => $cancelados,
+            'taxaCancelamento' => $taxaCancelamento,
+            'qtdReembolsados' => $qtdReembolsados,
+            'valorReembolsado' => $valorReembolsado,
+            'taxaReembolso' => $taxaReembolso,
+            'emAnalise' => $emAnalise,
+            'ltv' => $ltv
         ]);
     }
 

@@ -252,6 +252,7 @@ const AppContent = () => {
                         <Route path="configuracoes" element={<ConfiguracoesPrincipal />} />
                         <Route path="avaliacoes" element={<AdminAvaliacoes />} />
                         <Route path="transportadoras" element={<AdminCarriers />} />
+                        <Route path="estoque" element={<div className="p-8 text-slate-500">Módulo de Estoque (Em construção)</div>} />
                     </Route>
                     
                     {/* Login do Admin (Fica fora do Layout) */}

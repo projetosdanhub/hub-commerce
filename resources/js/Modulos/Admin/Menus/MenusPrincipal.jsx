@@ -103,7 +103,7 @@ const MenusContent = () => {
     }, [configs, activeConfigId]);
 
     // Fetch Items for active config
-    const { data: dbItems = [], refetch: refetchItems } = useQuery({
+    const { data: dbItems, refetch: refetchItems } = useQuery({
         queryKey: ['menuItems', activeConfigId],
         queryFn: async () => {
             if (!activeConfigId) return [];

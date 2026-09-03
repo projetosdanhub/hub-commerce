@@ -376,14 +376,26 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
   // ==========================================
   // 5.3. FETCH DE DADOS (USEQUERY)
   // ==========================================
-  const { data: listaClientesDaApi = [], isLoading: carregandoClientes, isFetching: isFetchingClients, refetch: refetchClients } = useQuery({
-      queryKey: ['clientesCRM'], 
+  const { data: listagemResponse, isLoading: carregandoClientes, isFetching: isFetchingClients, refetch: refetchClients } = useQuery({
+      queryKey: ['clientesCRM', searchTerm, filtroStatusCRM, filtroMesAniv, itemsPerPage, currentPage], 
       queryFn: async () => {
-          const response = await api.get('/admin/customers');
+          const response = await api.get('/admin/customers', {
+              params: {
+                  busca: searchTerm,
+                  status: filtroStatusCRM,
+                  mes_aniversario: filtroMesAniv,
+                  limit: itemsPerPage,
+                  page: currentPage
+              }
+          });
           return response.data.data; 
       },
       refetchInterval: 15000, 
   });
+
+  const listaClientesDaApi = Array.isArray(listagemResponse) ? listagemResponse : (listagemResponse?.data || []);
+  const totalPages = listagemResponse?.last_page || 1;
+  const totalClientes = listagemResponse?.total || listaClientesDaApi.length;
 
   const { data: metricasReais } = useQuery({
       queryKey: ['dashboardMetrics'],
@@ -597,31 +609,8 @@ const AdminCustomersContent = ({ mainTab, setMainTab }) => {
       }));
   }, [niveisVIPDaApi]);
 
-  const clientesFiltrados = useMemo(() => {
-    return listaClientesDaApi.filter(c => {
-      const matchBusca = safeStr(c?.nome).toLowerCase().includes(safeStr(searchTerm).toLowerCase()) || 
-                         safeStr(c?.email).toLowerCase().includes(safeStr(searchTerm).toLowerCase()) ||
-                         safeStr(c?.cpf).includes(safeStr(searchTerm)) || 
-                         safeStr(c?.telefone).includes(safeStr(searchTerm));
-      const matchStatus = filtroStatusCRM === 'TODOS' || safeStr(c?.status) === filtroStatusCRM;
-      
-      let matchAniversario = true;
-      if (filtroMesAniv !== 'TODOS') {
-          if (c.nascimento && c.nascimento !== '-') {
-              const mesCliente = c.nascimento.split('-')[1]; 
-              matchAniversario = (mesCliente === filtroMesAniv);
-          } else {
-              matchAniversario = false;
-          }
-      }
-      return matchBusca && matchStatus && matchAniversario;
-    });
-  }, [listaClientesDaApi, searchTerm, filtroStatusCRM, filtroMesAniv]);
-
-  const totalPages = Math.ceil((clientesFiltrados?.length || 0) / itemsPerPage) || 1;
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const clientesPaginados = (clientesFiltrados || []).slice(indexOfFirstItem, indexOfLastItem);
+  const clientesFiltrados = listaClientesDaApi;
+  const clientesPaginados = listaClientesDaApi;
 
   const ultimasComprasListFiltrada = useMemo(() => {
     return listaClientesDaApi
