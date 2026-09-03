@@ -72,9 +72,9 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | BASE-009 | P1 | Criar enums e transições de status de pedido | BASE-008 | Sem mistura pending/paid e estados antigos |
 | [x] | BASE-010 | P1 | Remover scripts manuais de schema da raiz | BASE-002 | Alterações somente por migrations |
 | [x] | BASE-011 | P1 | Padronizar respostas e códigos HTTP da API | SEC-011 | Contrato de erro documentado |
-| [ ] | BASE-012 | P1 | Adicionar paginação e limites às listagens | BASE-011 | Listagens possuem limite máximo |
-| [ ] | BASE-013 | P2 | Eliminar N+1 e queries redundantes | BASE-012 | Queries críticas medidas |
-| [ ] | BASE-014 | P1 | Fazer PHP e frontend iniciarem por comandos documentados | BASE-005 | Setup reproduzível em máquina limpa |
+| [x] | BASE-012 | P1 | Adicionar paginação e limites às listagens | BASE-011 | Listagens possuem limite máximo |
+| [x] | BASE-013 | P2 | Eliminar N+1 e queries redundantes | BASE-012 | Queries críticas medidas |
+| [x] | BASE-014 | P1 | Fazer PHP e frontend iniciarem por comandos documentados | BASE-005 | Setup reproduzível em máquina limpa |
 
 ## Fase 3 — Fundação multitenant
 
