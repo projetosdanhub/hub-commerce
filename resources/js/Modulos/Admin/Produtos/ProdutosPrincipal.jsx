@@ -19,6 +19,7 @@ import DashboardCatalogo from './Painel/DashboardCatalogo';
 import ListaDeProdutos from './Lista/ListaDeProdutos';
 import EditorDeProduto from './Editor/EditorDeProduto';
 import AuditoriaProdutos from './Auditoria/AuditoriaProdutos';
+import { toProductEditorModel } from './produtoContract';
 
 class ProductErrorBoundary extends React.Component {
     constructor(props) {
@@ -95,7 +96,9 @@ const AdminProductsContent = () => {
                 api.get('/admin/categories')
             ]);
             
-            if (resProd.data && resProd.data.data) setProdutos(resProd.data.data);
+            if (resProd.data && resProd.data.data) {
+                setProdutos(resProd.data.data.map(toProductEditorModel));
+            }
             if (resCat.data && resCat.data.data) setCategorias(resCat.data.data);
         } catch (error) {
             console.error("Erro ao carregar dados", error);
