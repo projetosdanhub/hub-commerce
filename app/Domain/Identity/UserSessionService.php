@@ -38,9 +38,9 @@ final class UserSessionService
         );
     }
 
-    public function revokeCurrent(User $user, ?PersonalAccessToken $token): void
+    public function revokeCurrent(User $user, mixed $token): void
     {
-        if ($token === null) {
+        if (! $token instanceof PersonalAccessToken) {
             return;
         }
 
