@@ -2,16 +2,23 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Order;
-use App\Models\OrderHistory;
 use App\Models\VipLevel;
+use App\Services\OrderStatusTransitionService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private readonly OrderStatusTransitionService $statusTransitions,
+    ) {
+    }
+
     private function getRank($ltv, $compras) {
         $niveis = VipLevel::orderBy('gasto_requisito', 'desc')->get();
         foreach ($niveis as $nivel) {
@@ -29,15 +36,22 @@ class OrderController extends Controller
         }])->orderBy('id', 'desc')->get();
 
         $formatted = $orders->map(function ($order) {
+            $status = $order->status instanceof OrderStatus
+                ? $order->status
+                : OrderStatus::from((string) $order->getRawOriginal('status'));
+
             // Ignora CANCELADO e REEMBOLSADO para não inflar as métricas do CRM
             $historicoCliente = Order::where('user_id', $order->user_id)
-                                     ->whereNotIn('status', ['CANCELADO', 'REEMBOLSADO']);
+                                     ->whereNotIn('status', [
+                                         OrderStatus::CANCELLED->value,
+                                         OrderStatus::REFUNDED->value,
+                                     ]);
             
             $ltv = (float) $historicoCliente->sum('total');
             
             return [
                 'id' => $order->id,
-                'status' => $order->status,
+                'status' => $status->value,
                 'data' => $order->created_at->format('d/m/Y'),
                 'hora' => $order->created_at->format('H:i'),
                 'data_raw' => $order->created_at->format('Y-m-d\TH:i:s'), 
@@ -78,7 +92,7 @@ class OrderController extends Controller
                     'parcelas' => (int) $order->payment_installments,
                     'valor_parcela' => (float) $order->installment_value,
                     'juros' => (float) $order->gateway_fee,
-                    'isPago' => !in_array($order->status, ['A_PAGAR', 'CANCELADO'])
+                    'isPago' => $status->isPaid()
                 ],
                 
                 // CLIENTE
@@ -138,7 +152,11 @@ class OrderController extends Controller
 
         // CÁLCULO DAS MÉTRICAS DE PIX
         $pixTotal = $orders->filter(function($q){ return stripos($q->payment_method ?? '', 'pix') !== false; })->count();
-        $pixPagos = $orders->filter(function($q){ return stripos($q->payment_method ?? '', 'pix') !== false && !in_array($q->status, ['A_PAGAR', 'CANCELADO']); })->count();
+        $pixPagos = $orders->filter(function ($order) {
+            return stripos($order->payment_method ?? '', 'pix') !== false
+                && $order->status instanceof OrderStatus
+                && $order->status->isPaid();
+        })->count();
         $conversaoPix = $pixTotal > 0 ? round(($pixPagos / $pixTotal) * 100, 1) : 0;
         
         return response()->json([
@@ -151,52 +169,82 @@ class OrderController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, $id) {
+    public function updateStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => ['required', Rule::enum(OrderStatus::class)],
+        ]);
+
         $order = Order::findOrFail($id);
-        $order->status = $request->status;
-        $order->save();
-        OrderHistory::create(['order_id' => $order->id, 'event' => "Status atualizado para: " . str_replace('_', ' ', $request->status)]);
+        $target = OrderStatus::from($validated['status']);
+
+        $this->statusTransitions->transition(
+            $order,
+            $target,
+            'Status atualizado para: '.str_replace('_', ' ', $target->value),
+        );
+
         return response()->json(['status' => 'success', 'message' => 'Status do pedido atualizado.']);
     }
 
-    public function dispatchOrder(Request $request, $id) {
+    public function dispatchOrder(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'rastreio' => ['nullable', 'string', 'max:255'],
+        ]);
+
         $order = Order::findOrFail($id);
-        $order->status = 'DESPACHADO';
-        $order->tracking_code = $request->rastreio;
-        $order->save();
-        $textoRastreio = $request->rastreio ? "Código de Rastreio: {$request->rastreio}" : "Enviado sem código de rastreio.";
-        OrderHistory::create(['order_id' => $order->id, 'event' => "Pedido Despachado para a transportadora. {$textoRastreio}"]);
+        $order->tracking_code = $validated['rastreio'] ?? null;
+        $textoRastreio = $order->tracking_code
+            ? "Código de Rastreio: {$order->tracking_code}"
+            : 'Enviado sem código de rastreio.';
+
+        $this->statusTransitions->transition(
+            $order,
+            OrderStatus::SHIPPED,
+            "Pedido Despachado para a transportadora. {$textoRastreio}",
+        );
+
         return response()->json(['status' => 'success', 'message' => 'Pedido marcado como despachado.']);
     }
 
-    public function cancelOrder(Request $request, $id) {
-        $request->validate(['tipo' => 'required|string', 'motivo' => 'required|string']);
-        $order = Order::findOrFail($id);
-        
-        $caminhoComprovante = null;
+    public function cancelOrder(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'tipo' => ['required', Rule::in([
+                'CANCELADO',
+                'SOLICITACAO_REEMBOLSO',
+                'REEMBOLSADO',
+            ])],
+            'motivo' => ['required', 'string'],
+            'comprovante' => [
+                Rule::requiredIf($request->input('tipo') === 'REEMBOLSADO'),
+                'file',
+                'mimes:jpeg,png,jpg,pdf',
+                'max:5120',
+            ],
+        ]);
 
-        if ($request->tipo === 'REEMBOLSADO') {
-            $request->validate(['comprovante' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120']);
-            $caminhoComprovante = $request->file('comprovante')->store('reembolsos', 'public');
-            
-            $order->status = 'REEMBOLSADO';
-            $order->refund_receipt = $caminhoComprovante;
-            $order->cancel_reason = $request->motivo;
-            $msg = "Reembolso Aprovado. Motivo: {$request->motivo}";
-        
-        } elseif ($request->tipo === 'SOLICITACAO_REEMBOLSO') {
-            $order->status = 'EM_ANALISE_REEMBOLSO';
-            $order->cancel_reason = $request->motivo; 
-            $msg = "Análise de Reembolso Iniciada. Motivo: {$request->motivo}";
-        
+        $order = Order::findOrFail($id);
+        $target = match ($validated['tipo']) {
+            'REEMBOLSADO' => OrderStatus::REFUNDED,
+            'SOLICITACAO_REEMBOLSO' => OrderStatus::REFUND_REVIEW,
+            default => OrderStatus::CANCELLED,
+        };
+
+        $this->statusTransitions->assertCanTransition($order, $target);
+
+        if ($target === OrderStatus::REFUNDED) {
+            $order->refund_receipt = $request->file('comprovante')->store('reembolsos', 'public');
+            $message = "Reembolso Aprovado. Motivo: {$validated['motivo']}";
+        } elseif ($target === OrderStatus::REFUND_REVIEW) {
+            $message = "Análise de Reembolso Iniciada. Motivo: {$validated['motivo']}";
         } else {
-            $order->status = 'CANCELADO';
-            $order->cancel_reason = $request->motivo; 
-            $msg = "Pedido Cancelado. Motivo: {$request->motivo}";
+            $message = "Pedido Cancelado. Motivo: {$validated['motivo']}";
         }
-        
-        $order->save();
-        OrderHistory::create(['order_id' => $order->id, 'event' => $msg]);
+
+        $order->cancel_reason = $validated['motivo'];
+        $this->statusTransitions->transition($order, $target, $message);
 
         return response()->json(['status' => 'success', 'message' => 'Fluxo processado com sucesso.']);
     }
@@ -207,7 +255,24 @@ class OrderController extends Controller
     public function updateStatusManual(Request $request, $id) 
     {
         $order = Order::findOrFail($id);
-        $acao = $request->input('acao'); 
+        $acao = $request->input('acao');
+        $targetStatus = match ($acao) {
+            'PAGAR' => OrderStatus::PICKING,
+            'SEPARAR' => OrderStatus::READY_TO_SHIP,
+            'DESPACHAR' => OrderStatus::SHIPPED,
+            'ENTREGAR' => OrderStatus::DELIVERED,
+            'CANCELAR' => OrderStatus::CANCELLED,
+            'INICIAR_REEMBOLSO' => OrderStatus::REFUND_REVIEW,
+            'PROCESSAR_REEMBOLSO' => OrderStatus::REFUNDED,
+            default => null,
+        };
+
+        if ($targetStatus === null) {
+            return response()->json(['status' => 'error', 'message' => 'Ação inválida não reconhecida.'], 400);
+        }
+
+        $this->statusTransitions->assertCanTransition($order, $targetStatus);
+
         $motivo = $request->input('motivo');
         $carrierId = $request->input('carrier_id');
         $trackingCode = $request->input('tracking_code');
@@ -232,14 +297,12 @@ class OrderController extends Controller
         switch ($acao) {
             case 'PAGAR':
                 $request->validate(['motivo' => 'required|string']);
-                $order->status = 'SEPARACAO';
                 $order->payment_receipt = $caminhoComprovante; // <-- SALVA O COMPROVANTE AQUI
                 $msg = "Pagamento Aprovado Manualmente. Motivo/Parecer: {$motivo}";
                 break;
 
             // 🟢 NOVO FLUXO: Operador finalizou a separação dos itens físicos
             case 'SEPARAR':
-                $order->status = 'SEPARADO';
                 $msg = "Itens separados e conferidos no estoque. Aguardando configuração de expedição." . ($motivo ? " Obs: {$motivo}" : "");
                 break;
 
@@ -364,7 +427,6 @@ class OrderController extends Controller
                     $tipoEnvio = "Melhor Envio (Serviço: " . $request->input('me_carrier_id') . ")";
                 }
 
-                $order->status = 'DESPACHADO';
                 $order->tracking_code = $trackingCode;
                 
                 $textoRastreio = $trackingCode ? "Rastreio/Protocolo: {$trackingCode}" : "Aguardando geração de etiqueta.";
@@ -373,21 +435,18 @@ class OrderController extends Controller
 
             case 'ENTREGAR':
                 $request->validate(['arquivo' => 'required|file']);
-                $order->status = 'ENTREGUE';
                 $order->delivery_receipt = $caminhoComprovante; // <-- SALVA O COMPROVANTE AQUI
                 $msg = "Entrega Confirmada. Comprovante de entrega anexado aos arquivos da ordem.";
                 break;
 
             case 'CANCELAR':
                 $request->validate(['motivo' => 'required|string']);
-                $order->status = 'CANCELADO';
                 $order->cancel_reason = $motivo;
                 $msg = "Pedido Cancelado pelo Gestor. Motivo: {$motivo}";
                 break;
 
             case 'INICIAR_REEMBOLSO':
                 $request->validate(['motivo' => 'required|string']);
-                $order->status = 'EM_ANALISE_REEMBOLSO';
                 $order->cancel_reason = $motivo;
                 $msg = "Análise de Devolução/Reembolso Iniciada. Parecer: {$motivo}";
                 break;
@@ -398,7 +457,6 @@ class OrderController extends Controller
                     'arquivo' => 'required|file'
                 ]);
                 
-                $order->status = 'REEMBOLSADO';
                 $order->cancel_reason = $motivo;
                 $order->refund_receipt = $caminhoComprovante;
                 $order->refund_method = $refundMethod; 
@@ -440,8 +498,7 @@ class OrderController extends Controller
                 return response()->json(['status' => 'error', 'message' => 'Ação inválida não reconhecida.'], 400);
         }
 
-        $order->save();
-        OrderHistory::create(['order_id' => $order->id, 'event' => $msg]);
+        $this->statusTransitions->transition($order, $targetStatus, $msg);
 
         return response()->json(['status' => 'success', 'message' => 'Operação processada e auditada com sucesso.']);
     }
@@ -562,6 +619,7 @@ class OrderController extends Controller
     public function cancelMelhorEnvioCart($id) 
     {
         $order = Order::findOrFail($id);
+        $this->statusTransitions->assertCanTransition($order, OrderStatus::READY_TO_SHIP);
         
         // Verifica se é um UUID de carrinho (tamanho maior que 20)
         if (strlen($order->tracking_code) > 20) {
@@ -580,14 +638,12 @@ class OrderController extends Controller
         // Limpa os dados de logística do pedido para permitir nova configuração
         $order->tracking_code = null;
         $order->carrier_id = null;
-        $order->status = 'SEPARADO';
-        $order->save();
-        
-        // Regista na linha do tempo da Auditoria
-        OrderHistory::create([
-            'order_id' => $order->id, 
-            'event' => "Etiqueta removida do carrinho do Melhor Envio. Transporte reaberto para nova configuração."
-        ]);
+
+        $this->statusTransitions->transition(
+            $order,
+            OrderStatus::READY_TO_SHIP,
+            'Etiqueta removida do carrinho do Melhor Envio. Transporte reaberto para nova configuração.',
+        );
         
         return response()->json(['status' => 'success', 'message' => 'Etiqueta removida do carrinho com sucesso.']);
     }
