@@ -7,6 +7,7 @@ A documentação arquitetural descreve o estado aprovado, não apenas intençõe
 - docs/adr/0001-modular-monolith.md: arquitetura implantável aprovada.
 - docs/architecture/domain-map.md: propriedade e colaboração entre módulos.
 - docs/architecture/dependency-rules.md: dependências permitidas e proibidas.
+- docs/architecture/api-contract.md: envelopes, códigos HTTP e códigos de erro estáveis.
 - .ai/rules: invariantes obrigatórias para implementação.
 - docs/security: modelo de ameaças, dados e controles.
 - docs/payments: contratos, estados, webhooks e reconciliação.
