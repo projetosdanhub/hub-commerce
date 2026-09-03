@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Domain\Tenancy\Concerns\BelongsToTenant;
+use App\Enums\ProductStatus;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -76,6 +77,7 @@ class Produto extends Model
             'quantidade_estoque' => 'integer',
             'destaque' => 'boolean',
             'ativo' => 'boolean',
+            'status_vitrine' => ProductStatus::class,
             'controlar_estoque' => 'boolean',
             'alerta_estoque' => 'integer',
             'alerta_moderado' => 'integer',
