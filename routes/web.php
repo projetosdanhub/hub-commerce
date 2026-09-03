@@ -10,4 +10,4 @@ use Illuminate\Support\Facades\Route;
 // A SPA nunca deve capturar URLs de API inexistentes.
 Route::get('/{any?}', function () {
     return view('app');
-})->where('any', '^(?!api(?:/|$)).*);
+})->where('any', '^(?!api(?:/|$)).*');
