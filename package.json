@@ -4,6 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "verify:imports": "node scripts/verify-local-imports.mjs",
         "dev": "vite"
     },
     "devDependencies": {

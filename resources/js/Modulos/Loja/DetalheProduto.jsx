@@ -9,8 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useParams } from 'react-router-dom';
 
 // Importação dos Componentes Globais da Loja
-import ProductCard from './ProductCard'; 
-import PromoBanners from './PromoBanners';
+import ProductCard from './CartaoProduto';
+import PromoBanners from './BannersPromocionais';
 
 // --- ÍCONES SVG DECLARADOS E BLINDADOS ---
 const HeartIcon = ({ isFilled, className }) => (
