@@ -3,8 +3,6 @@
 use App\Enums\OrderStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
-
 return new class extends Migration
 {
     public function up(): void
@@ -40,7 +38,7 @@ return new class extends Migration
             ->all();
 
         if ($invalidStatuses !== []) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 'Existem estados de pedido não reconhecidos: '.implode(', ', $invalidStatuses)
             );
         }
