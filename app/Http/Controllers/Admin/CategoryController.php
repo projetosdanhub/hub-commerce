@@ -3,78 +3,162 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SaveCategoryRequest;
 use App\Models\Categoria;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 use App\Services\CacheFallbackService;
+use App\Domain\Tenancy\TenantContextStore;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $categorias = CacheFallbackService::remember('admin_categorias_all', 60 * 24, function () {
-            // 🟢 Inteligência: Já busca as categorias contando quantos produtos existem dentro de cada uma!
-            return Categoria::withCount('produtos as qtd_produtos')->orderBy('id', 'desc')->get();
+            return Categoria::query()
+                ->withCount('produtos as qtd_produtos')
+                ->orderBy('nome')
+                ->get();
         });
 
         return response()->json(['status' => 'success', 'data' => $categorias]);
     }
 
-    public function store(Request $request)
+    public function store(SaveCategoryRequest $request): JsonResponse
     {
-        $request->validate([
-            'nome' => 'required|string',
-            'img' => 'nullable|file|mimes:jpeg,png,webp|max:4096',
-        ], [
-            'img.max' => 'A imagem não pode ultrapassar 4MB.',
-            'img.mimes' => 'A imagem deve ser JPG, PNG ou WEBP.',
-        ]);
+        $attributes = $this->validatedAttributes($request);
+        $attributes['slug'] = $this->nextSlug($attributes['nome']);
 
-        $dados = $request->only(['nome', 'status', 'descricao']);
-        $dados['slug'] = Str::slug($request->nome); // Gera a URL amigável
+        $categoria = Categoria::query()->create($attributes);
 
-        $categoria = Categoria::find($request->id);
-
-        // 🟢 Motor de Upload Físico (Salva a imagem no disco do servidor)
-        if ($request->hasFile('img')) {
-            // Se já tiver uma imagem antiga, deleta para não acumular lixo no servidor
-            if ($categoria && $categoria->img) {
-                $caminhoRelativo = str_replace(asset('storage/') . '/', '', $categoria->img);
-                Storage::disk('public')->delete($caminhoRelativo);
-            }
-            // Salva a nova imagem e guarda o link público
-            $path = $request->file('img')->store('categorias', 'public');
-            $dados['img'] = asset('storage/' . $path);
+        if ($image = $this->storeUploadedImage($request)) {
+            $categoria->update(['img' => $image]);
         }
 
-        $categoria = Categoria::updateOrCreate(
-            ['id' => $request->id],
-            $dados
-        );
+        $categoria->loadCount('produtos as qtd_produtos');
+        $this->flushCategoryCaches();
 
-        // Puxa a contagem de produtos para devolver ao React atualizado
-        $categoria->qtd_produtos = $categoria->produtos()->count();
+        return response()->json(['status' => 'success', 'data' => $categoria], 201);
+    }
 
-        CacheFallbackService::forget('admin_categorias_all');
+    public function update(SaveCategoryRequest $request, int $id): JsonResponse
+    {
+        $categoria = Categoria::query()->findOrFail($id);
+        $attributes = $this->validatedAttributes($request);
+
+        if ($attributes['nome'] !== $categoria->nome) {
+            $attributes['slug'] = $this->nextSlug($attributes['nome'], $categoria);
+        }
+
+        if ($image = $this->storeUploadedImage($request)) {
+            $this->deleteStoredImage($categoria->img);
+            $attributes['img'] = $image;
+        }
+
+        $categoria->update($attributes);
+        $categoria->loadCount('produtos as qtd_produtos');
+        $this->flushCategoryCaches();
 
         return response()->json(['status' => 'success', 'data' => $categoria]);
     }
 
-    public function destroy($id)
+    public function destroy(int $id): JsonResponse
     {
-        $categoria = Categoria::findOrFail($id);
-        
-        // Se a categoria tiver imagem, apaga do disco antes de deletar do banco
-        if ($categoria->img) {
-            $caminhoRelativo = str_replace(asset('storage/') . '/', '', $categoria->img);
-            Storage::disk('public')->delete($caminhoRelativo);
-        }
-        
-        $categoria->delete();
+        $categoria = Categoria::query()->findOrFail($id);
 
-        CacheFallbackService::forget('admin_categorias_all');
+        if ($categoria->produtos()->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Não é possível excluir uma categoria que possui produtos vinculados.',
+            ], 422);
+        }
+
+        $this->deleteStoredImage($categoria->img);
+        $categoria->delete();
+        $this->flushCategoryCaches();
 
         return response()->json(['status' => 'success']);
+    }
+
+    /**
+     * @return array{nome: string, descricao: ?string, status: string, ativo: bool}
+     */
+    private function validatedAttributes(SaveCategoryRequest $request): array
+    {
+        $validated = $request->validated();
+        $status = $validated['status'];
+
+        return [
+            'nome' => $validated['nome'],
+            'descricao' => $validated['descricao'] ?? null,
+            'status' => $status,
+            'ativo' => $status === Categoria::STATUS_ATIVO,
+        ];
+    }
+
+    private function nextSlug(string $nome, ?Categoria $ignore = null): string
+    {
+        $base = Str::slug($nome) ?: 'categoria';
+        $slug = $base;
+        $suffix = 2;
+
+        while (true) {
+            $query = Categoria::query()->where('slug', $slug);
+
+            if ($ignore !== null) {
+                $query->where('id', '!=', $ignore->getKey());
+            }
+
+            if (! $query->exists()) {
+                return $slug;
+            }
+
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+    }
+
+    private function storeUploadedImage(SaveCategoryRequest $request): ?string
+    {
+        if (! $request->hasFile('img')) {
+            return null;
+        }
+
+        $tenant = app(TenantContextStore::class)->require();
+        $path = $request->file('img')->store('tenants/'.$tenant->tenantUuid.'/categorias', 'public');
+
+        return asset('storage/'.$path);
+    }
+
+    private function deleteStoredImage(?string $image): void
+    {
+        if ($image === null || $image === '') {
+            return;
+        }
+
+        $path = Str::after($image, asset('storage/'));
+
+        if ($path === $image) {
+            return;
+        }
+
+        $tenant = app(TenantContextStore::class)->require();
+        $tenantDirectory = 'tenants/'.$tenant->tenantUuid.'/categorias/';
+
+        // `categorias/` é o diretório legado já gerado pela aplicação antes
+        // da separação por tenant; somente registros da categoria já resolvida
+        // podem solicitar essa limpeza.
+        if (! Str::startsWith($path, [$tenantDirectory, 'categorias/'])) {
+            return;
+        }
+
+        Storage::disk('public')->delete($path);
+    }
+
+    private function flushCategoryCaches(): void
+    {
+        CacheFallbackService::forget('admin_categorias_all');
+        CacheFallbackService::forget('storefront_categories_active');
     }
 }

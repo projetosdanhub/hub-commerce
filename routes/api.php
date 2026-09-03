@@ -154,6 +154,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::prefix('categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->middleware('tenant.permission:tenant.catalog.view');
         Route::post('/', [CategoryController::class, 'store'])->middleware('tenant.permission:tenant.catalog.manage');
+        Route::put('/{id}', [CategoryController::class, 'update'])->middleware('tenant.permission:tenant.catalog.manage');
         Route::delete('/{id}', [CategoryController::class, 'destroy'])->middleware('tenant.permission:tenant.catalog.manage');
     });
     // --- MÓDULO: MEGA MENU ---

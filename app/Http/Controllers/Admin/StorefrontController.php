@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\StorefrontConfig;
 use App\Models\NavigationMenu;
-use App\Models\Category;
+use App\Models\Categoria;
 use App\Models\Produto;
 use App\Services\CacheFallbackService;
 use App\Services\PaymentGatewayService;
@@ -71,8 +71,13 @@ class StorefrontController extends Controller
     public function getCategories()
     {
         $categories = CacheFallbackService::remember('storefront_categories_active', 60 * 24, function () {
-            return Category::where('status', 'ativo')->orderBy('ordem', 'asc')->get();
+            return Categoria::query()
+                ->where('ativo', true)
+                ->where('status', Categoria::STATUS_ATIVO)
+                ->orderBy('nome')
+                ->get(['id', 'nome', 'slug', 'img']);
         });
+
         return response()->json(['status' => 'success', 'data' => $categories]);
     }
 
