@@ -16,7 +16,7 @@ jobs:
       with:
         php-version: '8.2'
         extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
-        coverage: none
+        coverage: pcov
 
     - name: Setup Node
       uses: actions/setup-node@v4
@@ -30,8 +30,20 @@ jobs:
     - name: Install Dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
+    - name: Run Laravel Pint (Code Style)
+      run: vendor/bin/pint --test
+
+    - name: Run Larastan (Static Analysis)
+      run: vendor/bin/phpstan analyse --memory-limit=2G
+
     - name: Install frontend dependencies
       run: npm ci
+
+    - name: Run ESLint
+      run: npm run lint
+
+    - name: Run Vitest
+      run: npm run test:ui
 
     - name: Generate key
       run: php artisan key:generate
@@ -53,11 +65,11 @@ jobs:
         DB_DATABASE: database/database.sqlite
       run: php artisan database:preflight --json
 
-    - name: Execute tests
+    - name: Execute tests with coverage
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
-      run: php artisan test
+      run: php artisan test --coverage-clover coverage.xml
 
     - name: Verify frontend imports
       run: npm run verify:imports
