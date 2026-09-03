@@ -100,6 +100,7 @@ class OrderStatusTransitionTest extends TestCase
             ])
             ->assertNotFound();
 
+        app(TenantContextStore::class)->clear();
         $this->setTenantContext($tenantB, 'pedidos-b.test');
 
         $this->assertSame(OrderStatus::AWAITING_PAYMENT, $foreignOrder->fresh()->status);
