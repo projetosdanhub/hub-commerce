@@ -59,7 +59,7 @@ class MelhorEnvioController extends Controller
             return response()->json(['status' => 'success', 'message' => 'Sincronizado com sucesso!']);
         }
 
-        return response()->json(['status' => 'error', 'message' => 'Token inválido ou expirado.'], 400);
+        return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Token inválido ou expirado.'], 400);
     }
 
     public function saveCarriers(Request $request)
@@ -105,12 +105,12 @@ class MelhorEnvioController extends Controller
 
         $config = MelhorEnvioSetting::first();
         if (!$config || !$config->access_token) {
-            return response()->json(['status' => 'error', 'message' => 'Melhor Envio não conectado.'], 400);
+            return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Melhor Envio não conectado.'], 400);
         }
 
         $senderInfo = $config->sender_info;
         if (empty($senderInfo['cep'])) {
-            return response()->json(['status' => 'error', 'message' => 'Endereço da Loja (Remetente) não configurado.'], 400);
+            return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Endereço da Loja (Remetente) não configurado.'], 400);
         }
 
         $response = Http::withToken($config->access_token)
@@ -148,6 +148,6 @@ class MelhorEnvioController extends Controller
             return response()->json(['status' => 'success', 'data' => $validRates]);
         }
 
-        return response()->json(['status' => 'error', 'message' => 'Nao foi possivel calcular o frete. Verifique os dados informados.'], 502);
+        return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Nao foi possivel calcular o frete. Verifique os dados informados.'], 502);
     }
 }

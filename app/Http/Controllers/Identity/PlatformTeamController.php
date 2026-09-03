@@ -128,6 +128,7 @@ final class PlatformTeamController extends Controller
 
                 return response()->json([
                     'status' => 'error',
+                    'code' => 'REQUEST_FAILED',
                     'message' => 'Não foi possível enviar o convite. Tente novamente.',
                 ], 503);
             }
@@ -233,6 +234,7 @@ final class PlatformTeamController extends Controller
     {
         return response()->json([
             'status' => 'error',
+            'code' => 'REQUEST_FAILED',
             'message' => $exception->getMessage(),
         ], 422);
     }

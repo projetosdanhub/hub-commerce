@@ -31,6 +31,7 @@ class ResolveTenantFromDomain
         if (! $tenantDomain->tenant->isActive()) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Esta loja está temporariamente indisponível.',
             ], 423);
         }

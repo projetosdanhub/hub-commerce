@@ -20,6 +20,7 @@ final class EnsureIdentityAccess
         if (! $user || ! $this->access->hasAdministrativeAccess($user)) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Acesso administrativo não autorizado.',
             ], 403);
         }

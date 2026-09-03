@@ -36,6 +36,7 @@ final class InvitationAcceptanceController extends Controller
         } catch (AuthorizationException $exception) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Este convite não pode ser aceito por esta conta.',
             ], 403);
         }
@@ -59,6 +60,7 @@ final class InvitationAcceptanceController extends Controller
         } catch (AuthorizationException $exception) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Este convite não pode ser aceito por esta conta.',
             ], 403);
         }
@@ -68,6 +70,7 @@ final class InvitationAcceptanceController extends Controller
     {
         return response()->json([
             'status' => 'error',
+            'code' => 'REQUEST_FAILED',
             'message' => 'O convite é inválido, expirou ou já foi utilizado.',
         ], 422);
     }

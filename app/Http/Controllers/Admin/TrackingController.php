@@ -187,6 +187,7 @@ class TrackingController extends Controller
 
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Nao foi possivel carregar as metricas.',
             ], 503);
         }

@@ -120,7 +120,7 @@ class CarrierController extends Controller
         $carrier = Carrier::findOrFail($id);
         
         if ($carrier->orders()->exists()) {
-            return response()->json(['status' => 'error', 'message' => 'Não é possível excluir esta transportadora pois ela já possui pedidos vinculados. Considere desativá-la.'], 400);
+            return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Não é possível excluir esta transportadora pois ela já possui pedidos vinculados. Considere desativá-la.'], 400);
         }
 
         if ($carrier->imagem) Storage::disk('public')->delete($carrier->imagem);

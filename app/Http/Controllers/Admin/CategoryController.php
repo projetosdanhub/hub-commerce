@@ -70,6 +70,7 @@ class CategoryController extends Controller
         if ($categoria->produtos()->exists()) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Não é possível excluir uma categoria que possui produtos vinculados.',
             ], 422);
         }

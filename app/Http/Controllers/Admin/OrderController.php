@@ -268,7 +268,7 @@ class OrderController extends Controller
         };
 
         if ($targetStatus === null) {
-            return response()->json(['status' => 'error', 'message' => 'Ação inválida não reconhecida.'], 400);
+            return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Ação inválida não reconhecida.'], 400);
         }
 
         $this->statusTransitions->assertCanTransition($order, $targetStatus);
@@ -325,7 +325,7 @@ class OrderController extends Controller
 
                     $meConfig = \App\Models\MelhorEnvioSetting::first();
                     if (!$meConfig || !$meConfig->access_token || empty($meConfig->sender_info)) {
-                        return response()->json(['status' => 'error', 'message' => 'Melhor Envio não autenticado ou Remetente não configurado.'], 400);
+                        return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Melhor Envio não autenticado ou Remetente não configurado.'], 400);
                     }
 
                     $remetente = $meConfig->sender_info;
@@ -495,7 +495,7 @@ class OrderController extends Controller
                 break;
 
             default:
-                return response()->json(['status' => 'error', 'message' => 'Ação inválida não reconhecida.'], 400);
+                return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Ação inválida não reconhecida.'], 400);
         }
 
         $this->statusTransitions->transition($order, $targetStatus, $msg);
