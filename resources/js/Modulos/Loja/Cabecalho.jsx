@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import NavigationMenu from './MenuNavegacao';
-import api from '../../api';
+import { storefrontApi } from '../../api';
 
 // --- ÍCONES SVG NATIVOS ---
 const SearchIcon = ({ className }) => (
@@ -81,6 +81,7 @@ const Header = ({
     const [isLoadingFav, setIsLoadingFav] = useState(false);
 
     const searchContainerRef = useRef(null);
+    const searchRequestVersion = useRef(0);
 
     const isCoraçãoAtivo = isLogado === true && favoritesCount > 0;
 
@@ -102,35 +103,42 @@ const Header = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // --- MOTOR DE PESQUISA (Conectado na API Real) ---
+    // --- MOTOR DE PESQUISA (CATÁLOGO PÚBLICO TENANT-SCOPED) ---
     const handleSearchChange = async (e) => {
         const val = e.target.value;
+        const termo = val.trim();
+        const requestVersion = ++searchRequestVersion.current;
+
         setTermoPesquisa(val);
 
-        if (val.trim().length > 2) {
-            setIsPesquisando(true);
-            setIsFetchingSearch(true);
-            
-            try {
-                // Buscamos apenas os produtos ativos da API
-                const res = await api.get('/admin/products');
-                const catData = res.data?.data || [];
-                
-                const filtrados = catData.filter(item => 
-                    item.status_vitrine === 'ATIVO' && 
-                    item.nome.toLowerCase().includes(val.toLowerCase())
-                ).slice(0, 5); // Limita a 5 resultados para não quebrar o layout
-                
-                setResultadosPesquisa(filtrados);
-            } catch (error) {
-                console.error("Erro na busca", error);
+        if (termo.length <= 2) {
+            setIsPesquisando(false);
+            setIsFetchingSearch(false);
+            setResultadosPesquisa([]);
+            return;
+        }
+
+        setIsPesquisando(true);
+        setIsFetchingSearch(true);
+
+        try {
+            const res = await storefrontApi.get('/storefront/products', {
+                params: { q: termo },
+            });
+
+            if (requestVersion !== searchRequestVersion.current) {
+                return;
+            }
+
+            setResultadosPesquisa((res.data?.data?.data ?? []).slice(0, 5));
+        } catch {
+            if (requestVersion === searchRequestVersion.current) {
                 setResultadosPesquisa([]);
-            } finally {
+            }
+        } finally {
+            if (requestVersion === searchRequestVersion.current) {
                 setIsFetchingSearch(false);
             }
-        } else {
-            setIsPesquisando(false);
-            setResultadosPesquisa([]);
         }
     };
 
