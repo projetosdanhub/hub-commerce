@@ -21,7 +21,7 @@ class SecurityHeaders
             : "'self' 'unsafe-inline'";
 
         $connectPolicy = app()->environment('local')
-            ? "'self' ws://127.0.0.1:5173 ws://localhost:5173 http://127.0.0.1:5173 http://localhost:5173 https://graph.facebook.com https://www.google-analytics.com https://business-api.tiktok.com https://api.pinterest.com"
+            ? "'self' ws://127.0.0.1:5173 ws://localhost:5173 http://127.0.0.1:5173 http://localhost:5173 http://localhost:8000 http://127.0.0.1:8000 https://graph.facebook.com https://www.google-analytics.com https://business-api.tiktok.com https://api.pinterest.com"
             : "'self' https://graph.facebook.com https://www.google-analytics.com https://business-api.tiktok.com https://api.pinterest.com";
 
         $response->headers->set('Content-Security-Policy', implode('; ', [
