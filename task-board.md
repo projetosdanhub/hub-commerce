@@ -62,10 +62,10 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
 | [x] | BASE-001 | P0 | Corrigir migrations fiscais duplicadas | GOV-006 | migrate:fresh funciona |
-| [ ] | BASE-002 | P0 | Definir estratégia segura para bancos já existentes | BASE-001 | Migration de correção e rollback testados |
+| [x] | BASE-002 | P0 | Definir estratégia segura para bancos já existentes | BASE-001 | Preflight, migration corretiva e rollback testados |
 | [x] | BASE-003 | P0 | Unificar Product/Produto | BASE-001 | Model e imports únicos |
 | [ ] | BASE-004 | P0 | Unificar Category/Categoria | BASE-001 | Tabela, model e API consistentes |
-| [ ] | BASE-005 | P0 | Corrigir cinco imports React inexistentes | GOV-006 | npm run build funciona |
+| [x] | BASE-005 | P0 | Corrigir cinco imports React inexistentes | GOV-006 | Imports verificados e npm run build aprovado |
 | [ ] | BASE-006 | P0 | Corrigir rota /api/customers ou removê-la | BASE-003 | Nenhuma action inexistente |
 | [ ] | BASE-007 | P0 | Trocar busca pública para endpoint storefront | BASE-003 | Visitante pesquisa sem token admin |
 | [ ] | BASE-008 | P1 | Normalizar campos de preço, estoque e status | BASE-003 | Contrato único backend/frontend |
@@ -223,7 +223,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
 | [ ] | QA-001 | P0 | Substituir testes de exemplo por baseline real | BASE-001 | Casos críticos cobertos |
-| [ ] | QA-002 | P0 | Adicionar npm ci e build à CI | BASE-005 | Build bloqueia merge |
+| [x] | QA-002 | P0 | Adicionar npm ci e build à CI | BASE-005 | npm ci, imports e build executados na CI |
 | [ ] | QA-003 | P1 | Adicionar Pint e análise estática PHP | BASE-011 | Gate obrigatório |
 | [ ] | QA-004 | P1 | Adicionar ESLint e testes React | BASE-005 | Gate obrigatório |
 | [ ] | QA-005 | P0 | Adicionar testes de autorização | SEC-004 | Matriz negativa coberta |
@@ -267,7 +267,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 ## Próximo bloco recomendado
 
-SEC-001 → SEC-003 → SEC-004 → SEC-005 → SEC-007 → SEC-008 → SEC-009 → SEC-010.
+BASE-004 → BASE-006 → BASE-007 → BASE-008.
 
-Não iniciar gateways reais, redesign amplo ou migrations multitenant antes de concluir a contenção P0 e obter baseline verde.
+O próximo bloco mantém a Fase 2 incremental: unificar categorias, corrigir a API de clientes e separar a busca pública do painel administrativo antes de novos módulos.
 
