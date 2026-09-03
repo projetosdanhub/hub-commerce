@@ -46,16 +46,13 @@ class CustomerController extends Controller
      * ALGORITMO VIP INTELIGENTE
      * Calcula o rank do cliente com base no LTV e Total de Compras.
      */
-    private function getRank($ltv, $compras) {
-        $niveis = VipLevel::orderBy('gasto_requisito', 'desc')->get();
-        
+    private function getRank($ltv, $compras, $niveis, ?VipLevel $padrao) {
         foreach ($niveis as $nivel) {
             if ($ltv >= $nivel->gasto_requisito && $compras >= $nivel->compras_requisito) {
                 return $nivel->nome;
             }
         }
-        
-        $padrao = VipLevel::where('is_default', true)->first();
+
         return $padrao ? $padrao->nome : 'Iniciante';
     }
 
@@ -89,7 +86,10 @@ class CustomerController extends Controller
         $limit = min(max($request->integer('limit', 15), 1), 100);
         $paginator = $query->paginate($limit);
 
-        $formatted = $paginator->getCollection()->map(function ($c) {
+        $niveisVip = VipLevel::orderBy('gasto_requisito', 'desc')->get();
+        $nivelPadrao = $niveisVip->firstWhere('is_default', true);
+
+        $formatted = $paginator->getCollection()->map(function ($c) use ($niveisVip, $nivelPadrao) {
             $pedidosValidos = $c->orders->filter(
                 fn (Order $order): bool => $order->status->countsTowardRevenue()
             );
@@ -153,7 +153,7 @@ class CustomerController extends Controller
                 'descontoLoja' => $descLoja,
                 'coins' => (float) ($c->coins ?? 0),
                 'cashback' => (float) ($c->cashback ?? 0),
-                'rank' => $this->getRank($ltv, $pedidosValidos->count()),
+                'rank' => $this->getRank($ltv, $pedidosValidos->count(), $niveisVip, $nivelPadrao),
 
                 'reembolsado' => $pedidosReembolsados->count() > 0,
                 'produtosReembolsados' => $pedidosReembolsados->sum(function($p) { return $p->items->sum('quantity'); }),
