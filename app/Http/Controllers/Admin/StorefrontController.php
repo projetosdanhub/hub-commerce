@@ -130,7 +130,7 @@ class StorefrontController extends Controller
             ->first();
 
         if (! $product) {
-            return response()->json(['status' => 'error', 'message' => 'Produto não encontrado'], 404);
+            return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Produto não encontrado'], 404);
         }
 
         return response()->json(['status' => 'success', 'data' => $product]);
@@ -192,6 +192,7 @@ class StorefrontController extends Controller
         if (array_intersect($forbiddenCardFields, array_keys($paymentData)) !== []) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Dados brutos de cartao nao sao aceitos. Use tokenizacao do gateway.',
             ], 422);
         }
@@ -322,6 +323,7 @@ class StorefrontController extends Controller
 
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Nao foi possivel processar o checkout.',
             ], 500);
         }

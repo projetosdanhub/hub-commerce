@@ -95,6 +95,7 @@ final class AuthController extends Controller
     {
         return response()->json([
             'status' => 'error',
+            'code' => 'REQUEST_FAILED',
             'message' => 'Credenciais inválidas ou acesso não autorizado.',
         ], 401);
     }

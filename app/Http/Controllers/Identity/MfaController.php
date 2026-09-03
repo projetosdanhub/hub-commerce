@@ -37,6 +37,7 @@ final class MfaController extends Controller
         } catch (\DomainException|\InvalidArgumentException|\LogicException $exception) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => $exception->getMessage(),
             ], 422);
         }
@@ -55,6 +56,7 @@ final class MfaController extends Controller
         } catch (\InvalidArgumentException $exception) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Código de autenticação inválido.',
             ], 422);
         }
@@ -73,6 +75,7 @@ final class MfaController extends Controller
         } catch (\InvalidArgumentException $exception) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Código de autenticação inválido.',
             ], 422);
         }
@@ -89,6 +92,7 @@ final class MfaController extends Controller
         } catch (\InvalidArgumentException $exception) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Código de autenticação inválido.',
             ], 422);
         }

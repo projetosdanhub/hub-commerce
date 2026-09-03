@@ -22,6 +22,7 @@ final class EnsureTenantPermission
         if (! $user || ! Gate::forUser($user)->allows('tenant-permission', [$context->tenantId, $permission])) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Você não possui permissão para esta ação na loja atual.',
             ], 403);
         }
@@ -29,6 +30,7 @@ final class EnsureTenantPermission
         if ($user->currentAccessToken() && ! $user->tokenCan('tenant')) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'A sessão não possui escopo para o painel da loja.',
             ], 403);
         }

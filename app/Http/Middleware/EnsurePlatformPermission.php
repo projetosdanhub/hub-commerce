@@ -16,6 +16,7 @@ final class EnsurePlatformPermission
         if (! $user || ! Gate::forUser($user)->allows('platform-permission', [$permission])) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Você não possui permissão para esta ação na plataforma.',
             ], 403);
         }
@@ -23,6 +24,7 @@ final class EnsurePlatformPermission
         if ($user->currentAccessToken() && ! $user->tokenCan('platform')) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'A sessão não possui escopo para o painel da plataforma.',
             ], 403);
         }

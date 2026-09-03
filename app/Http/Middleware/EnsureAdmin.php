@@ -16,6 +16,7 @@ class EnsureAdmin
         if (! $user || ! Gate::forUser($user)->allows('access-admin')) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Acesso administrativo nao autorizado.',
             ], 403);
         }
@@ -23,6 +24,7 @@ class EnsureAdmin
         if ($user->currentAccessToken() && ! $user->tokenCan('admin')) {
             return response()->json([
                 'status' => 'error',
+                'code' => 'REQUEST_FAILED',
                 'message' => 'Token sem permissao administrativa.',
             ], 403);
         }
