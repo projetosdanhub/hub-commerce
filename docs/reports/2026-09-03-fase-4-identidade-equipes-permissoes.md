@@ -42,5 +42,10 @@
 ## Validação
 
 Os testes de autorização, convite, senha, e-mail, TOTP e sessão foram
-adicionados à suíte. O resultado da CI da branch deve ser registrado no merge
-para `main`.
+adicionados à suíte. A execução `Tests` do commit
+`f414a83975ee42bfcbb97c940f4f5ad13a3ee41a` foi concluída com sucesso em
+03/09/2026: [GitHub Actions #33706952727](https://github.com/projetosdanhub/hub-commerce/actions/runs/33706952727).
+
+O ajuste final também valida que a sincronização de cargos preenche o
+`tenant_id` obrigatório da tabela pivô, preservando as chaves estrangeiras
+compostas e o isolamento entre lojas.
