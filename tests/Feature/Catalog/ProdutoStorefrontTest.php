@@ -93,4 +93,46 @@ class ProdutoStorefrontTest extends TestCase
 
         $this->assertFalse(class_exists('App\\Models\\Product'));
     }
+    public function test_storefront_search_is_available_to_a_visitor_without_an_admin_token(): void
+    {
+        $categoria = Categoria::query()->create([
+            'nome' => 'Camisetas',
+            'slug' => 'camisetas-busca',
+            'descricao' => 'Categoria para busca.',
+            'ativo' => true,
+            'status' => 'ATIVO',
+        ]);
+
+        $matchingProduct = Produto::query()->create([
+            'categoria_id' => $categoria->id,
+            'nome' => 'Camiseta para visitante',
+            'slug' => 'camiseta-visitante',
+            'descricao' => 'Produto retornado pela busca pública.',
+            'preco' => '99.90',
+            'quantidade_estoque' => 2,
+            'ativo' => true,
+            'status_vitrine' => 'ATIVO',
+        ]);
+
+        Produto::query()->create([
+            'categoria_id' => $categoria->id,
+            'nome' => 'Moletom não relacionado',
+            'slug' => 'moletom-nao-relacionado',
+            'descricao' => 'Produto que não deve aparecer nesta busca.',
+            'preco' => '159.90',
+            'quantidade_estoque' => 2,
+            'ativo' => true,
+            'status_vitrine' => 'ATIVO',
+        ]);
+
+        $this->withServerVariables(['HTTP_HOST' => 'catalogo.test', 'SERVER_NAME' => 'catalogo.test'])
+            ->getJson('http://catalogo.test/api/storefront/products?q=Camiseta')
+            ->assertOk()
+            ->assertJsonPath('status', 'success')
+            ->assertJsonPath('data.data.0.id', $matchingProduct->id)
+            ->assertJsonCount(1, 'data.data');
+
+        $this->assertGuest();
+    }
+
 }

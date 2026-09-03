@@ -1,8 +1,18 @@
 import axios from 'axios';
 
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+
 const api = axios.create({
-    // Lê a variável do .env, se não achar, usa o localhost por segurança
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api', 
+    baseURL: apiBaseUrl,
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+});
+
+// A vitrine nunca herda o interceptor do painel administrativo.
+export const storefrontApi = axios.create({
+    baseURL: apiBaseUrl,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
