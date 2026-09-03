@@ -5,6 +5,7 @@ import { Icons } from '../Compartilhado/Icones';
 import { PremiumSaveButton, AnimatedNotification } from '../Compartilhado/ComponentesUI';
 import { IconButton } from '../../DesignSystem/primitives/IconButton';
 import { Badge } from '../../DesignSystem/primitives/Badge';
+import { toProductEditorModel } from '../produtoContract';
 
 import AbaGeral from './abas/AbaGeral';
 import AbaFichaTecnica from './abas/AbaFichaTecnica';
@@ -111,13 +112,13 @@ export default function EditorDeProduto({
             payload.append('categoria_id', catId);
             payload.append('descricao', produtoEmEdicao.descricao || '');
             payload.append('preco', pco);
-            if (!isNaN(parseFloat(produtoEmEdicao.precoPromo))) payload.append('preco_promo', parseFloat(produtoEmEdicao.precoPromo));
-            payload.append('quantidade_estoque', isNaN(parseFloat(produtoEmEdicao.estoque)) ? 0 : parseFloat(produtoEmEdicao.estoque));
-            payload.append('status_vitrine', (produtoEmEdicao.status === 'INATIVO' || (produtoEmEdicao.controlarEstoque && (isNaN(parseFloat(produtoEmEdicao.estoque)) ? 0 : parseFloat(produtoEmEdicao.estoque)) <= 0 && !produtoEmEdicao.preVenda)) ? 'INATIVO' : produtoEmEdicao.status);
+            payload.append('preco_promo', produtoEmEdicao.precoPromo === '' ? '' : parseFloat(produtoEmEdicao.precoPromo));
+            payload.append('quantidade_estoque', isNaN(parseInt(produtoEmEdicao.estoque, 10)) ? 0 : parseInt(produtoEmEdicao.estoque, 10));
+            payload.append('status_vitrine', produtoEmEdicao.status);
             payload.append('sku_ref', produtoEmEdicao.skuRef || '');
             payload.append('sku_sufixo', skuFinal || '');
             payload.append('meta_title', produtoEmEdicao.metaTitle || '');
-            payload.append('meta_description', produtoEmEdicao.metaDesc || '');
+            payload.append('meta_desc', produtoEmEdicao.metaDesc || '');
             payload.append('slug', produtoEmEdicao.slug || '');
             payload.append('controlar_estoque', produtoEmEdicao.controlarEstoque ? 1 : 0);
             payload.append('alerta_estoque', produtoEmEdicao.alertaEstoque || 5);
@@ -153,6 +154,9 @@ export default function EditorDeProduto({
             if (produtoEmEdicao.videoObject) {
                 payload.append('video', produtoEmEdicao.videoObject);
             }
+            if (produtoEmEdicao.galeria && produtoEmEdicao.galeria.length > 0) {
+                produtoEmEdicao.galeria.forEach((url) => payload.append('galeria_urls[]', url));
+            }
             if (produtoEmEdicao.galeriaObjects && produtoEmEdicao.galeriaObjects.length > 0) {
                 produtoEmEdicao.galeriaObjects.forEach((file, index) => {
                     payload.append(`galeria[${index}]`, file);
@@ -175,7 +179,7 @@ export default function EditorDeProduto({
 
             if (res.data.status === 'success') {
                 showToast('success', res.data.message || 'Produto salvo com sucesso!');
-                setProdutoEmEdicao(res.data.data);
+                setProdutoEmEdicao(toProductEditorModel(res.data.data));
                 onSuccess();
             }
         } catch (e) {
