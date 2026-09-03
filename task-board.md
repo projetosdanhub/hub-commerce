@@ -72,9 +72,9 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | BASE-009 | P1 | Criar enums e transições de status de pedido | BASE-008 | Sem mistura pending/paid e estados antigos |
 | [x] | BASE-010 | P1 | Remover scripts manuais de schema da raiz | BASE-002 | Alterações somente por migrations |
 | [x] | BASE-011 | P1 | Padronizar respostas e códigos HTTP da API | SEC-011 | Contrato de erro documentado |
-| [x] | BASE-012 | P1 | Adicionar paginação e limites às listagens | BASE-011 | Listagens possuem limite máximo |
-| [x] | BASE-013 | P2 | Eliminar N+1 e queries redundantes | BASE-012 | Queries críticas medidas |
-| [x] | BASE-014 | P1 | Fazer PHP e frontend iniciarem por comandos documentados | BASE-005 | Setup reproduzível em máquina limpa |
+| [!] | BASE-012 | P1 | Adicionar paginação e limites às listagens | BASE-011 | Listagens possuem limite máximo |
+| [!] | BASE-013 | P2 | Eliminar N+1 e queries redundantes | BASE-012 | Queries críticas medidas |
+| [!] | BASE-014 | P1 | Fazer PHP e frontend iniciarem por comandos documentados | BASE-005 | Setup reproduzível em máquina limpa |
 
 ## Fase 3 — Fundação multitenant
 
@@ -230,9 +230,9 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | QA-006 | P0 | Testes de Tenancy: Garantir que Tenant A não lê dados de Tenant B | BASE-012 | Confirmado com `TenantIsolationTest.php`. |
 | [x] | QA-007 | P0 | Testes de Webhooks: Pagamentos falsos ou re-enviados (Idempotência) | BASE-012 | Estrutura criada (`PaymentWebhookTest.php`). |
 | [x] | QA-008 | P1 | Configurar ESLint + Prettier falhando build frontend em erro | BASE-012 | Configurado `eslint` e rodando no pipeline. |
-| [x] | QA-009 | P0 | Teste E2E (Cypress/Playwright) do Checkout (Caminho Feliz) | BASE-012 | Criado teste base com `Playwright`. |
+| [!] | QA-009 | P0 | Teste E2E (Cypress/Playwright) do Checkout (Caminho Feliz) | BASE-012 | Criado teste base com `Playwright`. |
 | [x] | QA-010 | P1 | Teste de unidade para Store de Carrinho (Pinia/Zustand) | BASE-012 | Preparado `vitest` para testes da UI e Lógica. |
-| [x] | QA-011 | P0 | "Branch Protection" ativo no GitHub proibindo merge sem testes passando | BASE-012 | Pipeline documentado e exigido (`branch_protection.md`). |
+| [!] | QA-011 | P0 | "Branch Protection" ativo no GitHub proibindo merge sem testes passando | BASE-012 | Pipeline documentado e exigido (`branch_protection.md`). |
 
 ## Fase 13 — Infraestrutura e produção
 
@@ -267,6 +267,6 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 ## Próximo bloco recomendado
 
-CAT-001 → CAT-002 → CAT-003.
+UI-001 → UI-005 → UI-006.
 
-O próximo bloco inicia a Fase 5 (Catálogo e estoque): consolidando o modelo de categorias, produtos, variações e serviço de estoque transacional.
+Prioridade temporariamente antecipada para a Fase 10: definir tokens, primitives acessíveis e patterns de UI/UX. Antes do lançamento, retomar BASE-012, BASE-013, BASE-014, QA-009 e QA-011, que permanecem bloqueadas pela auditoria.
