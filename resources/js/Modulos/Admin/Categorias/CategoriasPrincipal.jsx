@@ -17,10 +17,11 @@ const Icons = {
 
 const CategoriasContent = () => {
     const queryClient = useQueryClient();
-    const [modal, setModal] = useState({ isOpen: false, data: { id: null, nome: '', status: 'ATIVA' }, erro: null });
+    const categoryQueryKey = ['adminCategories', window.location.host];
+    const [modal, setModal] = useState({ isOpen: false, data: { id: null, nome: '', status: 'ATIVO' }, erro: null });
 
     const { data: categorias = [], isLoading } = useQuery({
-        queryKey: ['adminCategories'],
+        queryKey: categoryQueryKey,
         queryFn: async () => {
             const res = await api.get('/admin/categories');
             return res.data.data || [];
@@ -33,15 +34,21 @@ const CategoriasContent = () => {
             return await api.post('/admin/categories', dados);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['adminCategories']);
-            setModal({ isOpen: false, data: { id: null, nome: '', status: 'ATIVA' }, erro: null });
+            queryClient.invalidateQueries({ queryKey: categoryQueryKey });
+            setModal({ isOpen: false, data: { id: null, nome: '', status: 'ATIVO' }, erro: null });
+        },
+        onError: (error) => {
+            setModal(previous => ({
+                ...previous,
+                erro: error?.response?.data?.message || 'Não foi possível salvar a categoria.',
+            }));
         }
     });
 
     const mutacaoExcluirCat = useMutation({
         mutationFn: async (id) => await api.delete(`/admin/categories/${id}`),
         onSuccess: () => {
-            queryClient.invalidateQueries(['adminCategories']);
+            queryClient.invalidateQueries({ queryKey: categoryQueryKey });
         }
     });
 
@@ -75,11 +82,11 @@ const CategoriasContent = () => {
                 </div>
                 <div className="categorias-metric-card">
                     <h3 className="categorias-metric-title"><Icons.Check /> Ativas</h3>
-                    <p className="categorias-metric-value success">{categorias.filter(c => c.status === 'ATIVA').length}</p>
+                    <p className="categorias-metric-value success">{categorias.filter(c => c.status === 'ATIVO').length}</p>
                 </div>
                 <div className="categorias-metric-card">
                     <h3 className="categorias-metric-title"><Icons.Close /> Inativas</h3>
-                    <p className="categorias-metric-value danger">{categorias.filter(c => c.status !== 'ATIVA').length}</p>
+                    <p className="categorias-metric-value danger">{categorias.filter(c => c.status !== 'ATIVO').length}</p>
                 </div>
             </div>
 
@@ -87,7 +94,7 @@ const CategoriasContent = () => {
                 <h2>Listagem de Categorias</h2>
                 <button 
                     className="categorias-btn categorias-btn-primary" 
-                    onClick={() => setModal({ isOpen: true, data: { id: null, nome: '', status: 'ATIVA' }, erro: null })}
+                    onClick={() => setModal({ isOpen: true, data: { id: null, nome: '', status: 'ATIVO' }, erro: null })}
                 >
                     <Icons.Plus /> Nova Categoria
                 </button>
@@ -109,7 +116,7 @@ const CategoriasContent = () => {
                             <tr key={cat.id}>
                                 <td style={{ fontWeight: 'var(--hub-font-weight-bold)' }}>{cat.nome}</td>
                                 <td>
-                                    <span className={`categorias-badge ${cat.status === 'ATIVA' ? 'categorias-badge-active' : 'categorias-badge-inactive'}`}>
+                                    <span className={`categorias-badge ${cat.status === 'ATIVO' ? 'categorias-badge-active' : 'categorias-badge-inactive'}`}>
                                         {cat.status}
                                     </span>
                                 </td>
@@ -130,7 +137,7 @@ const CategoriasContent = () => {
             </div>
 
             {modal.isOpen && (
-                <div className="categorias-modal-overlay" onClick={() => setModal({ isOpen: false, data: { id: null, nome: '', status: 'ATIVA' }, erro: null })}>
+                <div className="categorias-modal-overlay" onClick={() => setModal({ isOpen: false, data: { id: null, nome: '', status: 'ATIVO' }, erro: null })}>
                     <div className="categorias-modal" onClick={e => e.stopPropagation()}>
                         <div className="categorias-modal-header">
                             <h3>{modal.data.id ? 'Editar Categoria' : 'Nova Categoria'}</h3>
@@ -155,13 +162,13 @@ const CategoriasContent = () => {
                                 value={modal.data.status} 
                                 onChange={e => setModal(prev => ({...prev, data: {...prev.data, status: e.target.value}}))}
                             >
-                                <option value="ATIVA">Ativa</option>
-                                <option value="INATIVA">Inativa</option>
+                                <option value="ATIVO">Ativa</option>
+                                <option value="INATIVO">Inativa</option>
                             </select>
                         </div>
 
                         <div className="categorias-modal-footer">
-                            <button className="categorias-btn categorias-btn-secondary" onClick={() => setModal({ isOpen: false, data: { id: null, nome: '', status: 'ATIVA' }, erro: null })}>Cancelar</button>
+                            <button className="categorias-btn categorias-btn-secondary" onClick={() => setModal({ isOpen: false, data: { id: null, nome: '', status: 'ATIVO' }, erro: null })}>Cancelar</button>
                             <button className="categorias-btn categorias-btn-primary" onClick={handleSalvar} disabled={mutacaoSalvarCat.isPending}>
                                 {mutacaoSalvarCat.isPending ? 'Salvando...' : 'Salvar'}
                             </button>
