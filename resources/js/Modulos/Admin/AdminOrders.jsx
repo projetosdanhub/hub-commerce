@@ -468,7 +468,6 @@ const AdminOrdersContent = () => {
         setTimeout(() => setIsManualRefresh(false), 800);
     };
 
-    useEffect(() => {
 
     useEffect(() => {
         if (pedidoSelecionado && pedidosPaginados.length > 0) {
