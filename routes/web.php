@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 // Essa rota diz ao Laravel: "Qualquer página que o usuário tentar acessar, 
 // mande para a nossa view 'app', pois o React vai cuidar da navegação visual."
+// A SPA nunca deve capturar URLs de API inexistentes.
 Route::get('/{any?}', function () {
     return view('app');
-})->where('any', '.*');
+})->where('any', '^(?!api(?:/|$)).*');
