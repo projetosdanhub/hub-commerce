@@ -46,13 +46,35 @@ class TenantMembership extends Model
 
     public function roles(): BelongsToMany
     {
-        // tenant_id faz parte da chave e das FKs compostas da tabela pivô.
-        // Defini-lo na relação impede que attach/sync crie associação sem
-        // escopo e ainda filtra qualquer vínculo de outro tenant.
         return $this->belongsToMany(TenantRole::class, 'tenant_membership_roles')
             ->withPivot('tenant_id')
-            ->withPivotValue('tenant_id', $this->tenant_id)
             ->withTimestamps();
+    }
+
+    /**
+     * Sincroniza cargos sempre com o tenant da membership.
+     *
+     * A tabela pivô usa tenant_id na chave primária e em duas FKs compostas;
+     * por isso, chamar roles()->sync() diretamente pode gravar um vínculo
+     * inválido. Centralizar a escrita evita um papel sem escopo ou de outra
+     * loja, sem introduzir um filtro que quebraria eager loading.
+     *
+     * @param list<int|string> $roleIds
+     * @return array{attached: list<int|string>, detached: list<int|string>, updated: list<int|string>}
+     */
+    public function syncRoles(array $roleIds): array
+    {
+        if (! $this->exists || $this->tenant_id === null) {
+            throw new \LogicException('A membership persistida precisa ter um tenant para receber cargos.');
+        }
+
+        $records = [];
+
+        foreach (array_unique($roleIds) as $roleId) {
+            $records[$roleId] = ['tenant_id' => $this->tenant_id];
+        }
+
+        return $this->roles()->sync($records);
     }
 
     public function ownership(): HasOne

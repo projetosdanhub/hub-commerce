@@ -33,7 +33,7 @@ class IdentityAuthorizationTest extends TestCase
         $ownerMembership = app(TenantOwnershipService::class)->assignInitialOwner($tenant, $owner);
         $adminRole = app(TenantRoleProvisioningService::class)->provisionSystemRoles($tenant);
         $adminMembership = $this->membership($tenant, $administrator);
-        $adminMembership->roles()->attach($adminRole);
+        $adminMembership->syncRoles([$adminRole->getKey()]);
 
         $this->expectException(ProtectedOwnerException::class);
 
@@ -54,7 +54,7 @@ class IdentityAuthorizationTest extends TestCase
 
         $adminRole = app(TenantRoleProvisioningService::class)->provisionSystemRoles($tenantA);
         $membershipA = $this->membership($tenantA, $administrator);
-        $membershipA->roles()->attach($adminRole);
+        $membershipA->syncRoles([$adminRole->getKey()]);
         $membershipB = $this->membership($tenantB, $staffB);
 
         $this->expectException(ModelNotFoundException::class);

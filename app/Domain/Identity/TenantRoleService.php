@@ -136,7 +136,7 @@ final class TenantRoleService
             }
 
             $before = $membership->roles()->pluck('tenant_roles.id')->all();
-            $membership->roles()->sync($roles->modelKeys());
+            $membership->syncRoles($roles->modelKeys());
             $membership->increment('authorization_version');
 
             $this->audit->record(

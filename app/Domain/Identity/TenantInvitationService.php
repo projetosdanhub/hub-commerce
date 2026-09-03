@@ -143,7 +143,7 @@ final class TenantInvitationService
                     'revoked_at' => null,
                     'authorization_version' => $membership->authorization_version + 1,
                 ])->save();
-                $membership->roles()->sync($invitation->roles->modelKeys());
+                $membership->syncRoles($invitation->roles->modelKeys());
             }
 
             $invitation->forceFill([

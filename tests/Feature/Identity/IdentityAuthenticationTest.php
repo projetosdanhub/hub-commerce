@@ -39,7 +39,7 @@ class IdentityAuthenticationTest extends TestCase
             'authorization_version' => 1,
             'joined_at' => now(),
         ]);
-        $membership->roles()->attach($role);
+        $membership->syncRoles([$role->getKey()]);
 
         $login = $this->postJson('/api/admin/login', [
             'email' => $user->email,
