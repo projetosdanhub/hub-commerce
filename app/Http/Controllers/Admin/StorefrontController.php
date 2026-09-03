@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
 use App\Enums\ProductStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use App\Models\NavigationMenu;
 use App\Models\Categoria;
 use App\Models\Produto;
 use App\Services\CacheFallbackService;
+use App\Services\OrderStatusTransitionService;
 use App\Services\PaymentGatewayService;
 use Illuminate\Support\Facades\Log;
 
@@ -159,7 +161,7 @@ class StorefrontController extends Controller
     }
 
     // Processa o Checkout da loja
-    public function checkout(Request $request)
+    public function checkout(Request $request, OrderStatusTransitionService $statusTransitions)
     {
         $request->validate([
             'cliente.email' => 'required|email',
@@ -243,7 +245,7 @@ class StorefrontController extends Controller
                 'frete' => $frete,
                 'desconto' => 0,
                 'total' => $total,
-                'status' => 'pending', // Pagamento Pendente
+                'status' => OrderStatus::AWAITING_PAYMENT->value,
                 'payment_gateway' => 'hub_default',
                 'payment_method' => $request->input('pagamento.metodo'),
                 'payment_installments' => $request->input('pagamento.parcelas', 1),
@@ -291,9 +293,12 @@ class StorefrontController extends Controller
                 ], 503);
             }
 
-            $order->status = 'paid';
             $order->payment_gateway = $paymentResult['gateway'];
-            $order->save();
+            $statusTransitions->transition(
+                $order,
+                OrderStatus::PICKING,
+                'Pagamento aprovado pelo gateway; pedido enviado para separação.',
+            );
             
             \DB::commit();
 

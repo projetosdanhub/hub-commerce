@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Domain\Identity\IdentityPasswordResetService;
 use Illuminate\Http\Request;
@@ -88,8 +89,12 @@ class CustomerController extends Controller
         $users = $query->get();
 
         $formatted = $users->map(function ($c) {
-            $pedidosValidos = $c->orders->whereNotIn('status', ['CANCELADO', 'REEMBOLSADO']);
-            $pedidosReembolsados = $c->orders->where('status', 'REEMBOLSADO');
+            $pedidosValidos = $c->orders->filter(
+                fn (Order $order): bool => $order->status->countsTowardRevenue()
+            );
+            $pedidosReembolsados = $c->orders->filter(
+                fn (Order $order): bool => $order->status === OrderStatus::REFUNDED
+            );
             $ultimoPedido = $c->orders->sortByDesc('created_at')->first();
 
             $descFrete = 0;
@@ -99,7 +104,7 @@ class CustomerController extends Controller
 
             foreach ($c->orders as $pedido) {
                 // 🟢 CORREÇÃO: Ignora Cancelados E Reembolsados para não inflar métricas no CRM
-                if (!in_array($pedido->status, ['CANCELADO', 'REEMBOLSADO'])) {
+                if ($pedido->status->countsTowardRevenue()) {
                     $qtdProdutosComprados += $pedido->items->sum('quantity');
 
                     if (!empty($pedido->applied_coupons)) {
@@ -158,7 +163,7 @@ class CustomerController extends Controller
                     $cuponsJson = is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : $order->applied_coupons;
                     return [
                         'id' => $order->id,
-                        'status' => $order->status,
+                        'status' => $order->status->value,
                         'data_raw' => $order->created_at->format('Y-m-d H:i:s'),
                         
                         'subtotal' => (float) $order->subtotal,
@@ -787,18 +792,18 @@ class CustomerController extends Controller
     public function getDashboardMetrics()
     {
         // 🟢 CORREÇÃO: Ignora CANCELADOS e REEMBOLSADOS no Dashboard principal
-        $pedidosValidos = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO']);
+        $pedidosValidos = \App\Models\Order::whereNotIn('status', [OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value]);
         
         $receitaBruta = $pedidosValidos->sum('total');
         $totalPedidos = $pedidosValidos->count();
         $ticketMedio  = $totalPedidos > 0 ? ($receitaBruta / $totalPedidos) : 0;
 
-        $receitaMesAtual = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
+        $receitaMesAtual = \App\Models\Order::whereNotIn('status', [OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value])
                                  ->whereMonth('created_at', now()->month)
                                  ->whereYear('created_at', now()->year)
                                  ->sum('total');
 
-        $receitaMesAnterior = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
+        $receitaMesAnterior = \App\Models\Order::whereNotIn('status', [OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value])
                                     ->whereMonth('created_at', now()->subMonth()->month)
                                     ->whereYear('created_at', now()->subMonth()->year)
                                     ->sum('total');
@@ -818,12 +823,12 @@ class CustomerController extends Controller
         
         $crescimentoClientes = $clientesTotais > 0 ? ($clientesMesAtual / $clientesTotais) * 100 : 0;
 
-        $pedidosMesAtualCount = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
+        $pedidosMesAtualCount = \App\Models\Order::whereNotIn('status', [OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value])
                                  ->whereMonth('created_at', now()->month)
                                  ->whereYear('created_at', now()->year)
                                  ->count();
         
-        $pedidosMesAnteriorCount = \App\Models\Order::whereNotIn('status', ['CANCELADO', 'REEMBOLSADO'])
+        $pedidosMesAnteriorCount = \App\Models\Order::whereNotIn('status', [OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value])
                                     ->whereMonth('created_at', now()->subMonth()->month)
                                     ->whereYear('created_at', now()->subMonth()->year)
                                     ->count();

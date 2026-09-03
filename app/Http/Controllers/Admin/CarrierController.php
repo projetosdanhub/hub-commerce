@@ -171,7 +171,7 @@ class CarrierController extends Controller
         $orders->getCollection()->transform(function($o) {
             return [
                 'id' => $o->id,
-                'status' => $o->status,
+                'status' => $o->status->value,
                 'created_at' => $o->created_at->format('d/m/Y'),
                 'total' => (float) $o->total,
                 'cliente_nome' => $o->user ? $o->user->name : 'Cliente',
