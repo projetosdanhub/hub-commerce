@@ -1,8 +1,11 @@
 name: Tests
 
 on:
-  push:
   pull_request:
+
+concurrency:
+  group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   test:
