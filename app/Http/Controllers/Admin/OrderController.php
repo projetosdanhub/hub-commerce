@@ -50,7 +50,7 @@ class OrderController extends Controller
 
         $query->orderBy('id', 'desc');
 
-        $limit = $request->input('limit', 10);
+        $limit = min(max($request->integer('limit', 10), 1), 100);
         $paginator = $query->paginate($limit);
 
         // Pre-fetch LTV for users in this page to avoid N+1
