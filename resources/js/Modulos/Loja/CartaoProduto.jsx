@@ -63,8 +63,8 @@ const CartaoProduto = ({ abrirModal, produto, produtoId = 1 }) => {
         badgesExtras: []
     };
 
-    const precoAtual = Number(currentProduct.preco_promocional || currentProduct.preco || currentProduct.precoAtual || 0);
-    const precoAntigo = currentProduct.preco_promocional ? Number(currentProduct.preco) : Number(currentProduct.precoAntigo || 0);
+    const precoAtual = Number(currentProduct.preco_promo || currentProduct.preco || currentProduct.precoAtual || 0);
+    const precoAntigo = currentProduct.preco_promo ? Number(currentProduct.preco) : Number(currentProduct.precoAntigo || 0);
     
     // Calcula imagem (Considerando relação model Images ou mock)
     const imagemUrl = currentProduct.images && currentProduct.images.length > 0 
