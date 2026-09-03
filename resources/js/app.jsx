@@ -48,8 +48,8 @@ import AdminCarriers from './Modulos/Admin/AdminCarriers';
 import AdminPixels from './Modulos/Admin/Pixels/PixelsPrincipal';
 
 // Mocks Temporários
-const CategoryPage = () => <div className="p-20 text-center text-2xl font-bold">Página de Categoria / Departamentos</div>;
-const CheckoutPage = () => <div className="p-20 text-center text-2xl font-bold">Página de Checkout Oficial (Em Breve)</div>;
+const PaginaCategoria = () => <div className="p-20 text-center text-2xl font-bold">Página de Categoria / Departamentos</div>;
+const PaginaCheckout = () => <div className="p-20 text-center text-2xl font-bold">Página de Checkout Oficial (Em Breve)</div>;
 
 // ============================================================================
 // O ESTRUTURADOR MESTRE: AppContent (Gerencia Layout Global e Estado)

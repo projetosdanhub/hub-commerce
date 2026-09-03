@@ -3,11 +3,13 @@
 namespace Tests\Unit\Tenancy;
 
 use App\Jobs\SendToGa4Job;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\TestCase;
 
 class TenantJobContextTest extends TestCase
 {
+    use RefreshDatabase;
     public function test_tracking_job_rejects_unknown_tenant(): void
     {
         $this->expectException(RuntimeException::class);
