@@ -267,7 +267,6 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 ## Próximo bloco recomendado
 
-BASE-012 → BASE-013 → BASE-014.
+CAT-001 → CAT-002 → CAT-003.
 
-O próximo bloco fecha a Fase 2: limitar listagens administrativas, medir queries críticas e validar o setup documentado em ambiente limpo.
-
+O próximo bloco inicia a Fase 5 (Catálogo e estoque): consolidando o modelo de categorias, produtos, variações e serviço de estoque transacional.
