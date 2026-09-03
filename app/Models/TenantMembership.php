@@ -46,8 +46,12 @@ class TenantMembership extends Model
 
     public function roles(): BelongsToMany
     {
+        // tenant_id faz parte da chave e das FKs compostas da tabela pivô.
+        // Defini-lo na relação impede que attach/sync crie associação sem
+        // escopo e ainda filtra qualquer vínculo de outro tenant.
         return $this->belongsToMany(TenantRole::class, 'tenant_membership_roles')
             ->withPivot('tenant_id')
+            ->withPivotValue('tenant_id', $this->tenant_id)
             ->withTimestamps();
     }
 

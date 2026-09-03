@@ -44,6 +44,7 @@ class TenantRole extends Model
     {
         return $this->belongsToMany(TenantMembership::class, 'tenant_membership_roles')
             ->withPivot('tenant_id')
+            ->withPivotValue('tenant_id', $this->tenant_id)
             ->withTimestamps();
     }
 }
