@@ -26,7 +26,9 @@ export default function AbaEstoque({ p, setP }) {
                                 <div className="hub-field" style={{ flex: 1 }}>
                                     <label className="hub-label">Quantidade Disponível</label>
                                     <input 
-                                        type="number" 
+                                        type="number"
+                                        min="0"
+                                        step="1"
                                         value={p.estoque !== undefined ? p.estoque : ''} 
                                         onChange={e => setP({...p, estoque: e.target.value})} 
                                         className="hub-input"

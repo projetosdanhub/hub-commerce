@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ProductStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\StorefrontConfig;
@@ -87,8 +88,13 @@ class StorefrontController extends Controller
         $query = Produto::query()
             ->with(['categoria', 'variacoes'])
             ->where('ativo', true)
-            ->where('status_vitrine', 'ATIVO')
-            ->where('quantidade_estoque', '>', 0);
+            ->where('status_vitrine', ProductStatus::ACTIVE->value)
+            ->where(function ($availability): void {
+                $availability
+                    ->where('controlar_estoque', false)
+                    ->orWhere('quantidade_estoque', '>', 0)
+                    ->orWhere('pre_venda', true);
+            });
 
         if ($request->filled('category_id')) {
             $query->where('categoria_id', $request->integer('category_id'));
@@ -115,7 +121,7 @@ class StorefrontController extends Controller
         $product = Produto::query()
             ->with(['categoria', 'variacoes'])
             ->where('ativo', true)
-            ->where('status_vitrine', 'ATIVO')
+            ->where('status_vitrine', ProductStatus::ACTIVE->value)
             ->where(function ($query) use ($id): void {
                 $query->where('id', $id)->orWhere('slug', $id);
             })

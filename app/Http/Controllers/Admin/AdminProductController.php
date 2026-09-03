@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ProductStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SaveProductRequest;
+use App\Http\Resources\Admin\AdminProductResource;
 use Illuminate\Http\Request;
 use App\Models\Produto;
 use App\Models\ProdutoAuditoria;
@@ -13,65 +16,42 @@ class AdminProductController extends Controller
 {
     public function index()
     {
-        $produtos = Produto::with(['categoria', 'variacoes'])->orderBy('id', 'desc')->get();
-        
-        $produtos->transform(function ($produto) {
-            $produto->img = $produto->img ? asset($produto->img) : null;
-            $produto->video = $produto->video ? asset($produto->video) : null;
-            if ($produto->galeria && is_array($produto->galeria)) {
-                $produto->galeria = array_map(function($g) { return asset($g); }, $produto->galeria);
-            }
-            if ($produto->variacoes) {
-                $produto->variacoes->transform(function ($var) {
-                    $var->img = $var->img ? asset($var->img) : null;
-                    return $var;
-                });
-            }
-            return $produto;
-        });
+        $produtos = Produto::query()
+            ->with(['categoria', 'variacoes'])
+            ->orderByDesc('id')
+            ->get();
 
-        return response()->json(['status' => 'success', 'data' => $produtos]);
+        return response()->json([
+            'status' => 'success',
+            'data' => AdminProductResource::collection($produtos),
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(SaveProductRequest $request)
     {
-        $request->validate([
-            'nome' => 'required|string|max:255',
-            'preco' => 'required|numeric',
-            'img' => 'nullable|file|mimes:jpeg,png,webp|max:4096',
-            'video' => 'nullable|file|mimes:mp4|max:12288',
-            'galeria.*' => 'nullable|file|mimes:jpeg,png,webp|max:4096',
-            'variaveis_json' => 'nullable|string',
-        ], [
-            'img.max' => 'A imagem principal não pode ultrapassar 4MB.',
-            'img.mimes' => 'A imagem principal deve ser JPG, PNG ou WEBP.',
-            'video.max' => 'O vídeo não pode ultrapassar 12MB.',
-            'video.mimes' => 'O vídeo deve ser no formato MP4.',
-            'galeria.*.max' => 'As imagens da galeria não podem ultrapassar 4MB.',
-            'galeria.*.mimes' => 'As imagens da galeria devem ser JPG, PNG ou WEBP.',
-        ]);
+        $dados = $request->productData();
+        $status = $request->enum('status_vitrine', ProductStatus::class);
 
-        $dados = $request->except(['img', 'galeria', 'video', 'variacoes', 'variaveis_json', 'galeria_urls', 'isNovo', 'cst', 'cfop', 'unidade', 'icmsPerc', 'ipiPerc', 'comp', 'metaTitle', 'metaDesc']);
-        
-        // Mapeamento de campos fiscais e logística
-        if ($request->has('cst')) $dados['csosn'] = $request->cst;
-        if ($request->has('cfop')) $dados['cfop_dentro'] = $request->cfop;
-        if ($request->has('unidade')) $dados['unidade_medida'] = $request->unidade;
-        if ($request->has('icmsPerc')) $dados['icms_perc'] = $request->icmsPerc;
-        if ($request->has('ipiPerc')) $dados['ipi_perc'] = $request->ipiPerc;
-        if ($request->has('comp')) $dados['comprimento'] = $request->comp;
-        if ($request->has('metaTitle')) $dados['meta_title'] = $request->metaTitle;
-        if ($request->has('metaDesc')) $dados['meta_desc'] = $request->metaDesc;
+        $dados['status_vitrine'] = $status->value;
+        $dados['ativo'] = $status->isVisibleInStorefront();
+        $dados['descricao'] = $dados['descricao'] ?? '';
 
         // Geração automática do Slug para SEO
         if (empty($dados['slug'])) {
             $dados['slug'] = Str::slug($dados['nome']);
         }
 
-        // Garante que campos NOT NULL tenham valor padrão
-        $dados['descricao'] = $dados['descricao'] ?? '';
+        $produto = $request->filled('id')
+            ? Produto::query()->findOrFail($request->integer('id'))
+            : null;
 
-        $produto = Produto::find($request->id);
+        $original = $produto ? [
+            'preco' => (string) $produto->preco,
+            'quantidade_estoque' => (int) $produto->quantidade_estoque,
+            'status_vitrine' => $produto->status_vitrine instanceof ProductStatus
+                ? $produto->status_vitrine->value
+                : (string) $produto->status_vitrine,
+        ] : [];
         
         // Upload da Imagem Principal
         if ($request->hasFile('img')) {
@@ -109,15 +89,19 @@ class AdminProductController extends Controller
             $produto->update($dados);
             $acao = 'Atualização';
             $detalhes = [];
-            if (isset($dados['preco']) && $dados['preco'] != $produto->preco) {
-                $detalhes[] = "Preço alterado para R$ " . number_format($dados['preco'], 2, ',', '.');
+
+            if ($original['preco'] !== (string) $produto->preco) {
+                $detalhes[] = "Preço alterado para R$ " . number_format((float) $produto->preco, 2, ',', '.');
             }
-            if (isset($dados['estoque']) && $dados['estoque'] != $produto->estoque) {
-                $detalhes[] = "Estoque alterado para " . $dados['estoque'];
+
+            if ($original['quantidade_estoque'] !== (int) $produto->quantidade_estoque) {
+                $detalhes[] = "Estoque alterado para " . $produto->quantidade_estoque;
             }
-            if (isset($dados['status_vitrine']) && $dados['status_vitrine'] != $produto->status_vitrine) {
-                $detalhes[] = "Status alterado para " . $dados['status_vitrine'];
+
+            if ($original['status_vitrine'] !== $status->value) {
+                $detalhes[] = "Status alterado para " . $status->value;
             }
+
             $detalhesStr = empty($detalhes) ? 'Produto atualizado.' : implode(' | ', $detalhes);
         } else {
             $produto = Produto::create($dados);
@@ -175,23 +159,12 @@ class AdminProductController extends Controller
             }
         }
 
-        $produto->load('variacoes');
-        $produto->img = $produto->img ? asset($produto->img) : null;
-        $produto->video = $produto->video ? asset($produto->video) : null;
-        if ($produto->galeria && is_array($produto->galeria)) {
-            $produto->galeria = array_map(function($g) { return asset($g); }, $produto->galeria);
-        }
-        if ($produto->variacoes) {
-            $produto->variacoes->transform(function ($var) {
-                $var->img = $var->img ? asset($var->img) : null;
-                return $var;
-            });
-        }
+        $produto->load(['categoria', 'variacoes']);
 
         return response()->json([
-            'status' => 'success', 
+            'status' => 'success',
             'message' => 'Produto salvo com sucesso no Hub!',
-            'data' => $produto
+            'data' => new AdminProductResource($produto),
         ]);
     }
 
@@ -199,7 +172,11 @@ class AdminProductController extends Controller
     {
         $produto = Produto::findOrFail($id);
         // Em um sistema real com histórico de vendas, fazemos um Soft Delete (Inativar)
-        $produto->update(['status_vitrine' => 'INATIVO', 'estoque' => 0]);
+        $produto->update([
+            'status_vitrine' => ProductStatus::INACTIVE->value,
+            'ativo' => false,
+            'quantidade_estoque' => 0,
+        ]);
         
         // Salvar Auditoria
         ProdutoAuditoria::create([

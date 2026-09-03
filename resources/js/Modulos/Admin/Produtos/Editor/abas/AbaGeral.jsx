@@ -54,7 +54,7 @@ export default function AbaGeral({ p, setP, erros, setErros, categorias }) {
                                     </label>
                                     <select value={p.status} onChange={e => setP({...p, status: e.target.value})} className="hub-input hub-select">
                                         <option value="ATIVO">ATIVO - Visível na loja</option>
-                                        <option value="INATIVO">INATIVO - Oculto</option>
+                                        <option value="INATIVO">INATIVO - Desativado</option>\n                                        <option value="OCULTO">OCULTO - Fora da vitrine</option>
                                     </select>
                                 </div>
                             </div>

@@ -68,7 +68,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | BASE-005 | P0 | Corrigir cinco imports React inexistentes | GOV-006 | Imports verificados e npm run build aprovado |
 | [x] | BASE-006 | P0 | Corrigir rota /api/customers ou removê-la | BASE-003 | Nenhuma action inexistente |
 | [x] | BASE-007 | P0 | Trocar busca pública para endpoint storefront | BASE-003 | Visitante pesquisa sem token admin |
-| [ ] | BASE-008 | P1 | Normalizar campos de preço, estoque e status | BASE-003 | Contrato único backend/frontend |
+| [x] | BASE-008 | P1 | Normalizar campos de preço, estoque e status | BASE-003 | Contrato único backend/frontend |
 | [ ] | BASE-009 | P1 | Criar enums e transições de status de pedido | BASE-008 | Sem mistura pending/paid e estados antigos |
 | [ ] | BASE-010 | P1 | Remover scripts manuais de schema da raiz | BASE-002 | Alterações somente por migrations |
 | [ ] | BASE-011 | P1 | Padronizar respostas e códigos HTTP da API | SEC-011 | Contrato de erro documentado |
@@ -267,7 +267,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 ## Próximo bloco recomendado
 
-BASE-008 → BASE-009 → BASE-010.
+BASE-009 → BASE-010 → BASE-011.
 
-O próximo bloco mantém a Fase 2 incremental: normalizar os contratos de catálogo, criar transições explícitas de pedidos e concluir a integridade do schema antes de novos módulos.
+O próximo bloco mantém a Fase 2 incremental: criar transições explícitas de pedidos, concluir a integridade do schema e padronizar respostas HTTP antes de novos módulos.
 
