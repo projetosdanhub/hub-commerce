@@ -11,6 +11,7 @@ use App\Models\NavigationMenu;
 use App\Models\Categoria;
 use App\Models\Produto;
 use App\Services\CacheFallbackService;
+use App\Services\OrderStatusTransitionService;
 use App\Services\PaymentGatewayService;
 use Illuminate\Support\Facades\Log;
 
@@ -160,7 +161,7 @@ class StorefrontController extends Controller
     }
 
     // Processa o Checkout da loja
-    public function checkout(Request $request)
+    public function checkout(Request $request, OrderStatusTransitionService $statusTransitions)
     {
         $request->validate([
             'cliente.email' => 'required|email',
@@ -292,9 +293,12 @@ class StorefrontController extends Controller
                 ], 503);
             }
 
-            $order->status = OrderStatus::PICKING;
             $order->payment_gateway = $paymentResult['gateway'];
-            $order->save();
+            $statusTransitions->transition(
+                $order,
+                OrderStatus::PICKING,
+                'Pagamento aprovado pelo gateway; pedido enviado para separação.',
+            );
             
             \DB::commit();
 
