@@ -14,6 +14,7 @@ export default defineConfig({
         react(), // 3. Plugin do React ativado aqui
     ],
     server: {
+        host: '127.0.0.1',
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
