@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
 use App\Enums\ProductStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -243,7 +244,7 @@ class StorefrontController extends Controller
                 'frete' => $frete,
                 'desconto' => 0,
                 'total' => $total,
-                'status' => 'pending', // Pagamento Pendente
+                'status' => OrderStatus::AWAITING_PAYMENT->value,
                 'payment_gateway' => 'hub_default',
                 'payment_method' => $request->input('pagamento.metodo'),
                 'payment_installments' => $request->input('pagamento.parcelas', 1),
@@ -291,7 +292,7 @@ class StorefrontController extends Controller
                 ], 503);
             }
 
-            $order->status = 'paid';
+            $order->status = OrderStatus::PICKING;
             $order->payment_gateway = $paymentResult['gateway'];
             $order->save();
             
