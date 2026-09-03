@@ -18,11 +18,20 @@ jobs:
         extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
         coverage: none
 
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: npm
+
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
     - name: Install Dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Install frontend dependencies
+      run: npm ci
 
     - name: Generate key
       run: php artisan key:generate
@@ -38,8 +47,20 @@ jobs:
         DB_DATABASE: database/database.sqlite
       run: php artisan migrate --force
 
+    - name: Validate database preflight
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+      run: php artisan database:preflight --json
+
     - name: Execute tests
       env:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan test
+
+    - name: Verify frontend imports
+      run: npm run verify:imports
+
+    - name: Build frontend
+      run: npm run build

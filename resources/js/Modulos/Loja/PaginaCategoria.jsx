@@ -5,8 +5,8 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import ProductCard from './ProductCard';
-import PromoBanners from './PromoBanners';
+import ProductCard from './CartaoProduto';
+import PromoBanners from './BannersPromocionais';
 
 // Ícones UI
 const FilterIcon = () => (
@@ -69,7 +69,7 @@ const CategoryPage = () => {
                 <meta property="og:url" content={`https://loja.com/categoria/${configCategoria.slug}`} />
             </Helmet>
 
-            <Header />
+            {/* O cabeçalho é renderizado pelo layout global em app.jsx. */}
 
             {/* Banner Específico da Categoria (Topo) */}
             {configCategoria.bannerTopo && (
