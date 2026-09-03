@@ -13,16 +13,24 @@ class SecurityHeaders
         $response = $next($request);
 
         $scriptPolicy = app()->environment('local')
-            ? "'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://www.googletagmanager.com https://analytics.tiktok.com https://s.pinimg.com"
+            ? "'self' 'unsafe-inline' 'unsafe-eval' http://[::1]:5173 http://localhost:5173 https://connect.facebook.net https://www.googletagmanager.com https://analytics.tiktok.com https://s.pinimg.com"
             : "'self' 'unsafe-inline' https://connect.facebook.net https://www.googletagmanager.com https://analytics.tiktok.com https://s.pinimg.com";
+
+        $stylePolicy = app()->environment('local')
+            ? "'self' 'unsafe-inline' http://[::1]:5173 http://localhost:5173"
+            : "'self' 'unsafe-inline'";
+
+        $connectPolicy = app()->environment('local')
+            ? "'self' ws://[::1]:5173 ws://localhost:5173 http://[::1]:5173 http://localhost:5173 https://graph.facebook.com https://www.google-analytics.com https://business-api.tiktok.com https://api.pinterest.com"
+            : "'self' https://graph.facebook.com https://www.google-analytics.com https://business-api.tiktok.com https://api.pinterest.com";
 
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
             "script-src {$scriptPolicy}",
-            "style-src 'self' 'unsafe-inline'",
+            "style-src {$stylePolicy}",
             "img-src 'self' data: https:",
             "font-src 'self' data: https:",
-            "connect-src 'self' https://graph.facebook.com https://www.google-analytics.com https://business-api.tiktok.com https://api.pinterest.com",
+            "connect-src {$connectPolicy}",
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'",
