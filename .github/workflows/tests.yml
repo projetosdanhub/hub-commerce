@@ -47,6 +47,11 @@ jobs:
         DB_DATABASE: database/database.sqlite
       run: php artisan migrate --force
 
+    - name: Validate database preflight
+      env:
+        DB_CONNECTION: sqlite
+        DB_DATABASE: database/database.sqlite
+      run: php artisan database:preflight --json
 
     - name: Execute tests
       env:
