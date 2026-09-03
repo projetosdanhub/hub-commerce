@@ -10,30 +10,22 @@ class AuthorizationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guests_cannot_access_admin_dashboard(): void
+    public function test_guests_cannot_access_an_administrative_api_route(): void
     {
-        $response = $this->get('/admin');
-
-        $response->assertRedirect('/login');
+        $this->getJson('/api/admin/customers')->assertUnauthorized();
     }
 
-    public function test_regular_users_cannot_access_admin_dashboard(): void
+    public function test_regular_users_cannot_access_an_administrative_api_route(): void
     {
         $user = User::factory()->create(['role' => 'cliente']);
 
-        $response = $this->actingAs($user)->get('/admin');
-
-        // Can be 403 or redirect, let's check what the middleware does
-        // For now, assert forbidden or redirect
-        $this->assertTrue(in_array($response->status(), [403, 302]), "Status is " . $response->status());
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/admin/customers')
+            ->assertForbidden();
     }
 
-    public function test_admin_can_access_admin_dashboard(): void
+    public function test_admin_shell_remains_available_for_client_side_routing(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
-
-        $response = $this->actingAs($admin)->get('/admin');
-
-        $response->assertStatus(200);
+        $this->get('/admin')->assertOk();
     }
 }
