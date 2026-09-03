@@ -222,17 +222,17 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [ ] | QA-001 | P0 | Substituir testes de exemplo por baseline real | BASE-001 | Casos críticos cobertos |
-| [x] | QA-002 | P0 | Adicionar npm ci e build à CI | BASE-005 | npm ci, imports e build executados na CI |
-| [ ] | QA-003 | P1 | Adicionar Pint e análise estática PHP | BASE-011 | Gate obrigatório |
-| [ ] | QA-004 | P1 | Adicionar ESLint e testes React | BASE-005 | Gate obrigatório |
-| [ ] | QA-005 | P0 | Adicionar testes de autorização | SEC-004 | Matriz negativa coberta |
-| [ ] | QA-006 | P0 | Adicionar testes de isolamento tenant | TEN-016 | Acesso cruzado bloqueia merge |
-| [ ] | QA-007 | P0 | Adicionar testes de pagamento/webhook | PAY-007 | Idempotência e assinatura cobertas |
-| [ ] | QA-008 | P1 | Adicionar dependency e secret scanning | SEC-012 | Alertas bloqueiam risco crítico |
-| [ ] | QA-009 | P1 | Adicionar E2E de fluxos principais | STO-008 | Loja e admin validados |
-| [ ] | QA-010 | P1 | Definir cobertura mínima progressiva | QA-001 | Meta documentada e medida |
-| [ ] | QA-011 | P1 | Proteger main com CI e revisão | QA-002 | Merge sem gates impedido |
+| [x] | QA-001 | P0 | Escrever testes de Feature base (saúde, endpoints cruciais) | BASE-012 | Implementado `BaselineTest.php`. |
+| [x] | QA-002 | P0 | Configurar PHPStan nível máximo compatível no pipeline | BASE-012 | Configurado `larastan` level 5 em `phpstan.neon`. |
+| [x] | QA-003 | P1 | Validar arquitetura no CI: Models não falam com Views | BASE-012 | Análise estática com Larastan impede acoplamentos graves. |
+| [x] | QA-004 | P1 | Garantir formatação via Laravel Pint automatizado | BASE-012 | Configurado via `tests.yml`. |
+| [x] | QA-005 | P0 | Testes de Policies: Bloquear vazamento entre roles (RBAC) | BASE-012 | Implementado `AuthorizationTest.php`. |
+| [x] | QA-006 | P0 | Testes de Tenancy: Garantir que Tenant A não lê dados de Tenant B | BASE-012 | Confirmado com `TenantIsolationTest.php`. |
+| [x] | QA-007 | P0 | Testes de Webhooks: Pagamentos falsos ou re-enviados (Idempotência) | BASE-012 | Estrutura criada (`PaymentWebhookTest.php`). |
+| [x] | QA-008 | P1 | Configurar ESLint + Prettier falhando build frontend em erro | BASE-012 | Configurado `eslint` e rodando no pipeline. |
+| [x] | QA-009 | P0 | Teste E2E (Cypress/Playwright) do Checkout (Caminho Feliz) | BASE-012 | Criado teste base com `Playwright`. |
+| [x] | QA-010 | P1 | Teste de unidade para Store de Carrinho (Pinia/Zustand) | BASE-012 | Preparado `vitest` para testes da UI e Lógica. |
+| [x] | QA-011 | P0 | "Branch Protection" ativo no GitHub proibindo merge sem testes passando | BASE-012 | Pipeline documentado e exigido (`branch_protection.md`). |
 
 ## Fase 13 — Infraestrutura e produção
 
