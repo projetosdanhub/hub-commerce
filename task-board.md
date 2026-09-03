@@ -71,7 +71,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | BASE-008 | P1 | Normalizar campos de preço, estoque e status | BASE-003 | Contrato único backend/frontend |
 | [x] | BASE-009 | P1 | Criar enums e transições de status de pedido | BASE-008 | Sem mistura pending/paid e estados antigos |
 | [x] | BASE-010 | P1 | Remover scripts manuais de schema da raiz | BASE-002 | Alterações somente por migrations |
-| [ ] | BASE-011 | P1 | Padronizar respostas e códigos HTTP da API | SEC-011 | Contrato de erro documentado |
+| [x] | BASE-011 | P1 | Padronizar respostas e códigos HTTP da API | SEC-011 | Contrato de erro documentado |
 | [ ] | BASE-012 | P1 | Adicionar paginação e limites às listagens | BASE-011 | Listagens possuem limite máximo |
 | [ ] | BASE-013 | P2 | Eliminar N+1 e queries redundantes | BASE-012 | Queries críticas medidas |
 | [ ] | BASE-014 | P1 | Fazer PHP e frontend iniciarem por comandos documentados | BASE-005 | Setup reproduzível em máquina limpa |
@@ -267,7 +267,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 ## Próximo bloco recomendado
 
-BASE-011 → BASE-012 → BASE-013.
+BASE-012 → BASE-013 → BASE-014.
 
-O próximo bloco mantém a Fase 2 incremental: padronizar respostas HTTP, limitar listagens administrativas e medir queries críticas antes do fechamento do baseline.
+O próximo bloco fecha a Fase 2: limitar listagens administrativas, medir queries críticas e validar o setup documentado em ambiente limpo.
 
