@@ -23,25 +23,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->shouldRenderJsonWhen(
+            fn (\Illuminate\Http\Request $request, \Throwable $exception): bool => $request->is('api/*')
+                || $request->expectsJson(),
+        );
+
         $exceptions->render(function (\Throwable $exception, \Illuminate\Http\Request $request) {
             if (! $request->is('api/*')) {
                 return null;
             }
-            if (
-                $exception instanceof \Illuminate\Validation\ValidationException
-                || $exception instanceof \Illuminate\Auth\AuthenticationException
-                || $exception instanceof \Illuminate\Auth\Access\AuthorizationException
-                || $exception instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface
-            ) {
-                return null;
-            }
-            \Illuminate\Support\Facades\Log::error('Erro nao tratado na API.', [
-                'exception' => $exception::class,
-                'request_id' => $request->header('X-Request-ID'),
-            ]);
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Ocorreu um erro interno.',
-            ], 500);
+
+            return app(\App\Http\Api\ApiExceptionRenderer::class)
+                ->render($exception, $request);
         });
     })->create();
