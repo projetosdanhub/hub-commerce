@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-03  
+Atualizado em: 2026-09-04  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -196,7 +196,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [~] | UI-005 | P1 | Criar primitives acessíveis | UI-001 | Button/Input/Modal/Table testados |
 | [~] | UI-006 | P1 | Criar patterns do painel | UI-005 | Header, filtros, estados e ações consistentes |
 | [ ] | UI-007 | P1 | Dividir AdminPerfilCRM | UI-005, CRM-002 | Componentes menores e testados |
-| [ ] | UI-008 | P1 | Dividir AdminOrders | UI-005, ORD-004 | Fluxos por feature |
+| [~] | UI-008 | P1 | Dividir AdminOrders | UI-005, ORD-004 | Fluxos por feature; migração visual autorizada preserva contratos atuais |
 | [ ] | UI-009 | P1 | Dividir AdminCustomers | UI-005, CRM-002 | Lista e perfil desacoplados |
 | [ ] | UI-010 | P2 | Dividir Marketing e Afiliados | UI-006 | Sem componentes monolíticos |
 | [~] | UI-011 | P1 | Padronizar loading/empty/error/success | UI-005 | Todos os módulos críticos cobertos |
@@ -271,6 +271,6 @@ Os estados abaixo foram corrigidos para refletir evidência verificável. Itens 
 
 ## Bloco atual autorizado
 
-UI-001 → UI-002 → UI-003/UI-005 → UI-006 → UI-011 → UI-013.
+UI-001 → UI-002 → UI-003/UI-005 → UI-006 → UI-011 → UI-013 → UI-008.
 
-A fundação do painel começa pelo design system, shell desktop e composição móvel própria. A migração visual dos módulos legados permanece incremental para não alterar contratos de catálogo, CRM, pedidos ou pagamentos sem a etapa de domínio correspondente.
+A fundação do painel está integrada. A migração visual de Pedidos está em andamento, preservando contratos e regras atuais; as pendências de domínio (incluindo ORD-004) não são marcadas como concluídas por esta entrega visual.
