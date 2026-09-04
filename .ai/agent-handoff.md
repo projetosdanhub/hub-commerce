@@ -6,9 +6,9 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
 - **Última integração:** `ui/catalog-editor-specification`, squash commit `2f55ea7f9d9ae6e781b45047d204ed8d0c5d52eb` na `main`.
-- **Branch de trabalho:** próxima migração visual do editor: aba Estoque.
+- **Branch de trabalho:** `ui/catalog-editor-stock`; validação concluída na PR #33.
 - **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** migrar a aba Estoque sem alterar o contrato de inventário.
+- **Próxima ação:** integrar Estoque aprovado e seguir para Variações.
 
 ## Modelo obrigatório
 
@@ -123,9 +123,9 @@ Copie este bloco para cada handoff relevante:
 
 ### 2026-09-04 — Codex
 - Objetivo e escopo: substituir a aba Estoque por componentes canônicos e responsivos, preservando somente saldo, alerta mínimo e pré-venda persistidos.
-- Branch e commit: `ui/catalog-editor-stock`; código em validação até `11d4892b3fd831abe3396081349371b487d033aa`.
+- Branch e commit: `ui/catalog-editor-stock`; código validado em `11d4892b3fd831abe3396081349371b487d033aa`.
 - Task board: UI-004/UI-006/UI-011/UI-013 continuam [~]; não há conclusão antecipada.
 - Arquivos alterados: ProductInventoryForm, ProductEditor, AbaEstoque como adaptador compatível, produtoContract, AdminProducts e admin.css.
-- Evidências: revisão estática confirma ausência de mock, simulação, fallback fictício, geração aleatória, HTML inseguro, `alert`, ícones legados e estilos inline na nova aba. O valor persistido `0` não é substituído por `5`; checks de CI ainda não executados.
+- Evidências: revisão estática confirma ausência de mock, simulação, fallback fictício, geração aleatória, HTML inseguro, `alert`, ícones legados e estilos inline na nova aba. O valor persistido `0` não é substituído por `5`; [PR #33](https://github.com/projetosdanhub/hub-commerce/pull/33), [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33904620965), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33904620999) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33904620988) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: a interface não exibe previsão de reposição, métricas ou disponibilidade inventada. Abas Variações, Fiscal, Logística e SEO ainda aguardam migração visual.
-- Próxima ação única: abrir PR e executar Tests, E2E e Security.
+- Próxima ação única: revisar o diff aprovado e integrar a PR #33.
