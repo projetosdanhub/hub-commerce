@@ -730,3 +730,15 @@
     padding: var(--hub-space-4);
   }
 }
+
+
+.hub-page-title {
+  display: flex;
+  align-items: center;
+  gap: var(--hub-space-3);
+}
+
+.hub-page-title > svg {
+  flex: 0 0 auto;
+  color: var(--hub-primary);
+}
