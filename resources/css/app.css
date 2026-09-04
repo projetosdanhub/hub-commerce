@@ -1,64 +1,91 @@
 @import "tailwindcss";
-@import './tokens.css';
-@import './layout.css';
-@import './components.css';
+@import "./tokens.css";
+@import "./layout.css";
+@import "./components.css";
+@import "./admin.css";
 
-/* =========================================
-   Reset Básico (Substituindo o Tailwind base)
-   ========================================= */
 *, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--hub-bg-body);
 }
 
 body {
-    font-family: var(--hub-font-sans);
-    background-color: var(--hub-bg-body);
-    color: var(--hub-text-primary);
-    line-height: var(--hub-line-height-normal);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  min-width: 320px;
+  margin: 0;
+  font-family: var(--hub-font-sans);
+  background: var(--hub-bg-body);
+  color: var(--hub-text-primary);
+  line-height: var(--hub-line-height-normal);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button:not(:disabled), [role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
 }
 
 a {
-    color: var(--hub-brand-primary);
-    text-decoration: none;
+  color: inherit;
+  text-decoration: none;
 }
 
-a:hover {
-    color: var(--hub-brand-primary-hover);
+:focus-visible {
+  outline: none;
+  box-shadow: var(--hub-focus-ring);
 }
 
-button {
-    font-family: inherit;
+::selection {
+  background: var(--hub-primary-soft);
+  color: var(--hub-text-primary);
 }
 
-/* =========================================
-   Utilitários de Scrollbar
-   ========================================= */
-
-/* Esconde a barra de rolagem em Chrome/Safari/Edge */
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
+/* Scrollbar fina e discreta em toda a aplicação. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hub-border-strong) transparent;
 }
-/* Esconde a barra de rolagem no Firefox e IE */
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--hub-border-strong);
+  border-radius: var(--hub-radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--hub-text-muted);
+}
+
 .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* Scroll customizado — fino e refinado seguindo Design System */
-.custom-scrollbar { 
-    scrollbar-width: thin; 
-    scrollbar-color: var(--hub-border-strong) transparent; 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--hub-border-strong);
-    border-radius: var(--hub-radius-pill);
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { 
-    background: var(--hub-text-muted); 
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
