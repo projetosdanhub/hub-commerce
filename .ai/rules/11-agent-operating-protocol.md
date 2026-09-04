@@ -18,6 +18,10 @@
 - Preferir componentes e serviços canônicos.
 - Manter uma mudança legível por vez.
 
+## Handoff obrigatório
+
+Quando outra IA puder continuar o trabalho, atualizar `.ai/agent-handoff.md` no mesmo conjunto de mudanças. O handoff deve informar: objetivo, branch e commit, IDs e estados do board, arquivos alterados, comandos e resultados, riscos/bloqueios, e a próxima ação única. Nunca omitir falha, teste não executado ou controle externo sem evidência.
+
 ## Depois
 
 Entregar sempre:
@@ -26,6 +30,7 @@ Entregar sempre:
 3. regras preservadas;
 4. testes e comandos executados;
 5. riscos ou itens não verificados;
-6. próximo passo recomendado.
+6. próximo passo recomendado;
+7. link ou identificador da evidência de CI/PR quando houver.
 
 Não afirmar que compilou, testou, publicou ou protegeu algo sem evidência da execução.

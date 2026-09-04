@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Support\Http\Pagination;
 use App\Enums\ProductStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveProductRequest;
@@ -45,7 +46,8 @@ class AdminProductController extends Controller
             }
         }
 
-        $produtos = $query->orderByDesc('id')->paginate($request->input('limit', 15));
+        $limit = Pagination::perPage($request, 15);
+        $produtos = $query->orderByDesc('id')->paginate($limit);
 
         return response()->json([
             'status' => 'success',

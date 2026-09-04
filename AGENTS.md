@@ -58,3 +58,22 @@ Em caso de conflito, pare, descreva o conflito e peça uma decisão. Não escolh
 ## Definition of Done
 
 Uma alteração só está concluída quando a tarefa correspondente foi atualizada no task-board, possui autorização correta, isolamento por tenant quando aplicável, validação de entrada, tratamento de erro seguro, testes relevantes, documentação atualizada e nenhuma regressão conhecida.
+
+## Coordenação entre agentes
+
+- Antes de iniciar, verifique o handoff mais recente em `.ai/agent-handoff.md` e confirme branch, escopo, estado do board e riscos abertos.
+- Um item só recebe `[x]` no board com evidência verificável: comando e resultado, URL de execução/PR quando aplicável, ou referência ao teste criado. Configurar um arquivo não comprova a execução.
+- Enquanto algum check obrigatório estiver vermelho, a tarefa fica `[~]` ou `[!]`; não a marque como concluída.
+- Mudanças normais entram por branch e pull request. Não faça push direto em `main`; exceções exigem autorização explícita do responsável e registro no handoff.
+- Antes de passar o trabalho a outra IA, atualize o handoff com os campos obrigatórios, incluindo tudo que não foi verificado.
+- Merge só é permitido após os checks obrigatórios atuais do PR estarem verdes e não houver bloqueio de segurança, tenancy ou pagamento.
+
+## Matriz de testes por impacto
+
+- Documentação, handoff, regras de IA e task board: revisão do diff e links; não executar CI completo, salvo quando a própria regra de workflow for alterada.
+- Backend, API, migrations, modelos ou regras de domínio: executar o workflow **Tests** e testes específicos afetados.
+- Frontend, build, rotas SPA ou componentes: executar **Tests**; adicionar E2E apenas quando o fluxo de usuário puder mudar.
+- Checkout, login, autorização de navegador ou jornada crítica: executar **E2E Tests** além dos testes unitários/feature afetados.
+- Workflows, dependências, permissões ou segurança: executar o workflow alterado e registrar seu link no handoff.
+
+Nunca substitua um teste necessário por conveniência; reduza somente checks que não cobrem o risco da alteração.

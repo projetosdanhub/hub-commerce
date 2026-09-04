@@ -11,7 +11,7 @@ class PaymentWebhookTest extends TestCase
 
     public function test_payment_webhook_idempotency_and_signature(): void
     {
-        // QA-007: This is a placeholder test. It will be expanded when the payment integration is fully implemented.
-        $this->markTestIncomplete('Placeholder for QA-007. To be implemented when Stripe/MercadoPago integrations are built.');
+        // QA-007 permanece pendente até a implementação do gateway de pagamento.
+        $this->markTestSkipped('QA-007 depende da implementação do gateway de pagamento.');
     }
 }

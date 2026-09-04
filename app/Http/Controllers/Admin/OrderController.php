@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Support\Http\Pagination;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
@@ -50,7 +51,7 @@ class OrderController extends Controller
 
         $query->orderBy('id', 'desc');
 
-        $limit = $request->input('limit', 10);
+        $limit = Pagination::perPage($request, 10);
         $paginator = $query->paginate($limit);
 
         // Pre-fetch LTV for users in this page to avoid N+1

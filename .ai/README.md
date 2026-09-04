@@ -14,6 +14,7 @@ Esta pasta contém o contrato operacional da KIA e de outros agentes que trabalh
 - Schema ou migration: 08-database-and-migrations.md.
 - Toda entrega: 09-testing-and-quality.md e 10-git-and-delivery.md.
 - Comportamento do agente: 11-agent-operating-protocol.md.
+- Continuidade entre agentes: agent-handoff.md.
 
 ## Estrutura
 
@@ -23,3 +24,7 @@ Esta pasta contém o contrato operacional da KIA e de outros agentes que trabalh
 - docs/adr: decisões arquiteturais permanentes.
 
 As regras são preventivas. Elas não afirmam que o código atual já está conforme. Ao encontrar código legado em desacordo, não replique o padrão inseguro: registre a dívida e proponha migração compatível.
+
+## Continuidade e evidências
+
+Antes de retomar uma tarefa, leia `.ai/agent-handoff.md`. O board é a fonte de status, mas deve apontar para evidências reais; não marque `[x]` por existir configuração, teste placeholder ou documentação sem execução verde. Controles externos (proteção de branch, rotação de segredo, permissões) permanecem `[!]` até que a evidência verificável esteja registrada.
