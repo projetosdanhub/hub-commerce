@@ -5,7 +5,7 @@ Plataforma de comércio eletrônico multitenant construída com Laravel, React e
 ## Requisitos
 
 - PHP 8.2+ e Composer
-- Node.js 24+ e npm
+- Node.js 24 LTS e npm (a versão canônica está em .nvmrc)
 - SQLite (padrão para desenvolvimento e testes)
 
 ## Inicialização local
@@ -13,6 +13,7 @@ Plataforma de comércio eletrônico multitenant construída com Laravel, React e
 Em uma cópia nova do repositório:
 
 ```bash
+nvm use
 composer install
 cp .env.example .env
 php artisan key:generate
