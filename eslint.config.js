@@ -20,9 +20,15 @@ export default [
       'react-hooks': reactHooks,
       'react': react,
     },
+    settings: {
+      react: { version: 'detect' },
+    },
     rules: {
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
+      'react/jsx-uses-react': 'error',
+      'react/jsx-uses-vars': 'error',
+      'react/react-in-jsx-scope': 'off',
       'react/jsx-no-target-blank': 'off',
     },
   },

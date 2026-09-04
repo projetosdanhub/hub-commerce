@@ -189,19 +189,19 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [ ] | UI-001 | P1 | Aprovar tokens e componentes canônicos | GOV-006 | Catálogo documentado |
-| [ ] | UI-002 | P1 | Garantir Tailwind v4 corretamente importado | BASE-005 | Utilities presentes no build |
-| [ ] | UI-003 | P1 | Padronizar Lucide como ícones | UI-001 | Sem bibliotecas ou SVGs duplicados |
-| [ ] | UI-004 | P1 | Remover estilos inline e magic values gradualmente | UI-001 | Novos módulos usam tokens |
-| [ ] | UI-005 | P1 | Criar primitives acessíveis | UI-001 | Button/Input/Modal/Table testados |
-| [ ] | UI-006 | P1 | Criar patterns do painel | UI-005 | Header, filtros, estados e ações consistentes |
+| [~] | UI-001 | P1 | Aprovar tokens e componentes canônicos | GOV-006 | Catálogo documentado |
+| [~] | UI-002 | P1 | Garantir Tailwind v4 corretamente importado | BASE-005 | Utilities presentes no build |
+| [~] | UI-003 | P1 | Padronizar Lucide como ícones | UI-001 | Sem bibliotecas ou SVGs duplicados |
+| [~] | UI-004 | P1 | Remover estilos inline e magic values gradualmente | UI-001 | Novos módulos usam tokens |
+| [~] | UI-005 | P1 | Criar primitives acessíveis | UI-001 | Button/Input/Modal/Table testados |
+| [~] | UI-006 | P1 | Criar patterns do painel | UI-005 | Header, filtros, estados e ações consistentes |
 | [ ] | UI-007 | P1 | Dividir AdminPerfilCRM | UI-005, CRM-002 | Componentes menores e testados |
 | [ ] | UI-008 | P1 | Dividir AdminOrders | UI-005, ORD-004 | Fluxos por feature |
 | [ ] | UI-009 | P1 | Dividir AdminCustomers | UI-005, CRM-002 | Lista e perfil desacoplados |
 | [ ] | UI-010 | P2 | Dividir Marketing e Afiliados | UI-006 | Sem componentes monolíticos |
-| [ ] | UI-011 | P1 | Padronizar loading/empty/error/success | UI-005 | Todos os módulos críticos cobertos |
+| [~] | UI-011 | P1 | Padronizar loading/empty/error/success | UI-005 | Todos os módulos críticos cobertos |
 | [ ] | UI-012 | P1 | Auditar WCAG 2.2 AA e teclado | UI-006 | Checklist e testes aprovados |
-| [ ] | UI-013 | P1 | Corrigir responsividade e zoom 200% | UI-006 | Sem scroll horizontal global |
+| [~] | UI-013 | P1 | Corrigir responsividade e zoom 200% | UI-006 | Sem scroll horizontal global |
 | [ ] | UI-014 | P2 | Criar documentação visual dos componentes | UI-005 | Estados e uso demonstrados |
 
 ## Fase 11 — Storefront, SEO e desempenho
@@ -269,8 +269,8 @@ Os estados abaixo foram corrigidos para refletir evidência verificável. Itens 
 | [ ] | REL-008 | P0 | Realizar go-live controlado | REL-001 a REL-007 | Feature flags, monitoramento e rollback ativos |
 | [ ] | REL-009 | P1 | Fazer revisão pós-lançamento | REL-008 | Incidentes e melhorias registrados |
 
-## Próximo bloco recomendado
+## Bloco atual autorizado
 
-CAT-001 → CAT-002 → CAT-003.
+UI-001 → UI-002 → UI-003/UI-005 → UI-006 → UI-011 → UI-013.
 
-O próximo bloco inicia a Fase 5 (Catálogo e estoque): consolidando o modelo de categorias, produtos, variações e serviço de estoque transacional.
+A fundação do painel começa pelo design system, shell desktop e composição móvel própria. A migração visual dos módulos legados permanece incremental para não alterar contratos de catálogo, CRM, pedidos ou pagamentos sem a etapa de domínio correspondente.

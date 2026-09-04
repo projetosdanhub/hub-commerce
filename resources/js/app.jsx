@@ -33,6 +33,7 @@ import PaginaAutenticacao from './Modulos/Loja/PaginaAutenticacao';
 
 // --- IMPORTAÇÃO DOS MÓDULOS ADMIN ---
 import AdminLayout from './Modulos/Admin/AdminLayout';
+import AdminDashboard from './Modulos/Admin/AdminDashboard';
 import AdminOrders from './Modulos/Admin/AdminOrders';
 import CategoriasPrincipal from './Modulos/Admin/Categorias/CategoriasPrincipal';
 import MenusPrincipal from './Modulos/Admin/Menus/MenusPrincipal';
@@ -239,7 +240,7 @@ const AppContent = () => {
                     {/* ROTAS DO HUB ADMIN */}
                     {/* Usando rotas aninhadas (v6) para tirar proveito total do <Outlet /> no AdminLayout */}
                     <Route path="/admin" element={<AdminLayout />}>
-                        <Route index element={<div className="p-8 text-slate-500">Dashboard Geral (Em construção)</div>} />
+                        <Route index element={<AdminDashboard />} />
                         <Route path="pedidos" element={<AdminOrders />} />
                         <Route path="categorias" element={<CategoriasPrincipal />} />
                         <Route path="menus" element={<MenusPrincipal />} />
@@ -298,16 +299,15 @@ const AppContent = () => {
     );
 };
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-const globalQueryClient = new QueryClient();
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './queryClient';
 
 // ============================================================================
 // PONTO DE ENTRADA DO REACT (O HelmetProvider "liga" a funcionalidade para toda a app)
 // ============================================================================
 const App = () => (
     <HelmetProvider>
-        <QueryClientProvider client={globalQueryClient}>
+        <QueryClientProvider client={queryClient}>
             <BrowserRouter>
                 <AppContent />
             </BrowserRouter>
