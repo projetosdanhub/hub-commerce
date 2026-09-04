@@ -119,3 +119,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: revisão estática confirma ausência de mock, simulação, exemplos, placeholders, geração aleatória, HTML inseguro, `alert`, ícones legados e estilos inline na nova aba; [PR #31](https://github.com/projetosdanhub/hub-commerce/pull/31), [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33903739028), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33903738870) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33903738820) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: a API aceita até 100 atributos e a interface respeita esse limite. Linhas incompletas são bloqueadas antes da gravação. Abas Estoque, Variações, Fiscal, Logística e SEO ainda aguardam migração visual.
 - Próxima ação única: migrar visualmente a aba Estoque, sem inventar saldo, alertas ou previsão de reposição.
+
+
+### 2026-09-04 — Codex
+- Objetivo e escopo: substituir a aba Estoque por componentes canônicos e responsivos, preservando somente saldo, alerta mínimo e pré-venda persistidos.
+- Branch e commit: `ui/catalog-editor-stock`; código em validação até `11d4892b3fd831abe3396081349371b487d033aa`.
+- Task board: UI-004/UI-006/UI-011/UI-013 continuam [~]; não há conclusão antecipada.
+- Arquivos alterados: ProductInventoryForm, ProductEditor, AbaEstoque como adaptador compatível, produtoContract, AdminProducts e admin.css.
+- Evidências: revisão estática confirma ausência de mock, simulação, fallback fictício, geração aleatória, HTML inseguro, `alert`, ícones legados e estilos inline na nova aba. O valor persistido `0` não é substituído por `5`; checks de CI ainda não executados.
+- Riscos, bloqueios e itens não verificados: a interface não exibe previsão de reposição, métricas ou disponibilidade inventada. Abas Variações, Fiscal, Logística e SEO ainda aguardam migração visual.
+- Próxima ação única: abrir PR e executar Tests, E2E e Security.
