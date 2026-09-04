@@ -50,9 +50,11 @@ export default function AdminProducts() {
 
   const openProduct = (product) => { setSelected(toProductEditorModel(product)); setTab('EDITOR'); };
   const createProduct = () => { setSelected(initialProduct); setTab('EDITOR'); };
-  const saved = () => {
-    queryClient.invalidateQueries({ queryKey: adminQueryKeys.products() });
-    queryClient.invalidateQueries({ queryKey: adminQueryKeys.productAudits() });
+  const saved = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.products() }),
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.productAudits() }),
+    ]);
     setNotice('Produto salvo. A lista e a auditoria foram atualizadas.');
   };
 
