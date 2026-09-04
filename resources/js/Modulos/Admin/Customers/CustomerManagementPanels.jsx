@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Crown, Plus, Settings2, Trash2 } from 'lucide-react';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
@@ -17,16 +17,6 @@ export const CustomerManagementPanels = ({ mode = 'VIP', vipLevels, settings, lo
     aprovar_comentarios: Boolean(settings?.aprovar_comentarios),
     bloquear_fora_do_pais: Boolean(settings?.bloquear_fora_do_pais),
   }));
-  useEffect(() => {
-    if (mode === 'CONFIG') {
-      setCrmSettings({
-        permite_cadastro: Boolean(settings?.permite_cadastro),
-        login_apenas_convite: Boolean(settings?.login_apenas_convite),
-        aprovar_comentarios: Boolean(settings?.aprovar_comentarios),
-        bloquear_fora_do_pais: Boolean(settings?.bloquear_fora_do_pais),
-      });
-    }
-  }, [mode, settings]);
   const set = (changes) => setVip((current) => ({ ...current, ...changes }));
 
   if (mode === 'VIP') return <section className="hub-customer-management"><header className="hub-order-detail-heading"><div><p className="hub-page-eyebrow">Relacionamento</p><h1 className="hub-page-title"><Crown aria-hidden="true" size={28} /> Benefícios VIP</h1><p className="hub-page-description">Defina níveis, limites e benefícios por valor de relacionamento.</p></div><Button icon={Plus} onClick={() => setVip(initialVip)}>Novo nível</Button></header>
