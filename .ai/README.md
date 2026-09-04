@@ -9,7 +9,7 @@ Esta pasta contém o contrato operacional da KIA e de outros agentes que trabalh
 - Autenticação, dados, uploads ou APIs: 02-security.md.
 - Qualquer entidade de negócio: 03-multitenancy.md.
 - Laravel/PHP: 04-backend-laravel.md.
-- React/UI: 05-frontend-react.md e 06-design-system.md.
+- React/UI: 05-frontend-react.md, 06-design-system.md e 12-ui-ux-seo-and-mobile.md.
 - Checkout ou gateways: 07-payments.md.
 - Schema ou migration: 08-database-and-migrations.md.
 - Toda entrega: 09-testing-and-quality.md e 10-git-and-delivery.md.
@@ -20,7 +20,7 @@ Esta pasta contém o contrato operacional da KIA e de outros agentes que trabalh
 
 - rules: regras normativas e critérios de aceite.
 - checklists: conferências antes de concluir uma mudança.
-- templates: modelos para planos técnicos.
+- templates: modelos para planos técnicos, incluindo o brief ui-ux-task-brief.md para delegação visual.
 - docs/adr: decisões arquiteturais permanentes.
 
 As regras são preventivas. Elas não afirmam que o código atual já está conforme. Ao encontrar código legado em desacordo, não replique o padrão inseguro: registre a dívida e proponha migração compatível.
