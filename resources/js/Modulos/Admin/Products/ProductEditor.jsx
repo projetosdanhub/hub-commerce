@@ -11,6 +11,7 @@ import AbaMidia from '../Produtos/Editor/abas/AbaMidia';
 import AbaSeo from '../Produtos/Editor/abas/AbaSeo';
 import AbaEstoque from '../Produtos/Editor/abas/AbaEstoque';
 import AbaVariaveis from '../Produtos/Editor/abas/AbaVariaveis';
+import { toProductEditorModel } from '../Produtos/produtoContract';
 import { saveProduct, validateProductSkus } from './catalogApi';
 import { errorMessage, productStatus } from './catalogUtils';
 
@@ -82,7 +83,7 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
       setNotice({ tone: 'loading', text: 'Salvando produto...' });
       const response = await saveProduct({ product, categoryId: category.id });
       const saved = response.data?.data ?? response.data;
-      setProduct((current) => ({ ...current, ...saved, isNovo: false }));
+      setProduct(toProductEditorModel(saved));
       setNotice({ tone: 'success', text: response.data?.message || 'Produto salvo e catálogo atualizado.' });
       await onSuccess();
     } catch (error) {
