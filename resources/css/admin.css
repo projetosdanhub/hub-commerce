@@ -2275,3 +2275,102 @@
     align-items: flex-start;
   }
 }
+
+/* Aba geral do editor */
+.hub-product-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(17rem, 0.75fr);
+  gap: var(--hub-space-5);
+}
+
+.hub-product-form-main,
+.hub-product-form-side,
+.hub-product-form-fields {
+  display: grid;
+  gap: var(--hub-space-5);
+}
+
+.hub-product-form-card {
+  padding: var(--hub-space-5);
+}
+
+.hub-product-form-card > header {
+  display: flex;
+  align-items: center;
+  gap: var(--hub-space-3);
+  margin-bottom: var(--hub-space-5);
+}
+
+.hub-product-form-card h2 {
+  margin: 0;
+  color: var(--hub-text-primary);
+  font-size: var(--hub-text-h3);
+  font-weight: var(--hub-font-weight-semibold);
+}
+
+.hub-product-form-card .hub-panel-description {
+  margin: 0;
+}
+
+.hub-product-form-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--hub-space-4);
+}
+
+.hub-product-form-fields .hub-order-form-field {
+  gap: var(--hub-space-2);
+}
+
+.hub-product-form-fields .hub-order-form-field small:not(.hub-order-form-error) {
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-caption);
+}
+
+.hub-product-currency {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-sm);
+  background: var(--hub-surface);
+}
+
+.hub-product-currency:focus-within {
+  border-color: var(--hub-primary);
+  box-shadow: 0 0 0 3px var(--hub-primary-soft);
+}
+
+.hub-product-currency > span {
+  padding: 0 var(--hub-space-3);
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-body-sm);
+  font-weight: var(--hub-font-weight-semibold);
+}
+
+.hub-product-currency input {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.hub-product-currency input:focus {
+  box-shadow: none;
+}
+
+@media (max-width: 899px) {
+  .hub-product-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 639px) {
+  .hub-product-form-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .hub-product-form-card {
+    padding: var(--hub-space-4);
+  }
+}
