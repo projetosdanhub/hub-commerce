@@ -1777,3 +1777,199 @@
     left: 0;
   }
 }
+/* Clientes e CRM */
+.hub-customers-dashboard-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hub-space-5);
+  margin-top: var(--hub-space-5);
+}
+
+.hub-customer-profile-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--hub-space-4);
+  padding: var(--hub-space-5) var(--hub-space-5) 0;
+}
+
+.hub-customer-profile-avatar {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-md);
+  color: var(--hub-primary);
+  background: var(--hub-primary-soft);
+  font-size: var(--hub-text-h2);
+  font-weight: var(--hub-font-weight-bold);
+}
+
+.hub-customer-profile-avatar img,
+.hub-customer-initials img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hub-customer-profile-hero strong,
+.hub-customer-profile-hero small {
+  display: block;
+}
+
+.hub-customer-profile-hero strong {
+  color: var(--hub-text-primary);
+  font-weight: var(--hub-font-weight-semibold);
+}
+
+.hub-customer-profile-hero small {
+  margin-top: var(--hub-space-1);
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-body-sm);
+}
+
+.hub-customer-four-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hub-customer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hub-space-2);
+  padding: var(--hub-space-5);
+}
+
+.hub-customer-note {
+  display: grid;
+  gap: var(--hub-space-3);
+  padding: 0 var(--hub-space-5) var(--hub-space-5);
+}
+
+.hub-customer-note p {
+  margin: 0;
+  color: var(--hub-text-secondary);
+  font-size: var(--hub-text-body-sm);
+  line-height: var(--hub-line-height-normal);
+  white-space: pre-wrap;
+}
+
+.hub-customer-section-padding {
+  padding: var(--hub-space-5);
+}
+
+.hub-customer-management {
+  display: grid;
+  gap: var(--hub-space-5);
+  margin-top: var(--hub-space-5);
+}
+
+.hub-customer-vip-list {
+  display: grid;
+  gap: var(--hub-space-4);
+}
+
+.hub-customer-vip-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hub-space-5);
+  padding: var(--hub-space-5);
+}
+
+.hub-customer-vip-list h2 {
+  margin: 0;
+  color: var(--hub-text-primary);
+  font-size: var(--hub-text-h3);
+  font-weight: var(--hub-font-weight-semibold);
+}
+
+.hub-customer-vip-list p {
+  margin: var(--hub-space-2) 0 0;
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-body-sm);
+}
+
+.hub-customer-vip-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--hub-space-2);
+}
+
+.hub-customer-vip-form {
+  padding: var(--hub-space-6);
+}
+
+.hub-customer-vip-form > header {
+  margin-bottom: var(--hub-space-5);
+}
+
+.hub-customer-vip-form h2 {
+  margin: 0;
+  color: var(--hub-text-primary);
+  font-size: var(--hub-text-h3);
+  font-weight: var(--hub-font-weight-semibold);
+}
+
+.hub-customer-vip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--hub-space-4);
+}
+
+.hub-customer-toggle-grid,
+.hub-customer-settings {
+  display: grid;
+  gap: var(--hub-space-3);
+  margin-top: var(--hub-space-5);
+}
+
+.hub-customer-settings {
+  padding: var(--hub-space-6);
+}
+
+.hub-customer-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hub-space-4);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-md);
+  padding: var(--hub-space-4);
+  color: var(--hub-text-secondary);
+  background: var(--hub-surface-subtle);
+  font-size: var(--hub-text-body-sm);
+  font-weight: var(--hub-font-weight-medium);
+}
+
+.hub-customer-toggle input {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--hub-primary);
+}
+
+.hub-customer-vip-form footer,
+.hub-customer-settings footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--hub-space-3);
+  margin-top: var(--hub-space-5);
+}
+
+@media (max-width: 639px) {
+  .hub-customers-dashboard-callout,
+  .hub-customer-vip-list article {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hub-customer-vip-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .hub-customer-vip-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -8,6 +8,10 @@ export const adminQueryKeys = {
   orders: (params = {}) => ['admin', tenantScope(), 'orders', params],
   ordersMetrics: () => ['admin', tenantScope(), 'orders', 'metrics'],
   shippingSupport: () => ['admin', tenantScope(), 'orders', 'shipping-support'],
+  customers: (params = {}) => ['admin', tenantScope(), 'customers', params],
+  customerMetrics: () => ['admin', tenantScope(), 'customers', 'metrics'],
+  vipLevels: () => ['admin', tenantScope(), 'customers', 'vip-levels'],
+  crmSettings: () => ['admin', tenantScope(), 'customers', 'settings'],
 };
 
 export const queryClient = new QueryClient({
