@@ -6,6 +6,8 @@ export const adminQueryKeys = {
   root: () => ['admin', tenantScope()],
   dashboard: () => ['admin', tenantScope(), 'dashboard'],
   orders: (params = {}) => ['admin', tenantScope(), 'orders', params],
+  ordersMetrics: () => ['admin', tenantScope(), 'orders', 'metrics'],
+  shippingSupport: () => ['admin', tenantScope(), 'orders', 'shipping-support'],
 };
 
 export const queryClient = new QueryClient({
