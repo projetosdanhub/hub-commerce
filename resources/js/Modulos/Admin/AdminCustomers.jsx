@@ -107,7 +107,7 @@ export default function AdminCustomers() {
       {section === 'PAINEL' ? <CustomersDashboard metrics={metricsQuery.data} onOpenDirectory={() => changeSection('CLIENTES')} /> : null}
       {section === 'CLIENTES' ? <CustomersList customers={customers} filters={filters} pagination={pagination} loading={customersQuery.isLoading || customersQuery.isFetching} onChange={(changes) => setFilters((current) => ({ ...current, ...changes }))} onClear={() => setFilters(initialFilters)} onOpen={openCustomer} /> : null}
       {section === 'VIP' ? <CustomerManagementPanels mode="VIP" vipLevels={vipQuery.data || []} loading={vipQuery.isFetching} onSaveVip={async (level) => { await saveVipLevel(level); await queryClient.invalidateQueries({ queryKey: adminQueryKeys.vipLevels() }); }} onDeleteVip={async (id) => { await deleteVipLevel(id); await queryClient.invalidateQueries({ queryKey: adminQueryKeys.vipLevels() }); }} /> : null}
-      {section === 'CONFIG' ? <CustomerManagementPanels mode="CONFIG" settings={settingsQuery.data} loading={settingsQuery.isFetching} onSaveSettings={async (settings) => { await saveCrmSettings(settings); await queryClient.invalidateQueries({ queryKey: adminQueryKeys.crmSettings() }); setNotice({ tone: 'success', message: 'Configurações atualizadas.' }); }} /> : null}
+      {section === 'CONFIG' ? <CustomerManagementPanels key={JSON.stringify(settingsQuery.data || {})} mode="CONFIG" settings={settingsQuery.data} loading={settingsQuery.isFetching} onSaveSettings={async (settings) => { await saveCrmSettings(settings); await queryClient.invalidateQueries({ queryKey: adminQueryKeys.crmSettings() }); setNotice({ tone: 'success', message: 'Configurações atualizadas.' }); }} /> : null}
     </CustomerSections>
   </>;
 };
