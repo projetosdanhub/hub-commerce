@@ -94,7 +94,7 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
   };
 
   const content = {
-    GERAL: <ProductGeneralForm product={product} categories={categories} errors={errors} onChange={setProduct} />,
+    GERAL: <ProductGeneralForm product={product} categories={categories} errors={errors} onChange={setProduct} onClearError={(field) => setErrors((current) => ({ ...current, [field]: false }))} />,
     FICHA: <AbaFichaTecnica p={product} setP={setProduct} />,
     ESTOQUE: <AbaEstoque p={product} setP={setProduct} />,
     MIDIA: <AbaMidia p={product} setP={setProduct} />,
