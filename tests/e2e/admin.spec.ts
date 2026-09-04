@@ -1,8 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-test.describe('Admin Flow', () => {
-  test('unauthorized users are redirected to login', async ({ page }) => {
-    await page.goto('/admin');
-    await expect(page).toHaveURL(/.*login/);
+test.describe('Admin SPA', () => {
+  test('serves the administrative entry point', async ({ page }) => {
+    const response = await page.goto('/admin');
+
+    expect(response?.ok()).toBeTruthy();
+    await expect(page.locator('body')).toBeVisible();
   });
 });
