@@ -1,10 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
-  CheckCircle2,
   ClipboardCheck,
   CreditCard,
-  FileText,
   PackageCheck,
   RotateCcw,
   Truck,
