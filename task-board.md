@@ -195,9 +195,9 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [~] | UI-004 | P1 | Remover estilos inline e magic values gradualmente | UI-001 | Novos módulos usam tokens |
 | [~] | UI-005 | P1 | Criar primitives acessíveis | UI-001 | Button/Input/Modal/Table testados |
 | [~] | UI-006 | P1 | Criar patterns do painel | UI-005 | Header, filtros, estados e ações consistentes |
-| [~] | UI-007 | P1 | Dividir AdminPerfilCRM | UI-005, CRM-002 | Migração visual do perfil 360º em andamento |
+| [x] | UI-007 | P1 | Dividir AdminPerfilCRM | UI-005, CRM-002 | Perfil 360º modularizado; contratos preservados e checks verdes no PR #23 |
 | [x] | UI-008 | P1 | Dividir AdminOrders | UI-005, ORD-004 | Fluxos separados, contratos preservados e checks verdes; pendências de domínio continuam abertas |
-| [~] | UI-009 | P1 | Dividir AdminCustomers | UI-005, CRM-002 | Lista, painel, benefícios e perfil em migração |
+| [x] | UI-009 | P1 | Dividir AdminCustomers | UI-005, CRM-002 | Lista, painel, benefícios e perfil modularizados; checks verdes no PR #23 |
 | [ ] | UI-010 | P2 | Dividir Marketing e Afiliados | UI-006 | Sem componentes monolíticos |
 | [~] | UI-011 | P1 | Padronizar loading/empty/error/success | UI-005 | Todos os módulos críticos cobertos |
 | [ ] | UI-012 | P1 | Auditar WCAG 2.2 AA e teclado | UI-006 | Checklist e testes aprovados |
@@ -273,4 +273,4 @@ Os estados abaixo foram corrigidos para refletir evidência verificável. Itens 
 
 UI-001 → UI-002 → UI-003/UI-005 → UI-006 → UI-011 → UI-013 → UI-008.
 
-A fundação do painel e a migração visual de Pedidos estão integradas. As pendências de domínio (incluindo ORD-004) continuam abertas e não são marcadas como concluídas por esta entrega visual.
+A fundação do painel, Pedidos e Clientes/CRM estão integrados. A migração visual de Catálogo está em andamento. Marketing, Afiliados e Avaliações exigem contratos administrativos tenant-scoped antes de substituir seus dados simulados; MKT-001 a MKT-003 continuam pendentes. As pendências de domínio (incluindo ORD-004 e CAT-002) continuam abertas e não são marcadas como concluídas por entregas visuais.
