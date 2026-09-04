@@ -6,7 +6,7 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
 - **Branch de trabalho:** `ui/catalog-editor-experience`.
-- **Commit de código em validação:** `4f7ea1cd3fe2a4d7f00e3fb54e690bac809f85ce`.
+- **Commit de código em validação:** `8087b40b84e3bbb386f954400b5405c092aa5abe`.
 - **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
 - **Próxima ação:** validar o shell do editor de produto e, se os checks estiverem verdes, integrar o PR.
 
@@ -83,7 +83,7 @@ Copie este bloco para cada handoff relevante:
 
 ### 2026-09-04 — Codex
 - Objetivo e escopo: modernizar o shell do editor de produto e remover comportamento simulado do fluxo de persistência.
-- Branch e commit: `ui/catalog-editor-experience`; código em validação até `4f7ea1cd3fe2a4d7f00e3fb54e690bac809f85ce`.
+- Branch e commit: `ui/catalog-editor-experience`; código em validação até `8087b40b84e3bbb386f954400b5405c092aa5abe`.
 - Task board: UI-004/UI-006/UI-011/UI-013 permanecem [~]; nenhum item foi marcado como concluído nesta etapa.
 - Arquivos alterados: ProductEditor, catalogApi, AdminProducts, AbaMidia, admin.css, AGENTS.md e este handoff.
 - Evidências: revisão de contratos do SaveProductRequest e AdminProductController; checks desta branch ainda não executados.
