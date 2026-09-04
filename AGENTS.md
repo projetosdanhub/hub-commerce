@@ -67,3 +67,13 @@ Uma alteração só está concluída quando a tarefa correspondente foi atualiza
 - Mudanças normais entram por branch e pull request. Não faça push direto em `main`; exceções exigem autorização explícita do responsável e registro no handoff.
 - Antes de passar o trabalho a outra IA, atualize o handoff com os campos obrigatórios, incluindo tudo que não foi verificado.
 - Merge só é permitido após os checks obrigatórios atuais do PR estarem verdes e não houver bloqueio de segurança, tenancy ou pagamento.
+
+## Matriz de testes por impacto
+
+- Documentação, handoff, regras de IA e task board: revisão do diff e links; não executar CI completo, salvo quando a própria regra de workflow for alterada.
+- Backend, API, migrations, modelos ou regras de domínio: executar o workflow **Tests** e testes específicos afetados.
+- Frontend, build, rotas SPA ou componentes: executar **Tests**; adicionar E2E apenas quando o fluxo de usuário puder mudar.
+- Checkout, login, autorização de navegador ou jornada crítica: executar **E2E Tests** além dos testes unitários/feature afetados.
+- Workflows, dependências, permissões ou segurança: executar o workflow alterado e registrar seu link no handoff.
+
+Nunca substitua um teste necessário por conveniência; reduza somente checks que não cobrem o risco da alteração.
