@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import AdminLogin from './AdminLogin';
@@ -8,9 +8,25 @@ import { fetchAdminDashboard } from './AdminDashboard';
 import { AdminDesktopShell } from './AppShell/AdminDesktopShell';
 import { AdminMobileShell } from './AppShell/AdminMobileShell';
 
+const useMobileShell = () => {
+  const query = '(max-width: 1023px)';
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia(query).matches);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(query);
+    const updateViewport = (event) => setIsMobile(event.matches);
+
+    mediaQuery.addEventListener('change', updateViewport);
+    return () => mediaQuery.removeEventListener('change', updateViewport);
+  }, []);
+
+  return isMobile;
+};
+
 const AdminLayout = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const isMobile = useMobileShell();
   const [token, setToken] = useState(() => sessionStorage.getItem('hub_admin_token'));
 
   const handleLogout = useCallback(async () => {
@@ -45,17 +61,18 @@ const AdminLayout = () => {
     );
   }
 
-  const content = <Outlet />;
-
   return (
     <div className="hub-admin">
       <div className="hub-admin-shell">
-        <AdminDesktopShell onLogout={handleLogout} onWarmRoute={warmRoute}>
-          {content}
-        </AdminDesktopShell>
-        <AdminMobileShell onLogout={handleLogout}>
-          {content}
-        </AdminMobileShell>
+        {isMobile ? (
+          <AdminMobileShell onLogout={handleLogout}>
+            <Outlet />
+          </AdminMobileShell>
+        ) : (
+          <AdminDesktopShell onLogout={handleLogout} onWarmRoute={warmRoute}>
+            <Outlet />
+          </AdminDesktopShell>
+        )}
       </div>
     </div>
   );
