@@ -6,13 +6,13 @@ import { IconButton } from '../DesignSystem/primitives/IconButton';
 import AbaFiscal from '../Produtos/Editor/abas/AbaFiscal';
 import AbaFichaTecnica from '../Produtos/Editor/abas/AbaFichaTecnica';
 import AbaLogistica from '../Produtos/Editor/abas/AbaLogistica';
-import AbaMidia from '../Produtos/Editor/abas/AbaMidia';
 import AbaSeo from '../Produtos/Editor/abas/AbaSeo';
 import AbaEstoque from '../Produtos/Editor/abas/AbaEstoque';
 import AbaVariaveis from '../Produtos/Editor/abas/AbaVariaveis';
 import { toProductEditorModel } from '../Produtos/produtoContract';
 import { saveProduct, validateProductSkus } from './catalogApi';
 import { ProductGeneralForm } from './ProductGeneralForm';
+import { ProductMediaForm } from './ProductMediaForm';
 import { errorMessage, productStatus } from './catalogUtils';
 
 const tabs = [
@@ -35,12 +35,13 @@ const validationMessage = (error) => {
 
 export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }) => {
   const [product, setProduct] = useState(productOriginal);
+  const [savedProduct, setSavedProduct] = useState(productOriginal);
   const [tab, setTab] = useState('GERAL');
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null);
 
-  const hasChanges = useMemo(() => JSON.stringify(product) !== JSON.stringify(productOriginal), [product, productOriginal]);
+  const hasChanges = useMemo(() => JSON.stringify(product) !== JSON.stringify(savedProduct), [product, savedProduct]);
   const status = productStatus({ status_vitrine: product.status, controlar_estoque: product.controlarEstoque, quantidade_estoque: product.estoque, alerta_estoque: product.alertaEstoque, pre_venda: product.preVenda });
 
   const back = () => {
@@ -83,7 +84,9 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
       setNotice({ tone: 'loading', text: 'Salvando produto...' });
       const response = await saveProduct({ product, categoryId: category.id });
       const saved = response.data?.data ?? response.data;
-      setProduct(toProductEditorModel(saved));
+      const savedEditorProduct = toProductEditorModel(saved);
+      setProduct(savedEditorProduct);
+      setSavedProduct(savedEditorProduct);
       setNotice({ tone: 'success', text: response.data?.message || 'Produto salvo e catálogo atualizado.' });
       await onSuccess();
     } catch (error) {
@@ -97,7 +100,7 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
     GERAL: <ProductGeneralForm product={product} categories={categories} errors={errors} onChange={setProduct} onClearError={(field) => setErrors((current) => ({ ...current, [field]: false }))} />,
     FICHA: <AbaFichaTecnica p={product} setP={setProduct} />,
     ESTOQUE: <AbaEstoque p={product} setP={setProduct} />,
-    MIDIA: <AbaMidia p={product} setP={setProduct} />,
+    MIDIA: <ProductMediaForm product={product} onChange={setProduct} />,
     VARIACOES: <AbaVariaveis p={product} setP={setProduct} />,
     FISCAL: <AbaFiscal p={product} setP={setProduct} />,
     LOGISTICA: <AbaLogistica p={product} setP={setProduct} />,

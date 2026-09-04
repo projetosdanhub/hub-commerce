@@ -6,9 +6,9 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
 - **Última integração:** `ui/catalog-editor-general-media`, squash commit `2477fe0d2398656fa3aa4f62a059393faf0d18d1` na `main`.
-- **Branch de trabalho:** próxima migração visual do editor: aba Mídia.
+- **Branch de trabalho:** `ui/catalog-editor-media`; validação concluída na PR #29.
 - **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** migrar a aba Mídia sem alterar o contrato de upload.
+- **Próxima ação:** integrar a aba Mídia aprovada e seguir para a próxima aba do editor.
 
 ## Modelo obrigatório
 
@@ -99,3 +99,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: revisão estática confirmou ausência de mock, simulação, geração aleatória, HTML inseguro e estilos inline nos arquivos novos/substituídos; [PR #27](https://github.com/projetosdanhub/hub-commerce/pull/27), [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33901869175), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33901869187) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33901869198) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: abas Mídia, Estoque, Variações, Fiscal, Logística, SEO e Ficha Técnica ainda aguardam migração visual. Marketing, Afiliados e Avaliações continuam bloqueados por contratos reais tenant-scoped.
 - Próxima ação única: migrar visualmente a aba Mídia, sem inventar remoções que o contrato de upload não suporte.
+
+
+### 2026-09-04 — Codex
+- Objetivo e escopo: substituir a aba Mídia do editor de produto por uma composição canônica e responsiva, alinhada aos limites reais de upload.
+- Branch e commit: `ui/catalog-editor-media`; código validado em `56aa0e6420d7720b87e4fa0cd774f010d9df91f8`.
+- Task board: UI-004/UI-006/UI-011/UI-013 continuam [~]; não há conclusão antecipada.
+- Arquivos alterados: ProductMediaForm, ProductEditor, AbaMidia como adaptador compatível e admin.css.
+- Evidências: revisão estática confirma ausência de mock, simulação, geração aleatória, HTML inseguro, `alert`, ícones legados e estilos inline na nova aba; [PR #29](https://github.com/projetosdanhub/hub-commerce/pull/29), [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33902918244), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33902918220) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33902918236) concluíram com sucesso.
+- Riscos, bloqueios e itens não verificados: imagem e vídeo principais podem ser substituídos, mas não removidos, pois o contrato atual não expõe remoção persistente desses arquivos. A remoção de galeria é mantida porque `galeria_urls` representa a lista final. Abas Estoque, Variações, Fiscal, Logística, SEO e Ficha Técnica ainda aguardam migração visual.
+- Próxima ação única: revisar o diff aprovado e integrar a PR #29.
