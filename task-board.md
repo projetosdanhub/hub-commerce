@@ -203,6 +203,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [ ] | UI-012 | P1 | Auditar WCAG 2.2 AA e teclado | UI-006 | Checklist e testes aprovados |
 | [~] | UI-013 | P1 | Corrigir responsividade e zoom 200% | UI-006 | Sem scroll horizontal global |
 | [ ] | UI-014 | P2 | Criar documentação visual dos componentes | UI-005 | Estados e uso demonstrados |
+| [!] | UI-015 | P1 | Criar centro de notificações tenant-scoped | BASE-011, TEN-010 | Contrato real de leitura, não lidas e destinos autorizado; sem sino ou contador simulado |
 
 ## Fase 11 — Storefront, SEO e desempenho
 
@@ -258,19 +259,3 @@ Os estados abaixo foram corrigidos para refletir evidência verificável. Itens 
 ## Fase 14 — Homologação e lançamento
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
-|---|---|---:|---|---|---|
-| [ ] | REL-001 | P0 | Executar auditoria dinâmica de segurança | OPS-012 | Achados P0/P1 resolvidos |
-| [ ] | REL-002 | P0 | Executar teste multitenant ponta a ponta | TEN-016, QA-009 | Nenhum vazamento cruzado |
-| [ ] | REL-003 | P0 | Homologar gateways reais | PAY-012 | Compra/refund/conciliação aprovados |
-| [ ] | REL-004 | P1 | Homologar logística | SHIP-005 | Cotação/etiqueta/rastreio aprovados |
-| [ ] | REL-005 | P1 | Homologar LGPD e retenção | CRM-006 | Processos exercitados |
-| [ ] | REL-006 | P1 | Executar teste de carga | OPS-008 | SLOs atendidos |
-| [ ] | REL-007 | P1 | Treinar operação e suporte | OPS-009 | Runbooks disponíveis |
-| [ ] | REL-008 | P0 | Realizar go-live controlado | REL-001 a REL-007 | Feature flags, monitoramento e rollback ativos |
-| [ ] | REL-009 | P1 | Fazer revisão pós-lançamento | REL-008 | Incidentes e melhorias registrados |
-
-## Bloco atual autorizado
-
-UI-001 → UI-002 → UI-003/UI-005 → UI-006 → UI-011 → UI-013 → UI-008.
-
-A fundação do painel, Pedidos e Clientes/CRM estão integrados. A migração visual de Catálogo está em andamento. Marketing, Afiliados e Avaliações exigem contratos administrativos tenant-scoped antes de substituir seus dados simulados; MKT-001 a MKT-003 continuam pendentes. As pendências de domínio (incluindo ORD-004 e CAT-002) continuam abertas e não são marcadas como concluídas por entregas visuais.
