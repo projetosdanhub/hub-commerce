@@ -5,10 +5,10 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 ## Estado atual
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
-- **Branch de trabalho:** `ui/orders-experience`.
-- **Commit de código validado:** `57126096908650e878d9336332372b8bb38c8d7b`.
-- **Tarefas afetadas:** UI-008 concluída; pendências de domínio de pedidos e logística permanecem abertas.
-- **Próxima ação:** migrar Clientes/CRM como próximo módulo fechado.
+- **Branch de trabalho:** `ui/catalog-editor-experience`.
+- **Commit de código em validação:** `8087b40b84e3bbb386f954400b5405c092aa5abe`.
+- **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
+- **Próxima ação:** validar o shell do editor de produto e, se os checks estiverem verdes, integrar o PR.
 
 ## Modelo obrigatório
 
@@ -61,3 +61,31 @@ Copie este bloco para cada handoff relevante:
 - Evidências: [PR #22](https://github.com/projetosdanhub/hub-commerce/pull/22); [Tests #231](https://github.com/projetosdanhub/hub-commerce/actions/runs/33876456702), [E2E #57](https://github.com/projetosdanhub/hub-commerce/actions/runs/33876456707) e [Security #57](https://github.com/projetosdanhub/hub-commerce/actions/runs/33876456832) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: a tela consome os contratos atuais de pedido e logística; não altera a idempotência, o isolamento por tenant ou a integração de produção do Melhor Envio. Essas pendências de domínio são deliberadamente mantidas no board.
 - Próxima ação única: migrar Clientes/CRM depois do merge desta PR.
+
+
+### 2026-09-04 — Codex
+- Objetivo e escopo: modernizar Clientes/CRM com dados e ações reais, sem simulações.
+- Branch e commit: `ui/customers-crm-experience`; integrado no squash commit `5edb1beb6c365da09832550372a14cb3a7ff3175`.
+- Task board: UI-007 [x] e UI-009 [x] — evidência aprovada.
+- Arquivos alterados: AdminCustomers, módulos Customers, query client, estilos do painel e task board.
+- Evidências: [PR #23](https://github.com/projetosdanhub/hub-commerce/pull/23); [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33896829001), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33896829086) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33896829101) concluíram com sucesso.
+- Riscos, bloqueios e itens não verificados: pendências de domínio CRM continuam abertas conforme board; nenhuma foi marcada como concluída pela migração visual.
+- Próxima ação única: modernizar Catálogo com contratos de produto existentes.
+
+### 2026-09-04 — Codex
+- Objetivo e escopo: modernizar painel, diretório e auditoria de Catálogo com dados reais e cache tenant-aware.
+- Branch e commit: `ui/catalog-experience`; integrado no squash commit `1ab4d9619b60000e9380c39b4212b97d8d01eb6e`.
+- Task board: UI-007 [x] e UI-009 [x] registrados; CAT-002 permanece [ ].
+- Arquivos alterados: ProdutosPrincipal, módulos Products de painel/lista/auditoria/API, query client, estilos e task board.
+- Evidências: [PR #24](https://github.com/projetosdanhub/hub-commerce/pull/24); [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33898498617), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33898498397) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33898498605) concluíram com sucesso.
+- Riscos, bloqueios e itens não verificados: métricas de vendas/receita não foram exibidas por não existir contrato real. Marketing, Afiliados e Avaliações ainda usam dados simulados legados e não podem ser conectados antes de contratos administrativos tenant-scoped.
+- Próxima ação única: substituir o shell do editor de produto e alinhar uploads ao contrato do backend.
+
+### 2026-09-04 — Codex
+- Objetivo e escopo: modernizar o shell do editor de produto e remover comportamento simulado do fluxo de persistência.
+- Branch e commit: `ui/catalog-editor-experience`; código em validação até `8087b40b84e3bbb386f954400b5405c092aa5abe`.
+- Task board: UI-004/UI-006/UI-011/UI-013 permanecem [~]; nenhum item foi marcado como concluído nesta etapa.
+- Arquivos alterados: ProductEditor, catalogApi, AdminProducts, AbaMidia, admin.css, AGENTS.md e este handoff.
+- Evidências: revisão de contratos do SaveProductRequest e AdminProductController; checks desta branch ainda não executados.
+- Riscos, bloqueios e itens não verificados: abas internas legadas ainda possuem estilos inline e ícones próprios; a nova camada preserva seus campos e o payload. Marketing, Afiliados e Avaliações exigem remoção de mocks e contratos tenant-scoped antes de qualquer UI conectada.
+- Próxima ação única: abrir PR do editor e executar Tests, E2E e Security.

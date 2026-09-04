@@ -40,6 +40,7 @@ Em caso de conflito, pare, descreva o conflito e peça uma decisão. Não escolh
 - Autenticação não substitui autorização: rotas administrativas exigem papel e permissão.
 - Queries, cache, filas, arquivos, eventos e unicidades devem ser isolados por tenant.
 - Não usar dados fictícios como fallback silencioso em fluxos reais.
+- Ao modernizar um módulo, remover mocks, métricas simuladas, personas e imagens de demonstração do caminho de produção. Sem contrato real tenant-scoped, o recurso deve exibir estado indisponível e permanecer no task board; nunca simular funcionamento.
 - Não expor exceções, stack traces ou respostas integrais de fornecedores ao cliente.
 - Não criar dependências entre a loja pública e endpoints administrativos.
 - Não mover ou renomear arquivos públicos sem atualizar consumidores e testes.

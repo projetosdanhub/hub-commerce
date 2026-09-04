@@ -5,8 +5,8 @@ export default function AbaMidia({ p, setP }) {
     const handleMainImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            if (file.size > 5 * 1024 * 1024) {
-                alert("A imagem principal não pode exceder 5MB.");
+            if (file.size > 4 * 1024 * 1024) {
+                alert("A imagem principal não pode exceder 4MB.");
                 return;
             }
             const url = URL.createObjectURL(file);
@@ -21,8 +21,8 @@ export default function AbaMidia({ p, setP }) {
             
             let validFiles = [];
             for (let file of files) {
-                if (file.size > 5 * 1024 * 1024) {
-                    alert(`A imagem ${file.name} excede o limite de 5MB e não será adicionada.`);
+                if (file.size > 4 * 1024 * 1024) {
+                    alert(`A imagem ${file.name} excede o limite de 4MB e não será adicionada.`);
                     continue;
                 }
                 validFiles.push({ file, url: URL.createObjectURL(file) });
@@ -46,8 +46,8 @@ export default function AbaMidia({ p, setP }) {
     const handleVideoChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            if (file.size > 20 * 1024 * 1024) {
-                alert("O vídeo não pode exceder 20MB.");
+            if (file.size > 12 * 1024 * 1024) {
+                alert("O vídeo não pode exceder 12MB.");
                 return;
             }
             const url = URL.createObjectURL(file);
@@ -95,7 +95,7 @@ export default function AbaMidia({ p, setP }) {
                             <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--hub-text-primary)' }}>Dicas de formato</h4>
                             <ul style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px', listStyleType: 'disc', listStylePosition: 'inside' }}>
                                 <li>Formato JPG, PNG ou WEBP</li>
-                                <li>Tamanho máximo: 5MB</li>
+                                <li>Tamanho máximo: 4MB</li>
                                 <li>Recomendado: 1200x1200px para zoom de qualidade</li>
                                 <li>Fundo branco ou transparente</li>
                             </ul>
@@ -120,7 +120,7 @@ export default function AbaMidia({ p, setP }) {
                                 <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: 0, transition: 'opacity 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}>
                                     <label style={{ width: '40px', height: '40px', backgroundColor: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--hub-text-secondary)', cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', transition: 'transform 0.2s' }} onMouseEnter={(e) => {e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.color = 'var(--hub-primary)'}} onMouseLeave={(e) => {e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.color = 'var(--hub-text-secondary)'}}>
                                         <Icons.Edit style={{ width: '20px', height: '20px' }} />
-                                        <input type="file" style={{ display: 'none' }} accept="video/mp4, video/webm" onChange={handleVideoChange} />
+                                        <input type="file" style={{ display: 'none' }} accept="video/mp4" onChange={handleVideoChange} />
                                     </label>
                                     <button 
                                         onClick={() => setP({...p, video: null, videoObject: null})}
@@ -135,7 +135,7 @@ export default function AbaMidia({ p, setP }) {
                             <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--hub-text-muted)', transition: 'colors 0.2s' }} onMouseEnter={(e) => {e.currentTarget.style.color = 'var(--hub-primary)'; e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)'}} onMouseLeave={(e) => {e.currentTarget.style.color = 'var(--hub-text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'}}>
                                 <Icons.Play style={{ width: '40px', height: '40px', marginBottom: '8px' }} />
                                 <span style={{ fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>Adicionar<br/>Vídeo</span>
-                                <input type="file" style={{ display: 'none' }} accept="video/mp4, video/webm" onChange={handleVideoChange} />
+                                <input type="file" style={{ display: 'none' }} accept="video/mp4" onChange={handleVideoChange} />
                             </label>
                         )}
                     </div>
@@ -145,7 +145,7 @@ export default function AbaMidia({ p, setP }) {
                             <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--hub-text-primary)' }}>Dicas de formato de Vídeo</h4>
                             <ul style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px', listStyleType: 'disc', listStylePosition: 'inside' }}>
                                 <li>Formato MP4 ou WEBM</li>
-                                <li>Tamanho máximo: 20MB</li>
+                                <li>Tamanho máximo: 12MB</li>
                                 <li>Duração sugerida: até 15 segundos</li>
                                 <li>Sem áudio (ideal para autoplay na loja)</li>
                             </ul>

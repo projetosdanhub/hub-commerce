@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CircleAlert, ClipboardList, LayoutDashboard, List, Package, Plus, RefreshCw } from 'lucide-react';
 import { PageHeader } from '../DesignSystem/patterns/PageHeader';
 import { Button } from '../DesignSystem/primitives/Button';
-import EditorDeProduto from '../Produtos/Editor/EditorDeProduto';
+import { ProductEditor } from './ProductEditor';
 import { toProductEditorModel } from '../Produtos/produtoContract';
 import { adminQueryKeys } from '../../../queryClient';
 import { CatalogAudit } from './CatalogAudit';
@@ -50,15 +50,17 @@ export default function AdminProducts() {
 
   const openProduct = (product) => { setSelected(toProductEditorModel(product)); setTab('EDITOR'); };
   const createProduct = () => { setSelected(initialProduct); setTab('EDITOR'); };
-  const saved = () => {
-    queryClient.invalidateQueries({ queryKey: adminQueryKeys.products() });
-    queryClient.invalidateQueries({ queryKey: adminQueryKeys.productAudits() });
+  const saved = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.products() }),
+      queryClient.invalidateQueries({ queryKey: adminQueryKeys.productAudits() }),
+    ]);
     setNotice('Produto salvo. A lista e a auditoria foram atualizadas.');
   };
 
   if (productsQuery.isError) return <section className="hub-surface hub-error-state" role="alert"><div><CircleAlert aria-hidden="true" size={28} /><h1 className="hub-panel-title">Não foi possível carregar o catálogo</h1><p>{errorMessage(productsQuery.error)}</p><Button className="mt-5" icon={RefreshCw} onClick={() => productsQuery.refetch()}>Tentar novamente</Button></div></section>;
 
-  if (tab === 'EDITOR' && selected) return <div className="hub-catalog-editor-shell"><EditorDeProduto produtoOriginal={selected} onVoltar={() => setTab('PRODUTOS')} onSuccess={saved} /></div>;
+  if (tab === 'EDITOR' && selected) return <div className="hub-catalog-editor-shell"><ProductEditor productOriginal={selected} categories={categories} onBack={() => setTab('PRODUTOS')} onSuccess={saved} /></div>;
 
   return <div className="hub-page-container hub-catalog-page">
     <PageHeader eyebrow="Catálogo e estoque" title="Produtos" icon={Package} description="Organize produtos, estoque, mídia, dados fiscais e SEO com dados atuais da loja." actions={<div className="hub-catalog-actions"><Button variant="secondary" icon={RefreshCw} loading={productsQuery.isFetching} onClick={refresh}>Atualizar</Button><Button icon={Plus} onClick={createProduct}>Novo produto</Button></div>} />
