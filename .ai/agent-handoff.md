@@ -5,10 +5,10 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 ## Estado atual
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
-- **Última integração:** `ui/catalog-editor-media`, squash commit `b9034d8e6b3dcac20fbec6ba2ef28194b9d48994` na `main`.
-- **Branch de trabalho:** `ui/catalog-editor-specification`; validação concluída na PR #31.
+- **Última integração:** `ui/catalog-editor-specification`, squash commit `2f55ea7f9d9ae6e781b45047d204ed8d0c5d52eb` na `main`.
+- **Branch de trabalho:** próxima migração visual do editor: aba Estoque.
 - **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** integrar a Ficha Técnica aprovada e seguir para Estoque.
+- **Próxima ação:** migrar a aba Estoque sem alterar o contrato de inventário.
 
 ## Modelo obrigatório
 
@@ -113,9 +113,9 @@ Copie este bloco para cada handoff relevante:
 
 ### 2026-09-04 — Codex
 - Objetivo e escopo: substituir a aba Ficha Técnica por componentes canônicos e responsivos, sem exemplos preenchidos ou atributos inventados.
-- Branch e commit: `ui/catalog-editor-specification`; código validado em `e9c6acb29f67c5bb23cb642fdfdf352059005736`.
+- Branch e commit: `ui/catalog-editor-specification`; integrado no squash commit `2f55ea7f9d9ae6e781b45047d204ed8d0c5d52eb`.
 - Task board: UI-004/UI-006/UI-011/UI-013 continuam [~]; não há conclusão antecipada.
 - Arquivos alterados: ProductSpecificationForm, ProductEditor, AbaFichaTecnica como adaptador compatível e admin.css.
 - Evidências: revisão estática confirma ausência de mock, simulação, exemplos, placeholders, geração aleatória, HTML inseguro, `alert`, ícones legados e estilos inline na nova aba; [PR #31](https://github.com/projetosdanhub/hub-commerce/pull/31), [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33903739028), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33903738870) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33903738820) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: a API aceita até 100 atributos e a interface respeita esse limite. Linhas incompletas são bloqueadas antes da gravação. Abas Estoque, Variações, Fiscal, Logística e SEO ainda aguardam migração visual.
-- Próxima ação única: revisar o diff aprovado e integrar a PR #31.
+- Próxima ação única: migrar visualmente a aba Estoque, sem inventar saldo, alertas ou previsão de reposição.
