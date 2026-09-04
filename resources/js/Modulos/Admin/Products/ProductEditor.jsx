@@ -5,7 +5,6 @@ import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
 import AbaFiscal from '../Produtos/Editor/abas/AbaFiscal';
 import AbaFichaTecnica from '../Produtos/Editor/abas/AbaFichaTecnica';
-import AbaGeral from '../Produtos/Editor/abas/AbaGeral';
 import AbaLogistica from '../Produtos/Editor/abas/AbaLogistica';
 import AbaMidia from '../Produtos/Editor/abas/AbaMidia';
 import AbaSeo from '../Produtos/Editor/abas/AbaSeo';
@@ -13,6 +12,7 @@ import AbaEstoque from '../Produtos/Editor/abas/AbaEstoque';
 import AbaVariaveis from '../Produtos/Editor/abas/AbaVariaveis';
 import { toProductEditorModel } from '../Produtos/produtoContract';
 import { saveProduct, validateProductSkus } from './catalogApi';
+import { ProductGeneralForm } from './ProductGeneralForm';
 import { errorMessage, productStatus } from './catalogUtils';
 
 const tabs = [
@@ -94,7 +94,7 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
   };
 
   const content = {
-    GERAL: <AbaGeral p={product} setP={setProduct} erros={errors} setErros={setErrors} categorias={categories} />,
+    GERAL: <ProductGeneralForm product={product} categories={categories} errors={errors} onChange={setProduct} />,
     FICHA: <AbaFichaTecnica p={product} setP={setProduct} />,
     ESTOQUE: <AbaEstoque p={product} setP={setProduct} />,
     MIDIA: <AbaMidia p={product} setP={setProduct} />,
