@@ -16,7 +16,6 @@ import {
   sendPasswordReset, updateCustomerBasics, updateCustomerNotes, updateCustomerPhone, updateCustomerStatus,
   updateCustomerTags, updateSensitiveData,
 } from './Customers/customerApi';
-import { errorMessage } from './Customers/customerUtils';
 
 const initialFilters = { page: 1, perPage: 15, search: '', status: 'TODOS', birthMonth: 'TODOS' };
 
