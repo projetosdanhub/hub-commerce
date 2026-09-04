@@ -35,12 +35,13 @@ const validationMessage = (error) => {
 
 export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }) => {
   const [product, setProduct] = useState(productOriginal);
+  const [savedProduct, setSavedProduct] = useState(productOriginal);
   const [tab, setTab] = useState('GERAL');
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null);
 
-  const hasChanges = useMemo(() => JSON.stringify(product) !== JSON.stringify(productOriginal), [product, productOriginal]);
+  const hasChanges = useMemo(() => JSON.stringify(product) !== JSON.stringify(savedProduct), [product, savedProduct]);
   const status = productStatus({ status_vitrine: product.status, controlar_estoque: product.controlarEstoque, quantidade_estoque: product.estoque, alerta_estoque: product.alertaEstoque, pre_venda: product.preVenda });
 
   const back = () => {
@@ -83,7 +84,9 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
       setNotice({ tone: 'loading', text: 'Salvando produto...' });
       const response = await saveProduct({ product, categoryId: category.id });
       const saved = response.data?.data ?? response.data;
-      setProduct(toProductEditorModel(saved));
+      const savedEditorProduct = toProductEditorModel(saved);
+      setProduct(savedEditorProduct);
+      setSavedProduct(savedEditorProduct);
       setNotice({ tone: 'success', text: response.data?.message || 'Produto salvo e catálogo atualizado.' });
       await onSuccess();
     } catch (error) {
