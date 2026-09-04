@@ -5,10 +5,10 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 ## Estado atual
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
-- **Última integração:** `ui/catalog-editor-experience`, squash commit `63972bca34d09336805502a9d141f3040f0c57fb` na `main`.
-- **Branch de trabalho:** `ui/catalog-editor-general-media`, código em validação até `48e070f82c73226f209c40f693f16f2245f2cc47`.
+- **Última integração:** `ui/catalog-editor-general-media`, squash commit `2477fe0d2398656fa3aa4f62a059393faf0d18d1` na `main`.
+- **Branch de trabalho:** próxima migração visual do editor: aba Mídia.
 - **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** validar a migração da aba Geral antes de iniciar a aba Mídia.
+- **Próxima ação:** migrar a aba Mídia sem alterar o contrato de upload.
 
 ## Modelo obrigatório
 
@@ -93,9 +93,9 @@ Copie este bloco para cada handoff relevante:
 
 ### 2026-09-04 — Codex
 - Objetivo e escopo: substituir a aba Geral do editor de produto por componentes canônicos, sem valores, personas, SKU ou métricas simuladas.
-- Branch e commit: `ui/catalog-editor-general-media`; código em validação até `48e070f82c73226f209c40f693f16f2245f2cc47`.
+- Branch e commit: `ui/catalog-editor-general-media`; integrado no squash commit `2477fe0d2398656fa3aa4f62a059393faf0d18d1`.
 - Task board: UI-004/UI-006/UI-011/UI-013 continuam [~]; não há conclusão antecipada.
 - Arquivos alterados: ProductGeneralForm, ProductEditor, AbaGeral como adaptador compatível e admin.css.
-- Evidências: revisão estática confirma ausência de mock, simulação, geração aleatória, HTML inseguro e estilos inline nos arquivos novos/substituídos; checks de CI ainda não executados.
+- Evidências: revisão estática confirmou ausência de mock, simulação, geração aleatória, HTML inseguro e estilos inline nos arquivos novos/substituídos; [PR #27](https://github.com/projetosdanhub/hub-commerce/pull/27), [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33901869175), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33901869187) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33901869198) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: abas Mídia, Estoque, Variações, Fiscal, Logística, SEO e Ficha Técnica ainda aguardam migração visual. Marketing, Afiliados e Avaliações continuam bloqueados por contratos reais tenant-scoped.
-- Próxima ação única: abrir PR e executar Tests, E2E e Security.
+- Próxima ação única: migrar visualmente a aba Mídia, sem inventar remoções que o contrato de upload não suporte.
