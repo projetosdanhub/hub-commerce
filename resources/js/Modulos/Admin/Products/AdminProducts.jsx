@@ -5,7 +5,7 @@ import { PageHeader } from '../DesignSystem/patterns/PageHeader';
 import { Button } from '../DesignSystem/primitives/Button';
 import EditorDeProduto from '../Produtos/Editor/EditorDeProduto';
 import { toProductEditorModel } from '../Produtos/produtoContract';
-import { adminQueryKeys } from '../../queryClient';
+import { adminQueryKeys } from '../../../queryClient';
 import { CatalogAudit } from './CatalogAudit';
 import { CatalogDashboard } from './CatalogDashboard';
 import { CatalogList } from './CatalogList';
