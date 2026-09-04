@@ -99,3 +99,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: revisão estática confirmou ausência de mock, simulação, geração aleatória, HTML inseguro e estilos inline nos arquivos novos/substituídos; [PR #27](https://github.com/projetosdanhub/hub-commerce/pull/27), [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33901869175), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33901869187) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33901869198) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: abas Mídia, Estoque, Variações, Fiscal, Logística, SEO e Ficha Técnica ainda aguardam migração visual. Marketing, Afiliados e Avaliações continuam bloqueados por contratos reais tenant-scoped.
 - Próxima ação única: migrar visualmente a aba Mídia, sem inventar remoções que o contrato de upload não suporte.
+
+
+### 2026-09-04 — Codex
+- Objetivo e escopo: substituir a aba Mídia do editor de produto por uma composição canônica e responsiva, alinhada aos limites reais de upload.
+- Branch e commit: `ui/catalog-editor-media`; código em validação até `56aa0e6420d7720b87e4fa0cd774f010d9df91f8`.
+- Task board: UI-004/UI-006/UI-011/UI-013 continuam [~]; não há conclusão antecipada.
+- Arquivos alterados: ProductMediaForm, ProductEditor, AbaMidia como adaptador compatível e admin.css.
+- Evidências: revisão estática confirma ausência de mock, simulação, geração aleatória, HTML inseguro, `alert`, ícones legados e estilos inline na nova aba; checks de CI ainda não executados.
+- Riscos, bloqueios e itens não verificados: imagem e vídeo principais podem ser substituídos, mas não removidos, pois o contrato atual não expõe remoção persistente desses arquivos. A remoção de galeria é mantida porque `galeria_urls` representa a lista final. Abas Estoque, Variações, Fiscal, Logística, SEO e Ficha Técnica ainda aguardam migração visual.
+- Próxima ação única: abrir PR e executar Tests, E2E e Security.
