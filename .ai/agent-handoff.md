@@ -4,11 +4,11 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 
 ## Estado atual
 
-- **Objetivo:** renovar a fundação visual do painel administrativo sem alterar contratos de negócio.
-- **Branch de trabalho:** `ui/admin-foundation`.
-- **Commit de código validado:** `c9a27368ad3353749e2e659cef4e0e66aed1c413`.
-- **Tarefas afetadas:** UI-001 a UI-006, UI-011 e UI-013.
-- **Próxima ação:** migrar visualmente os módulos legados por feature, começando pelas telas de maior uso.
+- **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
+- **Branch de trabalho:** `ui/orders-experience`.
+- **Commit de código validado:** `57126096908650e878d9336332372b8bb38c8d7b`.
+- **Tarefas afetadas:** UI-008 concluída; pendências de domínio de pedidos e logística permanecem abertas.
+- **Próxima ação:** migrar Clientes/CRM como próximo módulo fechado.
 
 ## Modelo obrigatório
 
@@ -52,3 +52,12 @@ Copie este bloco para cada handoff relevante:
 - Evidências: [Tests #229](https://github.com/projetosdanhub/hub-commerce/actions/runs/33873995713), [E2E #55](https://github.com/projetosdanhub/hub-commerce/actions/runs/33873995734) e [Security #55](https://github.com/projetosdanhub/hub-commerce/actions/runs/33873995673) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: módulos legados continuam com estilos inline, SVGs próprios e componentes grandes; não foram removidos para evitar regressão de regras de catálogo, CRM, pedidos e pagamentos. A busca global está sinalizada como futura, sem comportamento falso.
 - Próxima ação única: modernizar a tela de Pedidos a partir dos primitives canônicos e de dados React Query.
+
+### 2026-09-04 — Codex
+- Objetivo e escopo: substituir a tela interna de Pedidos por uma composição dark/glass modular, desktop e mobile, sem alterar contratos ou regras de negócio.
+- Branch e commit: `ui/orders-experience`; código validado em `57126096908650e878d9336332372b8bb38c8d7b`.
+- Task board: UI-008 `[x]` — lista, métricas, detalhe, diálogos operacionais e camada de API foram separados; ORD-004 e SHIP-001 a SHIP-005 continuam pendentes.
+- Arquivos alterados: `AdminOrders`, módulos `Orders/*`, cache React Query, estilos do painel, task board e este handoff.
+- Evidências: [PR #22](https://github.com/projetosdanhub/hub-commerce/pull/22); [Tests #231](https://github.com/projetosdanhub/hub-commerce/actions/runs/33876456702), [E2E #57](https://github.com/projetosdanhub/hub-commerce/actions/runs/33876456707) e [Security #57](https://github.com/projetosdanhub/hub-commerce/actions/runs/33876456832) concluíram com sucesso.
+- Riscos, bloqueios e itens não verificados: a tela consome os contratos atuais de pedido e logística; não altera a idempotência, o isolamento por tenant ou a integração de produção do Melhor Envio. Essas pendências de domínio são deliberadamente mantidas no board.
+- Próxima ação única: migrar Clientes/CRM depois do merge desta PR.
