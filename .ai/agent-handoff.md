@@ -109,3 +109,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: revisão estática confirma ausência de mock, simulação, geração aleatória, HTML inseguro, `alert`, ícones legados e estilos inline na nova aba; [PR #29](https://github.com/projetosdanhub/hub-commerce/pull/29), [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33902918244), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33902918220) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33902918236) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: imagem e vídeo principais podem ser substituídos, mas não removidos, pois o contrato atual não expõe remoção persistente desses arquivos. A remoção de galeria é mantida porque `galeria_urls` representa a lista final. Abas Estoque, Variações, Fiscal, Logística, SEO e Ficha Técnica ainda aguardam migração visual.
 - Próxima ação única: migrar visualmente a aba Ficha Técnica, sem inventar atributos ou dados do produto.
+
+
+### 2026-09-04 — Codex
+- Objetivo e escopo: substituir a aba Ficha Técnica por componentes canônicos e responsivos, sem exemplos preenchidos ou atributos inventados.
+- Branch e commit: `ui/catalog-editor-specification`; código em validação até `e9c6acb29f67c5bb23cb642fdfdf352059005736`.
+- Task board: UI-004/UI-006/UI-011/UI-013 continuam [~]; não há conclusão antecipada.
+- Arquivos alterados: ProductSpecificationForm, ProductEditor, AbaFichaTecnica como adaptador compatível e admin.css.
+- Evidências: revisão estática confirma ausência de mock, simulação, exemplos, placeholders, geração aleatória, HTML inseguro, `alert`, ícones legados e estilos inline na nova aba; checks de CI ainda não executados.
+- Riscos, bloqueios e itens não verificados: a API aceita até 100 atributos e a interface respeita esse limite. Linhas incompletas são bloqueadas antes da gravação. Abas Estoque, Variações, Fiscal, Logística e SEO ainda aguardam migração visual.
+- Próxima ação única: abrir PR e executar Tests, E2E e Security.
