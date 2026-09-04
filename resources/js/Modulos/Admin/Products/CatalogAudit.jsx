@@ -9,7 +9,7 @@ export const CatalogAudit = ({ logs, loading, error, onRefresh }) => {
   const visible = useMemo(() => {
     if (period === 'TODOS') return logs;
     return logs.filter((log) => new Date(log.created_at || log.data) >= threshold);
-  }, [logs, period]);
+  }, [logs, period, threshold]);
 
   return <section className="hub-surface hub-orders-list">
     <header className="hub-orders-list-header"><div><h2 className="hub-panel-title">Auditoria do catálogo</h2><p className="hub-panel-description">Registros de criação, atualização e inativação devolvidos pela API.</p></div><div className="hub-catalog-actions"><select aria-label="Período de auditoria" value={period} onChange={(event) => { const value = event.target.value; setPeriod(value); setThreshold(value === 'TODOS' ? null : Date.now() - Number(value) * 24 * 60 * 60 * 1000); }}><option value="TODOS">Todo o histórico</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select><Button size="sm" variant="secondary" icon={RefreshCw} loading={loading} onClick={onRefresh}>Atualizar</Button></div></header>
