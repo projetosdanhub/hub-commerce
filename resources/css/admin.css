@@ -2653,3 +2653,183 @@
     opacity: 1;
   }
 }
+
+
+/* Aba Ficha Técnica do editor de produto */
+.hub-product-spec-card {
+  padding: var(--hub-space-5);
+}
+
+.hub-product-spec-header,
+.hub-product-spec-header > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: var(--hub-space-3);
+}
+
+.hub-product-spec-header {
+  justify-content: space-between;
+  gap: var(--hub-space-4);
+  margin-bottom: var(--hub-space-5);
+}
+
+.hub-product-spec-header h2 {
+  margin: 0;
+  color: var(--hub-text-primary);
+  font-size: var(--hub-text-h3);
+  font-weight: var(--hub-font-weight-semibold);
+}
+
+.hub-product-spec-header p {
+  margin: var(--hub-space-1) 0 0;
+  color: var(--hub-text-secondary);
+  font-size: var(--hub-text-body-sm);
+}
+
+.hub-product-spec-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--hub-space-2);
+  margin: 0 0 var(--hub-space-4);
+  padding: var(--hub-space-3) var(--hub-space-4);
+  border: 1px solid rgb(248 113 113 / 0.42);
+  border-radius: var(--hub-radius-md);
+  background: rgb(127 29 29 / 0.18);
+  color: var(--hub-danger);
+  font-size: var(--hub-text-body-sm);
+}
+
+.hub-product-spec-empty {
+  display: grid;
+  min-height: 13rem;
+  place-items: center;
+  align-content: center;
+  gap: var(--hub-space-2);
+  padding: var(--hub-space-5);
+  border: 1px dashed var(--hub-border-strong);
+  border-radius: var(--hub-radius-md);
+  background: var(--hub-surface-subtle);
+  color: var(--hub-text-muted);
+  text-align: center;
+}
+
+.hub-product-spec-empty strong {
+  color: var(--hub-text-secondary);
+  font-size: var(--hub-text-body);
+}
+
+.hub-product-spec-empty span {
+  max-width: 26rem;
+  font-size: var(--hub-text-body-sm);
+  line-height: 1.5;
+}
+
+.hub-product-spec-list {
+  display: grid;
+  gap: var(--hub-space-3);
+}
+
+.hub-product-spec-heading,
+.hub-product-spec-row {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr) 2.5rem;
+  gap: var(--hub-space-3);
+  align-items: end;
+}
+
+.hub-product-spec-heading {
+  padding: 0 var(--hub-space-1) var(--hub-space-2);
+  border-bottom: 1px solid var(--hub-border);
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-caption);
+  font-weight: var(--hub-font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hub-product-spec-row > label {
+  display: grid;
+  gap: var(--hub-space-2);
+  min-width: 0;
+}
+
+.hub-product-spec-row > label > span {
+  display: none;
+  color: var(--hub-text-secondary);
+  font-size: var(--hub-text-caption);
+  font-weight: var(--hub-font-weight-semibold);
+}
+
+.hub-product-spec-row input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0 var(--hub-space-3);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-sm);
+  outline: 0;
+  background: var(--hub-surface);
+  color: var(--hub-text-primary);
+  font: inherit;
+}
+
+.hub-product-spec-row input:focus {
+  border-color: var(--hub-primary);
+  box-shadow: 0 0 0 3px var(--hub-primary-soft);
+}
+
+.hub-product-spec-remove {
+  display: grid;
+  width: 2.5rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-sm);
+  background: transparent;
+  color: var(--hub-text-muted);
+  cursor: pointer;
+  transition: background var(--hub-motion-fast) var(--hub-ease-out), border-color var(--hub-motion-fast) var(--hub-ease-out), color var(--hub-motion-fast) var(--hub-ease-out);
+}
+
+.hub-product-spec-remove:hover,
+.hub-product-spec-remove:focus-visible {
+  border-color: rgb(248 113 113 / 0.5);
+  background: rgb(127 29 29 / 0.18);
+  color: var(--hub-danger);
+}
+
+@media (max-width: 639px) {
+  .hub-product-spec-card {
+    padding: var(--hub-space-4);
+  }
+
+  .hub-product-spec-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hub-product-spec-header > .hub-button {
+    width: 100%;
+  }
+
+  .hub-product-spec-heading {
+    display: none;
+  }
+
+  .hub-product-spec-row {
+    grid-template-columns: minmax(0, 1fr) 2.5rem;
+    align-items: end;
+    padding: var(--hub-space-3);
+    border: 1px solid var(--hub-border);
+    border-radius: var(--hub-radius-md);
+    background: var(--hub-surface-subtle);
+  }
+
+  .hub-product-spec-row > label:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .hub-product-spec-row > label > span {
+    display: block;
+  }
+}
