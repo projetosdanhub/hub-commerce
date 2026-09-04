@@ -74,7 +74,7 @@ export const saveProduct = async ({ product, categoryId }) => {
   if (product.imgObject) append(body, 'img', product.imgObject);
   if (product.videoObject) append(body, 'video', product.videoObject);
   (product.galeria || []).filter((url) => !String(url).startsWith('blob:')).forEach((url) => body.append('galeria_urls[]', url));
-  (product.galeriaObjects || []).forEach((item, index) => body.append('galeria[' + index + ']', item));
+  (product.galeriaObjects || []).forEach((item, index) => body.append('galeria[' + index + ']', item.file || item));
 
   if ((product.variaveis || []).length) {
     const variations = product.variaveis.map((item) => ({ ...item, img: item.imgObject ? null : item.img || null }));
