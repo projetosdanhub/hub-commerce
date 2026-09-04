@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../api'; // Instância do Axios
+import { invalidateAdminQueries } from '../../../queryClient';
 import './ConstrutorVitrine.css'; // O nosso CSS puro do construtor
 
 // Sub-módulos
@@ -79,6 +80,8 @@ const ConstrutorVitrinePrincipal = () => {
                 layout_blocks: blocks,
                 active_menu_id: activeMenuId || null 
             });
+            await carregarVitrine();
+            await invalidateAdminQueries();
             alert("Vitrine atualizada com sucesso! A loja pública já reflete as alterações.");
             
             // Forçar refresh no iframe se necessário enviando evento específico

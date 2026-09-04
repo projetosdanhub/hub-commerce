@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ExternalLink, PanelLeftClose, PanelLeftOpen, Search, UserRound } from 'lucide-react';
+import { ExternalLink, LogOut, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { AdminNavigation } from './AdminNavigation';
@@ -67,7 +67,7 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute }) => {
 
           <span className="hub-live-status">
             <span className="hub-live-status-dot" aria-hidden="true" />
-            Dados atualizados
+            Painel conectado
           </span>
 
           <a
@@ -80,7 +80,7 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute }) => {
             Acessar vitrine
           </a>
 
-          <IconButton icon={UserRound} label="Sair do painel" onClick={onLogout} />
+          <IconButton icon={LogOut} label="Sair do painel" onClick={onLogout} />
         </header>
 
         <motion.main
