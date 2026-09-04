@@ -6,9 +6,9 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
 - **Última integração:** `ui/catalog-editor-experience`, squash commit `63972bca34d09336805502a9d141f3040f0c57fb` na `main`.
-- **Commit validado:** `63972bca34d09336805502a9d141f3040f0c57fb`.
+- **Branch de trabalho:** `ui/catalog-editor-general-media`, código em validação até `48e070f82c73226f209c40f693f16f2245f2cc47`.
 - **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** migrar visualmente uma aba interna do editor de produto por vez, iniciando por Geral e Mídia.
+- **Próxima ação:** validar a migração da aba Geral antes de iniciar a aba Mídia.
 
 ## Modelo obrigatório
 
@@ -89,3 +89,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: [PR #25](https://github.com/projetosdanhub/hub-commerce/pull/25); [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33900910008), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33900910138) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33900909918) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: abas internas legadas ainda possuem estilos inline e ícones próprios; a nova camada preserva seus campos e o payload. Marketing, Afiliados e Avaliações exigem remoção de mocks e contratos tenant-scoped antes de qualquer UI conectada.
 - Próxima ação única: migrar visualmente a aba Geral do editor sem alterar o contrato de produto.
+
+
+### 2026-09-04 — Codex
+- Objetivo e escopo: substituir a aba Geral do editor de produto por componentes canônicos, sem valores, personas, SKU ou métricas simuladas.
+- Branch e commit: `ui/catalog-editor-general-media`; código em validação até `48e070f82c73226f209c40f693f16f2245f2cc47`.
+- Task board: UI-004/UI-006/UI-011/UI-013 continuam [~]; não há conclusão antecipada.
+- Arquivos alterados: ProductGeneralForm, ProductEditor, AbaGeral como adaptador compatível e admin.css.
+- Evidências: revisão estática confirma ausência de mock, simulação, geração aleatória, HTML inseguro e estilos inline nos arquivos novos/substituídos; checks de CI ainda não executados.
+- Riscos, bloqueios e itens não verificados: abas Mídia, Estoque, Variações, Fiscal, Logística, SEO e Ficha Técnica ainda aguardam migração visual. Marketing, Afiliados e Avaliações continuam bloqueados por contratos reais tenant-scoped.
+- Próxima ação única: abrir PR e executar Tests, E2E e Security.
