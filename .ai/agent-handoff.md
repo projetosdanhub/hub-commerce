@@ -5,10 +5,10 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 ## Estado atual
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
-- **Branch de trabalho:** `ui/catalog-editor-experience`.
-- **Commit de código em validação:** `8087b40b84e3bbb386f954400b5405c092aa5abe`.
+- **Última integração:** `ui/catalog-editor-experience`, squash commit `63972bca34d09336805502a9d141f3040f0c57fb` na `main`.
+- **Commit validado:** `63972bca34d09336805502a9d141f3040f0c57fb`.
 - **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** validar o shell do editor de produto e, se os checks estiverem verdes, integrar o PR.
+- **Próxima ação:** migrar visualmente uma aba interna do editor de produto por vez, iniciando por Geral e Mídia.
 
 ## Modelo obrigatório
 
@@ -83,9 +83,9 @@ Copie este bloco para cada handoff relevante:
 
 ### 2026-09-04 — Codex
 - Objetivo e escopo: modernizar o shell do editor de produto e remover comportamento simulado do fluxo de persistência.
-- Branch e commit: `ui/catalog-editor-experience`; código em validação até `8087b40b84e3bbb386f954400b5405c092aa5abe`.
+- Branch e commit: `ui/catalog-editor-experience`; integrado no squash commit `63972bca34d09336805502a9d141f3040f0c57fb`.
 - Task board: UI-004/UI-006/UI-011/UI-013 permanecem [~]; nenhum item foi marcado como concluído nesta etapa.
 - Arquivos alterados: ProductEditor, catalogApi, AdminProducts, AbaMidia, admin.css, AGENTS.md e este handoff.
-- Evidências: revisão de contratos do SaveProductRequest e AdminProductController; checks desta branch ainda não executados.
+- Evidências: [PR #25](https://github.com/projetosdanhub/hub-commerce/pull/25); [Tests](https://github.com/projetosdanhub/hub-commerce/actions/runs/33900910008), [E2E](https://github.com/projetosdanhub/hub-commerce/actions/runs/33900910138) e [Security](https://github.com/projetosdanhub/hub-commerce/actions/runs/33900909918) concluíram com sucesso.
 - Riscos, bloqueios e itens não verificados: abas internas legadas ainda possuem estilos inline e ícones próprios; a nova camada preserva seus campos e o payload. Marketing, Afiliados e Avaliações exigem remoção de mocks e contratos tenant-scoped antes de qualquer UI conectada.
-- Próxima ação única: abrir PR do editor e executar Tests, E2E e Security.
+- Próxima ação única: migrar visualmente a aba Geral do editor sem alterar o contrato de produto.
