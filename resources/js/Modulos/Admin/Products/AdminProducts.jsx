@@ -15,7 +15,7 @@ import { errorMessage } from './catalogUtils';
 const initialFilters = { page: 1, perPage: 15, search: '', category: 'TODAS', status: 'TODOS' };
 const initialProduct = {
   id: null, nome: '', status: 'INATIVO', categoriaPrincipal: '', preco: '', precoPromo: '', estoque: '',
-  controlarEstoque: true, alertaEstoque: 5, alertaModerado: 20, alertaAlto: 50, skuRef: '', skuSufixo: '',
+  controlarEstoque: true, alertaEstoque: '', alertaModerado: '', alertaAlto: '', skuRef: '', skuSufixo: '',
   descricao: '', ncm: '', cest: '', gtin: '', origem: '0', csosn: '102', cst: '102', cfop: '',
   cfopDentro: '', unidade: 'UN', icmsPerc: '', ipiPerc: '', peso: '', comp: '', largura: '', altura: '',
   agrupavel: false, metaTitle: '', metaDesc: '', slug: '', galeriaObjects: [], preVenda: false, isNovo: true,
