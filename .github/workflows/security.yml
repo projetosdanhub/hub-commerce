@@ -2,6 +2,9 @@ name: Security Scans
 
 on:
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - '.ai/**'
 
 concurrency:
   group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}

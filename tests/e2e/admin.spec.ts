@@ -4,7 +4,7 @@ test.describe('Admin SPA', () => {
   test('serves the administrative entry point', async ({ page }) => {
     const response = await page.goto('/admin');
 
-    expect(response?.ok()).toBeTruthy();
-    await expect(page.locator('body')).toBeVisible();
+    expect(response?.status()).toBe(200);
+    await expect(page.locator('#app')).toHaveCount(1);
   });
 });

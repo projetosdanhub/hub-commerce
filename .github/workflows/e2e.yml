@@ -2,6 +2,22 @@ name: E2E Tests
 
 on:
   pull_request:
+    paths:
+      - 'app/**'
+      - 'bootstrap/**'
+      - 'config/**'
+      - 'database/**'
+      - 'public/**'
+      - 'resources/**'
+      - 'routes/**'
+      - 'tests/e2e/**'
+      - 'playwright.config.ts'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - '.github/workflows/e2e.yml'
 
 concurrency:
   group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}

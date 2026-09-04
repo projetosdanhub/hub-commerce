@@ -2,6 +2,24 @@ name: Tests
 
 on:
   pull_request:
+    paths:
+      - 'app/**'
+      - 'bootstrap/**'
+      - 'config/**'
+      - 'database/**'
+      - 'resources/**'
+      - 'routes/**'
+      - 'tests/Feature/**'
+      - 'tests/Unit/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'phpstan.neon'
+      - 'phpunit.xml'
+      - 'eslint.config.js'
+      - 'vite.config.*'
+      - '.github/workflows/tests.yml'
 
 concurrency:
   group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}
