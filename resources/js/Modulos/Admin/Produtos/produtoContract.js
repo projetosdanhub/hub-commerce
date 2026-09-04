@@ -1,10 +1,12 @@
+const booleanValue = (value, fallback) => value === undefined || value === null ? fallback : value === true || value === 1 || value === '1';
+
 export const toProductEditorModel = (product) => ({
     ...product,
     status: product.status_vitrine ?? 'INATIVO',
     categoriaPrincipal: product.categoria?.nome ?? '',
     precoPromo: product.preco_promo ?? '',
     estoque: product.quantidade_estoque ?? 0,
-    controlarEstoque: product.controlar_estoque ?? true,
+    controlarEstoque: booleanValue(product.controlar_estoque, true),
     alertaEstoque: product.alerta_estoque ?? '',
     alertaModerado: product.alerta_moderado ?? '',
     alertaAlto: product.alerta_alto ?? '',
@@ -12,7 +14,7 @@ export const toProductEditorModel = (product) => ({
     skuSufixo: product.sku_sufixo ?? '',
     categoriasSecundarias: product.categorias_secundarias ?? [],
     fichaTecnica: product.ficha_tecnica ?? [],
-    preVenda: product.pre_venda ?? false,
+    preVenda: booleanValue(product.pre_venda, false),
     cfopDentro: product.cfop_dentro ?? '',
     cfop: product.cfop_dentro ?? '',
     unidade: product.unidade_medida ?? 'UN',
