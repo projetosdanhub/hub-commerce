@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, CreditCard, FileKey2, KeyRound, Mail, Pencil, Phone, Save, ShieldCheck, Tags, UserRound, WalletCards, X } from 'lucide-react';
+import { AlertTriangle, FileKey2, KeyRound, Mail, Pencil, Phone, Save, ShieldCheck, Tags, UserRound, WalletCards, X } from 'lucide-react';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
 import { errorMessage } from './customerUtils';
