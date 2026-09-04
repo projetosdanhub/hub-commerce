@@ -60,6 +60,13 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
       return;
     }
 
+    const hasIncompleteSpecification = (product.fichaTecnica || []).some((item) => !String(item.atributo || '').trim() || !String(item.valor || '').trim());
+    if (hasIncompleteSpecification) {
+      setTab('FICHA');
+      setNotice({ tone: 'error', text: 'Preencha ou remova os atributos incompletos da ficha técnica antes de salvar.' });
+      return;
+    }
+
     const category = categories.find((item) => item.nome === product.categoriaPrincipal);
     if (!category) {
       setTab('GERAL');
