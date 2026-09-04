@@ -17,7 +17,19 @@ export const CustomerManagementPanels = ({ mode = 'VIP', vipLevels, settings, lo
     aprovar_comentarios: Boolean(settings?.aprovar_comentarios),
     bloquear_fora_do_pais: Boolean(settings?.bloquear_fora_do_pais),
   }));
-  useEffect(() => {\n    if (mode === 'CONFIG') {\n      setCrmSettings({\n        permite_cadastro: Boolean(settings?.permite_cadastro),\n        login_apenas_convite: Boolean(settings?.login_apenas_convite),\n        aprovar_comentarios: Boolean(settings?.aprovar_comentarios),\n        bloquear_fora_do_pais: Boolean(settings?.bloquear_fora_do_pais),\n      });\n    }\n  }, [mode, settings]);\n  const set = (changes) => setVip((current) => ({ ...current, ...changes }));\n\n  if (mode === 'VIP') return <section className="hub-customer-management"><header className="hub-order-detail-heading"><div><p className="hub-page-eyebrow">Relacionamento</p><h1 className="hub-page-title"><Crown aria-hidden="true" size={28} /> Benefícios VIP</h1><p className="hub-page-description">Defina níveis, limites e benefícios por valor de relacionamento.</p></div><Button icon={Plus} onClick={() => setVip(initialVip)}>Novo nível</Button></header>
+  useEffect(() => {
+    if (mode === 'CONFIG') {
+      setCrmSettings({
+        permite_cadastro: Boolean(settings?.permite_cadastro),
+        login_apenas_convite: Boolean(settings?.login_apenas_convite),
+        aprovar_comentarios: Boolean(settings?.aprovar_comentarios),
+        bloquear_fora_do_pais: Boolean(settings?.bloquear_fora_do_pais),
+      });
+    }
+  }, [mode, settings]);
+  const set = (changes) => setVip((current) => ({ ...current, ...changes }));
+
+  if (mode === 'VIP') return <section className="hub-customer-management"><header className="hub-order-detail-heading"><div><p className="hub-page-eyebrow">Relacionamento</p><h1 className="hub-page-title"><Crown aria-hidden="true" size={28} /> Benefícios VIP</h1><p className="hub-page-description">Defina níveis, limites e benefícios por valor de relacionamento.</p></div><Button icon={Plus} onClick={() => setVip(initialVip)}>Novo nível</Button></header>
     {vip ? <section className="hub-surface hub-customer-vip-form"><header><h2>{vip.id ? 'Editar nível VIP' : 'Novo nível VIP'}</h2></header><div className="hub-customer-vip-grid">
       <label className="hub-order-form-field"><span>Nome *</span><input autoFocus value={vip.nome} onChange={(e) => set({ nome: e.target.value })} /></label>
       <label className="hub-order-form-field"><span>Gasto mínimo *</span><input type="number" min="0" value={vip.gasto_requisito} onChange={(e) => set({ gasto_requisito: e.target.value })} /></label>
