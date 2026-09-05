@@ -28,10 +28,11 @@ export const Button = React.forwardRef(({
     ref={ref}
     type={type}
     disabled={disabled || loading}
+    aria-busy={loading || undefined}
     className={`${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
     {...props}
   >
-    {loading ? <Loader2 aria-hidden="true" size={size === 'sm' ? 16 : 18} className="animate-spin shrink-0" /> : null}
+    {loading ? <Loader2 aria-hidden="true" size={size === 'sm' ? 16 : 18} className="hub-spinner shrink-0" /> : null}
     {!loading && Icon ? <Icon aria-hidden="true" size={size === 'sm' ? 16 : 18} className="shrink-0" /> : null}
     {children}
   </button>
