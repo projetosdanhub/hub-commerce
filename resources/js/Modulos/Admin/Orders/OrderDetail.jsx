@@ -108,9 +108,42 @@ const Timeline = ({ entries = [] }) => {
   );
 };
 
+const RefundReceipts = ({ order }) => {
+  const currentReceipts = order.comprovantes_reembolso?.length
+    ? order.comprovantes_reembolso
+    : order.comprovante_reembolso
+      ? [{ id: 'legacy', name: 'Comprovante de reembolso', kind: 'document', url: order.comprovante_reembolso }]
+      : [];
+
+  if (!currentReceipts.length) {
+    return <p className="hub-orders-form-hint">Os comprovantes enviados na confirmação do reembolso aparecerão aqui.</p>;
+  }
+
+  return (
+    <div className="hub-order-receipt-gallery">
+      {currentReceipts.map((receipt, index) => (
+        <a key={receipt.id} href={receipt.url} target="_blank" rel="noreferrer" className="hub-order-receipt-card">
+          {receipt.kind === 'image' ? (
+            <img src={receipt.url} alt={'Prévia de ' + receipt.name} />
+          ) : (
+            <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={24} /></span>
+          )}
+          <span>
+            <strong>{receipt.name || 'Comprovante ' + (index + 1)}</strong>
+            <small>{receipt.kind === 'image' ? 'Abrir imagem em tamanho maior' : 'Abrir documento em nova aba'}</small>
+          </span>
+          <Download aria-hidden="true" size={16} />
+        </a>
+      ))}
+    </div>
+  );
+};
+
 const SecondaryActions = ({ order, onAction, onPreviewDocument }) => {
   const [open, setOpen] = useState(false);
   const isTerminal = ['CANCELADO', 'REEMBOLSADO'].includes(order.status);
+  const canCancel = order.status === 'A_PAGAR';
+  const canRequestRefund = !isTerminal && !canCancel;
   const canUpdateTracking = ['DESPACHADO', 'ENTREGUE'].includes(order.status);
   const canCancelMeCart = String(order.tracking_code || '').length > 20;
 
@@ -134,15 +167,15 @@ const SecondaryActions = ({ order, onAction, onPreviewDocument }) => {
               <RotateCcw aria-hidden="true" size={16} /> Reabrir expedição
             </button>
           ) : null}
-          {!isTerminal ? (
-            <>
-              <button type="button" role="menuitem" onClick={() => { onAction('INICIAR_REEMBOLSO'); setOpen(false); }}>
-                <RotateCcw aria-hidden="true" size={16} /> Iniciar reembolso
-              </button>
-              <button type="button" role="menuitem" data-danger onClick={() => { onAction('CANCELAR'); setOpen(false); }}>
-                <RotateCcw aria-hidden="true" size={16} /> Cancelar pedido
-              </button>
-            </>
+          {canRequestRefund ? (
+            <button type="button" role="menuitem" onClick={() => { onAction('INICIAR_REEMBOLSO'); setOpen(false); }}>
+              <RotateCcw aria-hidden="true" size={16} /> Solicitar reembolso
+            </button>
+          ) : null}
+          {canCancel ? (
+            <button type="button" role="menuitem" data-danger onClick={() => { onAction('CANCELAR'); setOpen(false); }}>
+              <RotateCcw aria-hidden="true" size={16} /> Cancelar pedido
+            </button>
           ) : null}
         </div>
       ) : null}
@@ -247,8 +280,8 @@ export const OrderDetail = ({
             <div className="hub-order-documents">
               {order.comprovante_pagamento ? <a href={order.comprovante_pagamento} target="_blank" rel="noreferrer"><Download aria-hidden="true" size={15} /> Comprovante de pagamento</a> : null}
               {order.comprovante_entrega ? <a href={order.comprovante_entrega} target="_blank" rel="noreferrer"><Download aria-hidden="true" size={15} /> Comprovante de entrega</a> : null}
-              {order.comprovante_reembolso ? <a href={order.comprovante_reembolso} target="_blank" rel="noreferrer"><Download aria-hidden="true" size={15} /> Comprovante de reembolso</a> : null}
-              {!order.comprovante_pagamento && !order.comprovante_entrega && !order.comprovante_reembolso ? (
+              <RefundReceipts order={order} />
+              {!order.comprovante_pagamento && !order.comprovante_entrega && !(order.comprovantes_reembolso?.length || order.comprovante_reembolso) ? (
                 <p className="hub-orders-form-hint">Os comprovantes enviados nas operações aparecerão aqui.</p>
               ) : null}
             </div>
