@@ -20,8 +20,8 @@ enum OrderStatus: string
     {
         return match ($this) {
             self::AWAITING_PAYMENT => [self::PICKING, self::CANCELLED],
-            self::PICKING => [self::READY_TO_SHIP, self::CANCELLED, self::REFUND_REVIEW],
-            self::READY_TO_SHIP => [self::SHIPPED, self::CANCELLED, self::REFUND_REVIEW],
+            self::PICKING => [self::READY_TO_SHIP, self::REFUND_REVIEW],
+            self::READY_TO_SHIP => [self::SHIPPED, self::REFUND_REVIEW],
             self::SHIPPED => [self::READY_TO_SHIP, self::DELIVERED, self::REFUND_REVIEW],
             self::DELIVERED => [self::REFUND_REVIEW],
             self::REFUND_REVIEW => [self::REFUNDED],
