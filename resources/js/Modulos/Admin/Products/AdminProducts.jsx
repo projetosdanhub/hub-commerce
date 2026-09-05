@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CircleAlert, ClipboardList, LayoutDashboard, List, Package, Plus, RefreshCw } from 'lucide-react';
 import { PageHeader } from '../DesignSystem/patterns/PageHeader';
+import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import { Button } from '../DesignSystem/primitives/Button';
 import { ProductEditor } from './ProductEditor';
 import { toProductEditorModel } from '../Produtos/produtoContract';
@@ -65,8 +66,8 @@ export default function AdminProducts() {
   return <div className="hub-page-container hub-catalog-page">
     <PageHeader eyebrow="Catálogo e estoque" title="Produtos" icon={Package} description="Organize produtos, estoque, mídia, dados fiscais e SEO com dados atuais da loja." actions={<div className="hub-catalog-actions"><Button variant="secondary" icon={RefreshCw} loading={productsQuery.isFetching} onClick={refresh}>Atualizar</Button><Button icon={Plus} onClick={createProduct}>Novo produto</Button></div>} />
     {notice ? <p className="hub-catalog-notice" role="status">{notice}</p> : null}
-    <nav className="hub-orders-tabs" aria-label="Seções do catálogo">{tabs.map((item) => { const Icon = item.icon; return <button type="button" key={item.value} className="hub-orders-tab" data-active={tab === item.value} onClick={() => setTab(item.value)}><Icon aria-hidden="true" size={16} /> {item.label}</button>; })}</nav>
-    {tab === 'PAINEL' ? <CatalogDashboard products={products} total={pagination.total} onCreate={createProduct} onBrowse={() => setTab('PRODUTOS')} /> : null}
+    <SectionTabs items={tabs} value={tab} onChange={setTab} ariaLabel="Seções do catálogo" />
+    {tab === 'PAINEL' ? <CatalogDashboard products={products} total={pagination.total} loading={productsQuery.isLoading} onCreate={createProduct} onBrowse={() => setTab('PRODUTOS')} /> : null}
     {tab === 'PRODUTOS' ? <CatalogList products={products} categories={categories} filters={filters} pagination={pagination} loading={productsQuery.isLoading || productsQuery.isFetching} onChange={changeFilters} onClear={() => setFilters(initialFilters)} onCreate={createProduct} onEdit={openProduct} /> : null}
     {tab === 'AUDITORIA' ? <CatalogAudit logs={Array.isArray(auditsQuery.data) ? auditsQuery.data : auditsQuery.data?.data || []} loading={auditsQuery.isLoading || auditsQuery.isFetching} error={auditsQuery.isError ? errorMessage(auditsQuery.error) : ''} onRefresh={() => auditsQuery.refetch()} /> : null}
   </div>;
