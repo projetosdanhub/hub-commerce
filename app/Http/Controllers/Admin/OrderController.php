@@ -195,43 +195,66 @@ class OrderController extends Controller
 
     public function metrics(Request $request)
     {
-        $orders = Order::select('status', 'payment_method', 'total')->get();
+        $pixPayment = '%pix%';
+        $awaitingPayment = OrderStatus::AWAITING_PAYMENT->value;
+        $cancelled = OrderStatus::CANCELLED->value;
+        $refunded = OrderStatus::REFUNDED->value;
 
-        $totais = $orders->count();
-        $aEnviar = $orders->where('status', OrderStatus::SEPARATION->value)->count();
-        $pixTotais = $orders->filter(function($q){ return stripos($q->payment_method ?? '', 'pix') !== false; })->count();
-        $pixPagos = $orders->filter(function ($order) {
-            $isPago = !in_array($order->status, [OrderStatus::PENDING->value, OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value]);
-            return stripos($order->payment_method ?? '', 'pix') !== false && $isPago;
-        })->count();
-        
-        $conversaoPix = $pixTotais > 0 ? round(($pixPagos / $pixTotais) * 100, 1) : 0;
-        
-        $cancelados = $orders->where('status', OrderStatus::CANCELLED->value)->count();
-        $taxaCancelamento = $totais > 0 ? round(($cancelados / $totais) * 100, 1) : 0;
-        
-        $reembolsados = $orders->where('status', OrderStatus::REFUNDED->value);
-        $qtdReembolsados = $reembolsados->count();
-        $valorReembolsado = $reembolsados->sum('total');
-        $taxaReembolso = $totais > 0 ? round(($qtdReembolsados / $totais) * 100, 1) : 0;
-        
-        $emAnalise = $orders->where('status', OrderStatus::REFUND_ANALYSIS->value)->count();
-        
-        $ltv = $orders->whereNotIn('status', [OrderStatus::CANCELLED->value, OrderStatus::REFUNDED->value])->sum('total');
+        $metrics = Order::query()
+            ->selectRaw('COUNT(*) as totais')
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as a_enviar',
+                [OrderStatus::PICKING->value],
+            )
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN LOWER(COALESCE(payment_method, '')) LIKE ? THEN 1 ELSE 0 END), 0) as pix_totais",
+                [$pixPayment],
+            )
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN LOWER(COALESCE(payment_method, '')) LIKE ? AND status NOT IN (?, ?, ?) THEN 1 ELSE 0 END), 0) as pix_pagos",
+                [$pixPayment, $awaitingPayment, $cancelled, $refunded],
+            )
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as cancelados',
+                [$cancelled],
+            )
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as qtd_reembolsados',
+                [$refunded],
+            )
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN status = ? THEN total ELSE 0 END), 0) as valor_reembolsado',
+                [$refunded],
+            )
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as em_analise',
+                [OrderStatus::REFUND_REVIEW->value],
+            )
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN status NOT IN (?, ?) THEN total ELSE 0 END), 0) as ltv',
+                [$cancelled, $refunded],
+            )
+            ->firstOrFail();
+
+        $totais = (int) $metrics->totais;
+        $pixTotais = (int) $metrics->pix_totais;
+        $pixPagos = (int) $metrics->pix_pagos;
+        $cancelledCount = (int) $metrics->cancelados;
+        $refundedCount = (int) $metrics->qtd_reembolsados;
 
         return response()->json([
             'totais' => $totais,
-            'aEnviar' => $aEnviar,
+            'aEnviar' => (int) $metrics->a_enviar,
             'pixTotais' => $pixTotais,
             'pixPagos' => $pixPagos,
-            'conversaoPix' => $conversaoPix,
-            'cancelados' => $cancelados,
-            'taxaCancelamento' => $taxaCancelamento,
-            'qtdReembolsados' => $qtdReembolsados,
-            'valorReembolsado' => $valorReembolsado,
-            'taxaReembolso' => $taxaReembolso,
-            'emAnalise' => $emAnalise,
-            'ltv' => $ltv
+            'conversaoPix' => $pixTotais > 0 ? round(($pixPagos / $pixTotais) * 100, 1) : 0,
+            'cancelados' => $cancelledCount,
+            'taxaCancelamento' => $totais > 0 ? round(($cancelledCount / $totais) * 100, 1) : 0,
+            'qtdReembolsados' => $refundedCount,
+            'valorReembolsado' => (float) $metrics->valor_reembolsado,
+            'taxaReembolso' => $totais > 0 ? round(($refundedCount / $totais) * 100, 1) : 0,
+            'emAnalise' => (int) $metrics->em_analise,
+            'ltv' => (float) $metrics->ltv,
         ]);
     }
 

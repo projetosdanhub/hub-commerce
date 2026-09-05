@@ -55,6 +55,7 @@ export default function AdminOrders() {
   const metricsQuery = useQuery({
     queryKey: adminQueryKeys.ordersMetrics(),
     queryFn: fetchOrderMetrics,
+    retry: false,
     refetchInterval: 60_000,
   });
   const shippingQuery = useQuery({

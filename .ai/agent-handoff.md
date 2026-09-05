@@ -192,3 +192,10 @@ Copie este bloco para cada handoff relevante:
 - Arquivos alterados: orquestrador do Pixel, Painel, App Store de integrações, eventos nativos, acionadores, editor, diálogos e estilos do DesignSystem.
 - Evidências: não há métricas, eventos, status ou dados simulados; a interface usa skeleton/indisponibilidade, primitives compartilhadas, ícones Lucide, diálogo acessível, ações com sincronização pós-mutation e experiências de tabela desktop/cartões mobile.
 - Próxima ação única: abrir PR e validar os três workflows obrigatórios antes do merge.
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: corrigir o erro 500 de GET /api/admin/orders/metrics observado no painel local.
+- Branch: fix/orders-metrics-enum-contract; validação pendente.
+- Causa: o controller referenciava casos removidos do enum OrderStatus e ainda comparava valores escalares contra atributos convertidos em enum.
+- Alterações: agregação tenant-scoped com os estados canônicos, teste de contrato do endpoint e desativação de retry automático da métrica para falhas 5xx; o usuário ainda pode tentar manualmente.
+- Próxima ação única: abrir PR e validar Tests, E2E Tests e Security Scans.
