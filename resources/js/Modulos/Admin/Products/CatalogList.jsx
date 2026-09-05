@@ -11,7 +11,7 @@ import { formatCurrency, productStatus, sku, stockState } from './catalogUtils';
 const ProductImage = ({ product }) => <span className="hub-catalog-image">{product.img ? <img src={product.img} alt="" /> : <ImageIcon aria-hidden="true" size={20} />}</span>;
 
 const CatalogListSkeleton = () => (
-  <div className="hub-catalog-list-skeleton" aria-label="Carregando produtos">
+  <div className="hub-catalog-list-skeleton" role="status" aria-label="Carregando produtos">
     {[0, 1, 2, 3, 4].map((item) => <Skeleton key={item} />)}
   </div>
 );
