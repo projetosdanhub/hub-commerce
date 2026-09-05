@@ -4,8 +4,6 @@ import {
   ChevronRight,
   Eye,
   PackageOpen,
-  Search,
-  X,
 } from 'lucide-react';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
@@ -13,6 +11,7 @@ import { IconButton } from '../DesignSystem/primitives/IconButton';
 import { Skeleton } from '../DesignSystem/primitives/Skeleton';
 import { TruncatedText } from '../DesignSystem/primitives/TruncatedText';
 import { DateRangeFilter } from '../DesignSystem/patterns/DateRangeFilter';
+import { ExpandableSearch } from '../DesignSystem/patterns/ExpandableSearch';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import {
   formatCurrency,
@@ -143,16 +142,12 @@ export const OrdersList = ({
           <p className="hub-panel-description">Dados atualizados ao abrir, filtrar e concluir uma operação.</p>
         </div>
         <div className="hub-orders-list-controls">
-          <label className="hub-orders-search">
-            <Search aria-hidden="true" size={17} />
-            <span className="sr-only">Buscar pedido, cliente ou e-mail</span>
-            <input
-              value={filters.search}
-              onChange={(event) => onChange({ search: event.target.value, page: 1 })}
-              placeholder="Buscar pedido ou cliente"
-            />
-            {filters.search ? <IconButton icon={X} label="Limpar busca" onClick={() => onChange({ search: '', page: 1 })} /> : null}
-          </label>
+          <ExpandableSearch
+            value={filters.search}
+            onChange={(search) => onChange({ search, page: 1 })}
+            label="Buscar pedido, cliente, e-mail ou CPF"
+            placeholder="Pedido, cliente, e-mail ou CPF"
+          />
           <DateRangeFilter
             value={{ startDate: filters.startDate, endDate: filters.endDate }}
             onApply={({ startDate, endDate }) => onChange({ startDate, endDate, page: 1 })}
@@ -171,16 +166,18 @@ export const OrdersList = ({
 
       </div>
 
-      {loading && !orders.length ? (
-        <OrdersLoading />
-      ) : orders.length ? (
-        <>
-          <DesktopTable orders={orders} onOpen={onOpen} />
-          <MobileList orders={orders} onOpen={onOpen} />
-        </>
-      ) : (
-        <EmptyOrders hasFilters={hasFilters} onClear={onClear} />
-      )}
+      <div className="hub-stable-data-region" aria-busy={loading || undefined}>
+        {loading && !orders.length ? (
+          <OrdersLoading />
+        ) : orders.length ? (
+          <>
+            <DesktopTable orders={orders} onOpen={onOpen} />
+            <MobileList orders={orders} onOpen={onOpen} />
+          </>
+        ) : (
+          <EmptyOrders hasFilters={hasFilters} onClear={onClear} />
+        )}
+      </div>
 
       {pagination.lastPage > 1 ? (
         <footer className="hub-orders-pagination">
