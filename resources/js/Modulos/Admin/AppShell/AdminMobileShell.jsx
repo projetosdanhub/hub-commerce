@@ -1,9 +1,9 @@
 import React from 'react';
-import { ExternalLink, LogOut } from 'lucide-react';
+import { LogOut, RefreshCw } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { mobileNavigation } from './AdminNavigation';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
-import { IconLink } from '../DesignSystem/primitives/IconLink';
+import { useAdminPageRefresh } from '../DesignSystem/patterns/GlobalPageRefresh';
 
 const isActive = (pathname, item) => (
   item.exact ? pathname === item.path : pathname.startsWith(item.path)
@@ -11,6 +11,7 @@ const isActive = (pathname, item) => (
 
 export const AdminMobileShell = ({ children, onLogout }) => {
   const location = useLocation();
+  const { isRefreshing, refresh } = useAdminPageRefresh();
 
   return (
     <div className="hub-mobile-shell">
@@ -20,12 +21,11 @@ export const AdminMobileShell = ({ children, onLogout }) => {
           HUB Commerce
         </span>
         <div className="flex items-center gap-1">
-          <IconLink
-            icon={ExternalLink}
-            label="Acessar vitrine em uma nova aba"
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <IconButton
+            icon={RefreshCw}
+            label="Atualizar dados desta tela"
+            loading={isRefreshing}
+            onClick={refresh}
           />
           <IconButton icon={LogOut} label="Sair do painel" onClick={onLogout} />
         </div>
