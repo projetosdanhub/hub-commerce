@@ -147,7 +147,7 @@ class AdminProductController extends Controller
         ]);
 
         // Sincronização de Variações
-        if ($request->filled('variaveis_json')) {
+        if ($request->has('variaveis_json')) {
             $variaveis = json_decode($request->variaveis_json, true);
             if (is_array($variaveis)) {
                 $idsAtuais = [];
@@ -182,8 +182,12 @@ class AdminProductController extends Controller
                     }
                 }
                 
-                // Remover variações que não foram enviadas (Exclusão por omissão)
-                $produto->variacoes()->whereNotIn('id', $idsAtuais)->delete();
+                // Remover variações que não foram enviadas, inclusive uma lista vazia.
+                if (empty($idsAtuais)) {
+                    $produto->variacoes()->delete();
+                } else {
+                    $produto->variacoes()->whereNotIn('id', $idsAtuais)->delete();
+                }
             }
         }
 
