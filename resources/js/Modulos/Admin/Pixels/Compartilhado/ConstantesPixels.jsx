@@ -6,7 +6,7 @@ import {
     Server, Fingerprint, ShoppingCart,
     DollarSign, Activity, Filter, UserPlus, Users, Target,
     TrendingUp, Database, Globe, MousePointer2, MousePointerClick,
-    CreditCard, AlertTriangle, Zap
+    CreditCard, AlertTriangle
 } from 'lucide-react';
 
 // --- Transição padrão de abas ---
