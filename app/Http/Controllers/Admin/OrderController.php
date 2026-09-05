@@ -147,6 +147,19 @@ class OrderController extends Controller
                 ? $order->status
                 : OrderStatus::from((string) $order->getRawOriginal('status'));
 
+            $refundReceipts = collect($order->refund_receipts ?? [])
+                ->filter()
+                ->values()
+                ->map(fn (string $path, int $index) => [
+                    'id' => $index,
+                    'name' => 'Comprovante de reembolso '.($index + 1),
+                    'url' => route('admin.orders.refund-receipts.show', [
+                        'id' => $order->getKey(),
+                        'receiptIndex' => $index,
+                    ]),
+                ])
+                ->all();
+
             $ltv = $userMetrics[$order->user_id]['ltv'] ?? 0.0;
             $compras = $userMetrics[$order->user_id]['compras'] ?? 0;
             
@@ -183,6 +196,7 @@ class OrderController extends Controller
                 
                 'motivo_cancelamento' => $order->cancel_reason,
                 'comprovante_reembolso' => $order->refund_receipt ? asset('storage/' . $order->refund_receipt) : null,
+                'comprovantes_reembolso' => $refundReceipts,
                 'comprovante_pagamento' => $order->payment_receipt ? asset('storage/' . $order->payment_receipt) : null,
                 'comprovante_entrega' => $order->delivery_receipt ? asset('storage/' . $order->delivery_receipt) : null,
                 'metodo_reembolso' => $order->refund_method ?? 'Estorno/Transferência',
