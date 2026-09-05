@@ -107,6 +107,50 @@ class OrderStatusTransitionTest extends TestCase
         $this->assertDatabaseCount('order_histories', 0);
     }
 
+    public function test_owner_preferences_for_order_metrics_are_isolated_by_tenant(): void
+    {
+        [$tenantA, $ownerA] = $this->tenantWithOwner(
+            'Loja de métricas A',
+            'metricas-a',
+            'metricas-a.test',
+            'owner@metricas-a.test',
+        );
+        [$tenantB, $ownerB] = $this->tenantWithOwner(
+            'Loja de métricas B',
+            'metricas-b',
+            'metricas-b.test',
+            'owner@metricas-b.test',
+        );
+
+        $payload = [
+            'order' => ['refund-review', 'valid-revenue', 'awaiting-shipment', 'pix-confirmed'],
+            'hidden' => ['pix-confirmed'],
+        ];
+
+        $this->actingAs($ownerA, 'sanctum')
+            ->withServerVariables(['HTTP_HOST' => 'metricas-a.test', 'SERVER_NAME' => 'metricas-a.test'])
+            ->putJson('http://metricas-a.test/api/admin/orders/metric-preferences', $payload)
+            ->assertOk()
+            ->assertExactJson($payload);
+
+        $this->actingAs($ownerB, 'sanctum')
+            ->withServerVariables(['HTTP_HOST' => 'metricas-b.test', 'SERVER_NAME' => 'metricas-b.test'])
+            ->getJson('http://metricas-b.test/api/admin/orders/metric-preferences')
+            ->assertOk()
+            ->assertExactJson([
+                'order' => ['valid-revenue', 'awaiting-shipment', 'pix-confirmed', 'refund-review'],
+                'hidden' => [],
+            ]);
+
+        $this->setTenantContext($tenantA, 'metricas-a.test');
+
+        $this->assertDatabaseHas('admin_metric_preferences', [
+            'tenant_id' => $tenantA->id,
+            'user_id' => $ownerA->id,
+            'context' => 'orders',
+        ]);
+    }
+
     public function test_terminal_states_have_no_outgoing_transitions(): void
     {
         $this->assertSame([], OrderStatus::CANCELLED->allowedTransitions());
