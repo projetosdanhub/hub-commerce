@@ -5,10 +5,10 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 ## Estado atual
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
-- **Última integração:** `ui/catalog-editor-stock`, squash commit `e213b0ab3de138d7682ac55c294a5741aa359d1b` na `main`.
-- **Branch de trabalho:** `chore/ai-ui-standards-cleanup-node24`, padronização em validação antes da aba Variações.
+- **Última integração:** `chore/ai-ui-standards-cleanup-node24`, squash commit `6aaa4e17a6dc0fc4a94af0c927061c7138462fcd` na `main`.
+- **Branch de trabalho:** `ui/catalog-interface-standards`, padronização de controls, shell e Produtos em validação.
 - **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** validar o padrão de IA/UI, limpeza e Node 24 antes de iniciar Variações.
+- **Próxima ação:** validar a padronização de Produtos; depois aplicar o mesmo catálogo canônico a Pedidos e Clientes/CRM.
 
 ## Modelo obrigatório
 
@@ -139,3 +139,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: workflows já utilizam Node 24; `.nvmrc` fixa Node 24 para desenvolvimento; [Node.js](https://nodejs.org/en/about/previous-releases) classifica v24 como LTS; [Vite 8](https://vite.dev/blog/announcing-vite8) exige Node 20.19+ ou 22.12+. Busca de código não encontrou consumidores para os dois artefatos removidos. Revisão estática confirmou índices e regras conectados; CI não é aplicável a esta alteração documental/configuração local.
 - Riscos, bloqueios e itens não verificados: não há contrato administrativo tenant-scoped de notificações, logo nenhuma UI conectada foi criada. Dependências sem referência direta não foram removidas porque isso exige regenerar e validar package-lock de forma reproduzível.
 - Próxima ação única: abrir PR, revisar o diff de governança/limpeza e iniciar Variações somente após o merge.
+
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: estabelecer o padrão reutilizável de interface antes de continuar novos módulos, aplicando-o primeiro a Produtos e aos shells desktop/mobile.
+- Branch e commit: `ui/catalog-interface-standards`, última revisão em `85826d48aec365acf8d74811d518c2f368298449`.
+- Task board: UI-005, UI-006, UI-011, UI-013 e UI-014 permanecem [~]; primitives, tabs, filtros, métricas e documentação foram avançados, mas a aplicação aos módulos existentes é incremental.
+- Arquivos alterados: tokens e CSS do design system; Button, IconButton, IconLink, Tooltip, Skeleton, FilterButton, FilterSelect, MetricCard, SectionTabs; shells; catálogo e editor; regra 06, board e README do DesignSystem.
+- Evidências: revisão estática do diff confirma uso de Lucide, tokens e dados de catálogo retornados pela API. O alerta de estoque deixa de usar o fallback fictício de 5 unidades. Busca global, estado “Painel conectado” e ações sem contrato não são exibidos.
+- Riscos, bloqueios e itens não verificados: notificações persistentes continuam bloqueadas em UI-015 sem contrato tenant-scoped. As ações de visualizar/excluir foram padronizadas como primitive, mas não são renderizadas no catálogo por falta de fluxo/autoridade real. Checks do PR ainda precisam concluir.
+- Próxima ação única: acompanhar a validação do PR; após integração, aplicar este catálogo aos módulos já modernizados, começando por Pedidos.
