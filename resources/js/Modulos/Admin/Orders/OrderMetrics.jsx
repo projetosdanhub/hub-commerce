@@ -94,10 +94,11 @@ export const OrderMetrics = ({
     () => normalizeMetricPreferences(preferences, metricDefinitions),
     [metricDefinitions, preferences],
   );
-  const visibleMetrics = metricPreferences.order
+  const configuredVisibleMetrics = metricPreferences.order
     .filter((id) => !metricPreferences.hidden.includes(id))
     .map((id) => metricDefinitions.find((metric) => metric.id === id))
     .filter(Boolean);
+  const visibleMetrics = configuredVisibleMetrics.length ? configuredVisibleMetrics : metricDefinitions;
 
   if (loading) return <MetricsSkeleton />;
   if (error || !metrics) return <MetricsUnavailable onRetry={onRetry} />;
