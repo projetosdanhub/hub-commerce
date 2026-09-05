@@ -33,7 +33,7 @@
 .hub-button-primary {
   border-color: color-mix(in srgb, var(--hub-primary) 62%, var(--hub-border));
   background: var(--hub-primary);
-  color: var(--hub-bg-body);
+  color: var(--hub-text-on-color);
   box-shadow: 0 0.5rem 1.5rem color-mix(in srgb, var(--hub-primary) 22%, transparent);
 }
 
@@ -112,12 +112,12 @@
 .hub-icon-button-primary {
   border-color: color-mix(in srgb, var(--hub-primary) 56%, var(--hub-border));
   background: var(--hub-primary);
-  color: var(--hub-bg-body);
+  color: var(--hub-text-on-color);
 }
 
 .hub-icon-button-primary:hover:not(:disabled) {
   background: var(--hub-primary-hover);
-  color: var(--hub-bg-body);
+  color: var(--hub-text-on-color);
 }
 
 .hub-icon-button-danger:hover:not(:disabled) {
@@ -493,4 +493,20 @@
   .hub-metric-card strong {
     font-size: var(--hub-text-h3);
   }
+}
+
+
+.hub-catalog-list-skeleton {
+  display: grid;
+  gap: var(--hub-space-3);
+  padding: var(--hub-space-5);
+}
+
+.hub-catalog-list-skeleton > span {
+  min-height: var(--hub-control-height-lg);
+}
+
+.hub-catalog-list-skeleton,
+.hub-catalog-metric-skeleton {
+  position: relative;
 }
