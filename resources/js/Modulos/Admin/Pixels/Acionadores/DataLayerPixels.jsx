@@ -44,7 +44,7 @@ const DataLayerPixels = ({
             tipo_gatilho: 'click',
             valor_gatilho: '',
             url_alvo: '*',
-            status: true,
+            status: false,
             payload: {}
         });
         setTriggerView('FORM');

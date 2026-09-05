@@ -74,7 +74,7 @@ export const dictionaryData = [
 // --- Categorias de Payload (CAPI Builder) ---
 export const payloadCategories = [
     {
-        title: '📡 Server-Side (CAPI Core)', desc: 'Obrigatórios para envio via servidor.', icon: Server, color: 'text-indigo-600', bg: 'bg-indigo-50/50', border: 'border-indigo-100',
+        title: 'Dados do servidor', desc: 'Chaves usadas no envio server-side quando fornecidas pela operação.', icon: Server, color: 'text-indigo-600', bg: 'bg-indigo-50/50', border: 'border-indigo-100',
         items: [
             { key: 'event_id', label: 'Event ID', tip: 'Código único para deduplicação (Browser x Server).' },
             { key: 'event_time', label: 'Event Time', tip: 'Timestamp UNIX de quando o evento ocorreu.' },
@@ -88,7 +88,7 @@ export const payloadCategories = [
         ]
     },
     {
-        title: '👤 Informações do Cliente', desc: 'Aumenta nota EMQ. Enviado com Hash SHA256.', icon: Fingerprint, color: 'text-emerald-600', bg: 'bg-emerald-50/50', border: 'border-emerald-100',
+        title: 'Informações do cliente', desc: 'Dados enviados somente quando disponíveis e permitidos pela operação.', icon: Fingerprint, color: 'text-emerald-600', bg: 'bg-emerald-50/50', border: 'border-emerald-100',
         items: [
             { key: 'em', label: 'E-mail', tip: 'E-mail do cliente (hasheado).' },
             { key: 'ph', label: 'Telefone', tip: 'Número de telefone com DDI (hasheado).' },
@@ -104,7 +104,7 @@ export const payloadCategories = [
         ]
     },
     {
-        title: '🛒 E-commerce & Conversão', desc: 'Dados do produto e da transação gerada.', icon: ShoppingCart, color: 'text-orange-600', bg: 'bg-orange-50/50', border: 'border-orange-100',
+        title: 'E-commerce e conversão', desc: 'Dados de produto e transação fornecidos pela operação.', icon: ShoppingCart, color: 'text-orange-600', bg: 'bg-orange-50/50', border: 'border-orange-100',
         items: [
             { key: 'value', label: 'Valor da Conversão', tip: 'Valor monetário do evento.' },
             { key: 'currency', label: 'Moeda', tip: 'Moeda da transação (ex: BRL, USD).' },

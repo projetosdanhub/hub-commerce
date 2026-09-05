@@ -100,7 +100,7 @@ const AdminPixelsContent = () => {
     }, [dashboardConfig]);
 
     const [triggerView, setTriggerView] = useState('LIST'); 
-    const [triggerForm, setTriggerForm] = useState({ id: null, nome: '', evento_selecionado: 'Contact', evento_custom: '', tipo_gatilho: 'click', valor_gatilho: '', url_alvo: '*', status: true, payload: {} });
+    const [triggerForm, setTriggerForm] = useState({ id: null, nome: '', evento_selecionado: 'Contact', evento_custom: '', tipo_gatilho: 'click', valor_gatilho: '', url_alvo: '*', status: false, payload: {} });
 
     // ------------------------------------------------------------------------
     // FUNÇÕES DE DADOS (FETCH/SAVE)
