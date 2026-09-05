@@ -461,10 +461,6 @@
 }
 
 @media (max-width: 639px) {
-  .hub-tooltip-content {
-    display: none;
-  }
-
   .hub-section-tabs {
     margin-inline: calc(var(--hub-space-4) * -1);
     padding-inline: var(--hub-space-4);
@@ -828,7 +824,7 @@
 
 .hub-orders-list-header {
   position: relative;
-  z-index: var(--hub-z-raised);
+  z-index: var(--hub-z-base);
   align-items: flex-start;
 }
 
