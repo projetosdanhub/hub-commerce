@@ -26,13 +26,13 @@ Este arquivo é a única regra normativa de layout e interface. Diretrizes antig
 Use estes componentes em todo novo módulo do painel. Não reimplementar variações locais.
 
 - `Button`: ações textuais reais como criar, salvar, atualizar, confirmar e cancelar; variantes `primary`, `secondary`, `ghost` e `danger`.
-- `IconButton`: ações compactas reais, com rótulo acessível, tooltip, foco e loading; variantes `neutral`, `primary` e `danger`. Não mostrar visualizar, editar ou excluir se a ação/autoridade correspondente não existir.
+- `IconButton`: ações compactas reais, com rótulo acessível, foco e loading; sem tooltip visual. Variantes `neutral`, `primary` e `danger`. Não mostrar visualizar, editar ou excluir se a ação/autoridade correspondente não existir.
 - `IconLink`: navegação por ícone; links, inclusive vitrine, não devem ser simulados como botões.
-- `FilterButton` e `FilterSelect`: filtros que alteram uma consulta real. Filtro de período usa `FilterSelect`; nenhum controle abre painel vazio ou aplica critérios fictícios.
-- `MetricCard`: métrica retornada ou calculada a partir de dados reais, com definição em tooltip quando o significado não for óbvio. Nunca exibir zero enquanto a consulta está pendente.
+- `FilterButton` e `FilterSelect`: filtros que alteram uma consulta real. Período usa `DateRangeFilter` junto da busca; nenhum controle abre painel vazio ou aplica critérios fictícios.
+- `MetricCard`: composição canônica de Pedidos, com ícone translúcido, fontes, escala e espaçamento compartilhados. Definições ficam no dicionário de métricas. Nunca exibir zero enquanto a consulta está pendente.
 - `Skeleton`: placeholder silencioso que preserva o layout durante carregamento; o contêiner anuncia o estado uma única vez.
 - `SectionTabs`: menu de seções/submenus do conteúdo. As abas mantêm semântica `tablist/tab` e usam o mesmo comportamento no desktop e no mobile.
-- `Tooltip`: explicação curta para ícone ou métrica; nunca é o único local de uma instrução essencial.
+- `Tooltip`: adaptador legado sem interface; apenas retorna os filhos. Não adicionar novos consumidores. Ajuda é texto contextual ou dicionário explícito; não há tooltip visual.
 
 Detalhes de composição e exemplos de uso estão em `resources/js/Modulos/Admin/DesignSystem/README.md`.
 
@@ -50,7 +50,7 @@ Detalhes de composição e exemplos de uso estão em `resources/js/Modulos/Admin
 
 ## Layout
 
-- Mobile-first e sem rolagem horizontal da página.
+- Painel desktop-first com composição mobile própria, sem rolagem horizontal da página; vitrine mantém sua estratégia responsiva.
 - Tabelas largas usam wrapper próprio e alternativa útil no mobile.
 - Estados devem preservar layout e evitar mudanças bruscas.
 - Painel privilegia densidade operacional; Storefront privilegia clareza de compra e desempenho.

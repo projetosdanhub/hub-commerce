@@ -220,3 +220,25 @@ Copie este bloco para cada handoff relevante:
 - Evidências: revisão estática confirma tooltip portaled com tokens do painel, busca por número/cliente/e-mail/CPF, altura estável da região de dados, preferências por usuário+tenant e transições de cancelamento/reembolso. Tests, E2E Tests e Security Scans ainda não foram executados para esta branch.
 - Riscos, bloqueios e itens não verificados: transferência/estorno é registro manual comprovado, não integração bancária. Cashback usa o ledger atualmente existente e precisa continuar sob a evolução de CRM-003 para eliminar a dívida do saldo legado no usuário global. Comprovantes novos são privados; comprovantes legados públicos permanecem apenas para compatibilidade e requerem migração posterior.
 - Próxima ação única: abrir PR, acompanhar todos os checks obrigatórios e revisar Pedidos em 320/768/1024 px, teclado, zoom 200% e reduced motion antes de integrar.
+
+### 2026-09-05 — Codex — UI-021, primeiro bloco
+- Objetivo: corrigir caixas vazias/tooltip e consolidar interações compartilhadas antes dos novos fluxos de Pedidos.
+- Branch: `ui/orders-refinement-block-1`, baseada na main `6a65e5b2f7aefa883e4a16b57ec1caf738999911` (PR #42 integrada).
+- Alterações: Tooltip sem renderização visual; MetricCard sem botão de ajuda sem ação; textos completos com quebra; debounce de 350 ms em Pedidos; lifecycle compartilhado para diálogos de métricas/ações de Pedidos, scroll lock com sobreposição, foco e saída; CSS vidro/tema claro azul-marinho; controles nos shells mobile e desktop; refinamento dos painéis de métricas.
+- Contratos preservados: nenhuma mudança de status, reembolso, crédito, cálculo financeiro, storage ou emissão. Query mantém tenant e parâmetros reais. Preferência de tema é apenas aparência local.
+- Diagnóstico: `.hub-admin` no portal de Tooltip herda a altura do painel. API de Pedidos contém zeros fixos para benefícios VIP e preview NFE gera espelho provisório; correções de domínio ainda pendentes.
+- Board: UI-021 [~]; UI-022 a UI-026 registram integralmente reembolso, personalização, cliente, documentos, fiscal, valores, método e animações restantes.
+- Validação: primeira execução planejada `npm run test:ui:interactions`; resultado ainda não registrado neste commit. Não foram executados build, Vitest, E2E, testes PHP nem homologação visual. O usuário pediu pausa após o primeiro teste; não abrir PR/disparar workflows antes da continuação.
+- Riscos: outros diálogos legados precisam adotar o lifecycle; sucesso de mutação ainda pode desmontar o diálogo diretamente; navegação/progresso ficam no UI-026. Base fiscal está documentada, não integrada.
+- Próxima ação única: executar o teste direcionado de debounce/scroll lock, comunicar resultado e pausar aguardando a continuação do responsável.
+
+
+### 2026-09-05 — Codex — UI-021, continuação
+- Objetivo e escopo: concluir a fundação de interações globais de Pedidos e registrar a regra arquitetural de estoque pós-reembolso, sem alterar domínio de pedidos/estoque.
+- Branch e commit: `ui/orders-refinement-block-1`, código em `0ca3f16ebf1974469063a734d9e9e93cb92c8a97`; documentação e board até `bf6ac1057f2b2e26000546e1894537b3e8d0e343`.
+- Task board: UI-021 [~] — automação concluída; homologação visual em navegador ainda pendente. CAT-009 [ ] foi criado para o estoque de reembolso/quarentena; UI-022 inclui sua integração futura.
+- Arquivos alterados: controles de tooltip/busca, lifecycle de diálogo, shells desktop/mobile, preferência de aparência, teste Node, AGENTS, regra operacional, README do DesignSystem, board e política de inventário.
+- Contratos preservados: nenhuma transição de pedido, cálculo financeiro, crédito/cashback, storage, API, certificado ou saldo de estoque foi alterado. Preferência de tema continua local e não contém dado de negócio.
+- Evidências: [Tests #243](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033758), [E2E #61](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033728) e [Security #61](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033769) concluíram com sucesso na PR #43. Tests executou `npm run test:ui`, incluindo `npm run test:ui:interactions`, e o build.
+- Riscos, bloqueios e itens não verificados: a regra de estoque não foi implementada porque o serviço transacional CAT-003 e o estoque de reembolso CAT-009 ainda não existem. Reembolso financeiro sem recebimento físico não pode criar saldo. Outros diálogos legados continuam fora do lifecycle até seus blocos.
+- Próxima ação única: acompanhar os checks da atualização documental na PR #43 e fazer merge somente se permanecerem verdes; a homologação visual segue registrada como pendência.

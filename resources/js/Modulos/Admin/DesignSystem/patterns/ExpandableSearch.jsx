@@ -53,7 +53,6 @@ export const ExpandableSearch = ({
         className="hub-expandable-search-trigger"
         icon={Search}
         label={expanded && value ? 'Limpar busca' : expanded ? 'Fechar ' + label.toLowerCase() : label}
-        tooltip={expanded && value ? 'Limpar busca' : expanded ? 'A busca recolhe após dois segundos sem texto' : label}
         aria-expanded={expanded}
         aria-controls={inputId}
         onClick={() => {

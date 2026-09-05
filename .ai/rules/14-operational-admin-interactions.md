@@ -9,7 +9,7 @@ Esta regra complementa `05-frontend-react.md`, `06-design-system.md`, `07-paymen
 - Quando houver mais de uma métrica ou uma definição puder gerar dúvida, expor:
   - botão de ícone para o `MetricDictionaryDialog`;
   - nome da métrica à esquerda e, no detalhe à direita, significado e cálculo;
-  - seleção por clique, foco e hover, sem depender somente de hover.
+  - seleção explícita por clique ou teclado, sem troca involuntária ao mover o cursor.
 - A personalização usa `MetricPreferencesDialog`: arrastar reordena, controles de teclado movem acima/abaixo e visibilidade é explícita.
 - Preferências que alteram a composição de um painel precisam persistir no servidor por usuário e tenant. Não usar `localStorage` nem simular persistência. Ao menos uma métrica deve permanecer visível.
 
@@ -26,12 +26,29 @@ Esta regra complementa `05-frontend-react.md`, `06-design-system.md`, `07-paymen
 - Ao selecionar Personalizado, a lista de presets é substituída pelo formulário de datas; ela não pode crescer para baixo mantendo os dois blocos. `Voltar` restaura os presets sem aplicar alteração.
 - Busca compacta usa `ExpandableSearch`. A lupa expande o campo com animação útil; depois que um texto é apagado, o campo recolhe após dois segundos sem nova digitação. O comportamento não pode ocultar texto digitado nem impedir teclado.
 - Busca e filtro só são renderizados quando alteram uma consulta real. Em Pedidos, busca por número, cliente, e-mail ou CPF deve corresponder ao contrato do endpoint.
+- Digitação atualiza o campo imediatamente; a consulta aguarda 350 ms sem nova digitação com `useDebouncedValue`. Cancelar o timer anterior ao digitar de novo ou desmontar. Não executar uma query por tecla e não duplicar debounce em duas camadas.
+- A busca expansível não recebe contorno marcado: superfície e cor indicam foco; preservar indicação visível de teclado, espaçamento interno entre ícone/texto e controles acessíveis.
 
 ## Tooltips e diálogos
 
-- `Tooltip` continua sendo renderizado por portal para evitar clipping, mas o conteúdo portaled deve receber os tokens do painel para preservar contraste e texto visível.
+- Tooltips visuais foram removidos. O adaptador `Tooltip` retorna apenas filhos para preservar imports existentes; não acrescentar portal, wrapper ou evento. Ajuda fica no contexto ou no dicionário de métricas.
 - Todo diálogo controla foco inicial, trap de Tab, Escape, retorno de foco e fechamento fora quando a operação puder ser descartada com segurança.
 - Botão de fechar é uma ação compacta, visualmente ancorada no canto superior direito e com rótulo acessível.
+- Usar `useDialogLifecycle` para bloquear o scroll do documento e da sidebar enquanto houver modal aberto, inclusive sobreposição de diálogos. Liberar somente após fechar o último modal e restaurar o foco sem deslocar a página.
+- Backdrop é vidro translúcido com blur moderado, não bloco preto opaco. Entrada de 200 ms e saída de 120 ms usam tokens; respeitar `prefers-reduced-motion`. Fechar, Voltar e Escape compartilham a saída. Mutações pendentes não podem ser descartadas silenciosamente.
+- Métricas preservam altura mínima da região, ícones translúcidos, tipografia e espaçamento de Pedidos. Dicionário e organização possuem composição mobile própria e foco por teclado.
+
+## Escopo operacional aprovado para os próximos blocos
+
+- Reembolso: em análise, ocultar Solicitar e oferecer Cancelar reembolso. Cancelar deve restaurar o estado anterior persistido, sob lock e auditoria; não escolher um status arbitrário. Confirmar exige motivo, escolha explícita de TRANSFERENCIA ou CASHBACK e 1–2 imagens válidas, higienizadas no servidor e privadas, com preview/download autorizado.
+- Estoque pós-reembolso: pedido já entregue nunca retorna automaticamente ao estoque vendável. Após o recebimento físico, cada item/variante devolvido deve entrar em estoque de reembolso (quarentena) tenant-scoped, com movimento idempotente e auditado. O módulo futuro de estoque decide por transferência explícita ao estoque normal ou baixa definitiva; reembolso financeiro sem retorno físico não cria saldo.
+- Personalização: agrupar anexos e textos por item, SKU e variação, mantendo a tag Personalizado. Preservar arquivo original e resolução para download autorizado, sem misturar imagens de itens diferentes ou transformar thumbnail no original.
+- Documentos: listar arquivos reais de pagamento, entrega/romaneio, reembolso, declaração, XML e DANFE. Estado vazio só aparece quando não existem documentos. Nenhum espelho HTML deve ser anunciado como NF-e emitida.
+- Totais: expor subtotal, bruto, descontos por origem/destino, frete cobrado/custo e líquido conforme contrato. Cupom antecede VIP; benefícios de frete/produto possuem limites separados e não se transferem entre bases. Não inferir lucro ou custo inexistente. Detalhamento exige snapshot financeiro persistido e cálculo em centavos/decimal no servidor.
+- Cliente: consumir perfil autorizado compatível com CRM (contato, endereço e benefícios pertinentes); não expor dados de outros tenants ou campos internos.
+- Pagamento: ícone semântico antes do método, bandeira somente quando houver metadado confirmado do pagamento. Não inferir bandeira nem expor PAN/CVV.
+- Fiscal: preparar configuração em Configurações > Fiscal, certificado/credenciais criptografados por tenant, validade e capacidade de assinatura verificadas no backend. Emissão exige cadastro fiscal dos itens, adapter real e homologação; consultar `docs/architecture/orders-fiscal-readiness.md`.
+- Navegação: padronizar entrada/saída, Voltar, fechar e progresso de status com tokens de motion e reduced motion, preservando estado real. Todos os blocos incluem versão mobile separada e ambos os temas.
 - Prévia de arquivo não é lista bruta: imagens recebem thumbnail dentro de uma grade; documentos exibem card com nome, tipo e abertura segura em nova aba.
 
 ## Cancelamento e reembolso de pedidos

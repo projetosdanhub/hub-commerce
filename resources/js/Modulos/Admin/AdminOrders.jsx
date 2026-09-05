@@ -7,6 +7,7 @@ import { adminQueryKeys } from '../../queryClient';
 import { PageHeader } from './DesignSystem/patterns/PageHeader';
 import { Button } from './DesignSystem/primitives/Button';
 import { useRegisterAdminPageRefresh } from './DesignSystem/patterns/GlobalPageRefresh';
+import { useDebouncedValue } from './DesignSystem/patterns/useDebouncedValue';
 import { OrderActionDialog } from './Orders/OrderActionDialog';
 import { OrderDetail } from './Orders/OrderDetail';
 import { OrderMetrics } from './Orders/OrderMetrics';
@@ -49,10 +50,13 @@ export default function AdminOrders() {
   const [action, setAction] = useState(null);
   const [notice, setNotice] = useState(null);
 
-  const currentFilters = useMemo(() => listFilters(filters), [filters]);
+  const settledSearch = useDebouncedValue(filters.search);
+  const searchPending = filters.search !== settledSearch;
+  const currentFilters = useMemo(() => listFilters({ ...filters, search: settledSearch }), [filters, settledSearch]);
   const ordersQuery = useQuery({
     queryKey: adminQueryKeys.orders(currentFilters),
     queryFn: () => fetchOrders(currentFilters),
+    enabled: !searchPending,
     refetchInterval: 30_000,
   });
   const metricsQuery = useQuery({
@@ -237,7 +241,7 @@ export default function AdminOrders() {
         onClear={clearFilters}
         onOpen={openOrder}
         pagination={pagination}
-        loading={ordersQuery.isLoading || ordersQuery.isFetching}
+        loading={searchPending || ordersQuery.isLoading || ordersQuery.isFetching}
       />
     </>
   );
