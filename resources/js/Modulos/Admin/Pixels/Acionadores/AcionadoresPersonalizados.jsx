@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AppWindow, ArrowDownToLine, ArrowLeft, ChevronLeft, ChevronRight, Clock, Eye, FormInput, Globe, MousePointer2, Pencil, Plus, Trash2, Zap } from 'lucide-react';
 import { Badge } from '../../DesignSystem/primitives/Badge';
 import { Button } from '../../DesignSystem/primitives/Button';
@@ -45,6 +45,25 @@ const TriggerActions = ({ trigger, onEdit, onRequestDelete, busy }) => (
 
 const DeleteDialog = ({ trigger, onCancel, onConfirm, busy }) => {
   const cancelRef = useRef(null);
+
+  useEffect(() => {
+    if (!trigger) return undefined;
+    const previousFocus = document.activeElement;
+    const frame = window.requestAnimationFrame(() => cancelRef.current?.focus());
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && !busy) {
+        event.preventDefault();
+        onCancel();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousFocus instanceof HTMLElement) previousFocus.focus();
+    };
+  }, [trigger, busy, onCancel]);
+
   if (!trigger) return null;
   return <div className="hub-order-dialog-backdrop" role="presentation">
     <section className="hub-order-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-trigger-title" aria-describedby="delete-trigger-description">
@@ -65,7 +84,7 @@ const AcionadoresPersonalizados = ({ acionadoresPaginados, paginaAtual, setPagin
   const [pendingDelete, setPendingDelete] = useState(null);
   const total = Math.max(totalPaginas, 1);
   const requestDelete = (trigger) => setPendingDelete(trigger);
-  const confirmDelete = async (id) => { await onDelete(id); setPendingDelete(null); };
+  const confirmDelete = async (id) => { try { await onDelete(id); setPendingDelete(null); } catch { /* O toast global já descreve a falha. */ } };
 
   return <section className="space-y-4">
     <header className="hub-order-detail-heading">
