@@ -76,13 +76,11 @@ export const saveProduct = async ({ product, categoryId }) => {
   (product.galeria || []).filter((url) => !String(url).startsWith('blob:')).forEach((url) => body.append('galeria_urls[]', url));
   (product.galeriaObjects || []).forEach((item, index) => body.append('galeria[' + index + ']', item.file || item));
 
-  if ((product.variaveis || []).length) {
-    const variations = product.variaveis.map((item) => ({ ...item, img: item.imgObject ? null : item.img || null }));
-    append(body, 'variaveis_json', JSON.stringify(variations));
-    product.variaveis.forEach((item, index) => {
-      if (item.imgObject) body.append('variaveis_img_' + index, item.imgObject);
-    });
-  }
+  const variations = (product.variaveis || []).map((item) => ({ ...item, img: item.imgObject ? null : item.img || null }));
+  append(body, 'variaveis_json', JSON.stringify(variations));
+  variations.forEach((item, index) => {
+    if (item.imgObject) body.append('variaveis_img_' + index, item.imgObject);
+  });
 
   return api.post('/admin/products', body, { headers: { 'Content-Type': 'multipart/form-data' } });
 };

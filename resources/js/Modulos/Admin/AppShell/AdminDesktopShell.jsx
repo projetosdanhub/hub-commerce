@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { ExternalLink, LogOut, PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react';
+import { ExternalLink, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { AdminNavigation } from './AdminNavigation';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
+import { IconLink } from '../DesignSystem/primitives/IconLink';
 
 const SIDEBAR_STORAGE_KEY = 'hub_admin_sidebar_collapsed';
 
@@ -53,34 +54,16 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute }) => {
 
       <div className="hub-admin-main">
         <header className="hub-admin-topbar">
-          <label className="hub-command-search">
-            <Search aria-hidden="true" size={18} />
-            <input
-              aria-label="Busca global"
-              placeholder="Busca global em breve"
-              disabled
+          <div className="hub-topbar-actions">
+            <IconLink
+              icon={ExternalLink}
+              label="Acessar vitrine em uma nova aba"
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
             />
-            <kbd className="hub-command-key">⌘ K</kbd>
-          </label>
-
-          <div className="hub-topbar-spacer" />
-
-          <span className="hub-live-status">
-            <span className="hub-live-status-dot" aria-hidden="true" />
-            Painel conectado
-          </span>
-
-          <a
-            className="hub-sidebar-store"
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <ExternalLink aria-hidden="true" size={16} />
-            Acessar vitrine
-          </a>
-
-          <IconButton icon={LogOut} label="Sair do painel" onClick={onLogout} />
+            <IconButton icon={LogOut} label="Sair do painel" onClick={onLogout} />
+          </div>
         </header>
 
         <motion.main

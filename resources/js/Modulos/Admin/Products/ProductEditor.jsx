@@ -1,18 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowLeft, CheckCircle2, CircleAlert, Package, Save, ShieldCheck } from 'lucide-react';
+import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
-import AbaFiscal from '../Produtos/Editor/abas/AbaFiscal';
-import AbaLogistica from '../Produtos/Editor/abas/AbaLogistica';
-import AbaSeo from '../Produtos/Editor/abas/AbaSeo';
-import AbaVariaveis from '../Produtos/Editor/abas/AbaVariaveis';
 import { toProductEditorModel } from '../Produtos/produtoContract';
 import { saveProduct, validateProductSkus } from './catalogApi';
+import { ProductFiscalForm } from './ProductFiscalForm';
 import { ProductGeneralForm } from './ProductGeneralForm';
 import { ProductInventoryForm } from './ProductInventoryForm';
+import { ProductLogisticsForm } from './ProductLogisticsForm';
 import { ProductSpecificationForm } from './ProductSpecificationForm';
+import { ProductVariantsForm } from './ProductVariantsForm';
 import { ProductMediaForm } from './ProductMediaForm';
+import { ProductSeoForm } from './ProductSeoForm';
 import { errorMessage, productStatus } from './catalogUtils';
 
 const tabs = [
@@ -32,6 +33,15 @@ const validationMessage = (error) => {
   const first = Object.values(messages).flat()[0];
   return first || errorMessage(error, 'Não foi possível salvar o produto.');
 };
+
+const hasIncompleteVariation = (variations = []) => variations.some((item) => (
+  !String(item.nome || '').trim()
+  || item.estoque === ''
+  || item.estoque === null
+  || item.estoque === undefined
+  || !Number.isInteger(Number(item.estoque))
+  || Number(item.estoque) < 0
+));
 
 export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }) => {
   const [product, setProduct] = useState(productOriginal);
@@ -64,6 +74,12 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
     if (hasIncompleteSpecification) {
       setTab('FICHA');
       setNotice({ tone: 'error', text: 'Preencha ou remova os atributos incompletos da ficha técnica antes de salvar.' });
+      return;
+    }
+
+    if (hasIncompleteVariation(product.variaveis)) {
+      setTab('VARIACOES');
+      setNotice({ tone: 'error', text: 'Preencha a opção e o estoque de cada variação antes de salvar.' });
       return;
     }
 
@@ -108,10 +124,10 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
     FICHA: <ProductSpecificationForm product={product} onChange={setProduct} />,
     ESTOQUE: <ProductInventoryForm product={product} onChange={setProduct} />,
     MIDIA: <ProductMediaForm product={product} onChange={setProduct} />,
-    VARIACOES: <AbaVariaveis p={product} setP={setProduct} />,
-    FISCAL: <AbaFiscal p={product} setP={setProduct} />,
-    LOGISTICA: <AbaLogistica p={product} setP={setProduct} />,
-    SEO: <AbaSeo p={product} setP={setProduct} />,
+    VARIACOES: <ProductVariantsForm product={product} onChange={setProduct} />,
+    FISCAL: <ProductFiscalForm product={product} onChange={setProduct} />,
+    LOGISTICA: <ProductLogisticsForm product={product} onChange={setProduct} />,
+    SEO: <ProductSeoForm product={product} onChange={setProduct} />,
   };
 
   return <section className="hub-catalog-editor">
@@ -120,7 +136,7 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
       <div className="hub-catalog-actions"><Button variant="secondary" onClick={back}>Cancelar</Button><Button icon={Save} loading={saving} onClick={submit}>Salvar produto</Button></div>
     </header>
     {notice ? <p className="hub-catalog-editor-notice" data-tone={notice.tone} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.tone === 'success' ? <CheckCircle2 aria-hidden="true" size={17} /> : notice.tone === 'error' ? <CircleAlert aria-hidden="true" size={17} /> : <Package aria-hidden="true" size={17} />}{notice.text}</p> : null}
-    <nav className="hub-catalog-editor-tabs" aria-label="Seções do editor de produto">{tabs.map((item) => <button type="button" key={item.value} data-active={tab === item.value} onClick={() => setTab(item.value)}>{item.label}</button>)}</nav>
+    <SectionTabs items={tabs} value={tab} onChange={setTab} ariaLabel="Seções do editor de produto" />
     <div className="hub-catalog-editor-content">{content[tab]}</div>
     <footer className="hub-catalog-editor-footer"><div><ShieldCheck aria-hidden="true" size={17} /><span>Os dados são validados pela API da loja antes da gravação.</span></div><div className="hub-catalog-actions"><Button variant="secondary" onClick={back}>Cancelar</Button><Button icon={Save} loading={saving} onClick={submit}>Salvar produto</Button></div></footer>
   </section>;

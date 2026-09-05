@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-04  
+Atualizado em: 2026-09-05  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -193,8 +193,8 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [~] | UI-002 | P1 | Garantir Tailwind v4 corretamente importado | BASE-005 | Utilities presentes no build |
 | [~] | UI-003 | P1 | Padronizar Lucide como ícones | UI-001 | Sem bibliotecas ou SVGs duplicados |
 | [~] | UI-004 | P1 | Remover estilos inline e magic values gradualmente | UI-001 | Novos módulos usam tokens |
-| [~] | UI-005 | P1 | Criar primitives acessíveis | UI-001 | Button/Input/Modal/Table testados |
-| [~] | UI-006 | P1 | Criar patterns do painel | UI-005 | Header, filtros, estados e ações consistentes |
+| [~] | UI-005 | P1 | Criar primitives acessíveis | UI-001 | Botões, ícones, tooltip, skeleton e filtros padronizados; testes incrementais pendentes |
+| [~] | UI-006 | P1 | Criar patterns do painel | UI-005 | Header, SectionTabs, filtros, métricas e estados aplicados progressivamente |
 | [x] | UI-007 | P1 | Dividir AdminPerfilCRM | UI-005, CRM-002 | Perfil 360º modularizado; contratos preservados e checks verdes no PR #23 |
 | [x] | UI-008 | P1 | Dividir AdminOrders | UI-005, ORD-004 | Fluxos separados, contratos preservados e checks verdes; pendências de domínio continuam abertas |
 | [x] | UI-009 | P1 | Dividir AdminCustomers | UI-005, CRM-002 | Lista, painel, benefícios e perfil modularizados; checks verdes no PR #23 |

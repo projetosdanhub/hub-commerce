@@ -1,27 +1,43 @@
 import React from 'react';
 import { Boxes, CircleAlert, Layers3, PackageCheck, PackageX, Plus } from 'lucide-react';
 import { Button } from '../DesignSystem/primitives/Button';
+import { MetricCard } from '../DesignSystem/primitives/MetricCard';
+import { Skeleton } from '../DesignSystem/primitives/Skeleton';
 import { formatNumber } from './catalogUtils';
 
-const Metric = ({ icon: Icon, label, value, detail, tone }) => (
-  <article className="hub-orders-metric" data-tone={tone || 'default'}>
-    <span className="hub-orders-metric-icon"><Icon aria-hidden="true" size={18} /></span>
-    <p>{label}</p><strong>{value}</strong><span>{detail}</span>
-  </article>
+const hasConfiguredStockAlert = (product) => (
+  product.alerta_estoque !== null
+  && product.alerta_estoque !== undefined
+  && product.alerta_estoque !== ''
 );
 
-export const CatalogDashboard = ({ products, total, onCreate, onBrowse }) => {
+const needsStockAttention = (product) => (
+  product.controlar_estoque
+  && !product.pre_venda
+  && hasConfiguredStockAlert(product)
+  && Number(product.quantidade_estoque) <= Number(product.alerta_estoque)
+);
+
+const DashboardSkeleton = () => (
+  <section className="hub-catalog-metric-skeleton" role="status" aria-label="Carregando indicadores do catálogo">
+    {[0, 1, 2, 3].map((item) => <Skeleton key={item} />)}
+  </section>
+);
+
+export const CatalogDashboard = ({ products, total, loading, onCreate, onBrowse }) => {
+  if (loading) return <DashboardSkeleton />;
+
   const active = products.filter((product) => product.status_vitrine === 'ATIVO').length;
-  const lowStock = products.filter((product) => product.controlar_estoque && !product.pre_venda && Number(product.quantidade_estoque) <= (Number(product.alerta_estoque) || 5)).length;
+  const lowStock = products.filter(needsStockAttention).length;
   const totalStock = products.filter((product) => product.controlar_estoque).reduce((sum, product) => sum + (Number(product.quantidade_estoque) || 0), 0);
   const variations = products.reduce((sum, product) => sum + (product.variacoes?.length || 0), 0);
 
   return <div className="hub-catalog-stack">
-    <section className="hub-surface hub-orders-metrics" aria-label="Indicadores do catálogo">
-      <Metric icon={Boxes} label="Itens no catálogo" value={formatNumber(total)} detail="Total encontrado pelos filtros" />
-      <Metric icon={PackageCheck} label="Ativos nesta página" value={formatNumber(active)} detail="Visíveis na vitrine entre os itens carregados" tone="success" />
-      <Metric icon={PackageX} label="Atenção no estoque" value={formatNumber(lowStock)} detail="Abaixo do limite configurado nesta página" tone={lowStock ? 'warning' : 'default'} />
-      <Metric icon={Layers3} label="Variações carregadas" value={formatNumber(variations)} detail="Grades dos itens exibidos agora" />
+    <section className="hub-metric-grid" aria-label="Indicadores do catálogo">
+      <MetricCard icon={Boxes} label="Itens no catálogo" value={formatNumber(total)} detail="Total retornado pela consulta atual" definition="Contagem total informada pela paginação da API para os filtros selecionados." />
+      <MetricCard icon={PackageCheck} label="Ativos nesta página" value={formatNumber(active)} detail="Visíveis entre os itens carregados" tone="success" definition="Produtos com status de vitrine ativo apenas entre os itens carregados nesta página." />
+      <MetricCard icon={PackageX} label="Atenção no estoque" value={formatNumber(lowStock)} detail="No limite de alerta configurado" tone={lowStock ? 'warning' : 'default'} definition="Produtos com controle de estoque cujo saldo é menor ou igual ao alerta cadastrado." />
+      <MetricCard icon={Layers3} label="Variações carregadas" value={formatNumber(variations)} detail="Grades dos itens exibidos agora" definition="Soma das variações devolvidas pela API nos produtos carregados nesta página." />
     </section>
     <section className="hub-surface hub-catalog-overview">
       <div>

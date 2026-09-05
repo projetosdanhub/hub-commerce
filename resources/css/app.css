@@ -3,6 +3,7 @@
 @import "./layout.css";
 @import "./components.css";
 @import "./admin.css";
+@import "./design-system.css";
 
 *, *::before, *::after {
   box-sizing: border-box;
