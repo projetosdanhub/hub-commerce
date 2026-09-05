@@ -179,6 +179,8 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::prefix('orders')->group(function () {
         Route::get('/', [OrderController::class, 'index'])->middleware('tenant.permission:tenant.orders.view');
         Route::get('/metrics', [OrderController::class, 'metrics'])->middleware('tenant.permission:tenant.orders.view');
+        Route::get('/metric-preferences', [OrderController::class, 'metricPreferences'])->middleware('tenant.permission:tenant.orders.view');
+        Route::put('/metric-preferences', [OrderController::class, 'updateMetricPreferences'])->middleware('tenant.permission:tenant.orders.view');
         Route::put('/{id}/status', [OrderController::class, 'updateStatus'])->middleware('tenant.permission:tenant.orders.manage');
         Route::post('/{id}/dispatch', [OrderController::class, 'dispatchOrder'])->middleware('tenant.permission:tenant.orders.manage');
         Route::post('/{id}/cancel', [OrderController::class, 'cancelOrder'])->middleware('tenant.permission:tenant.orders.manage');
