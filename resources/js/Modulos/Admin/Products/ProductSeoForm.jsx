@@ -1,8 +1,6 @@
 import React from 'react';
 import { CircleAlert, SearchCheck } from 'lucide-react';
 
-const progress = (value, maximum) => Math.min(100, (String(value || '').length / maximum) * 100);
-
 const SeoField = ({ label, value, maximum, onChange, multiline = false }) => {
   const length = String(value || '').length;
   const overLimit = length > maximum;
@@ -12,7 +10,7 @@ const SeoField = ({ label, value, maximum, onChange, multiline = false }) => {
     <label className="hub-product-seo-field">
       <span><strong>{label}</strong><small data-over-limit={overLimit}>{length}/{maximum}</small></span>
       <Input value={value ?? ''} rows={multiline ? 4 : undefined} onChange={(event) => onChange(event.target.value)} />
-      <i aria-hidden="true" data-over-limit={overLimit}><b style={{ width: `${progress(value, maximum)}%` }} /></i>
+      <progress aria-label={`Progresso de ${label}`} max={maximum} value={Math.min(length, maximum)} data-over-limit={overLimit} />
     </label>
   );
 };
