@@ -189,6 +189,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{id}/status-manual', [OrderController::class, 'updateStatusManual'])->middleware('tenant.permission:tenant.orders.manage');
         // Rota Oficial de Emissão Fiscal e Documentos
         Route::get('/{id}/preview-doc', [OrderController::class, 'previewDoc'])->middleware('tenant.permission:tenant.orders.view'); 
+        Route::get('/{id}/refund-receipts/{receiptIndex}', [OrderController::class, 'refundReceipt'])
+            ->middleware('tenant.permission:tenant.orders.view')
+            ->name('admin.orders.refund-receipts.show');
         
         // Cancelar Etiqueta no Carrinho do Melhor Envio
         Route::post('/{id}/cancel-me-cart', [OrderController::class, 'cancelMelhorEnvioCart'])->middleware('tenant.permission:tenant.orders.manage');
