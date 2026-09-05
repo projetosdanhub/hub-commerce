@@ -45,12 +45,12 @@ class OrderMetricsTest extends TestCase
             ->assertJsonPath('aEnviar', 1)
             ->assertJsonPath('pixTotais', 2)
             ->assertJsonPath('pixPagos', 1)
-            ->assertJsonPath('conversaoPix', 50.0)
+            ->assertJsonPath('conversaoPix', 50)
             ->assertJsonPath('cancelados', 1)
             ->assertJsonPath('qtdReembolsados', 1)
-            ->assertJsonPath('valorReembolsado', 400.0)
+            ->assertJsonPath('valorReembolsado', 400)
             ->assertJsonPath('emAnalise', 1)
-            ->assertJsonPath('ltv', 600.0);
+            ->assertJsonPath('ltv', 600);
     }
 
     private function createOrder(Tenant $tenant, OrderStatus $status, ?string $paymentMethod, int $total): void
