@@ -275,6 +275,21 @@ class OrderController extends Controller
         return response()->json($paginator);
     }
 
+    public function refundReceipt($id, int $receiptIndex)
+    {
+        $order = Order::findOrFail($id);
+        $receipts = array_values(array_filter($order->refund_receipts ?? []));
+        $path = $receipts[$receiptIndex] ?? null;
+
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->response(
+            $path,
+            'comprovante-reembolso-'.($receiptIndex + 1),
+            ['Content-Disposition' => 'inline'],
+        );
+    }
+
     public function metrics(Request $request)
     {
         $pixPayment = '%pix%';
