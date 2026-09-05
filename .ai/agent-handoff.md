@@ -176,3 +176,19 @@ Copie este bloco para cada handoff relevante:
 - Evidências: o dashboard passou a consumir somente as chaves reais de `getDashboardMetrics`; estados de carregamento e indisponibilidade não exibem zero ou configuração estimada. Lista, perfil e seções usam `SectionTabs`; diálogos controlam foco, Escape e retorno de foco.
 - Riscos, bloqueios e itens não verificados: a interface preserva os contratos CRM atuais, que ainda possuem pendências de domínio e tenant registradas na Fase 6. Não foram criadas notificações persistentes, pessoas, métricas ou ações simuladas.
 - Próxima ação única: abrir PR, validar Tests, E2E Tests e Security Scans e integrar somente após aprovação.
+
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: iniciar a padronização do menu Pixel, incluindo painel, integrações, acionadores e os diálogos relacionados.
+- Branch: `ui/pixels-interface-standards`.
+- Task board: UI-016 e UI-017 concluídos; UI-018 iniciado.
+- Evidências: o orquestrador agora evita eventos nativos simulados, usa cabeçalho e abas do DesignSystem e apresenta skeleton ou indisponibilidade sem métricas estimadas.
+- Próxima ação única: aplicar o mesmo padrão aos submódulos Painel, Integrações e Acionadores e revisar seus contratos antes da PR.
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: concluir a padronização do menu Pixel e suas abas Painel, Integrações e Data Layer.
+- Branch e commit: `ui/pixels-interface-standards`; validação de CI pendente.
+- Task board: UI-018 permanece `[~]` até Tests, E2E Tests e Security Scans concluírem e a PR ser integrada.
+- Arquivos alterados: orquestrador do Pixel, Painel, App Store de integrações, eventos nativos, acionadores, editor, diálogos e estilos do DesignSystem.
+- Evidências: não há métricas, eventos, status ou dados simulados; a interface usa skeleton/indisponibilidade, primitives compartilhadas, ícones Lucide, diálogo acessível, ações com sincronização pós-mutation e experiências de tabela desktop/cartões mobile.
+- Próxima ação única: abrir PR e validar os três workflows obrigatórios antes do merge.

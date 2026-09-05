@@ -4,7 +4,10 @@
 // ============================================================================
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings2, Filter, Calendar, Zap, Check, AlertTriangle } from 'lucide-react';
+import { Settings2, Filter, Calendar, Zap } from 'lucide-react';
+import { FilterSelect } from '../../DesignSystem/primitives/FilterSelect';
+import { IconButton } from '../../DesignSystem/primitives/IconButton';
+import { Skeleton } from '../../DesignSystem/primitives/Skeleton';
 import { tabTransition, standardEvents, buildBaseCardProps } from '../Compartilhado/ConstantesPixels';
 import { SafeTooltip } from '../Compartilhado/ComponentesUIPixels';
 import { ConfigMetricsModal, DateFilterPopup } from '../Compartilhado/ModaisPixels';
@@ -31,6 +34,7 @@ const DashboardPixels = ({
     aplicarFiltroData,
 }) => {
     const met = dashboardData?.metrics || {};
+    const hasNumericValue = (value) => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
 
     // --- Build card props (base + custom de acionadores) ---
     const cardProps = useMemo(() => {
@@ -42,7 +46,7 @@ const DashboardPixels = ({
                 const metData = dashboardData?.funil?.find(f => f.evento === ac.evento);
                 base[`custom_${ac.evento}`] = {
                     label: `Custom: ${ac.evento}`,
-                    valor: metData ? metData.total : 0,
+                    valor: hasNumericValue(metData?.total) ? Number(metData.total).toLocaleString('pt-BR') : '—',
                     icon: Zap,
                     color: 'text-purple-500',
                     tooltip: `Total de disparos rastreados da regra: ${ac.nome}`,
@@ -83,8 +87,8 @@ const DashboardPixels = ({
         return formulaStr.includes(evStr);
     };
 
-    const funnelData = Array.isArray(dashboardData?.funil) ? dashboardData.funil : [];
-    const maxEventos = Math.max(...(funnelData.map(f => f.total || 0) || [1]), 1);
+    const funnelData = Array.isArray(dashboardData?.funil) ? dashboardData.funil.filter((event) => event?.evento && hasNumericValue(event.total)) : [];
+    const maxEventos = Math.max(...funnelData.map((event) => Number(event.total)), 1);
     const baseColors = ['bg-blue-100 border-blue-500 text-blue-700', 'bg-emerald-100 border-emerald-500 text-emerald-700', 'bg-orange-100 border-orange-500 text-orange-700', 'bg-purple-100 border-purple-500 text-purple-700'];
     const standardFunnelEvents = ['PageView', 'ViewContent', 'AddToCart', 'InitiateCheckout', 'AddPaymentInfo', 'Purchase', 'Lead', 'CompleteRegistration', 'Search', 'AddToWishlist'];
 
@@ -99,18 +103,17 @@ const DashboardPixels = ({
                     <p className="hub-page-subtitle">Acompanhe as métricas de performance e funil da operação em tempo real.</p>
                 </div>
                 <div className="hub-dashboard-filters">
-                    <select 
-                        value={activeProvider} 
-                        onChange={(e) => aplicarFiltroData(dashDateRange, e.target.value)}
-                        className="hub-select"
-                        style={{ width: '100%', minWidth: '200px' }}
+                    <FilterSelect
+                        label="Filtrar provedor"
+                        value={activeProvider}
+                        onChange={(event) => aplicarFiltroData(dashDateRange, event.target.value)}
                     >
-                        <option value="all">Todos os Provedores</option>
+                        <option value="all">Todos os provedores</option>
                         <option value="meta">Meta Pixel</option>
                         <option value="google">Google Analytics</option>
                         <option value="tiktok">TikTok Pixel</option>
                         <option value="pinterest">Pinterest Tag</option>
-                    </select>
+                    </FilterSelect>
 
                     <div style={{ position: 'relative', width: '100%', zIndex: 100 }}>
                         <button onClick={() => setDashDateOpen(!dashDateOpen)} className="hub-btn hub-btn-outline" style={{ width: '100%' }}>
@@ -132,9 +135,7 @@ const DashboardPixels = ({
                         />
                     </div>
 
-                    <button onClick={() => setIsConfigDashOpen(true)} className="hub-btn hub-btn-outline hub-btn-icon" title="Personalizar Painel">
-                        <Settings2 style={{ width: '16px', height: '16px' }}/>
-                    </button>
+<IconButton icon={Settings2} label="Personalizar painel" onClick={() => setIsConfigDashOpen(true)} />
                 </div>
             </div>
 
@@ -146,24 +147,18 @@ const DashboardPixels = ({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                             <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--hub-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>EMQ</span>
                             <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${credenciais?.meta_access_token ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                                {credenciais?.meta_access_token ? '10/10' : '0/10'}
+                                {credenciais?.meta_access_token ? 'Conectada' : 'Não configurada'}
                             </span>
                         </div>
                         <p style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--hub-text-primary)', lineHeight: 1, marginBottom: '4px', margin: 0 }}>
-                            {credenciais?.meta_access_token ? 'Extrema' : 'Baixa'}
+                            {credenciais?.meta_access_token ? 'Ativa' : 'Pendente'}
                         </p>
                         <p style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', margin: 0 }}>
-                            {credenciais?.meta_access_token ? 'CAPI conectada' : 'Token faltando'}
+                            {credenciais?.meta_access_token ? 'Token salvo no servidor' : 'Credencial ainda não configurada'}
                         </p>
                     </div>
 
-                    {/* Skeleton */}
-                    {isManualRefresh && dashboardConfig.map(key => (
-                        <div key={`sk-${key}`} style={{ flexShrink: 0, width: '200px', padding: '16px 24px', backgroundColor: 'var(--hub-surface)' }} className="animate-pulse">
-                            <div style={{ height: '12px', backgroundColor: 'var(--hub-border)', borderRadius: '4px', width: '50%', marginBottom: '12px' }} />
-                            <div style={{ height: '24px', backgroundColor: 'var(--hub-border-subtle)', borderRadius: '4px', width: '75%', marginBottom: '8px' }} />
-                        </div>
-                    ))}
+                    {isManualRefresh && dashboardConfig.map((key) => <Skeleton key={`sk-${key}`} className="hub-metric-item" />)}
 
                     {/* Métricas */}
                     {!isManualRefresh && dashboardConfig.map((key) => {
@@ -221,7 +216,7 @@ const DashboardPixels = ({
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {funnelData.map((etapa, idx) => {
-                        const widthPct = Math.max(5, ((etapa.total || 0) / maxEventos) * 100);
+                        const widthPct = Math.max(5, (Number(etapa.total) / maxEventos) * 100);
                         const isStandard = standardFunnelEvents.includes(etapa.evento);
                         
                         // Removendo baseColors do tailwind e aplicando cores em hexadecimal baseadas no padrão original
@@ -242,7 +237,7 @@ const DashboardPixels = ({
                                 </div>
                                 <div className="hub-funnel-bar-wrap">
                                     <motion.div initial={{ width: 0 }} animate={{ width: `${widthPct}%` }} transition={{ duration: 0.32, delay: idx * 0.05 }} className="hub-funnel-bar-fill" style={{ backgroundColor: corSelecionada.bg, borderColor: corSelecionada.border }} />
-                                    <span style={{ position: 'relative', zIndex: 10, marginLeft: '16px', fontWeight: '900', fontSize: '14px', color: corSelecionada.text }}>{etapa.total || 0}</span>
+                                    <span style={{ position: 'relative', zIndex: 10, marginLeft: '16px', fontWeight: '900', fontSize: '14px', color: corSelecionada.text }}>{Number(etapa.total).toLocaleString('pt-BR')}</span>
                                 </div>
                             </div>
                         );

@@ -6,12 +6,17 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'; 
-import { Activity, RotateCcw, BookMarked } from 'lucide-react';
+import { Activity, BookMarked, CircleAlert, RefreshCw } from 'lucide-react';
 import api from '../../../api';
+import { PageHeader } from '../DesignSystem/patterns/PageHeader';
+import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
+import { Button } from '../DesignSystem/primitives/Button';
+import { IconButton } from '../DesignSystem/primitives/IconButton';
+import { Skeleton } from '../DesignSystem/primitives/Skeleton';
 
 // Imports de Submódulos
-import { CustomStyles, AnimatedNotification } from './Compartilhado/ComponentesUIPixels';
-import { MetricsDictionaryModal, PixelErrorBoundary } from './Compartilhado/ModaisPixels';
+
+import { MetricsDictionaryModal, PixelErrorBoundary, PixelNotification } from './Compartilhado/ModaisPixels';
 import DashboardPixels from './Painel/DashboardPixels';
 import AppStorePixels from './Integracoes/AppStorePixels';
 import DataLayerPixels from './Acionadores/DataLayerPixels';
@@ -19,6 +24,29 @@ import DataLayerPixels from './Acionadores/DataLayerPixels';
 const queryClient = new QueryClient({
     defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 1000 * 60 * 5 } },
 });
+
+const PIXEL_SECTIONS = [
+    { value: 'PAINEL', label: 'Funil e métricas' },
+    { value: 'INTEGRACOES', label: 'Integrações' },
+    { value: 'ACIONADORES', label: 'Acionadores' },
+];
+
+const TrackingSkeleton = () => (
+    <section className="hub-metric-skeleton-grid" role="status" aria-live="polite" aria-label="Carregando central de tracking" aria-busy="true">
+        {Array.from({ length: 6 }, (_, index) => <Skeleton key={`pixel-skeleton-${index}`} />)}
+    </section>
+);
+
+const TrackingUnavailable = ({ onRetry }) => (
+    <section className="hub-surface hub-error-state" role="alert">
+        <div>
+            <CircleAlert aria-hidden="true" size={24} />
+            <h2 className="hub-panel-title">Central de tracking indisponível</h2>
+            <p>Não foi possível carregar as integrações, métricas e acionadores. Nenhum dado estimado é exibido.</p>
+            <Button className="mt-5" variant="secondary" onClick={onRetry}>Tentar novamente</Button>
+        </div>
+    </section>
+);
 
 const AdminPixelsContent = () => {
     // ------------------------------------------------------------------------
@@ -28,6 +56,7 @@ const AdminPixelsContent = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false); 
     const [isSaving, setIsSaving] = useState(false);
+    const [loadError, setLoadError] = useState(false);
     
     const [toast, setToast] = useState({ show: false, message: '', status: '' });
     const showToast = (message, status = 'success') => { 
@@ -41,8 +70,7 @@ const AdminPixelsContent = () => {
         pinterest_pixel_id: '', pinterest_access_token: ''
     });
 
-    const initNativos = { pageView: true, viewContent: true, addToCart: true, addToWishlist: true, initiateCheckout: true, addPaymentInfo: true, purchase: true, completeRegistration: true, lead: true, contact: true, search: true, donate: true, customizeProduct: true, findLocation: true, schedule: true, startTrial: true, submitApplication: true, subscribe: true };
-    const [eventosNativos, setEventosNativos] = useState(initNativos);
+    const [eventosNativos, setEventosNativos] = useState({});
     
     const [dashboardData, setDashboardData] = useState({ funil: [], metrics: {} });
     const [acionadores, setAcionadores] = useState([]);
@@ -72,7 +100,7 @@ const AdminPixelsContent = () => {
     }, [dashboardConfig]);
 
     const [triggerView, setTriggerView] = useState('LIST'); 
-    const [triggerForm, setTriggerForm] = useState({ id: null, nome: '', evento_selecionado: 'Contact', evento_custom: '', tipo_gatilho: 'click', valor_gatilho: '', url_alvo: '*', status: true, payload: {} });
+    const [triggerForm, setTriggerForm] = useState({ id: null, nome: '', evento_selecionado: 'Contact', evento_custom: '', tipo_gatilho: 'click', valor_gatilho: '', url_alvo: '*', status: false, payload: {} });
 
     // ------------------------------------------------------------------------
     // FUNÇÕES DE DADOS (FETCH/SAVE)
@@ -85,7 +113,10 @@ const AdminPixelsContent = () => {
     };
 
     const carregarTudo = async (datas, provedor = 'all', isBackground = false, isSilent = false, callback) => {
-        if (!isBackground) setIsLoading(true);
+        if (!isBackground) {
+            setIsLoading(true);
+            setLoadError(false);
+        }
         if (!isSilent) setIsUpdating(true);
         try {
             let dataInicio = '', dataFim = '';
@@ -112,7 +143,8 @@ const AdminPixelsContent = () => {
                 if (!isBackground) setPaginaAtual(1);
             }
         } catch (error) { 
-            console.error("Erro na API", error); 
+            console.error("Erro na API", error);
+            if (!isBackground) setLoadError(true); 
         } finally { 
             if (!isBackground) setIsLoading(false); 
             if (!isSilent) setIsUpdating(false);
@@ -159,7 +191,8 @@ const AdminPixelsContent = () => {
         setIsSaving(true);
         try {
             await api.post('/admin/tracking/settings', { credentials: credenciais, settings: eventosNativos });
-            showToast('Alterações salvas com sucesso na arquitetura Enterprise!');
+            await carregarTudo(dashDateRange, activeProvider, true, false);
+            showToast('Alterações salvas e sincronizadas com o servidor.');
         } catch (error) { 
             showToast('Erro ao salvar as configurações.', 'error'); 
         } finally { setIsSaving(false); }
@@ -208,23 +241,29 @@ const AdminPixelsContent = () => {
     };
 
     const handleToggleAcionador = async (id, currentStatus) => {
+        setIsSaving(true);
         try {
             await api.put(`/admin/tracking/triggers/${id}`, { status: !currentStatus });
-            setAcionadores(prev => prev.map(a => a.id === id ? { ...a, status: !currentStatus } : a));
-            showToast('Status atualizado.');
+            await carregarTudo(dashDateRange, activeProvider, true, false);
+            showToast('Status atualizado e sincronizado.');
         } catch (error) {
             showToast('Erro ao atualizar status.', 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleExcluirAcionador = async (id) => {
-        if (!window.confirm('Tem certeza que deseja excluir esta regra? Esta ação é irreversível.')) return;
+        setIsSaving(true);
         try {
             await api.delete(`/admin/tracking/triggers/${id}`);
-            setAcionadores(prev => prev.filter(a => a.id !== id));
-            showToast('Regra excluída.');
+            await carregarTudo(dashDateRange, activeProvider, true, false);
+            showToast('Regra excluída e lista atualizada.');
         } catch (error) {
             showToast('Erro ao excluir regra.', 'error');
+            throw error;
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -234,29 +273,13 @@ const AdminPixelsContent = () => {
     const indiceInicial = (paginaAtual - 1) * itensPorPagina;
     const acionadoresPaginados = acionadores.slice(indiceInicial, indiceInicial + itensPorPagina);
     const totalPaginas = Math.ceil(acionadores.length / itensPorPagina);
-    const isAllNativosAtivos = Object.values(eventosNativos).every(v => v === true);
+    const isAllNativosAtivos = Object.keys(eventosNativos).length > 0 && Object.values(eventosNativos).every(v => v === true);
 
     const toggleAllNativos = (forceValue) => {
         const novos = { ...eventosNativos };
         Object.keys(novos).forEach(k => novos[k] = forceValue);
         setEventosNativos(novos);
     };
-
-    const TabSkeleton = () => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '16px', opacity: 0.6 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--hub-border-subtle)', paddingBottom: '16px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div style={{ height: '24px', width: '200px', backgroundColor: 'var(--hub-border-strong)', borderRadius: '8px' }} />
-                    <div style={{ height: '16px', width: '300px', backgroundColor: 'var(--hub-border-subtle)', borderRadius: '8px' }} />
-                </div>
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-                {[...Array(6)].map((_, i) => (
-                    <div key={i} style={{ flex: '1', minWidth: '200px', height: '120px', backgroundColor: 'var(--hub-surface)', borderRadius: '24px', padding: '20px', border: '1px solid var(--hub-border-subtle)' }} />
-                ))}
-            </div>
-        </div>
-    );
 
     // ------------------------------------------------------------------------
     // RENDERIZAÇÃO
@@ -265,53 +288,34 @@ const AdminPixelsContent = () => {
         <PixelErrorBoundary>
             <div className="hub-layout-container">
                 <Helmet><title>Central de Tracking | HUB Admin</title></Helmet>
-                <CustomStyles />
-                <AnimatedNotification show={toast.show} status={toast.status} titulo={toast.message} />
+                <PixelNotification show={toast.show} status={toast.status} titulo={toast.message} />
                 <MetricsDictionaryModal isOpen={isDictOpen} onClose={() => setIsDictOpen(false)} />
 
-                <div className="hub-page-header">
-                    <div>
-                        <h1 className="hub-page-title">
-                            <Activity className="w-6 h-6 text-blue-600" style={{ color: 'var(--hub-brand-primary)' }} /> Tracking Hub (CDP)
-                        </h1>
-                        <p className="hub-page-subtitle">Plataforma de coleta, validação e distribuição inteligente de eventos.</p>
-                    </div>
-                    <div className="hub-header-actions">
-                        <button onClick={handleRefreshManual} disabled={isManualRefresh || isLoading} className="hub-btn hub-btn-outline hub-btn-icon" title="Sincronizar Agora">
-                            <RotateCcw className={`w-4 h-4 ${(isManualRefresh || isLoading) ? 'animate-spin' : ''}`} style={{ color: (isManualRefresh || isLoading) ? 'var(--hub-brand-primary)' : 'inherit' }} />
-                        </button>
-                        <button onClick={() => setIsDictOpen(true)} className="hub-btn hub-btn-outline">
-                            <BookMarked className="w-4 h-4" /> Catálogo
-                        </button>
-                    </div>
-                </div>
+                <PageHeader
+                    eyebrow="Dados e conversões"
+                    title="Central de Tracking"
+                    icon={Activity}
+                    description="Acompanhe eventos, conecte plataformas e gerencie regras de disparo com dados atualizados."
+                    actions={<>
+                        <IconButton icon={RefreshCw} label="Sincronizar dados" loading={isManualRefresh || isLoading} onClick={handleRefreshManual} />
+                        <Button variant="secondary" icon={BookMarked} onClick={() => setIsDictOpen(true)}>Catálogo</Button>
+                    </>}
+                />
 
-                <div className="hub-tabs-container no-scrollbar">
-                    {[
-                        { id: 'PAINEL', label: 'Funil e Métricas' },
-                        { id: 'INTEGRACOES', label: 'App Store' },
-                        { id: 'ACIONADORES', label: 'Data Layer' }
-                    ].map((tab) => (
-                        <button key={tab.id} onClick={() => { setActiveTab(tab.id); setTriggerView('LIST'); }} className={`hub-tab-item ${activeTab === tab.id ? 'is-active' : ''}`}>
-                            {activeTab === tab.id && <motion.div layoutId="activeTabPixels" className="hub-tab-indicator" transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
-                            <span className="hub-tab-label">{tab.label}</span>
-                        </button>
-                    ))}
-                </div>
+                <SectionTabs
+                    ariaLabel="Seções da Central de Tracking"
+                    items={PIXEL_SECTIONS}
+                    value={activeTab}
+                    onChange={(nextTab) => { setActiveTab(nextTab); setTriggerView('LIST'); }}
+                />
 
                 <div className="px-4 sm:px-0">
                     <AnimatePresence mode="wait">
-                        {(isManualRefresh || (isLoading && dashboardData.funil.length === 0)) ? (
-                            <motion.div
-                                key="tab-skeleton"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.15 }}
-                            >
-                                <TabSkeleton />
+                        {isLoading ? (
+                            <motion.div key="tab-skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                                <TrackingSkeleton />
                             </motion.div>
-                        ) : (
+                        ) : loadError ? <TrackingUnavailable onRetry={handleRefreshManual} /> : (
                             <React.Fragment key={activeTab}>
                                 {activeTab === 'PAINEL' && (
                                     <DashboardPixels 
