@@ -5,7 +5,6 @@ export const IconLink = ({
   icon: Icon,
   label,
   className = '',
-  children,
   ...props
 }) => (
   <Tooltip content={label}>
