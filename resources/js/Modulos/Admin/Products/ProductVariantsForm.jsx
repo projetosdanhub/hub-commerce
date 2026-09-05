@@ -36,8 +36,10 @@ export const ProductVariantsForm = ({ product, onChange }) => {
 
     const current = variations[index];
     if (String(current?.img || '').startsWith('blob:')) URL.revokeObjectURL(current.img);
-    updateVariation(index, 'img', URL.createObjectURL(file));
-    updateVariation(index, 'imgObject', file);
+    const previewUrl = URL.createObjectURL(file);
+    updateVariations(variations.map((variation, currentIndex) => (
+      currentIndex === index ? { ...variation, img: previewUrl, imgObject: file } : variation
+    )));
   };
 
   return (
