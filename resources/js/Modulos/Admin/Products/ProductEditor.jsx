@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowLeft, CheckCircle2, CircleAlert, Package, Save, ShieldCheck } from 'lucide-react';
+import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
@@ -120,7 +121,7 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
       <div className="hub-catalog-actions"><Button variant="secondary" onClick={back}>Cancelar</Button><Button icon={Save} loading={saving} onClick={submit}>Salvar produto</Button></div>
     </header>
     {notice ? <p className="hub-catalog-editor-notice" data-tone={notice.tone} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.tone === 'success' ? <CheckCircle2 aria-hidden="true" size={17} /> : notice.tone === 'error' ? <CircleAlert aria-hidden="true" size={17} /> : <Package aria-hidden="true" size={17} />}{notice.text}</p> : null}
-    <nav className="hub-catalog-editor-tabs" aria-label="Seções do editor de produto">{tabs.map((item) => <button type="button" key={item.value} data-active={tab === item.value} onClick={() => setTab(item.value)}>{item.label}</button>)}</nav>
+    <SectionTabs items={tabs} value={tab} onChange={setTab} ariaLabel="Seções do editor de produto" />
     <div className="hub-catalog-editor-content">{content[tab]}</div>
     <footer className="hub-catalog-editor-footer"><div><ShieldCheck aria-hidden="true" size={17} /><span>Os dados são validados pela API da loja antes da gravação.</span></div><div className="hub-catalog-actions"><Button variant="secondary" onClick={back}>Cancelar</Button><Button icon={Save} loading={saving} onClick={submit}>Salvar produto</Button></div></footer>
   </section>;
