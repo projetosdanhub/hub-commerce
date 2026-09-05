@@ -1,117 +1,85 @@
-// ============================================================================
-// FICHEIRO: resources/js/Modulos/Admin/Pixels/Acionadores/AcionadoresPersonalizados.jsx
-// Tabela de acionadores customizados (GTM) com paginação
-// ============================================================================
-import React from 'react';
-import {
-    AppWindow, Plus, Edit, Trash2, Target,
-    MousePointer2, Globe, ArrowDownToLine, Clock,
-    Eye, ArrowLeft, Zap, ChevronLeft, ChevronRight
-} from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { AppWindow, ArrowDownToLine, ArrowLeft, ChevronLeft, ChevronRight, Clock, Eye, FormInput, Globe, MousePointer2, Pencil, Plus, Trash2, Zap } from 'lucide-react';
+import { Badge } from '../../DesignSystem/primitives/Badge';
+import { Button } from '../../DesignSystem/primitives/Button';
+import { FilterSelect } from '../../DesignSystem/primitives/FilterSelect';
+import { IconButton } from '../../DesignSystem/primitives/IconButton';
+import { Tooltip } from '../../DesignSystem/primitives/Tooltip';
 
-const AcionadoresPersonalizados = ({
-    acionadoresPaginados,
-    paginaAtual,
-    setPaginaAtual,
-    totalPaginas,
-    itensPorPagina,
-    setItensPorPagina,
-    onEdit,
-    onDelete,
-    onNovaRegra,
-}) => {
-    return (
-        <div className="hub-card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div className="hub-dashboard-header" style={{ padding: '24px', backgroundColor: 'var(--hub-surface-hover)', borderBottom: '1px solid var(--hub-border-subtle)', marginBottom: 0, alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '48px', height: '48px', backgroundColor: '#dbeafe', color: '#2563eb', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AppWindow style={{ width: '24px', height: '24px' }} /></div>
-                    <div>
-                        <h2 className="hub-card-title">Acionadores Personalizados (GTM)</h2>
-                        <p className="hub-page-subtitle" style={{ fontSize: '12px', marginTop: '2px' }}>Disparos manuais que exigem verificação de Domínio Alvo.</p>
-                    </div>
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-                    {/* Paginação */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: 'var(--hub-background)', border: '1px solid var(--hub-border)', borderRadius: '12px', padding: '6px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                        <span style={{ fontSize: '12px', color: 'var(--hub-text-secondary)', fontWeight: 500, padding: '0 8px' }}>Pág {paginaAtual} de {totalPaginas || 1}</span>
-                        <select 
-                            value={itensPorPagina} 
-                            onChange={(e) => { setItensPorPagina(Number(e.target.value)); setPaginaAtual(1); }}
-                            style={{ backgroundColor: 'var(--hub-surface)', border: '1px solid var(--hub-border-subtle)', borderRadius: '8px', padding: '4px 8px', fontSize: '12px', color: 'var(--hub-text-primary)', outline: 'none', cursor: 'pointer' }}
-                        >
-                            <option value={10}>10 p/ pág</option>
-                            <option value={20}>20 p/ pág</option>
-                            <option value={30}>30 p/ pág</option>
-                            <option value={50}>50 p/ pág</option>
-                        </select>
-                        <div style={{ display: 'flex', gap: '4px', borderLeft: '1px solid var(--hub-border)', paddingLeft: '8px' }}>
-                            <button onClick={() => setPaginaAtual(prev => Math.max(1, prev - 1))} disabled={paginaAtual === 1} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', color: 'var(--hub-text-secondary)', opacity: paginaAtual === 1 ? 0.3 : 1, background: 'transparent', cursor: paginaAtual === 1 ? 'default' : 'pointer', border: 'none' }}><ChevronLeft style={{ width: '16px', height: '16px' }} /></button>
-                            <button onClick={() => setPaginaAtual(prev => Math.min(totalPaginas, prev + 1))} disabled={paginaAtual === totalPaginas || totalPaginas === 0} style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', color: 'var(--hub-text-secondary)', opacity: (paginaAtual === totalPaginas || totalPaginas === 0) ? 0.3 : 1, background: 'transparent', cursor: (paginaAtual === totalPaginas || totalPaginas === 0) ? 'default' : 'pointer', border: 'none' }}><ChevronRight style={{ width: '16px', height: '16px' }} /></button>
-                        </div>
-                    </div>
-                    
-                    <button onClick={onNovaRegra} className="hub-btn hub-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}>
-                        <Plus style={{ width: '16px', height: '16px' }}/> Nova Regra
-                    </button>
-                </div>
-            </div>
-            
-            <div style={{ overflowX: 'auto' }}>
-                <table className="hub-table" style={{ width: '100%', minWidth: '900px' }}>
-                    <thead>
-                        <tr className="hub-table-header">
-                            <th className="hub-table-cell" style={{ paddingLeft: '24px' }}>Regra Interna</th>
-                            <th className="hub-table-cell">Evento (Pixel)</th>
-                            <th className="hub-table-cell">Gatilho & Domínio</th>
-                            <th className="hub-table-cell" style={{ textAlign: 'center' }}>Enriquecimento</th>
-                            <th className="hub-table-cell" style={{ textAlign: 'center' }}>Status</th>
-                            <th className="hub-table-cell" style={{ textAlign: 'right', paddingRight: '24px' }}>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {acionadoresPaginados.map((acionador) => (
-                            <tr key={acionador.id} className="hub-table-row">
-                                <td className="hub-table-cell" style={{ paddingLeft: '24px', fontWeight: 'bold', color: 'var(--hub-text-primary)', fontSize: '14px' }}>{acionador.nome}</td>
-                                <td className="hub-table-cell"><span style={{ backgroundColor: 'var(--hub-text-primary)', color: '#fff', fontSize: '10px', padding: '4px 10px', borderRadius: '4px', fontWeight: 'bold', fontFamily: 'monospace', letterSpacing: '0.05em' }}>{acionador.evento}</span></td>
-                                <td className="hub-table-cell">
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold', color: 'var(--hub-text-primary)' }}>
-                                            {acionador.tipo_gatilho === 'click' && <><MousePointer2 style={{ width: '14px', height: '14px', color: '#3b82f6' }}/> HTML Elemento</>}
-                                            {acionador.tipo_gatilho === 'url_contains' && <><Globe style={{ width: '14px', height: '14px', color: '#10b981' }}/> URL Contém</>}
-                                            {acionador.tipo_gatilho === 'url_exact' && <><Globe style={{ width: '14px', height: '14px', color: '#10b981' }}/> URL Exata</>}
-                                            {acionador.tipo_gatilho === 'scroll' && <><ArrowDownToLine style={{ width: '14px', height: '14px', color: '#f97316' }}/> Scroll Depth</>}
-                                            {acionador.tipo_gatilho === 'time' && <><Clock style={{ width: '14px', height: '14px', color: '#a855f7' }}/> Time Delay</>}
-                                            {acionador.tipo_gatilho === 'form_submit' && <><Edit style={{ width: '14px', height: '14px', color: '#3b82f6' }}/> Form Submit</>}
-                                            {acionador.tipo_gatilho === 'element_visibility' && <><Eye style={{ width: '14px', height: '14px', color: '#10b981' }}/> Visibility</>}
-                                            {acionador.tipo_gatilho === 'exit_intent' && <><ArrowLeft style={{ width: '14px', height: '14px', color: '#f43f5e' }}/> Exit Intent</>}
-                                            {acionador.tipo_gatilho === 'custom_event' && <><Zap style={{ width: '14px', height: '14px', color: '#f59e0b' }}/> Custom Layer</>}
-                                        </div>
-                                        {acionador.valor_gatilho && <span style={{ fontSize: '10px', fontFamily: 'monospace', color: 'var(--hub-text-secondary)', backgroundColor: 'var(--hub-background)', border: '1px solid var(--hub-border-subtle)', padding: '2px 8px', borderRadius: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{acionador.valor_gatilho}</span>}
-                                        <span style={{ fontSize: '9px', color: '#0284c7', display: 'flex', alignItems: 'center', gap: '4px' }}><Target style={{ width: '12px', height: '12px' }}/> Alvo: {acionador.url_alvo || '*'}</span>
-                                    </div>
-                                </td>
-                                <td className="hub-table-cell" style={{ textAlign: 'center', fontSize: '10px', fontWeight: 'bold', color: 'var(--hub-text-secondary)' }}>
-                                    <span style={{ backgroundColor: '#f0f9ff', color: '#0369a1', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e0f2fe' }}>{Object.values(acionador.payload || {}).filter(v => v).length} Parâmetros</span>
-                                </td>
-                                <td className="hub-table-cell" style={{ textAlign: 'center' }}>
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', fontWeight: 'bold', padding: '4px 12px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', backgroundColor: acionador.status ? '#d1fae5' : '#f1f5f9', color: acionador.status ? '#047857' : '#64748b' }}>
-                                        {acionador.status ? 'Ativo' : 'Pausado'}
-                                    </span>
-                                </td>
-                                <td className="hub-table-cell" style={{ textAlign: 'right', paddingRight: '24px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                        <button onClick={() => onEdit(acionador)} style={{ padding: '8px', color: 'var(--hub-text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: '8px' }}><Edit style={{ width: '16px', height: '16px' }}/></button>
-                                        <button onClick={() => onDelete(acionador.id)} style={{ padding: '8px', color: 'var(--hub-text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: '8px' }}><Trash2 style={{ width: '16px', height: '16px' }}/></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                        {acionadoresPaginados.length === 0 && <tr><td colSpan="6" className="hub-table-cell" style={{ textAlign: 'center', padding: '40px', color: 'var(--hub-text-secondary)' }}>Nenhuma regra customizada. Vá em frente e crie a primeira!</td></tr>}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
+const TRIGGER_TYPES = {
+  click: { label: 'Clique em elemento', icon: MousePointer2 },
+  click_link: { label: 'Clique em link', icon: MousePointer2 },
+  url_contains: { label: 'URL contém', icon: Globe },
+  url_exact: { label: 'URL exata', icon: Globe },
+  url_starts_with: { label: 'URL inicia com', icon: Globe },
+  url_ends_with: { label: 'URL termina com', icon: Globe },
+  url_regex: { label: 'URL por expressão', icon: Globe },
+  scroll: { label: 'Profundidade de rolagem', icon: ArrowDownToLine },
+  time: { label: 'Tempo na página', icon: Clock },
+  form_submit: { label: 'Envio de formulário', icon: FormInput },
+  element_visibility: { label: 'Elemento visível', icon: Eye },
+  exit_intent: { label: 'Intenção de saída', icon: ArrowLeft },
+  custom_event: { label: 'Evento customizado', icon: Zap },
+  video_play: { label: 'Reprodução de vídeo', icon: Zap },
+  js_error: { label: 'Erro de JavaScript', icon: Zap },
+};
+
+const triggerInfo = (type) => TRIGGER_TYPES[type] || { label: 'Tipo não informado', icon: AppWindow };
+
+const TriggerCell = ({ trigger }) => {
+  const info = triggerInfo(trigger.tipo_gatilho);
+  const Icon = info.icon;
+  return <div className="space-y-1.5">
+    <span className="inline-flex items-center gap-1.5 text-sm font-medium"><Icon aria-hidden="true" size={15} />{info.label}</span>
+    {trigger.valor_gatilho ? <code className="hub-inline-code">{trigger.valor_gatilho}</code> : null}
+    <span className="block text-xs text-[var(--hub-text-secondary)]">Alvo: {trigger.url_alvo ?? 'Não informado'}</span>
+  </div>;
+};
+
+const TriggerActions = ({ trigger, onEdit, onRequestDelete, busy }) => (
+  <div className="flex justify-end gap-1">
+    <Tooltip content="Editar regra"><IconButton icon={Pencil} label={`Editar ${trigger.nome}`} disabled={busy} onClick={() => onEdit(trigger)} /></Tooltip>
+    <Tooltip content="Excluir regra"><IconButton icon={Trash2} label={`Excluir ${trigger.nome}`} disabled={busy} onClick={() => onRequestDelete(trigger)} /></Tooltip>
+  </div>
+);
+
+const DeleteDialog = ({ trigger, onCancel, onConfirm, busy }) => {
+  const cancelRef = useRef(null);
+  if (!trigger) return null;
+  return <div className="hub-order-dialog-backdrop" role="presentation">
+    <section className="hub-order-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-trigger-title" aria-describedby="delete-trigger-description">
+      <header><div><h2 id="delete-trigger-title">Excluir acionador?</h2><p id="delete-trigger-description">A regra “{trigger.nome}” será removida e deixará de disparar eventos.</p></div></header>
+      <footer><Button ref={cancelRef} variant="ghost" disabled={busy} onClick={onCancel}>Cancelar</Button><Button variant="danger" loading={busy} onClick={() => onConfirm(trigger.id)}>Excluir regra</Button></footer>
+    </section>
+  </div>;
+};
+
+const MobileTriggers = ({ triggers, onEdit, onRequestDelete, busy }) => <div className="md:hidden space-y-3">
+  {triggers.map((trigger) => <article key={trigger.id} className="hub-surface p-4 space-y-4">
+    <div className="flex items-start justify-between gap-3"><div><strong>{trigger.nome}</strong><p className="mt-1 font-mono text-xs text-[var(--hub-text-secondary)]">{trigger.evento || 'Evento não informado'}</p></div><Badge variant={trigger.status ? 'success' : 'neutral'}>{trigger.status ? 'Ativa' : 'Pausada'}</Badge></div>
+    <TriggerCell trigger={trigger} /><div className="flex justify-end"><TriggerActions trigger={trigger} onEdit={onEdit} onRequestDelete={onRequestDelete} busy={busy} /></div>
+  </article>)}
+</div>;
+
+const AcionadoresPersonalizados = ({ acionadoresPaginados, paginaAtual, setPaginaAtual, totalPaginas, itensPorPagina, setItensPorPagina, onEdit, onDelete, onNovaRegra, isSaving }) => {
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const total = Math.max(totalPaginas, 1);
+  const requestDelete = (trigger) => setPendingDelete(trigger);
+  const confirmDelete = async (id) => { await onDelete(id); setPendingDelete(null); };
+
+  return <section className="space-y-4">
+    <header className="hub-order-detail-heading">
+      <div className="flex items-center gap-3"><span className="hub-orders-metric-icon"><AppWindow aria-hidden="true" size={20} /></span><div><p className="hub-page-eyebrow">Regras de conversão</p><h2 className="hub-card-title">Acionadores personalizados</h2><p className="hub-page-subtitle">Crie regras auditáveis para disparar eventos em páginas e elementos da vitrine.</p></div></div>
+      <Button icon={Plus} disabled={isSaving} onClick={onNovaRegra}>Nova regra</Button>
+    </header>
+
+    {acionadoresPaginados.length ? <><div className="hidden md:block hub-order-table-wrap"><table className="hub-order-table"><thead><tr><th>Regra</th><th>Evento</th><th>Gatilho e alvo</th><th>Parâmetros</th><th>Status</th><th className="text-right">Ações</th></tr></thead><tbody>
+      {acionadoresPaginados.map((trigger) => <tr key={trigger.id}><td><strong>{trigger.nome}</strong></td><td><code className="hub-inline-code">{trigger.evento || 'Não informado'}</code></td><td><TriggerCell trigger={trigger} /></td><td>{Object.values(trigger.payload || {}).filter(Boolean).length}</td><td><Badge variant={trigger.status ? 'success' : 'neutral'}>{trigger.status ? 'Ativa' : 'Pausada'}</Badge></td><td><TriggerActions trigger={trigger} onEdit={onEdit} onRequestDelete={requestDelete} busy={isSaving} /></td></tr>)}
+    </tbody></table></div><MobileTriggers triggers={acionadoresPaginados} onEdit={onEdit} onRequestDelete={requestDelete} busy={isSaving} /></> : <section className="hub-empty-state"><div><AppWindow aria-hidden="true" size={28} /><h2 className="hub-panel-title">Nenhuma regra criada</h2><p>Crie um acionador quando houver uma conversão real a rastrear.</p><Button className="mt-5" icon={Plus} onClick={onNovaRegra}>Criar primeira regra</Button></div></section>}
+
+    <footer className="hub-orders-pagination"><span>Página {paginaAtual} de {total}</span><div className="flex items-center gap-2"><FilterSelect label="Itens por página" value={String(itensPorPagina)} onChange={(event) => { setItensPorPagina(Number(event.target.value)); setPaginaAtual(1); }}><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="50">50</option></FilterSelect><IconButton icon={ChevronLeft} label="Página anterior" disabled={paginaAtual === 1 || isSaving} onClick={() => setPaginaAtual((page) => Math.max(1, page - 1))} /><IconButton icon={ChevronRight} label="Próxima página" disabled={paginaAtual >= total || isSaving} onClick={() => setPaginaAtual((page) => Math.min(total, page + 1))} /></div></footer>
+    <DeleteDialog trigger={pendingDelete} onCancel={() => setPendingDelete(null)} onConfirm={confirmDelete} busy={isSaving} />
+  </section>;
 };
 
 export default AcionadoresPersonalizados;

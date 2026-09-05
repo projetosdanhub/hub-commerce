@@ -241,23 +241,29 @@ const AdminPixelsContent = () => {
     };
 
     const handleToggleAcionador = async (id, currentStatus) => {
+        setIsSaving(true);
         try {
             await api.put(`/admin/tracking/triggers/${id}`, { status: !currentStatus });
             await carregarTudo(dashDateRange, activeProvider, true, false);
             showToast('Status atualizado e sincronizado.');
         } catch (error) {
             showToast('Erro ao atualizar status.', 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     const handleExcluirAcionador = async (id) => {
-        if (!window.confirm('Tem certeza que deseja excluir esta regra? Esta ação é irreversível.')) return;
+        setIsSaving(true);
         try {
             await api.delete(`/admin/tracking/triggers/${id}`);
             await carregarTudo(dashDateRange, activeProvider, true, false);
             showToast('Regra excluída e lista atualizada.');
         } catch (error) {
             showToast('Erro ao excluir regra.', 'error');
+            throw error;
+        } finally {
+            setIsSaving(false);
         }
     };
 

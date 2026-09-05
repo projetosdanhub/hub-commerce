@@ -74,6 +74,7 @@ const DataLayerPixels = ({
                             onEdit={onEditTrigger}
                             onDelete={onDeleteTrigger}
                             onNovaRegra={handleNovaRegra}
+                            isSaving={isSaving}
                         />
                     </motion.div>
                 ) : (
