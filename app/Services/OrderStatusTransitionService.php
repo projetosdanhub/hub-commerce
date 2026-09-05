@@ -25,12 +25,17 @@ final class OrderStatusTransitionService
         }
     }
 
-    public function transition(Order $order, OrderStatus $target, string $event): Order
+    public function transition(
+        Order $order,
+        OrderStatus $target,
+        string $event,
+        ?\Closure $afterLock = null,
+    ): Order
     {
         $pendingAttributes = $order->getDirty();
         unset($pendingAttributes['status'], $pendingAttributes['tenant_id'], $pendingAttributes['id']);
 
-        return DB::transaction(function () use ($order, $target, $event, $pendingAttributes): Order {
+        return DB::transaction(function () use ($afterLock, $order, $target, $event, $pendingAttributes): Order {
             $lockedOrder = Order::query()
                 ->whereKey($order->getKey())
                 ->lockForUpdate()
@@ -39,6 +44,11 @@ final class OrderStatusTransitionService
             $this->assertCanTransition($lockedOrder, $target);
 
             $lockedOrder->fill($pendingAttributes);
+
+            if ($afterLock !== null) {
+                $afterLock($lockedOrder);
+            }
+
             $lockedOrder->status = $target;
             $lockedOrder->save();
 
