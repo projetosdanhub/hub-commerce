@@ -190,6 +190,8 @@ class OrderStatusTransitionTest extends TestCase
             ->assertOk()
             ->assertExactJson($payload);
 
+        app(TenantContextStore::class)->clear();
+
         $this->actingAs($ownerB, 'sanctum')
             ->withServerVariables(['HTTP_HOST' => 'metricas-b.test', 'SERVER_NAME' => 'metricas-b.test'])
             ->getJson('http://metricas-b.test/api/admin/orders/metric-preferences')
@@ -198,6 +200,8 @@ class OrderStatusTransitionTest extends TestCase
                 'order' => ['valid-revenue', 'awaiting-shipment', 'pix-confirmed', 'refund-review'],
                 'hidden' => [],
             ]);
+
+        app(TenantContextStore::class)->clear();
 
         $this->setTenantContext($tenantA, 'metricas-a.test');
 
