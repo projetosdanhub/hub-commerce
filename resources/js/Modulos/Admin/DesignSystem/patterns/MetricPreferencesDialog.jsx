@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { ArrowDown, ArrowUp, Eye, EyeOff, GripVertical, Settings2, X } from 'lucide-react';
 import { Button } from '../primitives/Button';
@@ -30,15 +30,9 @@ export const MetricPreferencesDialog = ({
   onClose,
   onSave,
 }) => {
-  const preferenceKey = JSON.stringify(preferences || {});
   const [draft, setDraft] = useState(() => normalizeMetricPreferences(preferences, metrics));
   const [activeId, setActiveId] = useState(() => metrics[0]?.id || '');
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    setDraft(normalizeMetricPreferences(preferences, metrics));
-    setError('');
-  }, [metrics, preferenceKey, preferences]);
 
   const orderedMetrics = useMemo(
     () => draft.order.map((id) => metrics.find((metric) => metric.id === id)).filter(Boolean),
