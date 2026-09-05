@@ -78,7 +78,7 @@ export const saveProduct = async ({ product, categoryId }) => {
 
   const variations = (product.variaveis || []).map((item) => ({ ...item, img: item.imgObject ? null : item.img || null }));
   append(body, 'variaveis_json', JSON.stringify(variations));
-  product.variaveis.forEach((item, index) => {
+  variations.forEach((item, index) => {
     if (item.imgObject) body.append('variaveis_img_' + index, item.imgObject);
   });
 
