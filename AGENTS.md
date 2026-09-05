@@ -18,7 +18,7 @@ Em caso de conflito, pare, descreva o conflito e peça uma decisão. Não escolh
 - Regras operacionais: .ai/README.md e .ai/rules.
 - Arquitetura permanente: docs/adr e docs/architecture.
 - Segurança e pagamentos: docs/security e docs/payments.
-- Implementação visual: .ai/rules/06-design-system.md, .ai/rules/12-ui-ux-seo-and-mobile.md e tokens em resources/css/tokens.css.
+- Implementação visual: .ai/rules/06-design-system.md, .ai/rules/12-ui-ux-seo-and-mobile.md, .ai/rules/13-ui-agent-playbook.md e tokens em resources/css/tokens.css.
 
 ## Fluxo obrigatório
 

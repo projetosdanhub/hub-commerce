@@ -575,3 +575,61 @@
 .hub-product-seo-unavailable { display: flex; align-items: flex-start; gap: var(--hub-space-3); padding: var(--hub-space-5); border: 1px solid color-mix(in srgb, var(--hub-warning) 42%, var(--hub-border)); border-radius: var(--hub-radius-lg); background: var(--hub-warning-soft); color: var(--hub-warning); }
 @media (max-width: 1023px) { .hub-product-form-grid { grid-template-columns: 1fr; } .hub-variation-row { grid-template-columns: var(--hub-control-height-lg) repeat(2, minmax(0, 1fr)) var(--hub-control-height-md); } }
 @media (max-width: 639px) { .hub-product-form-card { padding: var(--hub-space-4); } .hub-product-form-header { align-items: stretch; flex-direction: column; } .hub-product-form-header > .hub-button { width: 100%; } .hub-product-field-grid, .hub-variation-row { grid-template-columns: 1fr; } .hub-product-field-full { grid-column: auto; } .hub-variation-image-control, .hub-variation-row > .hub-icon-button { width: 100%; } }
+
+/* Pedidos: integração do módulo aos padrões compartilhados. */
+.hub-metric-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  margin-bottom: var(--hub-space-5);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-xl);
+  background: var(--hub-border);
+}
+
+.hub-metric-skeleton-grid > .hub-skeleton {
+  min-height: 10rem;
+  border-radius: 0;
+}
+
+.hub-orders-filter-row > .hub-section-tabs {
+  flex: 1 1 24rem;
+  min-width: 0;
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+
+.hub-orders-filter-row > .hub-section-tabs .hub-section-tabs-list {
+  min-width: 0;
+  padding-bottom: 0;
+}
+
+.hub-orders-date-filters .hub-filter-select {
+  min-width: 11rem;
+}
+
+@media (max-width: 1023px) {
+  .hub-orders-filter-row > .hub-section-tabs {
+    width: 100%;
+  }
+
+  .hub-metric-skeleton-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hub-metric-skeleton-grid > .hub-skeleton:nth-child(n + 3) {
+    border-top: 1px solid var(--hub-border);
+  }
+}
+
+@media (max-width: 639px) {
+  .hub-orders-date-filters,
+  .hub-orders-date-filters .hub-filter-select {
+    width: 100%;
+  }
+
+  .hub-orders-date-filters > label {
+    flex: 1 1 10rem;
+  }
+}

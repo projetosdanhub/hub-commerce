@@ -1,6 +1,6 @@
 # Design System do painel
 
-Este diretório é a fonte canônica dos controles reutilizáveis do painel administrativo. Antes de criar uma tela ou alterar uma existente, leia `AGENTS.md`, as regras `.ai/rules/05-frontend-react.md`, `.ai/rules/06-design-system.md` e `.ai/rules/12-ui-ux-seo-and-mobile.md`.
+Este diretório é a fonte canônica dos controles reutilizáveis do painel administrativo. Antes de criar uma tela ou alterar uma existente, leia `AGENTS.md`, as regras `.ai/rules/05-frontend-react.md`, `.ai/rules/06-design-system.md`, `.ai/rules/12-ui-ux-seo-and-mobile.md` e `.ai/rules/13-ui-agent-playbook.md`.
 
 ## Uso obrigatório
 
