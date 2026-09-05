@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { IconButton } from '../primitives/IconButton';
 
@@ -14,6 +14,7 @@ export const ExpandableSearch = ({
   collapseDelay = 2000,
   className = '',
 }) => {
+  const inputId = useId();
   const inputRef = useRef(null);
   const wasFilledRef = useRef(Boolean(String(value || '').trim()));
   const [expanded, setExpanded] = useState(Boolean(String(value || '').trim()));
@@ -54,7 +55,7 @@ export const ExpandableSearch = ({
         label={expanded && value ? 'Limpar busca' : expanded ? 'Fechar ' + label.toLowerCase() : label}
         tooltip={expanded && value ? 'Limpar busca' : expanded ? 'A busca recolhe após dois segundos sem texto' : label}
         aria-expanded={expanded}
-        aria-controls="hub-expandable-search-input"
+        aria-controls={inputId}
         onClick={() => {
           if (expanded) {
             if (value) clear();
@@ -65,11 +66,11 @@ export const ExpandableSearch = ({
           expand();
         }}
       />
-      <label className="hub-expandable-search-field" htmlFor="hub-expandable-search-input">
+      <label className="hub-expandable-search-field" htmlFor={inputId}>
         <span className="sr-only">{label}</span>
         <input
           ref={inputRef}
-          id="hub-expandable-search-input"
+          id={inputId}
           type="search"
           value={value}
           onChange={(event) => onChange(event.target.value)}
