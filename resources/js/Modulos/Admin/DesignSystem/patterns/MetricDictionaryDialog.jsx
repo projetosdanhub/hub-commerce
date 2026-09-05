@@ -1,16 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { BookOpen, X } from 'lucide-react';
 import { IconButton } from '../primitives/IconButton';
 import { ModalDialog } from './ModalDialog';
 
 export const MetricDictionaryDialog = ({ metrics, onClose }) => {
   const [activeId, setActiveId] = useState(() => metrics[0]?.id || '');
-
-  useEffect(() => {
-    if (!metrics.some((metric) => metric.id === activeId)) {
-      setActiveId(metrics[0]?.id || '');
-    }
-  }, [activeId, metrics]);
 
   const activeMetric = metrics.find((metric) => metric.id === activeId) || metrics[0];
 
