@@ -235,10 +235,10 @@ Copie este bloco para cada handoff relevante:
 
 ### 2026-09-05 — Codex — UI-021, continuação
 - Objetivo e escopo: concluir a fundação de interações globais de Pedidos e registrar a regra arquitetural de estoque pós-reembolso, sem alterar domínio de pedidos/estoque.
-- Branch e commit: `ui/orders-refinement-block-1`, código em `0ca3f16ebf1974469063a734d9e9e93cb92c8a97`; documentação e board neste commit.
-- Task board: UI-021 [~] — implementação concluída, ainda requer execução direcionada, build, revisão visual e CI. CAT-009 [ ] foi criado para o estoque de reembolso/quarentena; UI-022 inclui sua integração futura.
+- Branch e commit: `ui/orders-refinement-block-1`, código em `0ca3f16ebf1974469063a734d9e9e93cb92c8a97`; documentação e board até `bf6ac1057f2b2e26000546e1894537b3e8d0e343`.
+- Task board: UI-021 [~] — automação concluída; homologação visual em navegador ainda pendente. CAT-009 [ ] foi criado para o estoque de reembolso/quarentena; UI-022 inclui sua integração futura.
 - Arquivos alterados: controles de tooltip/busca, lifecycle de diálogo, shells desktop/mobile, preferência de aparência, teste Node, AGENTS, regra operacional, README do DesignSystem, board e política de inventário.
 - Contratos preservados: nenhuma transição de pedido, cálculo financeiro, crédito/cashback, storage, API, certificado ou saldo de estoque foi alterado. Preferência de tema continua local e não contém dado de negócio.
-- Evidências: teste Node ampliado para debounce, scroll lock, parsing de tokens de motion e regra de tema; ainda não executado neste commit.
+- Evidências: [Tests #243](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033758), [E2E #61](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033728) e [Security #61](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033769) concluíram com sucesso na PR #43. Tests executou `npm run test:ui`, incluindo `npm run test:ui:interactions`, e o build.
 - Riscos, bloqueios e itens não verificados: a regra de estoque não foi implementada porque o serviço transacional CAT-003 e o estoque de reembolso CAT-009 ainda não existem. Reembolso financeiro sem recebimento físico não pode criar saldo. Outros diálogos legados continuam fora do lifecycle até seus blocos.
-- Próxima ação única: executar `npm run test:ui:interactions`; se verde, abrir PR de UI-021 e acompanhar Tests, E2E Tests e Security Scans antes de merge.
+- Próxima ação única: acompanhar os checks da atualização documental na PR #43 e fazer merge somente se permanecerem verdes; a homologação visual segue registrada como pendência.
