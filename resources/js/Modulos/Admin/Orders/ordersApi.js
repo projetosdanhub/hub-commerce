@@ -60,6 +60,12 @@ export const submitManualOrderAction = async ({ orderId, action, fields = {} }) 
 
   Object.entries(fields).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '') return;
+
+    if (Array.isArray(value)) {
+      value.forEach((file) => body.append(key + '[]', file));
+      return;
+    }
+
     body.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value);
   });
 
