@@ -401,7 +401,14 @@ export const OrderActionDialog = ({
   const Icon = copy.icon;
 
   return (
-    <div className="hub-order-dialog-backdrop" data-closing={closing} role="presentation">
+    <div
+      className="hub-order-dialog-backdrop"
+      data-closing={closing}
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.currentTarget === event.target) requestClose();
+      }}
+    >
       <div ref={dialogRef} className="hub-order-dialog" role="dialog" aria-modal="true" aria-labelledby="order-action-title" aria-describedby="order-action-description" tabIndex={-1}>
         <header>
           <DialogIcon Icon={Icon} tone={copy.tone} />

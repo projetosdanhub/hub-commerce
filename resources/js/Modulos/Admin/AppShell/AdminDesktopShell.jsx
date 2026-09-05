@@ -5,8 +5,8 @@ import { useLocation } from 'react-router-dom';
 import { AdminNavigation } from './AdminNavigation';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
-import { Tooltip } from '../DesignSystem/primitives/Tooltip';
 import { useAdminPageRefresh } from '../DesignSystem/patterns/GlobalPageRefresh';
+import { readMotionDurationMs } from '../DesignSystem/patterns/interactionLifecycle';
 
 const SIDEBAR_STORAGE_KEY = 'hub_admin_sidebar_collapsed';
 
@@ -15,6 +15,7 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute, theme, onTo
   const [collapsed, setCollapsed] = useState(() => window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true');
   const shouldReduceMotion = useReducedMotion();
   const { isRefreshing, refresh } = useAdminPageRefresh();
+  const routeMotionDuration = readMotionDurationMs('--hub-motion-normal', document.documentElement) / 1000;
 
   useEffect(() => {
     window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(collapsed));
@@ -36,17 +37,15 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute, theme, onTo
         </div>
 
         <footer className="hub-sidebar-footer">
-          <Tooltip content="Abrir vitrine em uma nova aba">
-            <a
-              className="hub-sidebar-store"
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <CircleUserRound aria-hidden="true" size={16} />
-              <span className="hub-sidebar-store-label">Acessar vitrine</span>
-            </a>
-          </Tooltip>
+          <a
+            className="hub-sidebar-store"
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <CircleUserRound aria-hidden="true" size={16} />
+            <span className="hub-sidebar-store-label">Acessar vitrine</span>
+          </a>
           <IconButton
             icon={collapsed ? PanelLeftOpen : PanelLeftClose}
             label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
@@ -78,7 +77,7 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute, theme, onTo
           className="hub-admin-content"
           initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: shouldReduceMotion ? 0 : 0.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: shouldReduceMotion ? 0 : routeMotionDuration, ease: [0.16, 1, 0.3, 1] }}
         >
           {children}
         </motion.main>

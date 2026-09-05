@@ -1,5 +1,22 @@
 export const SEARCH_DEBOUNCE_MS = 350;
 
+export const cssDurationToMilliseconds = (value, fallback = 0) => {
+  const normalized = String(value || '').trim();
+  const numeric = Number.parseFloat(normalized);
+
+  if (!Number.isFinite(numeric)) return fallback;
+  if (normalized.endsWith('ms')) return numeric;
+  if (normalized.endsWith('s')) return numeric * 1000;
+
+  return fallback;
+};
+
+export const readMotionDurationMs = (token, element, fallback = 0) => {
+  if (typeof window === 'undefined' || !element) return fallback;
+
+  return cssDurationToMilliseconds(window.getComputedStyle(element).getPropertyValue(token), fallback);
+};
+
 export const createDebouncedTask = (callback, delay = SEARCH_DEBOUNCE_MS) => {
   let timer;
   const cancel = () => {

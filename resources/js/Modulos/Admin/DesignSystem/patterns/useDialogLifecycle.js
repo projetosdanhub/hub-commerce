@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { lockDocumentScroll } from './interactionLifecycle';
+import { lockDocumentScroll, readMotionDurationMs } from './interactionLifecycle';
 
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -14,8 +14,7 @@ export const useDialogLifecycle = ({ enabled = true, onClose, busy = false }) =>
 
   const requestClose = useCallback(() => {
     if (!dialogRef.current || busyRef.current || timerRef.current !== null) return;
-    const duration = getComputedStyle(dialogRef.current).getPropertyValue('--hub-motion-fast').trim();
-    const milliseconds = parseFloat(duration) * (duration.endsWith('ms') ? 1 : 1000) || 0;
+    const milliseconds = readMotionDurationMs('--hub-motion-fast', dialogRef.current);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setClosing(true);
     timerRef.current = window.setTimeout(() => {

@@ -8,6 +8,21 @@ import { fetchAdminDashboard } from './AdminDashboard';
 import { AdminDesktopShell } from './AppShell/AdminDesktopShell';
 import { AdminMobileShell } from './AppShell/AdminMobileShell';
 import { AdminPageRefreshProvider } from './DesignSystem/patterns/GlobalPageRefresh';
+import { resolveInitialAdminTheme } from './DesignSystem/patterns/appearancePreference';
+
+const getInitialAdminTheme = () => {
+  try {
+    const matchMedia = typeof window.matchMedia === 'function' ? window.matchMedia.bind(window) : null;
+
+    return resolveInitialAdminTheme({
+      storedTheme: window.localStorage.getItem('hub_admin_theme'),
+      viewportIsMobile: Boolean(matchMedia?.('(max-width: 1023px)').matches),
+      prefersLight: Boolean(matchMedia?.('(prefers-color-scheme: light)').matches),
+    });
+  } catch {
+    return 'dark';
+  }
+};
 
 const useMobileShell = () => {
   const query = '(max-width: 1023px)';
@@ -28,10 +43,7 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isMobile = useMobileShell();
-  const [theme, setTheme] = useState(() => {
-    try { return localStorage.getItem('hub_admin_theme') === 'light' ? 'light' : 'dark'; }
-    catch { return 'dark'; }
-  });
+  const [theme, setTheme] = useState(getInitialAdminTheme);
   const toggleTheme = () => setTheme((current) => current === 'dark' ? 'light' : 'dark');
   useEffect(() => {
     try { localStorage.setItem('hub_admin_theme', theme); } catch { /* Theme still works for this session. */ }

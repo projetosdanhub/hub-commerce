@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDebouncedTask, lockDocumentScroll, SEARCH_DEBOUNCE_MS } from '../../resources/js/Modulos/Admin/DesignSystem/patterns/interactionLifecycle.js';
+import { createDebouncedTask, cssDurationToMilliseconds, lockDocumentScroll, SEARCH_DEBOUNCE_MS } from '../../resources/js/Modulos/Admin/DesignSystem/patterns/interactionLifecycle.js';
+import { resolveInitialAdminTheme } from '../../resources/js/Modulos/Admin/DesignSystem/patterns/appearancePreference.js';
 
 test('typing a burst commits only the latest search after the quiet period', (context) => {
   context.mock.timers.enable({ apis: ['setTimeout'] });
@@ -53,4 +54,17 @@ test('closing does not remove a scroll lock owned by another caller', () => {
   const close = lockDocumentScroll(doc);
   close();
   assert.equal(doc.documentElement.classList.contains('hub-modal-open'), true);
+});
+
+
+test('motion durations accept the design token units', () => {
+  assert.equal(cssDurationToMilliseconds('120ms'), 120);
+  assert.equal(cssDurationToMilliseconds('0.2s'), 200);
+  assert.equal(cssDurationToMilliseconds('invalid', 75), 75);
+});
+
+test('appearance honors a saved choice, desktop system preference and mobile dark default', () => {
+  assert.equal(resolveInitialAdminTheme({ storedTheme: 'light', viewportIsMobile: true }), 'light');
+  assert.equal(resolveInitialAdminTheme({ prefersLight: true }), 'light');
+  assert.equal(resolveInitialAdminTheme({ viewportIsMobile: true, prefersLight: true }), 'dark');
 });

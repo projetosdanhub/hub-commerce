@@ -1,6 +1,5 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
-import { Tooltip } from './Tooltip';
 
 const variants = {
   neutral: 'hub-icon-button-neutral',
@@ -30,6 +29,7 @@ export const IconButton = React.forwardRef(({
       ref={ref}
       type={type}
       aria-label={label}
+      aria-description={tooltip && tooltip !== label ? tooltip : undefined}
       aria-busy={loading || undefined}
       disabled={disabled || loading}
       className={`hub-icon-button ${variants[variant]} ${sizes[size]} ${className}`}
@@ -41,7 +41,7 @@ export const IconButton = React.forwardRef(({
     </button>
   );
 
-  return <Tooltip content={tooltip}>{control}</Tooltip>;
+  return control;
 });
 
 IconButton.displayName = 'IconButton';
