@@ -153,6 +153,9 @@ class OrderController extends Controller
                 ->map(fn (string $path, int $index) => [
                     'id' => $index,
                     'name' => 'Comprovante de reembolso '.($index + 1),
+                    'kind' => in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'], true)
+                        ? 'image'
+                        : 'document',
                     'url' => route('admin.orders.refund-receipts.show', [
                         'id' => $order->getKey(),
                         'receiptIndex' => $index,
