@@ -29,6 +29,16 @@ export const fetchOrderMetrics = async () => {
   return response.data;
 };
 
+export const fetchOrderMetricPreferences = async () => {
+  const response = await api.get('/admin/orders/metric-preferences');
+  return response.data;
+};
+
+export const updateOrderMetricPreferences = async (preferences) => {
+  const response = await api.put('/admin/orders/metric-preferences', preferences);
+  return response.data;
+};
+
 export const fetchShippingSupport = async () => {
   const [carriers, packages, settings] = await Promise.all([
     optionalData(() => api.get('/admin/carriers'), []),
