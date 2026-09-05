@@ -191,7 +191,8 @@ const AdminPixelsContent = () => {
         setIsSaving(true);
         try {
             await api.post('/admin/tracking/settings', { credentials: credenciais, settings: eventosNativos });
-            showToast('Alterações salvas com sucesso na arquitetura Enterprise!');
+            await carregarTudo(dashDateRange, activeProvider, true, false);
+            showToast('Alterações salvas e sincronizadas com o servidor.');
         } catch (error) { 
             showToast('Erro ao salvar as configurações.', 'error'); 
         } finally { setIsSaving(false); }
@@ -242,8 +243,8 @@ const AdminPixelsContent = () => {
     const handleToggleAcionador = async (id, currentStatus) => {
         try {
             await api.put(`/admin/tracking/triggers/${id}`, { status: !currentStatus });
-            setAcionadores(prev => prev.map(a => a.id === id ? { ...a, status: !currentStatus } : a));
-            showToast('Status atualizado.');
+            await carregarTudo(dashDateRange, activeProvider, true, false);
+            showToast('Status atualizado e sincronizado.');
         } catch (error) {
             showToast('Erro ao atualizar status.', 'error');
         }
@@ -253,8 +254,8 @@ const AdminPixelsContent = () => {
         if (!window.confirm('Tem certeza que deseja excluir esta regra? Esta ação é irreversível.')) return;
         try {
             await api.delete(`/admin/tracking/triggers/${id}`);
-            setAcionadores(prev => prev.filter(a => a.id !== id));
-            showToast('Regra excluída.');
+            await carregarTudo(dashDateRange, activeProvider, true, false);
+            showToast('Regra excluída e lista atualizada.');
         } catch (error) {
             showToast('Erro ao excluir regra.', 'error');
         }
@@ -266,7 +267,7 @@ const AdminPixelsContent = () => {
     const indiceInicial = (paginaAtual - 1) * itensPorPagina;
     const acionadoresPaginados = acionadores.slice(indiceInicial, indiceInicial + itensPorPagina);
     const totalPaginas = Math.ceil(acionadores.length / itensPorPagina);
-    const isAllNativosAtivos = Object.values(eventosNativos).every(v => v === true);
+    const isAllNativosAtivos = Object.keys(eventosNativos).length > 0 && Object.values(eventosNativos).every(v => v === true);
 
     const toggleAllNativos = (forceValue) => {
         const novos = { ...eventosNativos };
