@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   ClipboardCheck,
@@ -250,6 +250,8 @@ export const OrderActionDialog = ({
   onCancelCart,
 }) => {
   const copy = ACTION_COPY[action];
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
   const [form, setForm] = useState(() => buildInitialState(order, shipping));
   const [rates, setRates] = useState([]);
   const [calculating, setCalculating] = useState(false);
@@ -258,6 +260,49 @@ export const OrderActionDialog = ({
   const update = (changes) => setForm((current) => ({ ...current, ...changes }));
   const requiresReason = useMemo(() => ['PAGAR', 'CANCELAR', 'INICIAR_REEMBOLSO', 'PROCESSAR_REEMBOLSO'].includes(action), [action]);
   const requiresFile = useMemo(() => ['PAGAR', 'ENTREGAR', 'PROCESSAR_REEMBOLSO'].includes(action), [action]);
+
+  useEffect(() => {
+    if (!copy || !order) return undefined;
+
+    const previousFocus = document.activeElement;
+    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
+    const selector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const focusable = Array.from(dialogRef.current?.querySelectorAll(selector) ?? []);
+      if (!focusable.length) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousFocus instanceof HTMLElement) previousFocus.focus();
+    };
+  }, [action, copy, onClose, order]);
 
   if (!copy || !order) return null;
 
@@ -335,14 +380,14 @@ export const OrderActionDialog = ({
 
   return (
     <div className="hub-order-dialog-backdrop" role="presentation">
-      <div className="hub-order-dialog" role="dialog" aria-modal="true" aria-labelledby="order-action-title">
+      <div ref={dialogRef} className="hub-order-dialog" role="dialog" aria-modal="true" aria-labelledby="order-action-title" aria-describedby="order-action-description">
         <header>
           <DialogIcon Icon={Icon} tone={copy.tone} />
           <div>
             <h2 id="order-action-title">{copy.title}</h2>
-            <p>{copy.description}</p>
+            <p id="order-action-description">{copy.description}</p>
           </div>
-          <IconButton className="hub-order-dialog-close" icon={X} label="Fechar" onClick={onClose} />
+          <IconButton ref={closeButtonRef} className="hub-order-dialog-close" icon={X} label="Fechar" onClick={onClose} />
         </header>
 
         <form onSubmit={submit}>

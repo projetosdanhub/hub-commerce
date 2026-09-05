@@ -205,7 +205,12 @@ export default function AdminOrders() {
         )}
       />
       {notice ? <p className="hub-orders-notice" data-tone={notice.tone} role="status">{notice.message}</p> : null}
-      <OrderMetrics metrics={metricsQuery.data} />
+      <OrderMetrics
+        metrics={metricsQuery.data}
+        loading={metricsQuery.isLoading}
+        error={metricsQuery.isError}
+        onRetry={() => metricsQuery.refetch()}
+      />
       <OrdersList
         orders={orders}
         filters={filters}

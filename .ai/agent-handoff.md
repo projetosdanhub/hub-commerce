@@ -158,3 +158,12 @@ Copie este bloco para cada handoff relevante:
 - Evidências: as abas usam primitives/tokens, a prévia de busca depende de domínio canônico real e não simula dados. O envio de `variaveis_json` é sempre explícito, permitindo persistir a remoção da última variação.
 - Riscos, bloqueios e itens não verificados: a prévia de SEO permanece indisponível até existir domínio canônico tenant-scoped; não há nova UI de notificações sem contrato de backend.
 - Próxima ação única: aguardar os checks de PR e integrar na `main`; iniciar Pedidos na sequência.
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: iniciar a padronização visual de Pedidos e criar o playbook obrigatório para IAs que alteram UI.
+- Branch e commit: `ui/orders-interface-standards`; validação pendente deste commit.
+- Task board: UI-016 foi iniciado; UI-005/UI-006/UI-011/UI-013/UI-014 permanecem [~]. UI-015 continua [!] por não haver contrato tenant-scoped de notificações.
+- Arquivos alterados: lista e métricas de pedidos, acessibilidade do diálogo de ações, DesignSystem, regras e documentação de continuidade.
+- Evidências: a lista continua usando as queries existentes, aplica filtros reais de status e período, preserva tabela desktop e cartões mobile. Métricas usam `MetricCard` e `Skeleton`; enquanto a API responde, nenhum zero estimado é mostrado. O diálogo controla foco, Escape e retorno de foco.
+- Riscos, bloqueios e itens não verificados: o contrato atual de pedidos continua sem evidência de isolamento tenant-scoped; isso é uma pendência de domínio fora desta alteração visual. Notificações persistentes não foram criadas nem simuladas.
+- Próxima ação única: abrir PR, validar Tests, E2E Tests e Security Scans; só então integrar e continuar para o próximo menu.

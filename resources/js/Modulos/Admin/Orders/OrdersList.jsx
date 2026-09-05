@@ -5,12 +5,14 @@ import {
   Eye,
   PackageOpen,
   Search,
-  SlidersHorizontal,
   X,
 } from 'lucide-react';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
+import { FilterSelect } from '../DesignSystem/primitives/FilterSelect';
+import { Skeleton } from '../DesignSystem/primitives/Skeleton';
+import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import {
   formatCurrency,
   formatOrderDate,
@@ -18,6 +20,55 @@ import {
   getOrderStatus,
   ORDER_TABS,
 } from './orderUtils';
+
+const DATE_PERIODS = [
+  { value: 'ALL', label: 'Todo o período' },
+  { value: 'TODAY', label: 'Hoje' },
+  { value: 'LAST_7', label: 'Últimos 7 dias' },
+  { value: 'LAST_30', label: 'Últimos 30 dias' },
+  { value: 'MONTH', label: 'Este mês' },
+];
+
+const toDateInputValue = (date) => [
+  date.getFullYear(),
+  String(date.getMonth() + 1).padStart(2, '0'),
+  String(date.getDate()).padStart(2, '0'),
+].join('-');
+
+const getDateRange = (period) => {
+  if (period === 'ALL') return { startDate: '', endDate: '' };
+
+  const today = new Date();
+  const start = new Date(today);
+
+  if (period === 'LAST_7') start.setDate(today.getDate() - 6);
+  if (period === 'LAST_30') start.setDate(today.getDate() - 29);
+  if (period === 'MONTH') start.setDate(1);
+
+  return {
+    startDate: toDateInputValue(start),
+    endDate: toDateInputValue(today),
+  };
+};
+
+const getSelectedPeriod = ({ startDate, endDate }) => {
+  if (!startDate && !endDate) return 'ALL';
+
+  const matchedPeriod = DATE_PERIODS.find(({ value }) => {
+    if (value === 'ALL') return false;
+    const range = getDateRange(value);
+    return range.startDate === startDate && range.endDate === endDate;
+  });
+
+  return matchedPeriod?.value || 'CUSTOM';
+};
+
+const OrdersLoading = () => (
+  <div className="hub-orders-loading" aria-live="polite" role="status">
+    <p className="sr-only">Carregando pedidos.</p>
+    {Array.from({ length: 3 }, (_, index) => <Skeleton key={`order-row-${index}`} />)}
+  </div>
+);
 
 const Customer = ({ order }) => (
   <span className="hub-order-customer">
@@ -136,23 +187,24 @@ export const OrdersList = ({
       </header>
 
       <div className="hub-orders-filter-row">
-        <div className="hub-orders-tabs" role="tablist" aria-label="Filtrar pedidos por status">
-          {ORDER_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              role="tab"
-              aria-selected={filters.status === tab.value}
-              className="hub-orders-tab"
-              data-active={filters.status === tab.value}
-              onClick={() => onChange({ status: tab.value, page: 1 })}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <SectionTabs
+          ariaLabel="Filtrar pedidos por status"
+          items={ORDER_TABS}
+          value={filters.status}
+          onChange={(status) => onChange({ status, page: 1 })}
+        />
         <div className="hub-orders-date-filters">
-          <SlidersHorizontal aria-hidden="true" size={16} />
+          <FilterSelect
+            label="Filtro por período"
+            value={getSelectedPeriod(filters)}
+            onChange={(event) => {
+              const period = event.target.value;
+              if (period !== 'CUSTOM') onChange({ ...getDateRange(period), page: 1 });
+            }}
+          >
+            {DATE_PERIODS.map((period) => <option key={period.value} value={period.value}>{period.label}</option>)}
+            <option value="CUSTOM" disabled>Datas personalizadas</option>
+          </FilterSelect>
           <label>De
             <input
               type="date"
@@ -172,7 +224,7 @@ export const OrdersList = ({
       </div>
 
       {loading && !orders.length ? (
-        <div className="hub-orders-loading" aria-label="Carregando pedidos"><span /><span /><span /></div>
+        <OrdersLoading />
       ) : orders.length ? (
         <>
           <DesktopTable orders={orders} onOpen={onOpen} />
