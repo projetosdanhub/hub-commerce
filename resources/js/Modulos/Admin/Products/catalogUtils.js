@@ -16,7 +16,12 @@ export const stockState = (product = {}) => {
   const quantity = Number(product.quantidade_estoque) || 0;
   if (product.pre_venda) return { label: 'Sob encomenda', variant: 'special' };
   if (quantity === 0) return { label: 'Esgotado', variant: 'danger' };
-  if (quantity <= (Number(product.alerta_estoque) || 5)) return { label: quantity + ' baixo', variant: 'warning' };
+
+  const hasConfiguredAlert = product.alerta_estoque !== null
+    && product.alerta_estoque !== undefined
+    && product.alerta_estoque !== '';
+  if (hasConfiguredAlert && quantity <= Number(product.alerta_estoque)) return { label: quantity + ' baixo', variant: 'warning' };
+
   return { label: quantity + ' em estoque', variant: 'success' };
 };
 
