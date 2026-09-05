@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Support\Http\Pagination;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\AdminMetricPreference;
 use App\Models\Order;
 use App\Models\VipLevel;
 use App\Services\OrderStatusTransitionService;
@@ -12,12 +13,76 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
     public function __construct(
         private readonly OrderStatusTransitionService $statusTransitions,
     ) {
+    }
+
+    private const ORDER_METRIC_IDS = [
+        'valid-revenue',
+        'awaiting-shipment',
+        'pix-confirmed',
+        'refund-review',
+    ];
+
+    public function metricPreferences(Request $request)
+    {
+        $preferences = AdminMetricPreference::query()
+            ->where('user_id', $request->user()->getKey())
+            ->where('context', 'orders')
+            ->value('preferences');
+
+        return response()->json($preferences ?? [
+            'order' => self::ORDER_METRIC_IDS,
+            'hidden' => [],
+        ]);
+    }
+
+    public function updateMetricPreferences(Request $request)
+    {
+        $validated = $request->validate([
+            'order' => ['required', 'array', 'size:'.count(self::ORDER_METRIC_IDS)],
+            'order.*' => ['required', 'string', Rule::in(self::ORDER_METRIC_IDS)],
+            'hidden' => ['present', 'array'],
+            'hidden.*' => ['required', 'string', Rule::in(self::ORDER_METRIC_IDS)],
+        ]);
+
+        $order = array_values(array_unique($validated['order']));
+        $hidden = array_values(array_unique($validated['hidden']));
+
+        if (
+            count($order) !== count(self::ORDER_METRIC_IDS)
+            || array_diff(self::ORDER_METRIC_IDS, $order)
+            || array_diff($order, self::ORDER_METRIC_IDS)
+        ) {
+            throw ValidationException::withMessages([
+                'order' => 'Informe cada métrica uma única vez.',
+            ]);
+        }
+
+        if (count(array_diff($order, $hidden)) === 0) {
+            throw ValidationException::withMessages([
+                'hidden' => 'Mantenha ao menos uma métrica visível no painel.',
+            ]);
+        }
+
+        $preferences = [
+            'order' => $order,
+            'hidden' => $hidden,
+        ];
+
+        $preference = AdminMetricPreference::query()->firstOrNew([
+            'user_id' => $request->user()->getKey(),
+            'context' => 'orders',
+        ]);
+        $preference->preferences = $preferences;
+        $preference->save();
+
+        return response()->json($preferences);
     }
 
     public function index(Request $request)
