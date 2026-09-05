@@ -61,3 +61,12 @@ Em caso de divergência, a solicitação explícita do responsável, `AGENTS.md`
 2. Executar a matriz de testes proporcional ao risco em `09-testing-and-quality.md`.
 3. Atualizar o item no board sem marcar `[x]` antes de existir evidência verificável.
 4. Atualizar `.ai/agent-handoff.md` com branch, escopo, contratos preservados, testes/evidências, riscos e próxima ação única.
+
+
+## Padrões de interação globais
+
+- O refresh manual existe uma única vez no topo do shell. Ele deve atualizar as queries ativas da rota e qualquer aba interna registrada; não adicionar “Atualizar dados” por página, card ou detalhe.
+- Filtros de período ficam junto da busca principal, nunca dentro da trilha de abas de status. Para datas, usar `DateRangeFilter`: Todo o período, Hoje, Últimos 7 dias, Este mês, Último mês e Personalizado com datas inicial/final e ação Filtrar.
+- Popovers, tooltips e menus precisam usar a superfície escura translúcida do DesignSystem, z-index de token e Escape/fechamento fora quando aplicável. Não podem ser cortados por `overflow` ou contêiner flex.
+- Textos variáveis em tabela, métrica, cartão ou campo usam truncamento controlado e revelam o conteúdo completo por tooltip, sem ampliar nem causar scroll horizontal na página.
+- `SectionTabs` é o padrão dos submenus por status. Preserve contraste de item ativo, foco e rolagem interna, mas não misture filtros de período com as abas.
