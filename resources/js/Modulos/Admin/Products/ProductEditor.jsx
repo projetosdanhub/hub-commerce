@@ -4,16 +4,16 @@ import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
-import AbaFiscal from '../Produtos/Editor/abas/AbaFiscal';
-import AbaLogistica from '../Produtos/Editor/abas/AbaLogistica';
-import AbaSeo from '../Produtos/Editor/abas/AbaSeo';
-import AbaVariaveis from '../Produtos/Editor/abas/AbaVariaveis';
 import { toProductEditorModel } from '../Produtos/produtoContract';
 import { saveProduct, validateProductSkus } from './catalogApi';
+import { ProductFiscalForm } from './ProductFiscalForm';
 import { ProductGeneralForm } from './ProductGeneralForm';
 import { ProductInventoryForm } from './ProductInventoryForm';
+import { ProductLogisticsForm } from './ProductLogisticsForm';
 import { ProductSpecificationForm } from './ProductSpecificationForm';
+import { ProductVariantsForm } from './ProductVariantsForm';
 import { ProductMediaForm } from './ProductMediaForm';
+import { ProductSeoForm } from './ProductSeoForm';
 import { errorMessage, productStatus } from './catalogUtils';
 
 const tabs = [
@@ -33,6 +33,15 @@ const validationMessage = (error) => {
   const first = Object.values(messages).flat()[0];
   return first || errorMessage(error, 'Não foi possível salvar o produto.');
 };
+
+const hasIncompleteVariation = (variations = []) => variations.some((item) => (
+  !String(item.nome || '').trim()
+  || item.estoque === ''
+  || item.estoque === null
+  || item.estoque === undefined
+  || !Number.isInteger(Number(item.estoque))
+  || Number(item.estoque) < 0
+));
 
 export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }) => {
   const [product, setProduct] = useState(productOriginal);
@@ -65,6 +74,12 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
     if (hasIncompleteSpecification) {
       setTab('FICHA');
       setNotice({ tone: 'error', text: 'Preencha ou remova os atributos incompletos da ficha técnica antes de salvar.' });
+      return;
+    }
+
+    if (hasIncompleteVariation(product.variaveis)) {
+      setTab('VARIACOES');
+      setNotice({ tone: 'error', text: 'Preencha a opção e o estoque de cada variação antes de salvar.' });
       return;
     }
 
@@ -109,10 +124,10 @@ export const ProductEditor = ({ productOriginal, categories, onBack, onSuccess }
     FICHA: <ProductSpecificationForm product={product} onChange={setProduct} />,
     ESTOQUE: <ProductInventoryForm product={product} onChange={setProduct} />,
     MIDIA: <ProductMediaForm product={product} onChange={setProduct} />,
-    VARIACOES: <AbaVariaveis p={product} setP={setProduct} />,
-    FISCAL: <AbaFiscal p={product} setP={setProduct} />,
-    LOGISTICA: <AbaLogistica p={product} setP={setProduct} />,
-    SEO: <AbaSeo p={product} setP={setProduct} />,
+    VARIACOES: <ProductVariantsForm product={product} onChange={setProduct} />,
+    FISCAL: <ProductFiscalForm product={product} onChange={setProduct} />,
+    LOGISTICA: <ProductLogisticsForm product={product} onChange={setProduct} />,
+    SEO: <ProductSeoForm product={product} onChange={setProduct} />,
   };
 
   return <section className="hub-catalog-editor">
