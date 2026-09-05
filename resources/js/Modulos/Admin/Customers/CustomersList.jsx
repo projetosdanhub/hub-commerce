@@ -1,9 +1,34 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Eye, Search, SlidersHorizontal, UsersRound, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Search, UsersRound, X } from 'lucide-react';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
+import { FilterSelect } from '../DesignSystem/primitives/FilterSelect';
+import { Skeleton } from '../DesignSystem/primitives/Skeleton';
+import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import { CUSTOMER_TABS, formatCurrency, formatDate, getInitials, getStatus } from './customerUtils';
+
+const BIRTH_MONTHS = [
+  { value: '1', label: 'Janeiro' },
+  { value: '2', label: 'Fevereiro' },
+  { value: '3', label: 'Março' },
+  { value: '4', label: 'Abril' },
+  { value: '5', label: 'Maio' },
+  { value: '6', label: 'Junho' },
+  { value: '7', label: 'Julho' },
+  { value: '8', label: 'Agosto' },
+  { value: '9', label: 'Setembro' },
+  { value: '10', label: 'Outubro' },
+  { value: '11', label: 'Novembro' },
+  { value: '12', label: 'Dezembro' },
+];
+
+const CustomersLoading = () => (
+  <div className="hub-orders-loading" aria-live="polite" role="status">
+    <p className="sr-only">Carregando clientes.</p>
+    {Array.from({ length: 3 }, (_, index) => <Skeleton key={`customer-row-${index}`} />)}
+  </div>
+);
 
 const CustomerIdentity = ({ customer }) => (
   <span className="hub-order-customer">
@@ -57,17 +82,25 @@ export const CustomersList = ({ customers, filters, pagination, loading, onChang
       </label>
     </header>
     <div className="hub-orders-filter-row">
-      <div className="hub-orders-tabs" role="tablist" aria-label="Filtrar clientes por status">
-        {CUSTOMER_TABS.map((tab) => <button key={tab.value} type="button" role="tab" aria-selected={filters.status === tab.value} className="hub-orders-tab" data-active={filters.status === tab.value} onClick={() => onChange({ status: tab.value, page: 1 })}>{tab.label}</button>)}
-      </div>
-      <div className="hub-orders-date-filters"><SlidersHorizontal aria-hidden="true" size={16} />
-        <label>Aniversário<select value={filters.birthMonth} onChange={(event) => onChange({ birthMonth: event.target.value, page: 1 })}>
-          <option value="TODOS">Todos</option>{Array.from({ length: 12 }, (_, index) => <option key={index + 1} value={index + 1}>{String(index + 1).padStart(2, '0')}</option>)}
-        </select></label>
+      <SectionTabs
+        ariaLabel="Filtrar clientes por status"
+        items={CUSTOMER_TABS}
+        value={filters.status}
+        onChange={(status) => onChange({ status, page: 1 })}
+      />
+      <div className="hub-orders-date-filters">
+        <FilterSelect
+          label="Filtrar por mês de aniversário"
+          value={filters.birthMonth}
+          onChange={(event) => onChange({ birthMonth: event.target.value, page: 1 })}
+        >
+          <option value="TODOS">Todos os aniversários</option>
+          {BIRTH_MONTHS.map((month) => <option key={month.value} value={month.value}>{month.label}</option>)}
+        </FilterSelect>
         {hasFilters ? <Button size="sm" variant="ghost" onClick={onClear}>Limpar</Button> : null}
       </div>
     </div>
-    {loading && !customers.length ? <div className="hub-orders-loading" aria-label="Carregando clientes"><span /><span /><span /></div> : customers.length ? <><DesktopRows customers={customers} onOpen={onOpen} /><MobileRows customers={customers} onOpen={onOpen} /></> : <div className="hub-empty-state"><div><UsersRound aria-hidden="true" size={28} /><h2 className="hub-panel-title">Nenhum cliente encontrado</h2><p>Ajuste os filtros ou aguarde novos cadastros na loja.</p>{hasFilters ? <Button className="mt-5" variant="secondary" onClick={onClear}>Limpar filtros</Button> : null}</div></div>}
+    {loading && !customers.length ? <CustomersLoading /> : customers.length ? <><DesktopRows customers={customers} onOpen={onOpen} /><MobileRows customers={customers} onOpen={onOpen} /></> : <div className="hub-empty-state"><div><UsersRound aria-hidden="true" size={28} /><h2 className="hub-panel-title">Nenhum cliente encontrado</h2><p>Ajuste os filtros ou aguarde novos cadastros na loja.</p>{hasFilters ? <Button className="mt-5" variant="secondary" onClick={onClear}>Limpar filtros</Button> : null}</div></div>}
     {pagination.lastPage > 1 ? <footer className="hub-orders-pagination"><span>Página {pagination.page} de {pagination.lastPage}</span><div><IconButton icon={ChevronLeft} label="Página anterior" disabled={pagination.page === 1} onClick={() => onChange({ page: pagination.page - 1 })} /><IconButton icon={ChevronRight} label="Próxima página" disabled={pagination.page === pagination.lastPage} onClick={() => onChange({ page: pagination.page + 1 })} /></div></footer> : null}
   </section>;
 };

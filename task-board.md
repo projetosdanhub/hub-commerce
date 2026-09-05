@@ -205,6 +205,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [ ] | UI-014 | P2 | Criar documentação visual dos componentes | UI-005 | Estados e uso demonstrados |
 | [!] | UI-015 | P1 | Criar centro de notificações tenant-scoped | BASE-011, TEN-010 | Contrato real de leitura, não lidas e destinos autorizado; sem sino ou contador simulado |
 | [~] | UI-016 | P1 | Aplicar padrão canônico ao módulo Pedidos | UI-005, UI-006, UI-008 | Lista, métricas, detalhe e diálogos usam primitives, dados reais e versões desktop/mobile; validação de CI pendente |
+| [~] | UI-017 | P1 | Aplicar padrão canônico ao módulo Clientes/CRM | UI-005, UI-006, UI-007, UI-009 | Painel, diretório, perfil, VIP e configurações usam primitives, contratos reais e experiências desktop/mobile; validação de CI pendente |
 
 ## Fase 11 — Storefront, SEO e desempenho
 
