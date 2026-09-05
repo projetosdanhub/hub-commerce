@@ -149,3 +149,12 @@ Copie este bloco para cada handoff relevante:
 - Evidências: revisão estática do diff confirma uso de Lucide, tokens e dados de catálogo retornados pela API. O alerta de estoque deixa de usar o fallback fictício de 5 unidades. Busca global, estado “Painel conectado” e ações sem contrato não são exibidos.
 - Riscos, bloqueios e itens não verificados: notificações persistentes continuam bloqueadas em UI-015 sem contrato tenant-scoped. As ações de visualizar/excluir foram padronizadas como primitive, mas não são renderizadas no catálogo por falta de fluxo/autoridade real. Checks do PR ainda precisam concluir.
 - Próxima ação única: acompanhar a validação do PR; após integração, aplicar este catálogo aos módulos já modernizados, começando por Pedidos.
+
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: concluir todas as abas internas de Produtos no padrão canônico, sem dados simulados e com comportamento mobile próprio.
+- Branch e commit: `ui/catalog-interface-standards`; validação final pendente deste commit.
+- Arquivos alterados: editor de produtos, Variações, Fiscal, Logística, SEO, contrato e persistência de variações, design system e adaptadores legados.
+- Evidências: as abas usam primitives/tokens, a prévia de busca depende de domínio canônico real e não simula dados. O envio de `variaveis_json` é sempre explícito, permitindo persistir a remoção da última variação.
+- Riscos, bloqueios e itens não verificados: a prévia de SEO permanece indisponível até existir domínio canônico tenant-scoped; não há nova UI de notificações sem contrato de backend.
+- Próxima ação única: aguardar os checks de PR e integrar na `main`; iniciar Pedidos na sequência.
