@@ -207,7 +207,8 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | UI-016 | P1 | Aplicar padrão canônico ao módulo Pedidos | UI-005, UI-006, UI-008 | Lista, métricas, detalhe e diálogos usam primitives, dados reais e versões desktop/mobile; validação de CI pendente |
 | [x] | UI-017 | P1 | Aplicar padrão canônico ao módulo Clientes/CRM | UI-005, UI-006, UI-007, UI-009 | Painel, diretório, perfil, VIP e configurações usam primitives, contratos reais e experiências desktop/mobile; validação de CI pendente |
 | [x] | UI-018 | P1 | Aplicar padrão canônico ao módulo Pixel | UI-005, UI-006, UI-007, UI-009 | Painel, integrações, acionadores e diálogos usam primitives, contratos reais e experiências desktop/mobile; checks aprovados e PR #39 integrada |
-| [~] | UI-019 | P1 | Padronizar interações globais do painel | UI-005, UI-006, UI-013 | Refresh único no shell, tooltip sem clipping, período canônico, textos longos legíveis e sidebar recolhida consistente; validação pendente |
+| [x] | UI-019 | P1 | Padronizar interações globais do painel | UI-005, UI-006, UI-013 | Refresh único no shell, tooltip sem clipping, período canônico, textos longos legíveis e sidebar recolhida consistente; PR #41 integrada com Tests, E2E Tests e Security Scans verdes |
+| [~] | UI-020 | P1 | Padronizar interações operacionais de dados | UI-005, UI-006, UI-013 | Métricas configuráveis e documentadas, regiões estáveis, busca expansível, período em duas etapas, tooltips visíveis e fluxo de reembolso auditável; testes/CI e revisão visual pendentes |
 
 ## Fase 11 — Storefront, SEO e desempenho
 
