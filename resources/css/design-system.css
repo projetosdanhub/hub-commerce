@@ -550,7 +550,7 @@
 .hub-product-option small { display: block; }
 .hub-product-option strong { color: var(--hub-text-primary); font-size: var(--hub-text-body); }
 .hub-product-option small { margin-top: var(--hub-space-1); color: var(--hub-text-muted); font-size: var(--hub-text-body-sm); line-height: var(--hub-line-height-normal); }
-.hub-product-form-empty { display: grid; justify-items: center; gap: var(--hub-space-2); padding: var(--hub-space-7) var(--hub-space-4); border: 1px dashed var(--hub-border-strong); border-radius: var(--hub-radius-lg); background: var(--hub-surface-subtle); color: var(--hub-text-muted); text-align: center; }
+.hub-product-form-empty { display: grid; justify-items: center; gap: var(--hub-space-2); padding: var(--hub-space-6) var(--hub-space-4); border: 1px dashed var(--hub-border-strong); border-radius: var(--hub-radius-lg); background: var(--hub-surface-subtle); color: var(--hub-text-muted); text-align: center; }
 .hub-product-form-empty strong { color: var(--hub-text-primary); }
 .hub-variation-list { display: grid; gap: var(--hub-space-3); }
 .hub-variation-row { display: grid; grid-template-columns: var(--hub-control-height-lg) repeat(4, minmax(0, 1fr)) var(--hub-control-height-md); align-items: end; gap: var(--hub-space-3); padding: var(--hub-space-4); border: 1px solid var(--hub-border); border-radius: var(--hub-radius-lg); background: var(--hub-surface-subtle); }
