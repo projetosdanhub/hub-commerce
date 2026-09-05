@@ -184,3 +184,11 @@ Copie este bloco para cada handoff relevante:
 - Task board: UI-016 e UI-017 concluídos; UI-018 iniciado.
 - Evidências: o orquestrador agora evita eventos nativos simulados, usa cabeçalho e abas do DesignSystem e apresenta skeleton ou indisponibilidade sem métricas estimadas.
 - Próxima ação única: aplicar o mesmo padrão aos submódulos Painel, Integrações e Acionadores e revisar seus contratos antes da PR.
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: concluir a padronização do menu Pixel e suas abas Painel, Integrações e Data Layer.
+- Branch e commit: `ui/pixels-interface-standards`; validação de CI pendente.
+- Task board: UI-018 permanece `[~]` até Tests, E2E Tests e Security Scans concluírem e a PR ser integrada.
+- Arquivos alterados: orquestrador do Pixel, Painel, App Store de integrações, eventos nativos, acionadores, editor, diálogos e estilos do DesignSystem.
+- Evidências: não há métricas, eventos, status ou dados simulados; a interface usa skeleton/indisponibilidade, primitives compartilhadas, ícones Lucide, diálogo acessível, ações com sincronização pós-mutation e experiências de tabela desktop/cartões mobile.
+- Próxima ação única: abrir PR e validar os três workflows obrigatórios antes do merge.

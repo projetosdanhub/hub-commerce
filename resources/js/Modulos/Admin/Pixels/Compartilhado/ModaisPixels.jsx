@@ -1,5 +1,5 @@
 import React, { Component, useEffect, useRef, useState } from 'react';
-import { AlertTriangle, ArrowDown, ArrowUp, BookMarked, Calendar, Check, Info, Loader2, Settings2, X } from 'lucide-react';
+import { AlertTriangle, ArrowDown, ArrowUp, BookMarked, Calendar, Check, Loader2, X } from 'lucide-react';
 import { dictionaryData } from './ConstantesPixels';
 import { Badge } from '../../DesignSystem/primitives/Badge';
 import { Button } from '../../DesignSystem/primitives/Button';
