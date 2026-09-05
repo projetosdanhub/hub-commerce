@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, FileKey2, KeyRound, Mail, Pencil, Phone, Save, ShieldCheck, Tags, UserRound, WalletCards, X } from 'lucide-react';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
@@ -22,6 +22,8 @@ const Field = ({ label, required, children }) => <label className="hub-order-for
 
 export const CustomerActionDialog = ({ action, customer, loading, onClose, onSubmit }) => {
   const copy = COPY[action];
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
   const [form, setForm] = useState({
     nome: customer?.nome || '',
     sexo: customer?.sexo || '',
@@ -38,6 +40,46 @@ export const CustomerActionDialog = ({ action, customer, loading, onClose, onSub
     tags: (customer?.tags || []).join(', '),
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!copy || !customer) return undefined;
+
+    const previousFocus = document.activeElement;
+    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
+    const selector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+      const focusable = Array.from(dialogRef.current?.querySelectorAll(selector) ?? []);
+      if (!focusable.length) {
+        event.preventDefault();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousFocus instanceof HTMLElement) previousFocus.focus();
+    };
+  }, [action, copy, customer, onClose]);
 
   if (!copy || !customer) return null;
   const Icon = copy.icon;
@@ -62,8 +104,8 @@ export const CustomerActionDialog = ({ action, customer, loading, onClose, onSub
   };
 
   return <div className="hub-order-dialog-backdrop" role="presentation">
-    <div className="hub-order-dialog" role="dialog" aria-modal="true" aria-labelledby="customer-action-title">
-      <header><span className="hub-order-dialog-icon" data-tone={copy.warning ? 'warning' : 'default'}><Icon aria-hidden="true" size={20} /></span><div><h2 id="customer-action-title">{copy.title}</h2><p>Essa operação será registrada no histórico auditável do cliente.</p></div><IconButton className="hub-order-dialog-close" icon={X} label="Fechar" onClick={onClose} /></header>
+    <div ref={dialogRef} className="hub-order-dialog" role="dialog" aria-modal="true" aria-labelledby="customer-action-title" aria-describedby="customer-action-description">
+      <header><span className="hub-order-dialog-icon" data-tone={copy.warning ? 'warning' : 'default'}><Icon aria-hidden="true" size={20} /></span><div><h2 id="customer-action-title">{copy.title}</h2><p id="customer-action-description">Essa operação será registrada no histórico auditável do cliente.</p></div><IconButton ref={closeButtonRef} className="hub-order-dialog-close" icon={X} label="Fechar" onClick={onClose} /></header>
       <form onSubmit={submit}><div className="hub-order-action-fields">
         {action === 'BASICS' ? <><Field label="Nome" required><input autoFocus value={form.nome} onChange={(e) => update({ nome: e.target.value })} /></Field><Field label="Gênero"><input value={form.sexo} onChange={(e) => update({ sexo: e.target.value })} /></Field><Field label="Motivo" required><textarea rows="3" value={form.motivo} onChange={(e) => update({ motivo: e.target.value })} /></Field></> : null}
         {action === 'PHONE' ? <><Field label="Telefone" required><input autoFocus value={form.telefone} onChange={(e) => update({ telefone: e.target.value })} /></Field><Field label="Motivo" required><textarea rows="3" value={form.motivo} onChange={(e) => update({ motivo: e.target.value })} /></Field></> : null}

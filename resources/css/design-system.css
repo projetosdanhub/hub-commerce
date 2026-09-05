@@ -633,3 +633,14 @@
     flex: 1 1 10rem;
   }
 }
+
+/* Clientes: estados de carregamento compartilhados para os painéis internos. */
+.hub-customer-management-loading {
+  display: grid;
+  gap: var(--hub-space-3);
+  padding: var(--hub-space-6);
+}
+
+.hub-customer-management-loading > .hub-skeleton {
+  min-height: var(--hub-control-height-lg);
+}

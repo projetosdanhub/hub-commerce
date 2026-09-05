@@ -167,3 +167,12 @@ Copie este bloco para cada handoff relevante:
 - Evidências: a lista continua usando as queries existentes, aplica filtros reais de status e período, preserva tabela desktop e cartões mobile. Métricas usam `MetricCard` e `Skeleton`; enquanto a API responde, nenhum zero estimado é mostrado. O diálogo controla foco, Escape e retorno de foco.
 - Riscos, bloqueios e itens não verificados: o contrato atual de pedidos continua sem evidência de isolamento tenant-scoped; isso é uma pendência de domínio fora desta alteração visual. Notificações persistentes não foram criadas nem simuladas.
 - Próxima ação única: abrir PR, validar Tests, E2E Tests e Security Scans; só então integrar e continuar para o próximo menu.
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: iniciar a atualização completa do menu Clientes/CRM, incluindo painel, diretório, perfil 360º, benefícios VIP, configurações e diálogos.
+- Branch e commit: `ui/customers-interface-standards`; validação pendente desta revisão.
+- Task board: UI-017 iniciado. UI-005/UI-006/UI-011/UI-013/UI-014 continuam [~]; UI-015 permanece [!] sem contrato tenant-scoped de notificações.
+- Arquivos alterados: AdminCustomers e módulos Customers, com reaproveitamento obrigatório de primitives/patterns do DesignSystem.
+- Evidências: o dashboard passou a consumir somente as chaves reais de `getDashboardMetrics`; estados de carregamento e indisponibilidade não exibem zero ou configuração estimada. Lista, perfil e seções usam `SectionTabs`; diálogos controlam foco, Escape e retorno de foco.
+- Riscos, bloqueios e itens não verificados: a interface preserva os contratos CRM atuais, que ainda possuem pendências de domínio e tenant registradas na Fase 6. Não foram criadas notificações persistentes, pessoas, métricas ou ações simuladas.
+- Próxima ação única: abrir PR, validar Tests, E2E Tests e Security Scans e integrar somente após aprovação.
