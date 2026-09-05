@@ -3,6 +3,7 @@ import { ExternalLink, LogOut } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { mobileNavigation } from './AdminNavigation';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
+import { IconLink } from '../DesignSystem/primitives/IconLink';
 
 const isActive = (pathname, item) => (
   item.exact ? pathname === item.path : pathname.startsWith(item.path)
@@ -19,15 +20,13 @@ export const AdminMobileShell = ({ children, onLogout }) => {
           HUB Commerce
         </span>
         <div className="flex items-center gap-1">
-          <a
-            className="hub-icon-button"
+          <IconLink
+            icon={ExternalLink}
+            label="Acessar vitrine em uma nova aba"
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Acessar vitrine em uma nova aba"
-          >
-            <ExternalLink aria-hidden="true" size={18} />
-          </a>
+          />
           <IconButton icon={LogOut} label="Sair do painel" onClick={onLogout} />
         </div>
       </header>
