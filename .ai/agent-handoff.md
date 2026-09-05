@@ -199,3 +199,13 @@ Copie este bloco para cada handoff relevante:
 - Causa: o controller referenciava casos removidos do enum OrderStatus e ainda comparava valores escalares contra atributos convertidos em enum.
 - Alterações: agregação tenant-scoped com os estados canônicos, teste de contrato do endpoint e desativação de retry automático da métrica para falhas 5xx; o usuário ainda pode tentar manualmente.
 - Próxima ação única: abrir PR e validar Tests, E2E Tests e Security Scans.
+
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: iniciar UI-019, padronizando refresh global, filtro de período, tooltips portaled, textos longos e sidebar; aplicação inicial no módulo Pedidos.
+- Branch: `ui/global-refresh-period-filter`; validação pendente.
+- Task board: UI-018 [x] corrigida após PR #39; UI-019 [~] até testes e CI verificarem a nova interação global.
+- Arquivos alterados: shell admin desktop/mobile, provider de refresh, DateRangeFilter, Tooltip, TruncatedText, Pedidos, DesignSystem, regras e board.
+- Evidências: o refresh usa React Query ativo ou registradores da rota; período mantém os parâmetros reais `startDate` e `endDate`; nenhum dado, métrica, notificação ou ação foi simulado.
+- Riscos, bloqueios e itens não verificados: a validação visual em navegador e os workflows obrigatórios ainda serão executados; a vitrine continua um link real em nova aba no rodapé da sidebar.
+- Próxima ação única: revisar o diff, executar a validação proporcional e abrir PR para os três workflows obrigatórios.
