@@ -115,6 +115,11 @@ const RefundReceipts = ({ order }) => {
       ? [{ id: 'legacy', name: 'Comprovante de reembolso', kind: 'document', url: order.comprovante_reembolso }]
       : [];
 
+  const mayHaveRefundReceipt = currentReceipts.length
+    || ['EM_ANALISE_REEMBOLSO', 'REEMBOLSADO'].includes(order.status);
+
+  if (!mayHaveRefundReceipt) return null;
+
   if (!currentReceipts.length) {
     return <p className="hub-orders-form-hint">Os comprovantes enviados na confirmação do reembolso aparecerão aqui.</p>;
   }
