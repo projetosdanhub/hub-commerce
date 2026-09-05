@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\Tenancy\TenantStorage;
 use App\Support\Http\Pagination;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
@@ -11,10 +12,12 @@ use App\Models\User;
 use App\Models\WalletTransaction;
 use App\Models\VipLevel;
 use App\Services\OrderStatusTransitionService;
+use App\Services\RefundReceiptStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -22,6 +25,7 @@ class OrderController extends Controller
 {
     public function __construct(
         private readonly OrderStatusTransitionService $statusTransitions,
+        private readonly RefundReceiptStorage $refundReceipts,
     ) {
     }
 
@@ -157,10 +161,8 @@ class OrderController extends Controller
                     'kind' => in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'], true)
                         ? 'image'
                         : 'document',
-                    'url' => route('admin.orders.refund-receipts.show', [
-                        'id' => $order->getKey(),
-                        'receiptIndex' => $index,
-                    ]),
+                    'preview_url' => $this->refundReceiptUrl($order, $index),
+                    'download_url' => $this->refundReceiptUrl($order, $index, true),
                 ])
                 ->all();
 
@@ -204,6 +206,8 @@ class OrderController extends Controller
                 'comprovante_pagamento' => $order->payment_receipt ? asset('storage/' . $order->payment_receipt) : null,
                 'comprovante_entrega' => $order->delivery_receipt ? asset('storage/' . $order->delivery_receipt) : null,
                 'metodo_reembolso' => $order->refund_method ?? 'Estorno/Transferência',
+                'motivo_reembolso' => $order->refund_reason,
+                'pode_cancelar_reembolso' => $this->canCancelRefundRequest($order),
                 'coupons' => is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : ($order->applied_coupons ?? []),
                 
                 'pagamento_metodo' => $order->payment_method ?? 'A Vista',
@@ -279,7 +283,7 @@ class OrderController extends Controller
         return response()->json($paginator);
     }
 
-    public function refundReceipt($id, int $receiptIndex)
+    public function refundReceipt(Request $request, $id, int $receiptIndex)
     {
         $order = Order::findOrFail($id);
         $receipts = array_values(array_filter($order->refund_receipts ?? []));
@@ -287,11 +291,35 @@ class OrderController extends Controller
 
         abort_unless($path && Storage::disk('local')->exists($path), 404);
 
+        $disposition = $request->boolean('download') ? 'attachment' : 'inline';
+
         return Storage::disk('local')->response(
             $path,
             'comprovante-reembolso-'.($receiptIndex + 1),
-            ['Content-Disposition' => 'inline'],
+            ['Content-Disposition' => $disposition],
         );
+    }
+
+    private function refundReceiptUrl(Order $order, int $receiptIndex, bool $download = false): string
+    {
+        return URL::temporarySignedRoute(
+            'secure-download.orders.refund-receipts',
+            now()->addMinutes(10),
+            [
+                'order' => $order->getKey(),
+                'receiptIndex' => $receiptIndex,
+                'download' => $download ? 1 : null,
+            ],
+        );
+    }
+
+    private function canCancelRefundRequest(Order $order): bool
+    {
+        $source = OrderStatus::tryFrom((string) $order->refund_requested_from_status);
+
+        return $order->status === OrderStatus::REFUND_REVIEW
+            && $source !== null
+            && $source->canTransitionTo(OrderStatus::REFUND_REVIEW);
     }
 
     public function metrics(Request $request)
@@ -401,42 +429,20 @@ class OrderController extends Controller
     public function cancelOrder(Request $request, $id)
     {
         $validated = $request->validate([
-            'tipo' => ['required', Rule::in([
-                'CANCELADO',
-                'SOLICITACAO_REEMBOLSO',
-                'REEMBOLSADO',
-            ])],
-            'motivo' => ['required', 'string'],
-            'comprovante' => [
-                Rule::requiredIf($request->input('tipo') === 'REEMBOLSADO'),
-                'file',
-                'mimes:jpeg,png,jpg,pdf',
-                'max:5120',
-            ],
+            'tipo' => ['required', Rule::in(['CANCELADO'])],
+            'motivo' => ['required', 'string', 'max:2000'],
         ]);
 
         $order = Order::findOrFail($id);
-        $target = match ($validated['tipo']) {
-            'REEMBOLSADO' => OrderStatus::REFUNDED,
-            'SOLICITACAO_REEMBOLSO' => OrderStatus::REFUND_REVIEW,
-            default => OrderStatus::CANCELLED,
-        };
-
-        $this->statusTransitions->assertCanTransition($order, $target);
-
-        if ($target === OrderStatus::REFUNDED) {
-            $order->refund_receipt = $request->file('comprovante')->store('reembolsos', 'public');
-            $message = "Reembolso Aprovado. Motivo: {$validated['motivo']}";
-        } elseif ($target === OrderStatus::REFUND_REVIEW) {
-            $message = "Análise de Reembolso Iniciada. Motivo: {$validated['motivo']}";
-        } else {
-            $message = "Pedido Cancelado. Motivo: {$validated['motivo']}";
-        }
-
         $order->cancel_reason = $validated['motivo'];
-        $this->statusTransitions->transition($order, $target, $message);
 
-        return response()->json(['status' => 'success', 'message' => 'Fluxo processado com sucesso.']);
+        $this->statusTransitions->transition(
+            $order,
+            OrderStatus::CANCELLED,
+            "Pedido cancelado. Motivo: {$validated['motivo']}",
+        );
+
+        return response()->json(['status' => 'success', 'message' => 'Pedido cancelado com sucesso.']);
     }
 
     // =========================================================================
@@ -446,6 +452,23 @@ class OrderController extends Controller
     {
         $order = Order::findOrFail($id);
         $acao = $request->input('acao');
+
+        if ($acao === 'CANCELAR_REEMBOLSO') {
+            $validated = $request->validate([
+                'motivo' => ['required', 'string', 'max:2000'],
+            ]);
+            $restoredOrder = $this->statusTransitions->cancelRefundRequest(
+                $order,
+                "Solicitação de reembolso cancelada. Retorno para o status anterior. Motivo: {$validated['motivo']}",
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Solicitação de reembolso cancelada e pedido restaurado ao estado anterior.',
+                'order_status' => $restoredOrder->status->value,
+            ]);
+        }
+
         $targetStatus = match ($acao) {
             'PAGAR' => OrderStatus::PICKING,
             'SEPARAR' => OrderStatus::READY_TO_SHIP,
@@ -471,18 +494,19 @@ class OrderController extends Controller
         
         $msg = "";
         $caminhoComprovante = null;
-        $refundReceiptPaths = [];
+        $sanitizedRefundReceipts = [];
+        $storedRefundReceiptPaths = [];
 
         if ($acao === 'PROCESSAR_REEMBOLSO') {
-            $request->validate([
-                'motivo' => ['required', 'string'],
+            $validated = $request->validate([
+                'motivo' => ['required', 'string', 'max:2000'],
                 'refund_method' => ['required', Rule::in(['TRANSFERENCIA', 'CASHBACK'])],
                 'comprovantes' => ['required', 'array', 'min:1', 'max:2'],
-                'comprovantes.*' => ['required', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:5120'],
+                'comprovantes.*' => ['required', 'image', 'mimes:jpeg,jpg,png', 'max:5120'],
             ]);
 
-            $refundReceiptPaths = collect($request->file('comprovantes', []))
-                ->map(fn ($file) => $file->store('orders/'.$order->getKey().'/refunds', 'local'))
+            $sanitizedRefundReceipts = collect($validated['comprovantes'])
+                ->map(fn ($file) => $this->refundReceipts->sanitize($file))
                 ->all();
         }
 
@@ -650,14 +674,13 @@ class OrderController extends Controller
                 break;
 
             case 'INICIAR_REEMBOLSO':
-                $request->validate(['motivo' => 'required|string']);
-                $order->cancel_reason = $motivo;
+                $request->validate(['motivo' => 'required|string|max:2000']);
+                $order->refund_reason = $motivo;
                 $msg = "Análise de Devolução/Reembolso Iniciada. Parecer: {$motivo}";
                 break;
 
             case 'PROCESSAR_REEMBOLSO':
-                $order->cancel_reason = $motivo;
-                $order->refund_receipts = $refundReceiptPaths;
+                $order->refund_reason = $motivo;
                 $order->refund_method = $refundMethod;
 
                 $textoMetodo = $refundMethod === 'CASHBACK'
@@ -674,8 +697,23 @@ class OrderController extends Controller
 
         $afterLock = null;
 
+        if ($acao === 'INICIAR_REEMBOLSO') {
+            $afterLock = function (Order $lockedOrder): void {
+                $current = $lockedOrder->status instanceof OrderStatus
+                    ? $lockedOrder->status
+                    : OrderStatus::from((string) $lockedOrder->getRawOriginal('status'));
+
+                $lockedOrder->refund_requested_from_status = $current->value;
+            };
+        }
+
         if ($acao === 'PROCESSAR_REEMBOLSO') {
-            $afterLock = function (Order $lockedOrder) use ($motivo, $refundMethod): void {
+            $afterLock = function (Order $lockedOrder) use ($motivo, $refundMethod, $sanitizedRefundReceipts, &$storedRefundReceiptPaths): void {
+                $storedRefundReceiptPaths = collect($sanitizedRefundReceipts)
+                    ->map(fn (array $receipt) => $this->refundReceipts->store($lockedOrder, $receipt))
+                    ->all();
+                $lockedOrder->refund_receipts = $storedRefundReceiptPaths;
+
                 if ($refundMethod === 'CASHBACK' && $lockedOrder->user_id) {
                     $cliente = User::query()
                         ->whereKey($lockedOrder->user_id)
@@ -714,7 +752,13 @@ class OrderController extends Controller
             };
         }
 
-        $this->statusTransitions->transition($order, $targetStatus, $msg, $afterLock);
+        try {
+            $this->statusTransitions->transition($order, $targetStatus, $msg, $afterLock);
+        } catch (\Throwable $exception) {
+            $this->refundReceipts->delete($storedRefundReceiptPaths);
+
+            throw $exception;
+        }
 
         return response()->json(['status' => 'success', 'message' => 'Operação processada e auditada com sucesso.']);
     }

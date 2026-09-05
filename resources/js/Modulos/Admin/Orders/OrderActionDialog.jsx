@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   CreditCard,
   FileText,
+  ImagePlus,
   PackageCheck,
   RotateCcw,
   Truck,
@@ -56,10 +57,17 @@ const ACTION_COPY = {
   },
   PROCESSAR_REEMBOLSO: {
     title: 'Confirmar reembolso',
-    description: 'Escolha a modalidade já executada e anexe até dois comprovantes para concluir a auditoria.',
+    description: 'Escolha a modalidade já executada e envie de uma a duas imagens higienizadas para concluir a auditoria.',
     icon: RotateCcw,
     confirm: 'Confirmar reembolso',
     tone: 'danger',
+  },
+  CANCELAR_REEMBOLSO: {
+    title: 'Cancelar solicitação de reembolso',
+    description: 'O pedido retornará ao último status auditado antes da solicitação. Informe o motivo para registrar a decisão.',
+    icon: RotateCcw,
+    confirm: 'Cancelar solicitação',
+    tone: 'warning',
   },
   ALTERAR_RASTREIO: {
     title: 'Atualizar rastreio',
@@ -147,15 +155,29 @@ const ReceiptPreviewCard = ({ file, index, onRemove }) => {
 
 const RefundReceiptFields = ({ files, onChange }) => (
   <div className="hub-order-refund-receipts">
-    <Field label="Comprovantes" required>
-      <input
-        type="file"
-        accept=".pdf,.jpg,.jpeg,.png"
-        multiple
-        onChange={(event) => onChange(Array.from(event.target.files || []).slice(0, 2))}
-      />
-    </Field>
-    <p className="hub-orders-form-hint">Envie de um a dois comprovantes em PDF, JPG ou PNG. As imagens são exibidas antes da confirmação.</p>
+    <div className="hub-order-form-field">
+      <span>Comprovantes *</span>
+      <label className="hub-order-refund-upload">
+        <ImagePlus aria-hidden="true" size={18} />
+        <span>{files.length ? 'Adicionar outra imagem' : 'Selecionar imagem'}</span>
+        <small>{files.length}/2</small>
+        <input
+          className="sr-only"
+          type="file"
+          accept="image/jpeg,image/png"
+          multiple
+          onChange={(event) => {
+            const selected = Array.from(event.target.files || []);
+            const known = new Set(files.map((file) => file.name + file.lastModified));
+            const next = selected.filter((file) => !known.has(file.name + file.lastModified));
+
+            onChange([...files, ...next].slice(0, 2));
+            event.currentTarget.value = '';
+          }}
+        />
+      </label>
+    </div>
+    <p className="hub-orders-form-hint">Envie uma ou duas imagens JPEG ou PNG de até 5 MB. Elas são higienizadas no servidor e permanecem privadas.</p>
     {files.length ? (
       <div className="hub-order-receipt-preview-grid">
         {files.map((file, index) => (
@@ -317,7 +339,7 @@ export const OrderActionDialog = ({
   const [error, setError] = useState('');
 
   const update = (changes) => setForm((current) => ({ ...current, ...changes }));
-  const requiresReason = useMemo(() => ['PAGAR', 'CANCELAR', 'INICIAR_REEMBOLSO', 'PROCESSAR_REEMBOLSO'].includes(action), [action]);
+  const requiresReason = useMemo(() => ['PAGAR', 'CANCELAR', 'INICIAR_REEMBOLSO', 'PROCESSAR_REEMBOLSO', 'CANCELAR_REEMBOLSO'].includes(action), [action]);
   const requiresFile = useMemo(() => ['PAGAR', 'ENTREGAR'].includes(action), [action]);
   const requiresRefundReceipts = action === 'PROCESSAR_REEMBOLSO';
 

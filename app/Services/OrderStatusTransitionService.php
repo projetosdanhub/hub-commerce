@@ -60,6 +60,42 @@ final class OrderStatusTransitionService
         });
     }
 
+    public function cancelRefundRequest(Order $order, string $event): Order
+    {
+        return DB::transaction(function () use ($event, $order): Order {
+            $lockedOrder = Order::query()
+                ->whereKey($order->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($this->currentStatus($lockedOrder) !== OrderStatus::REFUND_REVIEW) {
+                throw ValidationException::withMessages([
+                    'status' => 'O pedido não possui uma solicitação de reembolso que possa ser cancelada.',
+                ]);
+            }
+
+            $source = OrderStatus::tryFrom((string) $lockedOrder->refund_requested_from_status);
+
+            if ($source === null || ! $source->canTransitionTo(OrderStatus::REFUND_REVIEW)) {
+                throw ValidationException::withMessages([
+                    'status' => 'Não foi possível identificar o estado anterior auditado do reembolso.',
+                ]);
+            }
+
+            $lockedOrder->status = $source;
+            $lockedOrder->refund_requested_from_status = null;
+            $lockedOrder->refund_reason = null;
+            $lockedOrder->save();
+
+            OrderHistory::query()->create([
+                'order_id' => $lockedOrder->getKey(),
+                'event' => $event,
+            ]);
+
+            return $lockedOrder;
+        });
+    }
+
     private function pendingAttributes(Order $order): array
     {
         $pendingAttributes = $order->getDirty();
