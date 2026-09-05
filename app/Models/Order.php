@@ -48,6 +48,7 @@ class Order extends Model
             'gateway_fee'          => 'decimal:2',
             'payment_installments' => 'integer',
             'applied_coupons'      => 'array', // Converte JSON do banco para Lista no React automaticamente
+            'refund_receipts'     => 'array',
         ];
     }
 
