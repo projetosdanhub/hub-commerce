@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { CircleAlert, ClipboardList, RefreshCw } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../api';
@@ -40,7 +40,6 @@ const listFilters = (filters) => ({
 });
 
 export default function AdminOrders() {
-  const client = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState(initialFilters);
   const [selectedId, setSelectedId] = useState(() => searchParams.get('id'));
@@ -88,8 +87,14 @@ export default function AdminOrders() {
   }, [orders, ordersQuery.isFetching, selectedId, selectedOrder, setSearchParams]);
 
   const refreshCurrentData = useCallback(
-    () => client.invalidateQueries({ queryKey: adminQueryKeys.root(), refetchType: 'active' }),
-    [client],
+    async () => {
+      await Promise.all([
+        ordersQuery.refetch(),
+        metricsQuery.refetch(),
+        ...(action === 'DESPACHAR' ? [shippingQuery.refetch()] : []),
+      ]);
+    },
+    [action, metricsQuery.refetch, ordersQuery.refetch, shippingQuery.refetch],
   );
 
   useRegisterAdminPageRefresh(refreshCurrentData);
