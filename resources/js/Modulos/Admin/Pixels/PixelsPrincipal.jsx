@@ -15,8 +15,8 @@ import { IconButton } from '../DesignSystem/primitives/IconButton';
 import { Skeleton } from '../DesignSystem/primitives/Skeleton';
 
 // Imports de Submódulos
-import { CustomStyles, AnimatedNotification } from './Compartilhado/ComponentesUIPixels';
-import { MetricsDictionaryModal, PixelErrorBoundary } from './Compartilhado/ModaisPixels';
+
+import { MetricsDictionaryModal, PixelErrorBoundary, PixelNotification } from './Compartilhado/ModaisPixels';
 import DashboardPixels from './Painel/DashboardPixels';
 import AppStorePixels from './Integracoes/AppStorePixels';
 import DataLayerPixels from './Acionadores/DataLayerPixels';
@@ -288,8 +288,7 @@ const AdminPixelsContent = () => {
         <PixelErrorBoundary>
             <div className="hub-layout-container">
                 <Helmet><title>Central de Tracking | HUB Admin</title></Helmet>
-                <CustomStyles />
-                <AnimatedNotification show={toast.show} status={toast.status} titulo={toast.message} />
+                <PixelNotification show={toast.show} status={toast.status} titulo={toast.message} />
                 <MetricsDictionaryModal isOpen={isDictOpen} onClose={() => setIsDictOpen(false)} />
 
                 <PageHeader
