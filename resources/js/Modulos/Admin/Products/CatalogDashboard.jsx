@@ -19,7 +19,7 @@ const needsStockAttention = (product) => (
 );
 
 const DashboardSkeleton = () => (
-  <section className="hub-catalog-metric-skeleton" aria-label="Carregando indicadores do catálogo">
+  <section className="hub-catalog-metric-skeleton" role="status" aria-label="Carregando indicadores do catálogo">
     {[0, 1, 2, 3].map((item) => <Skeleton key={item} />)}
   </section>
 );
