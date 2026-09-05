@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { CalendarDays, Check, ChevronDown } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Check, ChevronDown } from 'lucide-react';
 import { Button } from '../primitives/Button';
 import { FilterButton } from '../primitives/FilterButton';
 
@@ -70,6 +70,13 @@ export const formatDateRange = ({ startDate, endDate }) => {
   return format(startDate) + ' — ' + format(endDate);
 };
 
+export const getDateRangeLabel = (range) => {
+  const preset = getSelectedDateRangePreset(range);
+  const presetLabel = DATE_RANGE_PRESETS.find((item) => item.value === preset)?.label;
+
+  return preset === 'CUSTOM' ? formatDateRange(range) : presetLabel || formatDateRange(range);
+};
+
 export const DateRangeFilter = ({
   value = {},
   onApply,
@@ -111,9 +118,14 @@ export const DateRangeFilter = ({
     if (customOpen && open) startInputRef.current?.focus();
   }, [customOpen, open]);
 
+  const close = () => {
+    setOpen(false);
+    setError('');
+  };
+
   const toggleOpen = () => {
     if (open) {
-      setOpen(false);
+      close();
       return;
     }
 
@@ -131,7 +143,13 @@ export const DateRangeFilter = ({
     }
 
     onApply?.(getDateRange(preset));
-    setOpen(false);
+    close();
+  };
+
+  const returnToPresets = () => {
+    setCustomOpen(false);
+    setError('');
+    setDraft({ startDate, endDate });
   };
 
   const applyCustomRange = () => {
@@ -146,7 +164,7 @@ export const DateRangeFilter = ({
     }
 
     onApply?.(draft);
-    setOpen(false);
+    close();
   };
 
   return (
@@ -158,34 +176,18 @@ export const DateRangeFilter = ({
         aria-controls={id + '-popover'}
         onClick={toggleOpen}
       >
-        <span className="hub-date-range-trigger-label">{formatDateRange({ startDate, endDate })}</span>
+        <span className="hub-date-range-trigger-label">{getDateRangeLabel({ startDate, endDate })}</span>
         <ChevronDown aria-hidden="true" size={16} className="hub-date-range-trigger-chevron" />
       </FilterButton>
 
       {open ? (
         <div id={id + '-popover'} className="hub-date-range-popover" role="dialog" aria-label={label}>
-          <div className="hub-date-range-options">
-            {DATE_RANGE_PRESETS.map((preset) => {
-              const active = selectedPreset === preset.value;
-
-              return (
-                <button
-                  key={preset.value}
-                  type="button"
-                  className="hub-date-range-option"
-                  data-active={active}
-                  onClick={() => applyPreset(preset.value)}
-                >
-                  <span>{preset.label}</span>
-                  {active ? <Check aria-hidden="true" size={16} /> : null}
-                </button>
-              );
-            })}
-          </div>
-
           {customOpen ? (
             <div className="hub-date-range-custom">
-              <p>Selecione o intervalo que deseja consultar.</p>
+              <div>
+                <p className="hub-date-range-custom-title">Período personalizado</p>
+                <p>Selecione o intervalo que deseja consultar.</p>
+              </div>
               <div className="hub-date-range-inputs">
                 <label htmlFor={id + '-start'}>
                   De
@@ -215,11 +217,30 @@ export const DateRangeFilter = ({
               </div>
               {error ? <p className="hub-date-range-error" role="alert">{error}</p> : null}
               <div className="hub-date-range-actions">
-                <Button variant="ghost" size="sm" onClick={() => setCustomOpen(false)}>Voltar</Button>
+                <Button variant="ghost" size="sm" icon={ArrowLeft} onClick={returnToPresets}>Voltar</Button>
                 <Button size="sm" onClick={applyCustomRange}>Filtrar</Button>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="hub-date-range-options">
+              {DATE_RANGE_PRESETS.map((preset) => {
+                const active = selectedPreset === preset.value;
+
+                return (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    className="hub-date-range-option"
+                    data-active={active}
+                    onClick={() => applyPreset(preset.value)}
+                  >
+                    <span>{preset.label}</span>
+                    {active ? <Check aria-hidden="true" size={16} /> : null}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       ) : null}
     </div>

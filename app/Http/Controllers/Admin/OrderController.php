@@ -5,19 +5,87 @@ namespace App\Http\Controllers\Admin;
 use App\Support\Http\Pagination;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\AdminMetricPreference;
 use App\Models\Order;
+use App\Models\User;
+use App\Models\WalletTransaction;
 use App\Models\VipLevel;
 use App\Services\OrderStatusTransitionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
     public function __construct(
         private readonly OrderStatusTransitionService $statusTransitions,
     ) {
+    }
+
+    private const ORDER_METRIC_IDS = [
+        'valid-revenue',
+        'awaiting-shipment',
+        'pix-confirmed',
+        'refund-review',
+    ];
+
+    public function metricPreferences(Request $request)
+    {
+        $preferences = AdminMetricPreference::query()
+            ->where('user_id', $request->user()->getKey())
+            ->where('context', 'orders')
+            ->value('preferences');
+
+        return response()->json($preferences ?? [
+            'order' => self::ORDER_METRIC_IDS,
+            'hidden' => [],
+        ]);
+    }
+
+    public function updateMetricPreferences(Request $request)
+    {
+        $validated = $request->validate([
+            'order' => ['required', 'array', 'size:'.count(self::ORDER_METRIC_IDS)],
+            'order.*' => ['required', 'string', Rule::in(self::ORDER_METRIC_IDS)],
+            'hidden' => ['present', 'array'],
+            'hidden.*' => ['required', 'string', Rule::in(self::ORDER_METRIC_IDS)],
+        ]);
+
+        $order = array_values(array_unique($validated['order']));
+        $hidden = array_values(array_unique($validated['hidden']));
+
+        if (
+            count($order) !== count(self::ORDER_METRIC_IDS)
+            || array_diff(self::ORDER_METRIC_IDS, $order)
+            || array_diff($order, self::ORDER_METRIC_IDS)
+        ) {
+            throw ValidationException::withMessages([
+                'order' => 'Informe cada métrica uma única vez.',
+            ]);
+        }
+
+        if (count(array_diff($order, $hidden)) === 0) {
+            throw ValidationException::withMessages([
+                'hidden' => 'Mantenha ao menos uma métrica visível no painel.',
+            ]);
+        }
+
+        $preferences = [
+            'order' => $order,
+            'hidden' => $hidden,
+        ];
+
+        $preference = AdminMetricPreference::query()->firstOrNew([
+            'user_id' => $request->user()->getKey(),
+            'context' => 'orders',
+        ]);
+        $preference->preferences = $preferences;
+        $preference->save();
+
+        return response()->json($preferences);
     }
 
     public function index(Request $request)
@@ -31,7 +99,8 @@ class OrderController extends Controller
                 $q->where('id', 'like', "%{$search}%")
                   ->orWhereHas('user', function($uq) use ($search) {
                       $uq->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
+                         ->orWhere('email', 'like', "%{$search}%")
+                         ->orWhere('cpf', 'like', "%{$search}%");
                   });
             });
         }
@@ -79,6 +148,22 @@ class OrderController extends Controller
                 ? $order->status
                 : OrderStatus::from((string) $order->getRawOriginal('status'));
 
+            $refundReceipts = collect($order->refund_receipts ?? [])
+                ->filter()
+                ->values()
+                ->map(fn (string $path, int $index) => [
+                    'id' => $index,
+                    'name' => 'Comprovante de reembolso '.($index + 1),
+                    'kind' => in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'], true)
+                        ? 'image'
+                        : 'document',
+                    'url' => route('admin.orders.refund-receipts.show', [
+                        'id' => $order->getKey(),
+                        'receiptIndex' => $index,
+                    ]),
+                ])
+                ->all();
+
             $ltv = $userMetrics[$order->user_id]['ltv'] ?? 0.0;
             $compras = $userMetrics[$order->user_id]['compras'] ?? 0;
             
@@ -115,6 +200,7 @@ class OrderController extends Controller
                 
                 'motivo_cancelamento' => $order->cancel_reason,
                 'comprovante_reembolso' => $order->refund_receipt ? asset('storage/' . $order->refund_receipt) : null,
+                'comprovantes_reembolso' => $refundReceipts,
                 'comprovante_pagamento' => $order->payment_receipt ? asset('storage/' . $order->payment_receipt) : null,
                 'comprovante_entrega' => $order->delivery_receipt ? asset('storage/' . $order->delivery_receipt) : null,
                 'metodo_reembolso' => $order->refund_method ?? 'Estorno/Transferência',
@@ -191,6 +277,21 @@ class OrderController extends Controller
         $paginator->setCollection($formatted);
 
         return response()->json($paginator);
+    }
+
+    public function refundReceipt($id, int $receiptIndex)
+    {
+        $order = Order::findOrFail($id);
+        $receipts = array_values(array_filter($order->refund_receipts ?? []));
+        $path = $receipts[$receiptIndex] ?? null;
+
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->response(
+            $path,
+            'comprovante-reembolso-'.($receiptIndex + 1),
+            ['Content-Disposition' => 'inline'],
+        );
     }
 
     public function metrics(Request $request)
@@ -370,6 +471,20 @@ class OrderController extends Controller
         
         $msg = "";
         $caminhoComprovante = null;
+        $refundReceiptPaths = [];
+
+        if ($acao === 'PROCESSAR_REEMBOLSO') {
+            $request->validate([
+                'motivo' => ['required', 'string'],
+                'refund_method' => ['required', Rule::in(['TRANSFERENCIA', 'CASHBACK'])],
+                'comprovantes' => ['required', 'array', 'min:1', 'max:2'],
+                'comprovantes.*' => ['required', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:5120'],
+            ]);
+
+            $refundReceiptPaths = collect($request->file('comprovantes', []))
+                ->map(fn ($file) => $file->store('orders/'.$order->getKey().'/refunds', 'local'))
+                ->all();
+        }
 
         if ($request->hasFile('arquivo')) {
             $request->validate(['arquivo' => 'file|mimes:jpeg,png,jpg,pdf|max:5120']);
@@ -541,53 +656,65 @@ class OrderController extends Controller
                 break;
 
             case 'PROCESSAR_REEMBOLSO':
-                $request->validate([
-                    'motivo' => 'required|string', 
-                    'arquivo' => 'required|file'
-                ]);
-                
                 $order->cancel_reason = $motivo;
-                $order->refund_receipt = $caminhoComprovante;
-                $order->refund_method = $refundMethod; 
-                
-                $textoMetodo = $refundMethod === 'CASHBACK' ? 'Crédito em Loja (Cashback)' : 'Estorno/Transferência Bancária';
-                $msg = "Reembolso Efetivado via {$textoMetodo}. Valor: R$ " . number_format($order->total, 2, ',', '.') . ". Parecer final: {$motivo}. Comprovante anexado.";
-                
-                if ($refundMethod === 'CASHBACK' && $order->user) {
-                    $cliente = $order->user;
-                    $cliente->cashback = ($cliente->cashback ?? 0) + $order->total;
-                    $cliente->save();
+                $order->refund_receipts = $refundReceiptPaths;
+                $order->refund_method = $refundMethod;
 
-                    \App\Models\WalletTransaction::create([
-                        'user_id'   => $cliente->id,
-                        'tipo'      => 'entrada',
-                        'valor'     => $order->total,
-                        'descricao' => "Estorno do Pedido #HUB-{$order->id} revertido em saldo Cashback. Parecer: {$motivo}"
-                    ]);
-                }
-
-                if (!empty($order->applied_coupons)) {
-                    $cuponsUsados = is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : $order->applied_coupons;
-                    if (is_array($cuponsUsados)) {
-                        foreach ($cuponsUsados as $cupomAplicado) {
-                            $nomeCupom = $cupomAplicado['nome'] ?? $cupomAplicado['codigo'] ?? null;
-                            if ($nomeCupom && class_exists('\App\Models\Cupom')) {
-                                $cupomBd = \App\Models\Cupom::where('codigo', $nomeCupom)->first();
-                                if ($cupomBd && $cupomBd->vezes_usado > 0) {
-                                    $cupomBd->vezes_usado -= 1;
-                                    $cupomBd->save();
-                                }
-                            }
-                        }
-                    }
-                }
+                $textoMetodo = $refundMethod === 'CASHBACK'
+                    ? 'Crédito em cashback'
+                    : 'Transferência ou estorno manual';
+                $msg = "Reembolso confirmado via {$textoMetodo}. Valor: R$ "
+                    . number_format($order->total, 2, ',', '.')
+                    . ". Motivo: {$motivo}. Comprovante(s) anexado(s).";
                 break;
 
             default:
                 return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Ação inválida não reconhecida.'], 400);
         }
 
-        $this->statusTransitions->transition($order, $targetStatus, $msg);
+        $afterLock = null;
+
+        if ($acao === 'PROCESSAR_REEMBOLSO') {
+            $afterLock = function (Order $lockedOrder) use ($motivo, $refundMethod): void {
+                if ($refundMethod === 'CASHBACK' && $lockedOrder->user_id) {
+                    $cliente = User::query()
+                        ->whereKey($lockedOrder->user_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($cliente) {
+                        $cliente->cashback = ($cliente->cashback ?? 0) + $lockedOrder->total;
+                        $cliente->save();
+
+                        WalletTransaction::query()->create([
+                            'user_id' => $cliente->getKey(),
+                            'tipo' => 'entrada',
+                            'valor' => $lockedOrder->total,
+                            'descricao' => "Reembolso do pedido HUB-{$lockedOrder->id} convertido em cashback. Motivo: {$motivo}",
+                        ]);
+                    }
+                }
+
+                foreach ($lockedOrder->applied_coupons ?? [] as $coupon) {
+                    $code = $coupon['nome'] ?? $coupon['codigo'] ?? null;
+
+                    if (! $code || ! class_exists('\App\Models\Cupom')) {
+                        continue;
+                    }
+
+                    $couponModel = \App\Models\Cupom::query()
+                        ->where('codigo', $code)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($couponModel && $couponModel->vezes_usado > 0) {
+                        $couponModel->decrement('vezes_usado');
+                    }
+                }
+            };
+        }
+
+        $this->statusTransitions->transition($order, $targetStatus, $msg, $afterLock);
 
         return response()->json(['status' => 'success', 'message' => 'Operação processada e auditada com sucesso.']);
     }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   formatDateRange,
   getDateRange,
+  getDateRangeLabel,
   getSelectedDateRangePreset,
 } from './DateRangeFilter';
 
@@ -32,5 +33,9 @@ describe('DateRangeFilter helpers', () => {
       startDate: '2026-03-04',
       endDate: '2026-03-12',
     })).toBe('04/03/2026 — 12/03/2026');
+    expect(getDateRangeLabel({
+      startDate: '',
+      endDate: '',
+    })).toBe('Todo o período');
   });
 });

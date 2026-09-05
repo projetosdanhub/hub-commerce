@@ -2974,3 +2974,102 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Pedidos: confirmação auditável e prévias de comprovante. */
+.hub-order-dialog > header {
+  position: relative;
+  padding-right: calc(var(--hub-space-6) + var(--hub-control-height-md));
+}
+
+.hub-order-dialog-close {
+  position: absolute;
+  top: var(--hub-space-3);
+  right: var(--hub-space-3);
+  margin-left: 0;
+}
+
+.hub-order-refund-receipts {
+  display: grid;
+  gap: var(--hub-space-3);
+}
+
+.hub-order-receipt-preview-grid,
+.hub-order-receipt-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--hub-space-3);
+}
+
+.hub-order-receipt-preview,
+.hub-order-receipt-card {
+  display: grid;
+  grid-template-columns: var(--hub-control-height-lg) minmax(0, 1fr) auto;
+  gap: var(--hub-space-3);
+  align-items: center;
+  min-width: 0;
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-md);
+  padding: var(--hub-space-3);
+  background: var(--hub-surface-subtle);
+}
+
+.hub-order-receipt-preview img,
+.hub-order-receipt-card img {
+  width: var(--hub-control-height-lg);
+  height: var(--hub-control-height-lg);
+  border-radius: var(--hub-radius-sm);
+  object-fit: cover;
+}
+
+.hub-order-receipt-file-icon {
+  display: grid;
+  width: var(--hub-control-height-lg);
+  height: var(--hub-control-height-lg);
+  place-items: center;
+  border-radius: var(--hub-radius-sm);
+  background: var(--hub-primary-soft);
+  color: var(--hub-primary);
+}
+
+.hub-order-receipt-preview > div,
+.hub-order-receipt-card > span {
+  display: grid;
+  min-width: 0;
+  gap: var(--hub-space-1);
+}
+
+.hub-order-receipt-preview strong,
+.hub-order-receipt-card strong {
+  overflow: hidden;
+  color: var(--hub-text-primary);
+  font-size: var(--hub-text-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hub-order-receipt-preview small,
+.hub-order-receipt-card small {
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-caption);
+}
+
+.hub-order-receipt-card {
+  color: inherit;
+  text-decoration: none;
+}
+
+.hub-order-receipt-card:hover,
+.hub-order-receipt-card:focus-visible {
+  border-color: var(--hub-primary);
+  background: var(--hub-surface-hover);
+  box-shadow: var(--hub-focus-ring);
+  outline: 0;
+}
+
+@media (max-width: 639px) {
+  .hub-order-receipt-preview-grid,
+  .hub-order-receipt-gallery {
+    grid-template-columns: 1fr;
+  }
+}

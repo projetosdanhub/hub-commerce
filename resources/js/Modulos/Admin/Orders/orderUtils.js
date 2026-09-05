@@ -71,7 +71,7 @@ export const actionForStatus = (status) => ({
   SEPARACAO: { key: 'SEPARAR', label: 'Concluir separação' },
   SEPARADO: { key: 'DESPACHAR', label: 'Configurar expedição' },
   DESPACHADO: { key: 'ENTREGAR', label: 'Confirmar entrega' },
-  EM_ANALISE_REEMBOLSO: { key: 'PROCESSAR_REEMBOLSO', label: 'Efetivar reembolso' },
+  EM_ANALISE_REEMBOLSO: { key: 'PROCESSAR_REEMBOLSO', label: 'Confirmar reembolso' },
 }[status] ?? null);
 
 export const timelineTone = (entry = {}) => {

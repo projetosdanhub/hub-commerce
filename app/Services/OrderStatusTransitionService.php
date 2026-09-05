@@ -25,12 +25,16 @@ final class OrderStatusTransitionService
         }
     }
 
-    public function transition(Order $order, OrderStatus $target, string $event): Order
+    public function transition(
+        Order $order,
+        OrderStatus $target,
+        string $event,
+        ?\Closure $afterLock = null,
+    ): Order
     {
-        $pendingAttributes = $order->getDirty();
-        unset($pendingAttributes['status'], $pendingAttributes['tenant_id'], $pendingAttributes['id']);
+        $pendingAttributes = $this->pendingAttributes($order);
 
-        return DB::transaction(function () use ($order, $target, $event, $pendingAttributes): Order {
+        return DB::transaction(function () use ($afterLock, $order, $target, $event, $pendingAttributes): Order {
             $lockedOrder = Order::query()
                 ->whereKey($order->getKey())
                 ->lockForUpdate()
@@ -39,6 +43,11 @@ final class OrderStatusTransitionService
             $this->assertCanTransition($lockedOrder, $target);
 
             $lockedOrder->fill($pendingAttributes);
+
+            if ($afterLock !== null) {
+                $afterLock($lockedOrder);
+            }
+
             $lockedOrder->status = $target;
             $lockedOrder->save();
 
@@ -49,6 +58,29 @@ final class OrderStatusTransitionService
 
             return $lockedOrder;
         });
+    }
+
+    private function pendingAttributes(Order $order): array
+    {
+        $pendingAttributes = $order->getDirty();
+        unset($pendingAttributes['status'], $pendingAttributes['tenant_id'], $pendingAttributes['id']);
+
+        foreach ($pendingAttributes as $attribute => $value) {
+            $cast = $order->getCasts()[$attribute] ?? null;
+
+            if (
+                is_string($value)
+                && in_array($cast, ['array', 'json', 'object', 'collection'], true)
+            ) {
+                $decoded = json_decode($value, true);
+
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $pendingAttributes[$attribute] = $decoded;
+                }
+            }
+        }
+
+        return $pendingAttributes;
     }
 
     private function currentStatus(Order $order): ?OrderStatus

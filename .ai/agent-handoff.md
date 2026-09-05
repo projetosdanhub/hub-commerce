@@ -209,3 +209,14 @@ Copie este bloco para cada handoff relevante:
 - Evidências: o refresh usa React Query ativo ou registradores da rota; período mantém os parâmetros reais `startDate` e `endDate`; nenhum dado, métrica, notificação ou ação foi simulado.
 - Riscos, bloqueios e itens não verificados: a validação visual em navegador e os workflows obrigatórios ainda serão executados; a vitrine continua um link real em nova aba no rodapé da sidebar.
 - Próxima ação única: revisar o diff, executar a validação proporcional e abrir PR para os três workflows obrigatórios.
+
+
+### 2026-09-05 — Codex
+- Objetivo e escopo: iniciar UI-020 no módulo Pedidos e promover as interações aprovadas a padrões do DesignSystem: métricas, região estável, filtro de período, busca expansível, tooltips, diálogos e reembolso auditável.
+- Branch e commit: `ui/orders-operational-patterns`; validação de CI pendente.
+- Task board: UI-019 [x] com evidência da PR #41; UI-020 [~] até a validação de testes, CI e revisão visual.
+- Arquivos alterados: padrões `DateRangeFilter`, `ExpandableSearch`, `ModalDialog`, `MetricDictionaryDialog` e `MetricPreferencesDialog`; Pedidos, DesignSystem, controller/rotas/modelos/migrations, testes, board e regras.
+- Comportamento preservado: filtros de Pedidos continuam usando `startDate`/`endDate`; queries e permissões tenant-scoped são mantidas; nenhuma métrica operacional foi inventada.
+- Evidências: revisão estática confirma tooltip portaled com tokens do painel, busca por número/cliente/e-mail/CPF, altura estável da região de dados, preferências por usuário+tenant e transições de cancelamento/reembolso. Tests, E2E Tests e Security Scans ainda não foram executados para esta branch.
+- Riscos, bloqueios e itens não verificados: transferência/estorno é registro manual comprovado, não integração bancária. Cashback usa o ledger atualmente existente e precisa continuar sob a evolução de CRM-003 para eliminar a dívida do saldo legado no usuário global. Comprovantes novos são privados; comprovantes legados públicos permanecem apenas para compatibilidade e requerem migração posterior.
+- Próxima ação única: abrir PR, acompanhar todos os checks obrigatórios e revisar Pedidos em 320/768/1024 px, teclado, zoom 200% e reduced motion antes de integrar.

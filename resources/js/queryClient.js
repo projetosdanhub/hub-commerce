@@ -7,6 +7,7 @@ export const adminQueryKeys = {
   dashboard: () => ['admin', tenantScope(), 'dashboard'],
   orders: (params = {}) => ['admin', tenantScope(), 'orders', params],
   ordersMetrics: () => ['admin', tenantScope(), 'orders', 'metrics'],
+  ordersMetricPreferences: () => ['admin', tenantScope(), 'orders', 'metric-preferences'],
   shippingSupport: () => ['admin', tenantScope(), 'orders', 'shipping-support'],
   customers: (params = {}) => ['admin', tenantScope(), 'customers', params],
   customerMetrics: () => ['admin', tenantScope(), 'customers', 'metrics'],

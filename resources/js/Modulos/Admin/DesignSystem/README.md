@@ -41,3 +41,12 @@ O painel usa shells independentes. No mobile, filtros podem ser recolhidos, tabe
 - O submenu de status usa `SectionTabs`; filtros temporais não fazem parte da mesma trilha visual.
 - Use `TruncatedText` em colunas, títulos ou identificadores que possam exceder seu contêiner. Preserve o texto completo no tooltip e mantenha o layout sem overflow.
 - `Tooltip` é renderizado acima da interface por portal; não criar variações locais que possam ser cortadas por `overflow`, flex ou superfícies.
+
+
+## Operação: métricas, listas e busca
+
+- Use `hub-stable-data-region` em qualquer área que possa alternar lista, tabela, skeleton ou vazio. O painel mantém altura mínima e o estado vazio fica centralizado, com ícone, título, explicação e ação real.
+- `ExpandableSearch` substitui busca sempre aberta quando a densidade operacional pedir um controle compacto. A lupa expande o campo; após apagar uma busca já preenchida, ele recolhe em dois segundos de inatividade.
+- `MetricDictionaryDialog` explica métricas com nome à esquerda e definição/cálculo à direita. `MetricPreferencesDialog` permite ordenar por arraste ou teclado e alternar visibilidade, mas sua configuração deve ter endpoint tenant-aware persistido.
+- O filtro de período mostra o nome de presets e reserva datas para período personalizado. Em Personalizado, o formulário substitui a lista de opções e `Voltar` restaura os presets.
+- Para regras completas, incluindo comprovantes privados e transições de reembolso, consulte `.ai/rules/14-operational-admin-interactions.md`.

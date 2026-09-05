@@ -29,6 +29,7 @@ class Order extends Model
         'applied_coupons',    // Guarda os múltiplos cupons em formato JSON
         'cancel_reason',
         'refund_receipt',
+        'refund_receipts',
         'refund_method',
         'payment_receipt',    // 🟢 ADICIONADO: Comprovante de Pagamento Manual
         'delivery_receipt'    // 🟢 ADICIONADO: Comprovante de Entrega / Assinatura
@@ -47,6 +48,7 @@ class Order extends Model
             'gateway_fee'          => 'decimal:2',
             'payment_installments' => 'integer',
             'applied_coupons'      => 'array', // Converte JSON do banco para Lista no React automaticamente
+            'refund_receipts'     => 'array',
         ];
     }
 
