@@ -10,8 +10,9 @@ import {
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
-import { FilterSelect } from '../DesignSystem/primitives/FilterSelect';
 import { Skeleton } from '../DesignSystem/primitives/Skeleton';
+import { TruncatedText } from '../DesignSystem/primitives/TruncatedText';
+import { DateRangeFilter } from '../DesignSystem/patterns/DateRangeFilter';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import {
   formatCurrency,
@@ -21,48 +22,6 @@ import {
   ORDER_TABS,
 } from './orderUtils';
 
-const DATE_PERIODS = [
-  { value: 'ALL', label: 'Todo o período' },
-  { value: 'TODAY', label: 'Hoje' },
-  { value: 'LAST_7', label: 'Últimos 7 dias' },
-  { value: 'LAST_30', label: 'Últimos 30 dias' },
-  { value: 'MONTH', label: 'Este mês' },
-];
-
-const toDateInputValue = (date) => [
-  date.getFullYear(),
-  String(date.getMonth() + 1).padStart(2, '0'),
-  String(date.getDate()).padStart(2, '0'),
-].join('-');
-
-const getDateRange = (period) => {
-  if (period === 'ALL') return { startDate: '', endDate: '' };
-
-  const today = new Date();
-  const start = new Date(today);
-
-  if (period === 'LAST_7') start.setDate(today.getDate() - 6);
-  if (period === 'LAST_30') start.setDate(today.getDate() - 29);
-  if (period === 'MONTH') start.setDate(1);
-
-  return {
-    startDate: toDateInputValue(start),
-    endDate: toDateInputValue(today),
-  };
-};
-
-const getSelectedPeriod = ({ startDate, endDate }) => {
-  if (!startDate && !endDate) return 'ALL';
-
-  const matchedPeriod = DATE_PERIODS.find(({ value }) => {
-    if (value === 'ALL') return false;
-    const range = getDateRange(value);
-    return range.startDate === startDate && range.endDate === endDate;
-  });
-
-  return matchedPeriod?.value || 'CUSTOM';
-};
-
 const OrdersLoading = () => (
   <div className="hub-orders-loading" aria-live="polite" role="status">
     <p className="sr-only">Carregando pedidos.</p>
@@ -70,15 +29,20 @@ const OrdersLoading = () => (
   </div>
 );
 
-const Customer = ({ order }) => (
-  <span className="hub-order-customer">
-    <span className="hub-customer-initials" aria-hidden="true">{getInitials(order.cliente?.nome)}</span>
-    <span className="hub-orders-customer-copy">
-      <strong>{order.cliente?.nome || 'Cliente indisponível'}</strong>
-      <small>{order.cliente?.email || 'E-mail indisponível'}</small>
+const Customer = ({ order }) => {
+  const name = order.cliente?.nome || 'Cliente indisponível';
+  const email = order.cliente?.email || 'E-mail indisponível';
+
+  return (
+    <span className="hub-order-customer">
+      <span className="hub-customer-initials" aria-hidden="true">{getInitials(order.cliente?.nome)}</span>
+      <span className="hub-orders-customer-copy">
+        <TruncatedText className="hub-orders-customer-name" label={name}>{name}</TruncatedText>
+        <TruncatedText className="hub-orders-customer-email" label={email}>{email}</TruncatedText>
+      </span>
     </span>
-  </span>
-);
+  );
+};
 
 const EmptyOrders = ({ hasFilters, onClear }) => (
   <div className="hub-empty-state">
@@ -118,7 +82,11 @@ const DesktopTable = ({ orders, onOpen }) => (
                 <span className="hub-orders-muted">{formatOrderDate(order.data_raw || order.created_at)}</span>
               </td>
               <td><Customer order={order} /></td>
-              <td>{order.pagamento_metodo || 'Não informado'}</td>
+              <td>
+                <TruncatedText className="hub-orders-payment" label={order.pagamento_metodo || 'Não informado'}>
+                  {order.pagamento_metodo || 'Não informado'}
+                </TruncatedText>
+              </td>
               <td><Badge variant={status.variant}>{status.label}</Badge></td>
               <td><strong>{formatCurrency(order.total)}</strong></td>
               <td>
@@ -174,16 +142,23 @@ export const OrdersList = ({
           <h2 className="hub-panel-title">Pedidos da loja</h2>
           <p className="hub-panel-description">Dados atualizados ao abrir, filtrar e concluir uma operação.</p>
         </div>
-        <label className="hub-orders-search">
-          <Search aria-hidden="true" size={17} />
-          <span className="sr-only">Buscar pedido, cliente ou e-mail</span>
-          <input
-            value={filters.search}
-            onChange={(event) => onChange({ search: event.target.value, page: 1 })}
-            placeholder="Buscar pedido ou cliente"
+        <div className="hub-orders-list-controls">
+          <label className="hub-orders-search">
+            <Search aria-hidden="true" size={17} />
+            <span className="sr-only">Buscar pedido, cliente ou e-mail</span>
+            <input
+              value={filters.search}
+              onChange={(event) => onChange({ search: event.target.value, page: 1 })}
+              placeholder="Buscar pedido ou cliente"
+            />
+            {filters.search ? <IconButton icon={X} label="Limpar busca" onClick={() => onChange({ search: '', page: 1 })} /> : null}
+          </label>
+          <DateRangeFilter
+            value={{ startDate: filters.startDate, endDate: filters.endDate }}
+            onApply={({ startDate, endDate }) => onChange({ startDate, endDate, page: 1 })}
           />
-          {filters.search ? <IconButton icon={X} label="Limpar busca" onClick={() => onChange({ search: '', page: 1 })} /> : null}
-        </label>
+          {hasFilters ? <Button variant="ghost" size="sm" onClick={onClear}>Limpar</Button> : null}
+        </div>
       </header>
 
       <div className="hub-orders-filter-row">
@@ -193,34 +168,7 @@ export const OrdersList = ({
           value={filters.status}
           onChange={(status) => onChange({ status, page: 1 })}
         />
-        <div className="hub-orders-date-filters">
-          <FilterSelect
-            label="Filtro por período"
-            value={getSelectedPeriod(filters)}
-            onChange={(event) => {
-              const period = event.target.value;
-              if (period !== 'CUSTOM') onChange({ ...getDateRange(period), page: 1 });
-            }}
-          >
-            {DATE_PERIODS.map((period) => <option key={period.value} value={period.value}>{period.label}</option>)}
-            <option value="CUSTOM" disabled>Datas personalizadas</option>
-          </FilterSelect>
-          <label>De
-            <input
-              type="date"
-              value={filters.startDate}
-              onChange={(event) => onChange({ startDate: event.target.value, page: 1 })}
-            />
-          </label>
-          <label>Até
-            <input
-              type="date"
-              value={filters.endDate}
-              onChange={(event) => onChange({ endDate: event.target.value, page: 1 })}
-            />
-          </label>
-          {hasFilters ? <Button variant="ghost" size="sm" onClick={onClear}>Limpar</Button> : null}
-        </div>
+
       </div>
 
       {loading && !orders.length ? (
