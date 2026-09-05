@@ -644,3 +644,29 @@
 .hub-customer-management-loading > .hub-skeleton {
   min-height: var(--hub-control-height-lg);
 }
+
+
+/* Pixel: agrupamento responsivo de parâmetros no editor de acionadores. */
+.hub-pixel-payload-category {
+  display: grid;
+  gap: var(--hub-space-3);
+  min-width: 0;
+  padding: var(--hub-space-4);
+  border: 1px solid var(--hub-border-subtle);
+  border-radius: var(--hub-radius-lg);
+  background: color-mix(in srgb, var(--hub-surface) 88%, transparent);
+}
+
+.hub-pixel-payload-category > legend {
+  padding: 0 var(--hub-space-1);
+  color: var(--hub-text-primary);
+  font-size: var(--hub-font-size-sm);
+  font-weight: 700;
+}
+
+.hub-pixel-payload-category > p {
+  margin: 0;
+  color: var(--hub-text-secondary);
+  font-size: var(--hub-font-size-xs);
+  line-height: 1.5;
+}
