@@ -70,7 +70,7 @@ export const Tooltip = ({ children, content, className = '' }) => {
         <span
           id={tooltipId}
           role="tooltip"
-          className="hub-tooltip-content"
+          className="hub-tooltip-content hub-admin"
           data-placement={position.placement}
           style={{
             '--hub-tooltip-x': position.x + 'px',
