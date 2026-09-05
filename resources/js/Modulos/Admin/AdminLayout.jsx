@@ -7,6 +7,7 @@ import { adminQueryKeys } from '../../queryClient';
 import { fetchAdminDashboard } from './AdminDashboard';
 import { AdminDesktopShell } from './AppShell/AdminDesktopShell';
 import { AdminMobileShell } from './AppShell/AdminMobileShell';
+import { AdminPageRefreshProvider } from './DesignSystem/patterns/GlobalPageRefresh';
 
 const useMobileShell = () => {
   const query = '(max-width: 1023px)';
@@ -64,15 +65,17 @@ const AdminLayout = () => {
   return (
     <div className="hub-admin">
       <div className="hub-admin-shell">
-        {isMobile ? (
-          <AdminMobileShell onLogout={handleLogout}>
-            <Outlet />
-          </AdminMobileShell>
-        ) : (
-          <AdminDesktopShell onLogout={handleLogout} onWarmRoute={warmRoute}>
-            <Outlet />
-          </AdminDesktopShell>
-        )}
+        <AdminPageRefreshProvider>
+          {isMobile ? (
+            <AdminMobileShell onLogout={handleLogout}>
+              <Outlet />
+            </AdminMobileShell>
+          ) : (
+            <AdminDesktopShell onLogout={handleLogout} onWarmRoute={warmRoute}>
+              <Outlet />
+            </AdminDesktopShell>
+          )}
+        </AdminPageRefreshProvider>
       </div>
     </div>
   );

@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { CircleAlert, ClipboardList, RefreshCw } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../api';
 import { adminQueryKeys } from '../../queryClient';
 import { PageHeader } from './DesignSystem/patterns/PageHeader';
 import { Button } from './DesignSystem/primitives/Button';
+import { useRegisterAdminPageRefresh } from './DesignSystem/patterns/GlobalPageRefresh';
 import { OrderActionDialog } from './Orders/OrderActionDialog';
 import { OrderDetail } from './Orders/OrderDetail';
 import { OrderMetrics } from './Orders/OrderMetrics';
@@ -39,7 +40,6 @@ const listFilters = (filters) => ({
 });
 
 export default function AdminOrders() {
-  const client = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState(initialFilters);
   const [selectedId, setSelectedId] = useState(() => searchParams.get('id'));
@@ -86,10 +86,18 @@ export default function AdminOrders() {
     }
   }, [orders, ordersQuery.isFetching, selectedId, selectedOrder, setSearchParams]);
 
-  const refreshCurrentData = async () => {
-    await client.invalidateQueries({ queryKey: adminQueryKeys.root() });
-    await Promise.all([ordersQuery.refetch(), metricsQuery.refetch()]);
-  };
+  const refreshCurrentData = useCallback(
+    async () => {
+      await Promise.all([
+        ordersQuery.refetch(),
+        metricsQuery.refetch(),
+        ...(action === 'DESPACHAR' ? [shippingQuery.refetch()] : []),
+      ]);
+    },
+    [action, metricsQuery.refetch, ordersQuery.refetch, shippingQuery.refetch],
+  );
+
+  useRegisterAdminPageRefresh(refreshCurrentData);
 
   const mutation = useMutation({
     mutationFn: async ({ type, fields }) => {
@@ -171,9 +179,7 @@ export default function AdminOrders() {
         {notice ? <p className="hub-orders-notice" data-tone={notice.tone} role="status">{notice.message}</p> : null}
         <OrderDetail
           order={selectedOrder}
-          refreshing={ordersQuery.isFetching || metricsQuery.isFetching}
           onBack={closeOrder}
-          onRefresh={refreshCurrentData}
           onAction={setAction}
           onPreviewDocument={previewDocument}
         />
@@ -199,11 +205,6 @@ export default function AdminOrders() {
         title="Pedidos"
         icon={ClipboardList}
         description="Acompanhe pagamentos, expedição e pós-venda com ações auditáveis."
-        actions={(
-          <Button variant="secondary" icon={RefreshCw} loading={ordersQuery.isFetching} onClick={refreshCurrentData}>
-            Atualizar dados
-          </Button>
-        )}
       />
       {notice ? <p className="hub-orders-notice" data-tone={notice.tone} role="status">{notice.message}</p> : null}
       <OrderMetrics

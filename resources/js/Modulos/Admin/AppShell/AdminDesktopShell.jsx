@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ExternalLink, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { CircleUserRound, LogOut, PanelLeftClose, PanelLeftOpen, RefreshCw } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { AdminNavigation } from './AdminNavigation';
+import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
-import { IconLink } from '../DesignSystem/primitives/IconLink';
+import { Tooltip } from '../DesignSystem/primitives/Tooltip';
+import { useAdminPageRefresh } from '../DesignSystem/patterns/GlobalPageRefresh';
 
 const SIDEBAR_STORAGE_KEY = 'hub_admin_sidebar_collapsed';
 
@@ -12,6 +14,7 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(() => window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true');
   const shouldReduceMotion = useReducedMotion();
+  const { isRefreshing, refresh } = useAdminPageRefresh();
 
   useEffect(() => {
     window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(collapsed));
@@ -33,16 +36,17 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute }) => {
         </div>
 
         <footer className="hub-sidebar-footer">
-          <a
-            className="hub-sidebar-store"
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Abrir vitrine em uma nova aba"
-          >
-            <ExternalLink aria-hidden="true" size={16} />
-            <span className="hub-sidebar-store-label">Acessar vitrine</span>
-          </a>
+          <Tooltip content="Abrir vitrine em uma nova aba">
+            <a
+              className="hub-sidebar-store"
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <CircleUserRound aria-hidden="true" size={16} />
+              <span className="hub-sidebar-store-label">Acessar vitrine</span>
+            </a>
+          </Tooltip>
           <IconButton
             icon={collapsed ? PanelLeftOpen : PanelLeftClose}
             label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'}
@@ -55,13 +59,15 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute }) => {
       <div className="hub-admin-main">
         <header className="hub-admin-topbar">
           <div className="hub-topbar-actions">
-            <IconLink
-              icon={ExternalLink}
-              label="Acessar vitrine em uma nova aba"
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-            />
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={RefreshCw}
+              loading={isRefreshing}
+              onClick={refresh}
+            >
+              Atualizar
+            </Button>
             <IconButton icon={LogOut} label="Sair do painel" onClick={onLogout} />
           </div>
         </header>

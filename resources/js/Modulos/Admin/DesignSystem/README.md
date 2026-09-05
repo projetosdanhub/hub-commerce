@@ -32,3 +32,12 @@ O painel usa shells independentes. No mobile, filtros podem ser recolhidos, tabe
 3. Usar tokens, sem `style` inline, hex, durações ou sombras arbitrárias.
 4. Confirmar que nenhum dado, ação, métrica ou notificação foi simulado.
 5. Cobrir comportamento proporcional com testes e registrar a evidência no handoff.
+
+
+## Atualização, períodos e conteúdo longo
+
+- A atualização manual é global: use `AdminPageRefreshProvider` no shell e `useRegisterAdminPageRefresh` somente para uma tela que precise de uma composição de refetch específica. Não repetir botões “Atualizar dados” em cabeçalhos, abas ou detalhes.
+- Para período, use `patterns/DateRangeFilter` ao lado da busca. Ele oferece Todo o período, Hoje, Últimos 7 dias, Este mês, Último mês e Personalizado com intervalo validado. O seletor nativo `FilterSelect` continua reservado a listas simples.
+- O submenu de status usa `SectionTabs`; filtros temporais não fazem parte da mesma trilha visual.
+- Use `TruncatedText` em colunas, títulos ou identificadores que possam exceder seu contêiner. Preserve o texto completo no tooltip e mantenha o layout sem overflow.
+- `Tooltip` é renderizado acima da interface por portal; não criar variações locais que possam ser cortadas por `overflow`, flex ou superfícies.

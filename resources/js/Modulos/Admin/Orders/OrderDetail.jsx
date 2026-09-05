@@ -8,7 +8,6 @@ import {
   MapPin,
   MoreHorizontal,
   Package,
-  RefreshCw,
   RotateCcw,
   Truck,
   UserRound,
@@ -153,9 +152,7 @@ const SecondaryActions = ({ order, onAction, onPreviewDocument }) => {
 
 export const OrderDetail = ({
   order,
-  refreshing,
   onBack,
-  onRefresh,
   onAction,
   onPreviewDocument,
 }) => {
@@ -187,7 +184,6 @@ export const OrderDetail = ({
           </div>
         </div>
         <div className="hub-order-detail-actions">
-          <IconButton icon={RefreshCw} label="Atualizar dados do pedido" loading={refreshing} onClick={onRefresh} />
           <SecondaryActions order={order} onAction={onAction} onPreviewDocument={onPreviewDocument} />
           {primaryAction ? (
             <Button icon={primaryAction.key === 'DESPACHAR' ? Truck : CheckCircle2} onClick={() => onAction(primaryAction.key)}>
