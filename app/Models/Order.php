@@ -29,6 +29,7 @@ class Order extends Model
         'applied_coupons',    // Guarda os múltiplos cupons em formato JSON
         'cancel_reason',
         'refund_receipt',
+        'refund_receipts',
         'refund_method',
         'payment_receipt',    // 🟢 ADICIONADO: Comprovante de Pagamento Manual
         'delivery_receipt'    // 🟢 ADICIONADO: Comprovante de Entrega / Assinatura
