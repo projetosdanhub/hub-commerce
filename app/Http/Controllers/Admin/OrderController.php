@@ -467,6 +467,20 @@ class OrderController extends Controller
         
         $msg = "";
         $caminhoComprovante = null;
+        $refundReceiptPaths = [];
+
+        if ($acao === 'PROCESSAR_REEMBOLSO') {
+            $request->validate([
+                'motivo' => ['required', 'string'],
+                'refund_method' => ['required', Rule::in(['TRANSFERENCIA', 'CASHBACK'])],
+                'comprovantes' => ['required', 'array', 'min:1', 'max:2'],
+                'comprovantes.*' => ['required', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:5120'],
+            ]);
+
+            $refundReceiptPaths = collect($request->file('comprovantes', []))
+                ->map(fn ($file) => $file->store('orders/'.$order->getKey().'/refunds', 'local'))
+                ->all();
+        }
 
         if ($request->hasFile('arquivo')) {
             $request->validate(['arquivo' => 'file|mimes:jpeg,png,jpg,pdf|max:5120']);
@@ -638,53 +652,65 @@ class OrderController extends Controller
                 break;
 
             case 'PROCESSAR_REEMBOLSO':
-                $request->validate([
-                    'motivo' => 'required|string', 
-                    'arquivo' => 'required|file'
-                ]);
-                
                 $order->cancel_reason = $motivo;
-                $order->refund_receipt = $caminhoComprovante;
-                $order->refund_method = $refundMethod; 
-                
-                $textoMetodo = $refundMethod === 'CASHBACK' ? 'Crédito em Loja (Cashback)' : 'Estorno/Transferência Bancária';
-                $msg = "Reembolso Efetivado via {$textoMetodo}. Valor: R$ " . number_format($order->total, 2, ',', '.') . ". Parecer final: {$motivo}. Comprovante anexado.";
-                
-                if ($refundMethod === 'CASHBACK' && $order->user) {
-                    $cliente = $order->user;
-                    $cliente->cashback = ($cliente->cashback ?? 0) + $order->total;
-                    $cliente->save();
+                $order->refund_receipts = $refundReceiptPaths;
+                $order->refund_method = $refundMethod;
 
-                    \App\Models\WalletTransaction::create([
-                        'user_id'   => $cliente->id,
-                        'tipo'      => 'entrada',
-                        'valor'     => $order->total,
-                        'descricao' => "Estorno do Pedido #HUB-{$order->id} revertido em saldo Cashback. Parecer: {$motivo}"
-                    ]);
-                }
-
-                if (!empty($order->applied_coupons)) {
-                    $cuponsUsados = is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : $order->applied_coupons;
-                    if (is_array($cuponsUsados)) {
-                        foreach ($cuponsUsados as $cupomAplicado) {
-                            $nomeCupom = $cupomAplicado['nome'] ?? $cupomAplicado['codigo'] ?? null;
-                            if ($nomeCupom && class_exists('\App\Models\Cupom')) {
-                                $cupomBd = \App\Models\Cupom::where('codigo', $nomeCupom)->first();
-                                if ($cupomBd && $cupomBd->vezes_usado > 0) {
-                                    $cupomBd->vezes_usado -= 1;
-                                    $cupomBd->save();
-                                }
-                            }
-                        }
-                    }
-                }
+                $textoMetodo = $refundMethod === 'CASHBACK'
+                    ? 'Crédito em cashback'
+                    : 'Transferência ou estorno manual';
+                $msg = "Reembolso confirmado via {$textoMetodo}. Valor: R$ "
+                    . number_format($order->total, 2, ',', '.')
+                    . ". Motivo: {$motivo}. Comprovante(s) anexado(s).";
                 break;
 
             default:
                 return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Ação inválida não reconhecida.'], 400);
         }
 
-        $this->statusTransitions->transition($order, $targetStatus, $msg);
+        $afterLock = null;
+
+        if ($acao === 'PROCESSAR_REEMBOLSO') {
+            $afterLock = function (Order $lockedOrder) use ($motivo, $refundMethod): void {
+                if ($refundMethod === 'CASHBACK' && $lockedOrder->user_id) {
+                    $cliente = User::query()
+                        ->whereKey($lockedOrder->user_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($cliente) {
+                        $cliente->cashback = ($cliente->cashback ?? 0) + $lockedOrder->total;
+                        $cliente->save();
+
+                        WalletTransaction::query()->create([
+                            'user_id' => $cliente->getKey(),
+                            'tipo' => 'entrada',
+                            'valor' => $lockedOrder->total,
+                            'descricao' => "Reembolso do pedido HUB-{$lockedOrder->id} convertido em cashback. Motivo: {$motivo}",
+                        ]);
+                    }
+                }
+
+                foreach ($lockedOrder->applied_coupons ?? [] as $coupon) {
+                    $code = $coupon['nome'] ?? $coupon['codigo'] ?? null;
+
+                    if (! $code || ! class_exists('\App\Models\Cupom')) {
+                        continue;
+                    }
+
+                    $couponModel = \App\Models\Cupom::query()
+                        ->where('codigo', $code)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($couponModel && $couponModel->vezes_usado > 0) {
+                        $couponModel->decrement('vezes_usado');
+                    }
+                }
+            };
+        }
+
+        $this->statusTransitions->transition($order, $targetStatus, $msg, $afterLock);
 
         return response()->json(['status' => 'success', 'message' => 'Operação processada e auditada com sucesso.']);
     }
