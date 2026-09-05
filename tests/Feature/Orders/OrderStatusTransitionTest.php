@@ -112,6 +112,8 @@ class OrderStatusTransitionTest extends TestCase
         $this->assertSame([], OrderStatus::CANCELLED->allowedTransitions());
         $this->assertSame([], OrderStatus::REFUNDED->allowedTransitions());
         $this->assertFalse(OrderStatus::AWAITING_PAYMENT->canTransitionTo(OrderStatus::SHIPPED));
+        $this->assertTrue(OrderStatus::AWAITING_PAYMENT->canTransitionTo(OrderStatus::CANCELLED));
+        $this->assertFalse(OrderStatus::PICKING->canTransitionTo(OrderStatus::CANCELLED));
         $this->assertTrue(OrderStatus::READY_TO_SHIP->canTransitionTo(OrderStatus::SHIPPED));
     }
 
