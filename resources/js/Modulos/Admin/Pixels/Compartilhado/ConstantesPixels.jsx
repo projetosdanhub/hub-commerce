@@ -120,25 +120,44 @@ export const payloadCategories = [
 ];
 
 // --- Base Card Props builder para KPIs do Dashboard ---
-export const buildBaseCardProps = (met) => ({
-    'receita_bruta': { label: 'Receita Bruta Atribuída', valor: `R$ ${(met.receita_bruta || 0).toLocaleString('pt-BR', {minimumFractionDigits:2})}`, icon: DollarSign, color: 'text-emerald-600', tooltip: 'Faturamento validado dos pedidos do banco de dados.', formula: 'Σ(orders.total) WHERE status NOT IN(CANCELADO, REEMBOLSADO)' },
-    'receita_liquida': { label: 'Receita Líquida', valor: `R$ ${(met.receita_liquida || 0).toLocaleString('pt-BR', {minimumFractionDigits:2})}`, icon: Activity, color: 'text-emerald-500', tooltip: 'Receita bruta menos devoluções e cancelamentos.', formula: 'Receita Bruta - Estornos' },
-    'pedidos': { label: 'Pedidos Confirmados', valor: met.pedidos || 0, icon: ShoppingCart, color: 'text-blue-600', tooltip: 'Quantidade de checkout aprovados reais.', formula: 'COUNT(orders.id)' },
-    'itens_vendidos': { label: 'Itens Vendidos', valor: met.itens_vendidos || 0, icon: Database, color: 'text-blue-500', tooltip: 'Total de produtos físicos vendidos.', formula: 'Σ(order_items.qty)' },
-    'ticket_medio': { label: 'Ticket Médio (AOV)', valor: `R$ ${(met.ticket_medio || 0).toLocaleString('pt-BR', {minimumFractionDigits:2})}`, icon: TrendingUp, color: 'text-slate-800', tooltip: 'Média gasta por cliente em cada pedido válido.', formula: 'Receita Bruta ÷ Pedidos' },
-    'taxa_conversao': { label: 'Taxa de Conversão (CR)', valor: `${(met.taxa_conversao || 0).toFixed(2)}%`, icon: Filter, color: 'text-slate-800', tooltip: 'Porcentagem de acessos que geraram compra.', formula: '(Pedidos ÷ PageViews) × 100' },
-    'novos_clientes': { label: 'Novos Clientes', valor: met.novos_clientes || 0, icon: UserPlus, color: 'text-purple-600', tooltip: 'Clientes na primeira compra.', formula: 'COUNT DISTINCT user_id (first purchase)' },
-    'clientes_recorrentes': { label: 'Clientes Recorrentes', valor: met.clientes_recorrentes || 0, icon: Users, color: 'text-purple-500', tooltip: 'Clientes com mais de uma compra.', formula: 'COUNT DISTINCT user_id (repeat purchase)' },
-    'cac': { label: 'CAC Estimado', valor: `R$ ${(met.cac || 0).toLocaleString('pt-BR', {minimumFractionDigits:2})}`, icon: Target, color: 'text-rose-500', tooltip: 'Custo de Aquisição de Clientes.', formula: 'Gasto Ads ÷ Novos Clientes' },
-    'roas': { label: 'ROAS Geral', valor: `${(met.roas || 0).toFixed(2)}x`, icon: Activity, color: 'text-emerald-600', tooltip: 'Retorno sobre investimento.', formula: 'Receita Atribuída ÷ Investimento' },
-    'ltv': { label: 'LTV Médio', valor: `R$ ${(met.ltv || 0).toLocaleString('pt-BR', {minimumFractionDigits:2})}`, icon: Database, color: 'text-indigo-600', tooltip: 'Lifetime Value médio dos clientes.', formula: 'Receita Total ÷ Clientes Únicos' },
-    'margem_bruta': { label: 'Margem Bruta (%)', valor: `${(met.margem_bruta || 0).toFixed(2)}%`, icon: TrendingUp, color: 'text-emerald-500', tooltip: 'Margem de lucro sobre os produtos.', formula: '(Lucro Bruto ÷ Receita Líquida) × 100' },
-    'sessoes': { label: 'Sessões', valor: met.sessoes || 0, icon: Globe, color: 'text-sky-600', tooltip: 'Sessões únicas na loja.', formula: 'COUNT DISTINCT session_id' },
-    'page_views': { label: 'Total PageViews', valor: met.page_views || 0, icon: Globe, color: 'text-sky-500', tooltip: 'Total de visualizações de página rastreadas no Data Layer.', formula: 'COUNT(event) WHERE event = PageView' },
-    'view_item': { label: 'View Item (Produtos)', valor: met.view_item || 0, icon: MousePointer2, color: 'text-sky-400', tooltip: 'Visualizações de página de produto.', formula: 'COUNT(event) WHERE event = ViewContent' },
-    'add_to_cart': { label: 'Adições ao Carrinho', valor: met.add_to_cart || 0, icon: MousePointerClick, color: 'text-orange-500', tooltip: 'Total de itens que entraram no carrinho.', formula: 'COUNT(event) WHERE event = AddToCart' },
-    'begin_checkout': { label: 'Checkouts Iniciados', valor: met.begin_checkout || 0, icon: CreditCard, color: 'text-orange-600', tooltip: 'Checkouts iniciados.', formula: 'COUNT(event) WHERE event = InitiateCheckout' },
-    'add_payment_info': { label: 'Info. Pagamento', valor: met.add_payment_info || 0, icon: CreditCard, color: 'text-orange-400', tooltip: 'Eventos de inserção de pagamento.', formula: 'COUNT(event) WHERE event = AddPaymentInfo' },
-    'abandono_carrinho': { label: 'Abandono de Carrinho', valor: `${(met.abandono_carrinho || 0).toFixed(2)}%`, icon: AlertTriangle, color: 'text-rose-500', tooltip: 'Usuários que colocaram no carrinho mas não compraram.', formula: '(1 - (Pedidos ÷ AddToCart)) × 100' },
-    'abandono_checkout': { label: 'Abandono de Checkout', valor: `${(met.abandono_checkout || 0).toFixed(2)}%`, icon: AlertTriangle, color: 'text-rose-600', tooltip: 'Pessoas que iniciaram pagamento mas abandonaram.', formula: '(1 - (Pedidos ÷ InitiateCheckout)) × 100' },
+const hasMetricValue = (value) => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+const metricNumber = (value) => hasMetricValue(value) ? Number(value) : null;
+const metricCurrency = (value) => {
+    const numeric = metricNumber(value);
+    return numeric === null ? '—' : `R$ ${numeric.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+};
+const metricInteger = (value) => {
+    const numeric = metricNumber(value);
+    return numeric === null ? '—' : numeric.toLocaleString('pt-BR');
+};
+const metricPercent = (value) => {
+    const numeric = metricNumber(value);
+    return numeric === null ? '—' : `${numeric.toFixed(2)}%`;
+};
+const metricRatio = (value) => {
+    const numeric = metricNumber(value);
+    return numeric === null ? '—' : `${numeric.toFixed(2)}x`;
+};
+
+export const buildBaseCardProps = (met = {}) => ({
+    receita_bruta: { label: 'Receita Bruta Atribuída', valor: metricCurrency(met.receita_bruta), icon: DollarSign, color: 'text-emerald-600', tooltip: 'Faturamento validado dos pedidos do banco de dados.', formula: 'Σ(orders.total) WHERE status NOT IN(CANCELADO, REEMBOLSADO)' },
+    receita_liquida: { label: 'Receita Líquida', valor: metricCurrency(met.receita_liquida), icon: Activity, color: 'text-emerald-500', tooltip: 'Receita bruta menos devoluções e cancelamentos.', formula: 'Receita Bruta - Estornos' },
+    pedidos: { label: 'Pedidos Confirmados', valor: metricInteger(met.pedidos), icon: ShoppingCart, color: 'text-blue-600', tooltip: 'Quantidade de checkouts aprovados reais.', formula: 'COUNT(orders.id)' },
+    itens_vendidos: { label: 'Itens Vendidos', valor: metricInteger(met.itens_vendidos), icon: Database, color: 'text-blue-500', tooltip: 'Total de produtos físicos vendidos.', formula: 'Σ(order_items.qty)' },
+    ticket_medio: { label: 'Ticket Médio (AOV)', valor: metricCurrency(met.ticket_medio), icon: TrendingUp, color: 'text-slate-800', tooltip: 'Média gasta por cliente em cada pedido válido.', formula: 'Receita Bruta ÷ Pedidos' },
+    taxa_conversao: { label: 'Taxa de Conversão (CR)', valor: metricPercent(met.taxa_conversao), icon: Filter, color: 'text-slate-800', tooltip: 'Porcentagem de acessos que geraram compra.', formula: '(Pedidos ÷ PageViews) × 100' },
+    novos_clientes: { label: 'Novos Clientes', valor: metricInteger(met.novos_clientes), icon: UserPlus, color: 'text-purple-600', tooltip: 'Clientes na primeira compra.', formula: 'COUNT DISTINCT user_id (first purchase)' },
+    clientes_recorrentes: { label: 'Clientes Recorrentes', valor: metricInteger(met.clientes_recorrentes), icon: Users, color: 'text-purple-500', tooltip: 'Clientes com mais de uma compra.', formula: 'COUNT DISTINCT user_id (repeat purchase)' },
+    cac: { label: 'CAC', valor: metricCurrency(met.cac), icon: Target, color: 'text-rose-500', tooltip: 'Custo de aquisição de clientes.', formula: 'Gasto Ads ÷ Novos Clientes' },
+    roas: { label: 'ROAS Geral', valor: metricRatio(met.roas), icon: Activity, color: 'text-emerald-600', tooltip: 'Retorno sobre investimento.', formula: 'Receita atribuída ÷ Investimento' },
+    ltv: { label: 'LTV Médio', valor: metricCurrency(met.ltv), icon: Database, color: 'text-indigo-600', tooltip: 'Lifetime Value médio dos clientes.', formula: 'Receita Total ÷ Clientes Únicos' },
+    margem_bruta: { label: 'Margem Bruta', valor: metricPercent(met.margem_bruta), icon: TrendingUp, color: 'text-emerald-500', tooltip: 'Margem de lucro sobre os produtos.', formula: '(Lucro Bruto ÷ Receita Líquida) × 100' },
+    sessoes: { label: 'Sessões', valor: metricInteger(met.sessoes), icon: Globe, color: 'text-sky-600', tooltip: 'Sessões únicas na loja.', formula: 'COUNT DISTINCT session_id' },
+    page_views: { label: 'Total PageViews', valor: metricInteger(met.page_views), icon: Globe, color: 'text-sky-500', tooltip: 'Visualizações de página rastreadas no Data Layer.', formula: 'COUNT(event) WHERE event = PageView' },
+    view_item: { label: 'View Item (Produtos)', valor: metricInteger(met.view_item), icon: MousePointer2, color: 'text-sky-400', tooltip: 'Visualizações de página de produto.', formula: 'COUNT(event) WHERE event = ViewContent' },
+    add_to_cart: { label: 'Adições ao Carrinho', valor: metricInteger(met.add_to_cart), icon: MousePointerClick, color: 'text-orange-500', tooltip: 'Total de itens que entraram no carrinho.', formula: 'COUNT(event) WHERE event = AddToCart' },
+    begin_checkout: { label: 'Checkouts Iniciados', valor: metricInteger(met.begin_checkout), icon: CreditCard, color: 'text-orange-600', tooltip: 'Checkouts iniciados.', formula: 'COUNT(event) WHERE event = InitiateCheckout' },
+    add_payment_info: { label: 'Info. Pagamento', valor: metricInteger(met.add_payment_info), icon: CreditCard, color: 'text-orange-400', tooltip: 'Eventos de inserção de pagamento.', formula: 'COUNT(event) WHERE event = AddPaymentInfo' },
+    abandono_carrinho: { label: 'Abandono de Carrinho', valor: metricPercent(met.abandono_carrinho), icon: AlertTriangle, color: 'text-rose-500', tooltip: 'Usuários que colocaram no carrinho mas não compraram.', formula: '(1 - (Pedidos ÷ AddToCart)) × 100' },
+    abandono_checkout: { label: 'Abandono de Checkout', valor: metricPercent(met.abandono_checkout), icon: AlertTriangle, color: 'text-rose-600', tooltip: 'Pessoas que iniciaram pagamento mas abandonaram.', formula: '(1 - (Pedidos ÷ InitiateCheckout)) × 100' },
 });
