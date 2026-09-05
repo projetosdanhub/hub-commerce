@@ -16,7 +16,7 @@ const Field = ({ label, tooltip, children }) => (
 const ProviderCard = ({ icon: Icon, name, configured, children }) => (
   <section className="hub-surface hub-smart-grid-item" aria-label={name}>
     <header className="hub-order-detail-heading">
-      <div className="hub-flex-row">
+      <div className="flex items-center gap-3">
         <span className="hub-orders-metric-icon"><Icon aria-hidden="true" size={20} /></span>
         <div>
           <h3 className="hub-card-title">{name}</h3>
@@ -25,7 +25,7 @@ const ProviderCard = ({ icon: Icon, name, configured, children }) => (
       </div>
       <Badge variant={configured ? 'success' : 'neutral'}>{configured ? 'Configurada' : 'Não configurada'}</Badge>
     </header>
-    <div className="hub-order-form-grid">{children}</div>
+    <div className="hub-smart-grid">{children}</div>
   </section>
 );
 
@@ -33,7 +33,7 @@ const AppStorePixels = ({ credenciais, setCredenciais, isSaving, onSave }) => {
   const update = (changes) => setCredenciais((current) => ({ ...current, ...changes }));
 
   return (
-    <motion.div {...tabTransition} className="hub-section-stack">
+    <motion.div {...tabTransition} className="space-y-8">
       <header className="hub-order-detail-heading">
         <div>
           <p className="hub-page-eyebrow">Conexões de dados</p>
