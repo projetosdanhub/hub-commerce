@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CircleAlert, ClipboardList, RefreshCw } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../api';
@@ -13,10 +13,12 @@ import { OrderMetrics } from './Orders/OrderMetrics';
 import { OrdersList } from './Orders/OrdersList';
 import {
   cancelMelhorEnvioCart,
+  fetchOrderMetricPreferences,
   fetchOrderMetrics,
   fetchOrders,
   fetchShippingSupport,
   submitManualOrderAction,
+  updateOrderMetricPreferences,
   updateOrderTracking,
 } from './Orders/ordersApi';
 import { errorMessage } from './Orders/orderUtils';
@@ -40,6 +42,7 @@ const listFilters = (filters) => ({
 });
 
 export default function AdminOrders() {
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState(initialFilters);
   const [selectedId, setSelectedId] = useState(() => searchParams.get('id'));
@@ -57,6 +60,16 @@ export default function AdminOrders() {
     queryFn: fetchOrderMetrics,
     retry: false,
     refetchInterval: 60_000,
+  });
+  const metricPreferencesQuery = useQuery({
+    queryKey: adminQueryKeys.ordersMetricPreferences(),
+    queryFn: fetchOrderMetricPreferences,
+  });
+  const metricPreferencesMutation = useMutation({
+    mutationFn: updateOrderMetricPreferences,
+    onSuccess: (preferences) => {
+      queryClient.setQueryData(adminQueryKeys.ordersMetricPreferences(), preferences);
+    },
   });
   const shippingQuery = useQuery({
     queryKey: adminQueryKeys.shippingSupport(),
@@ -212,6 +225,10 @@ export default function AdminOrders() {
         loading={metricsQuery.isLoading}
         error={metricsQuery.isError}
         onRetry={() => metricsQuery.refetch()}
+        preferences={metricPreferencesQuery.data}
+        preferencesLoading={metricPreferencesQuery.isLoading}
+        preferencesSaving={metricPreferencesMutation.isPending}
+        onSavePreferences={(preferences) => metricPreferencesMutation.mutateAsync(preferences)}
       />
       <OrdersList
         orders={orders}
