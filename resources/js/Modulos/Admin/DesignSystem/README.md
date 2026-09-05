@@ -55,6 +55,8 @@ O painel usa shells independentes. No mobile, filtros podem ser recolhidos, tabe
 
 - `useDebouncedValue`: aguarda 350 ms sem digitação para atualizar o parâmetro remoto. Pedidos desabilita a consulta enquanto o texto não estabiliza; não altera dados financeiros ou filtros no servidor.
 - `useDialogLifecycle`: foco/Tab/Escape, scroll lock com contagem para modais sobrepostos e saída pelo token de motion. `ModalDialog` aceita children como função de `requestClose` para os botões Fechar/Voltar. Mutações pendentes usam `busy`.
-- Tema do painel: atributo `data-theme` no shell, modo escuro ou claro com azul-marinho. Aparência local não contém dados remotos; preferências de métricas continuam no servidor.
+- Tema do painel: atributo `data-theme` no shell, modo escuro ou claro com azul-marinho. Sem escolha salva, desktop segue a preferência do sistema e mobile inicia em escuro; uma escolha manual prevalece. Aparência local não contém dados remotos; preferências de métricas continuam no servidor.
+- Todo shell inclui transição breve de rota por token e respeita `prefers-reduced-motion`; fechar, Voltar, Escape e clique no backdrop seguro compartilham o lifecycle dos diálogos.
+- A UI de reembolso não pode prometer reposição automática de estoque. Pedido entregue e devolvido entra futuramente em estoque de reembolso, nunca no vendável; consulte `docs/architecture/refund-inventory-policy.md`.
 - O primeiro teste isolado é `npm run test:ui:interactions` (Node nativo, sem instalar dependências). Cobre debounce e propriedade/liberação de scroll lock. Não substitui a homologação visual, React, build ou API.
 - Esta etapa cobre os diálogos de métricas e operações de Pedidos. Migrar os demais diálogos legados em seus blocos; não afirmar que todo modal do repositório já utiliza o lifecycle.

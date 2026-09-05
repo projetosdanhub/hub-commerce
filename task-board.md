@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-05  
+Atualizado em: 2026-09-05 — UI-021 em validação  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -123,6 +123,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [ ] | CAT-006 | P2 | Implementar importação/exportação de catálogo | CAT-002 | Processo assíncrono e auditado |
 | [ ] | CAT-007 | P2 | Criar busca e filtros públicos | CAT-002 | Busca paginada e indexável |
 | [ ] | CAT-008 | P2 | Criar alertas de estoque | CAT-003 | Alertas idempotentes por tenant |
+| [ ] | CAT-009 | P1 | Criar estoque de reembolso/quarentena | CAT-003, ORD-004, PAY-009 | Pedido entregue nunca recompõe estoque vendável; retorno físico entra em estoque de reembolso por item/variante, com movimento tenant-scoped, idempotente e auditável; transferência ao normal é explícita |
 
 ## Fase 6 — Clientes, CRM e LGPD
 
@@ -209,8 +210,8 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | UI-018 | P1 | Aplicar padrão canônico ao módulo Pixel | UI-005, UI-006, UI-007, UI-009 | Painel, integrações, acionadores e diálogos usam primitives, contratos reais e experiências desktop/mobile; checks aprovados e PR #39 integrada |
 | [x] | UI-019 | P1 | Padronizar interações globais do painel | UI-005, UI-006, UI-013 | Refresh único no shell, tooltip sem clipping, período canônico, textos longos legíveis e sidebar recolhida consistente; PR #41 integrada com Tests, E2E Tests e Security Scans verdes |
 | [~] | UI-020 | P1 | Padronizar interações operacionais de dados | UI-005, UI-006, UI-013 | PR #42 integrada; revisão visual encontrou caixas de tooltip indevidas. Pendências separadas nos blocos UI-021 a UI-026; não considerar homologação visual concluída |
-| [~] | UI-021 | P1 | Corrigir interações globais e temas | UI-020 | Primeiro bloco: tooltip visual removido, busca com debounce 350 ms e sem contorno, modais de Pedidos/métricas com scroll lock e saída, métricas refinadas e modo claro azul-marinho nos shells desktop/mobile. Teste direcionado pendente; revisão visual/build/CI ainda não executados |
-| [ ] | UI-022 | P1 | Completar reembolso com cancelamento e anexos | UI-021 | Ocultar solicitação repetida; cancelar retorna ao estado anterior auditado sob lock; motivo/modalidade explícitos e 1–2 imagens obrigatórias, sanitização servidor, preview/download privado, idempotência e isolamento |
+| [~] | UI-021 | P1 | Corrigir interações globais e temas | UI-020 | Bloco implementado: tooltips visuais/remanescentes removidos, busca com debounce de 350 ms sem contorno, diálogos de Pedidos/métricas com scroll lock, saída e backdrop seguro, métricas refinadas, rota com motion por token e modo claro azul-marinho nos shells desktop/mobile. Teste direcionado, revisão visual, build e CI ainda pendentes |
+| [ ] | UI-022 | P1 | Completar reembolso com cancelamento e anexos | UI-021 | Ocultar solicitação repetida; cancelar retorna ao estado anterior auditado sob lock; motivo/modalidade explícitos e 1–2 imagens obrigatórias, sanitização servidor, preview/download privado, idempotência e isolamento. Pedido entregue não recompõe estoque vendável; integração de retorno usa CAT-009 |
 | [ ] | UI-023 | P1 | Detalhar personalizações e cliente do pedido | UI-021 | Tag Personalizado; imagens/textos agrupados por item/SKU/variante; originais em alta qualidade com download autorizado; perfil compatível com CRM e dados autorizados |
 | [ ] | UI-024 | P1 | Exibir documentos reais de cada operação | UI-022, UI-023 | Pagamento, entrega/romaneio, reembolso e documentos emitidos com preview/download; lista vazia só sem arquivos reais; migração dos anexos legados públicos |
 | [ ] | UI-025 | P1 | Preparar emissão fiscal e declaração | UI-024 | Configuração por tenant, certificado válido suportado, preflight backend, adapter homologado, XML/protocolo/DANFE reais; declaração redesenhada; espelho provisório nunca apresentado como NF-e emitida |

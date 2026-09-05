@@ -50,6 +50,7 @@ Em caso de conflito, pare, descreva o conflito e peça uma decisão. Não escolh
 
 - Padrão global de UI: seguir a versão vigente das regras 06, 12, 13 e 14. Tooltips visuais foram retirados por solicitação do responsável; não restaurar portals, popups vazios nem botões de ajuda sem ação.
 - Toda alteração visual deve contemplar os shells desktop/mobile separados e os temas escuro/claro (azul-marinho no tema claro). Métricas seguem a composição de Pedidos.
+- Reembolso de pedido já entregue jamais recompõe automaticamente o estoque vendável. Quando a devolução física for recebida, o item/variante entra em estoque de reembolso tenant-scoped e auditável; somente uma transferência explícita do futuro módulo de estoque pode levá-lo ao estoque normal. Reembolso financeiro sem recebimento físico não movimenta estoque.
 - Trabalhos divididos em blocos devem registrar entregas parciais e pendências no board. Se o responsável pedir pausa após um teste, execute apenas o teste acordado e pause; não abra uma PR que dispare outros workflows antes da continuação.
 
 - Produto, documentação e mensagens de interface: português do Brasil.

@@ -231,3 +231,14 @@ Copie este bloco para cada handoff relevante:
 - Validação: primeira execução planejada `npm run test:ui:interactions`; resultado ainda não registrado neste commit. Não foram executados build, Vitest, E2E, testes PHP nem homologação visual. O usuário pediu pausa após o primeiro teste; não abrir PR/disparar workflows antes da continuação.
 - Riscos: outros diálogos legados precisam adotar o lifecycle; sucesso de mutação ainda pode desmontar o diálogo diretamente; navegação/progresso ficam no UI-026. Base fiscal está documentada, não integrada.
 - Próxima ação única: executar o teste direcionado de debounce/scroll lock, comunicar resultado e pausar aguardando a continuação do responsável.
+
+
+### 2026-09-05 — Codex — UI-021, continuação
+- Objetivo e escopo: concluir a fundação de interações globais de Pedidos e registrar a regra arquitetural de estoque pós-reembolso, sem alterar domínio de pedidos/estoque.
+- Branch e commit: `ui/orders-refinement-block-1`, código em `0ca3f16ebf1974469063a734d9e9e93cb92c8a97`; documentação e board neste commit.
+- Task board: UI-021 [~] — implementação concluída, ainda requer execução direcionada, build, revisão visual e CI. CAT-009 [ ] foi criado para o estoque de reembolso/quarentena; UI-022 inclui sua integração futura.
+- Arquivos alterados: controles de tooltip/busca, lifecycle de diálogo, shells desktop/mobile, preferência de aparência, teste Node, AGENTS, regra operacional, README do DesignSystem, board e política de inventário.
+- Contratos preservados: nenhuma transição de pedido, cálculo financeiro, crédito/cashback, storage, API, certificado ou saldo de estoque foi alterado. Preferência de tema continua local e não contém dado de negócio.
+- Evidências: teste Node ampliado para debounce, scroll lock, parsing de tokens de motion e regra de tema; ainda não executado neste commit.
+- Riscos, bloqueios e itens não verificados: a regra de estoque não foi implementada porque o serviço transacional CAT-003 e o estoque de reembolso CAT-009 ainda não existem. Reembolso financeiro sem recebimento físico não pode criar saldo. Outros diálogos legados continuam fora do lifecycle até seus blocos.
+- Próxima ação única: executar `npm run test:ui:interactions`; se verde, abrir PR de UI-021 e acompanhar Tests, E2E Tests e Security Scans antes de merge.
