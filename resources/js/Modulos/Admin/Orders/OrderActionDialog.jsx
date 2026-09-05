@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   ClipboardCheck,
   CreditCard,
+  FileText,
   PackageCheck,
   RotateCcw,
   Truck,
@@ -46,17 +47,17 @@ const ACTION_COPY = {
     tone: 'danger',
   },
   INICIAR_REEMBOLSO: {
-    title: 'Iniciar análise de reembolso',
-    description: 'Registre o parecer inicial para abrir a análise de devolução ou reembolso.',
+    title: 'Solicitar reembolso',
+    description: 'Registre o motivo. Depois da solicitação, o pedido aguarda confirmação do reembolso.',
     icon: RotateCcw,
-    confirm: 'Iniciar análise',
+    confirm: 'Solicitar reembolso',
     tone: 'warning',
   },
   PROCESSAR_REEMBOLSO: {
-    title: 'Efetivar reembolso',
-    description: 'Defina a modalidade e anexe o comprovante do reembolso concluído.',
+    title: 'Confirmar reembolso',
+    description: 'Escolha a modalidade já executada e anexe até dois comprovantes para concluir a auditoria.',
     icon: RotateCcw,
-    confirm: 'Efetivar reembolso',
+    confirm: 'Confirmar reembolso',
     tone: 'danger',
   },
   ALTERAR_RASTREIO: {
@@ -82,7 +83,8 @@ const buildInitialState = (order, shipping) => {
   return {
     motivo: '',
     arquivo: null,
-    refund_method: 'ESTORNO',
+    comprovantes: [],
+    refund_method: 'TRANSFERENCIA',
     tracking_code: order?.tracking_code || '',
     dispatch_type: shipping?.settings?.data?.is_authenticated || shipping?.settings?.is_authenticated ? 'MELHORENVIO' : 'MANUAL',
     doc_tipo: 'DECLARACAO',
@@ -109,6 +111,63 @@ const DialogIcon = ({ Icon, tone }) => (
   <span className="hub-order-dialog-icon" data-tone={tone || 'default'}>
     <Icon aria-hidden="true" size={20} strokeWidth={1.8} />
   </span>
+);
+
+const ReceiptPreviewCard = ({ file, index, onRemove }) => {
+  const [previewUrl, setPreviewUrl] = useState('');
+
+  useEffect(() => {
+    if (!file.type.startsWith('image/')) {
+      setPreviewUrl('');
+      return undefined;
+    }
+
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  return (
+    <article className="hub-order-receipt-preview">
+      {previewUrl ? (
+        <img src={previewUrl} alt={'Prévia do comprovante ' + (index + 1)} />
+      ) : (
+        <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={22} /></span>
+      )}
+      <div>
+        <strong>{file.name}</strong>
+        <small>{previewUrl ? 'Imagem selecionada' : 'PDF selecionado'}</small>
+      </div>
+      <IconButton icon={X} label={'Remover comprovante ' + (index + 1)} size="sm" onClick={onRemove} />
+    </article>
+  );
+};
+
+const RefundReceiptFields = ({ files, onChange }) => (
+  <div className="hub-order-refund-receipts">
+    <Field label="Comprovantes" required>
+      <input
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png"
+        multiple
+        onChange={(event) => onChange(Array.from(event.target.files || []).slice(0, 2))}
+      />
+    </Field>
+    <p className="hub-orders-form-hint">Envie de um a dois comprovantes em PDF, JPG ou PNG. As imagens são exibidas antes da confirmação.</p>
+    {files.length ? (
+      <div className="hub-order-receipt-preview-grid">
+        {files.map((file, index) => (
+          <ReceiptPreviewCard
+            key={file.name + file.lastModified}
+            file={file}
+            index={index}
+            onRemove={() => onChange(files.filter((_, fileIndex) => fileIndex !== index))}
+          />
+        ))}
+      </div>
+    ) : null}
+  </div>
 );
 
 const ShippingFields = ({ order, form, onChange, shipping, rates, calculating, onCalculate }) => {
@@ -259,7 +318,8 @@ export const OrderActionDialog = ({
 
   const update = (changes) => setForm((current) => ({ ...current, ...changes }));
   const requiresReason = useMemo(() => ['PAGAR', 'CANCELAR', 'INICIAR_REEMBOLSO', 'PROCESSAR_REEMBOLSO'].includes(action), [action]);
-  const requiresFile = useMemo(() => ['PAGAR', 'ENTREGAR', 'PROCESSAR_REEMBOLSO'].includes(action), [action]);
+  const requiresFile = useMemo(() => ['PAGAR', 'ENTREGAR'].includes(action), [action]);
+  const requiresRefundReceipts = action === 'PROCESSAR_REEMBOLSO';
 
   useEffect(() => {
     if (!copy || !order) return undefined;
@@ -348,6 +408,10 @@ export const OrderActionDialog = ({
       setError('Anexe o comprovante obrigatório para continuar.');
       return;
     }
+    if (requiresRefundReceipts && !form.comprovantes.length) {
+      setError('Anexe ao menos um comprovante para confirmar o reembolso.');
+      return;
+    }
     if (isShippingAction(action)) {
       if (!form.vol_altura || !form.vol_largura || !form.vol_comprimento || !form.vol_peso) {
         setError('Informe todas as dimensões e o peso do pacote.');
@@ -414,12 +478,18 @@ export const OrderActionDialog = ({
                 </Field>
               ) : null}
               {action === 'PROCESSAR_REEMBOLSO' ? (
-                <Field label="Modalidade">
-                  <select value={form.refund_method} onChange={(event) => update({ refund_method: event.target.value })}>
-                    <option value="ESTORNO">Estorno ou transferência</option>
-                    <option value="CASHBACK">Crédito em loja</option>
-                  </select>
-                </Field>
+                <>
+                  <Field label="Modalidade" required>
+                    <select value={form.refund_method} onChange={(event) => update({ refund_method: event.target.value })}>
+                      <option value="TRANSFERENCIA">Transferência ou estorno manual</option>
+                      <option value="CASHBACK">Crédito no cashback do cliente</option>
+                    </select>
+                  </Field>
+                  <RefundReceiptFields
+                    files={form.comprovantes}
+                    onChange={(comprovantes) => update({ comprovantes })}
+                  />
+                </>
               ) : null}
               {requiresFile ? (
                 <Field label="Comprovante" required>
