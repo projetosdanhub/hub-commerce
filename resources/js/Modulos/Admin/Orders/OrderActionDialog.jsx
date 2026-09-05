@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useDialogLifecycle } from '../DesignSystem/patterns/useDialogLifecycle';
 import {
   AlertTriangle,
   ClipboardCheck,
@@ -309,8 +310,7 @@ export const OrderActionDialog = ({
   onCancelCart,
 }) => {
   const copy = ACTION_COPY[action];
-  const dialogRef = useRef(null);
-  const closeButtonRef = useRef(null);
+  const { dialogRef, closing, requestClose } = useDialogLifecycle({ enabled: Boolean(copy && order), onClose, busy: loading });
   const [form, setForm] = useState(() => buildInitialState(order, shipping));
   const [rates, setRates] = useState([]);
   const [calculating, setCalculating] = useState(false);
@@ -321,48 +321,6 @@ export const OrderActionDialog = ({
   const requiresFile = useMemo(() => ['PAGAR', 'ENTREGAR'].includes(action), [action]);
   const requiresRefundReceipts = action === 'PROCESSAR_REEMBOLSO';
 
-  useEffect(() => {
-    if (!copy || !order) return undefined;
-
-    const previousFocus = document.activeElement;
-    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
-    const selector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-
-      if (event.key !== 'Tab') return;
-
-      const focusable = Array.from(dialogRef.current?.querySelectorAll(selector) ?? []);
-      if (!focusable.length) {
-        event.preventDefault();
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.cancelAnimationFrame(focusFrame);
-      document.removeEventListener('keydown', handleKeyDown);
-      if (previousFocus instanceof HTMLElement) previousFocus.focus();
-    };
-  }, [action, copy, onClose, order]);
 
   if (!copy || !order) return null;
 
@@ -443,15 +401,15 @@ export const OrderActionDialog = ({
   const Icon = copy.icon;
 
   return (
-    <div className="hub-order-dialog-backdrop" role="presentation">
-      <div ref={dialogRef} className="hub-order-dialog" role="dialog" aria-modal="true" aria-labelledby="order-action-title" aria-describedby="order-action-description">
+    <div className="hub-order-dialog-backdrop" data-closing={closing} role="presentation">
+      <div ref={dialogRef} className="hub-order-dialog" role="dialog" aria-modal="true" aria-labelledby="order-action-title" aria-describedby="order-action-description" tabIndex={-1}>
         <header>
           <DialogIcon Icon={Icon} tone={copy.tone} />
           <div>
             <h2 id="order-action-title">{copy.title}</h2>
             <p id="order-action-description">{copy.description}</p>
           </div>
-          <IconButton ref={closeButtonRef} className="hub-order-dialog-close" icon={X} label="Fechar" onClick={onClose} />
+          <IconButton className="hub-order-dialog-close" icon={X} label="Fechar" disabled={loading} onClick={requestClose} />
         </header>
 
         <form onSubmit={submit}>
@@ -505,7 +463,7 @@ export const OrderActionDialog = ({
           {error ? <p className="hub-order-form-error" role="alert">{error}</p> : null}
 
           <footer>
-            <Button type="button" variant="ghost" onClick={onClose}>Voltar</Button>
+            <Button type="button" variant="ghost" disabled={loading} onClick={requestClose}>Voltar</Button>
             <Button type="submit" variant={copy.tone === 'danger' ? 'danger' : 'primary'} loading={loading} icon={copy.icon}>
               {copy.confirm}
             </Button>

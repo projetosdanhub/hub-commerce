@@ -19,17 +19,18 @@ export const MetricDictionaryDialog = ({ metrics, onClose }) => {
       describedBy="metric-dictionary-description"
       onClose={onClose}
     >
+      {(requestClose) => <>
       <header className="hub-metric-dialog-header">
         <span className="hub-metric-dialog-icon"><BookOpen aria-hidden="true" size={20} /></span>
         <div>
           <h2 id="metric-dictionary-title">Dicionário de métricas</h2>
           <p id="metric-dictionary-description">Consulte a definição e a forma de cálculo de cada indicador deste painel.</p>
         </div>
-        <IconButton className="hub-metric-dialog-close" icon={X} label="Fechar dicionário de métricas" onClick={onClose} />
+        <IconButton className="hub-metric-dialog-close" icon={X} label="Fechar dicionário de métricas" onClick={requestClose} />
       </header>
 
       <div className="hub-metric-dictionary-content">
-        <div className="hub-metric-dictionary-list" role="listbox" aria-label="Métricas disponíveis">
+        <nav className="hub-metric-dictionary-list" aria-label="Métricas disponíveis">
           {metrics.map((metric) => {
             const Icon = metric.icon;
             const active = metric.id === activeMetric.id;
@@ -38,19 +39,16 @@ export const MetricDictionaryDialog = ({ metrics, onClose }) => {
               <button
                 key={metric.id}
                 type="button"
-                role="option"
-                aria-selected={active}
+                aria-pressed={active}
                 data-active={active}
                 onClick={() => setActiveId(metric.id)}
-                onFocus={() => setActiveId(metric.id)}
-                onMouseEnter={() => setActiveId(metric.id)}
               >
                 <span><Icon aria-hidden="true" size={17} /></span>
                 <strong>{metric.label}</strong>
               </button>
             );
           })}
-        </div>
+        </nav>
 
         <article className="hub-metric-dictionary-detail" aria-live="polite">
           <span className="hub-metric-dictionary-detail-icon"><ActiveIcon aria-hidden="true" size={19} /></span>
@@ -68,6 +66,7 @@ export const MetricDictionaryDialog = ({ metrics, onClose }) => {
           </dl>
         </article>
       </div>
+      </>}
     </ModalDialog>
   );
 };

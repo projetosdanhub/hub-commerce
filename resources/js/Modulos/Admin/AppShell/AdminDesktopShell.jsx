@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CircleUserRound, LogOut, PanelLeftClose, PanelLeftOpen, RefreshCw } from 'lucide-react';
+import { CircleUserRound, LogOut, Moon, Sun, PanelLeftClose, PanelLeftOpen, RefreshCw } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { AdminNavigation } from './AdminNavigation';
@@ -10,7 +10,7 @@ import { useAdminPageRefresh } from '../DesignSystem/patterns/GlobalPageRefresh'
 
 const SIDEBAR_STORAGE_KEY = 'hub_admin_sidebar_collapsed';
 
-export const AdminDesktopShell = ({ children, onLogout, onWarmRoute }) => {
+export const AdminDesktopShell = ({ children, onLogout, onWarmRoute, theme, onToggleTheme }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(() => window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true');
   const shouldReduceMotion = useReducedMotion();
@@ -59,6 +59,7 @@ export const AdminDesktopShell = ({ children, onLogout, onWarmRoute }) => {
       <div className="hub-admin-main">
         <header className="hub-admin-topbar">
           <div className="hub-topbar-actions">
+            <IconButton icon={theme === 'light' ? Moon : Sun} label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'} onClick={onToggleTheme} />
             <Button
               variant="secondary"
               size="sm"

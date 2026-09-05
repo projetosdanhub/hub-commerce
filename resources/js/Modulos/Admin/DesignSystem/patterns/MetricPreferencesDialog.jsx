@@ -81,14 +81,16 @@ export const MetricPreferencesDialog = ({
       labelledBy="metric-preferences-title"
       describedBy="metric-preferences-description"
       onClose={onClose}
+      busy={saving}
     >
+      {(requestClose) => <>
       <header className="hub-metric-dialog-header">
         <span className="hub-metric-dialog-icon"><Settings2 aria-hidden="true" size={20} /></span>
         <div>
           <h2 id="metric-preferences-title">Organizar métricas</h2>
           <p id="metric-preferences-description">Defina a ordem e quais indicadores aparecem no seu painel de pedidos.</p>
         </div>
-        <IconButton className="hub-metric-dialog-close" icon={X} label="Fechar organização de métricas" onClick={onClose} />
+        <IconButton className="hub-metric-dialog-close" icon={X} label="Fechar organização de métricas" disabled={saving} onClick={requestClose} />
       </header>
 
       <div className="hub-metric-preferences-content">
@@ -184,10 +186,11 @@ export const MetricPreferencesDialog = ({
       <footer className="hub-metric-dialog-footer">
         <span>{visibleCount} de {metrics.length} métricas visíveis</span>
         <div>
-          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+          <Button variant="ghost" disabled={saving} onClick={requestClose}>Cancelar</Button>
           <Button loading={saving} onClick={submit}>Salvar painel</Button>
         </div>
       </footer>
+      </>}
     </ModalDialog>
   );
 };

@@ -28,6 +28,14 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isMobile = useMobileShell();
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem('hub_admin_theme') === 'light' ? 'light' : 'dark'; }
+    catch { return 'dark'; }
+  });
+  const toggleTheme = () => setTheme((current) => current === 'dark' ? 'light' : 'dark');
+  useEffect(() => {
+    try { localStorage.setItem('hub_admin_theme', theme); } catch { /* Theme still works for this session. */ }
+  }, [theme]);
   const [token, setToken] = useState(() => sessionStorage.getItem('hub_admin_token'));
 
   const handleLogout = useCallback(async () => {
@@ -63,15 +71,15 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="hub-admin">
+    <div className="hub-admin" data-theme={theme}>
       <div className="hub-admin-shell">
         <AdminPageRefreshProvider>
           {isMobile ? (
-            <AdminMobileShell onLogout={handleLogout}>
+            <AdminMobileShell onLogout={handleLogout} theme={theme} onToggleTheme={toggleTheme}>
               <Outlet />
             </AdminMobileShell>
           ) : (
-            <AdminDesktopShell onLogout={handleLogout} onWarmRoute={warmRoute}>
+            <AdminDesktopShell onLogout={handleLogout} onWarmRoute={warmRoute} theme={theme} onToggleTheme={toggleTheme}>
               <Outlet />
             </AdminDesktopShell>
           )}

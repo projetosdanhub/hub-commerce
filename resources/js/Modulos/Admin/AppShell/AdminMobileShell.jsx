@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogOut, RefreshCw } from 'lucide-react';
+import { LogOut, Moon, Sun, RefreshCw } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { mobileNavigation } from './AdminNavigation';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
@@ -9,7 +9,7 @@ const isActive = (pathname, item) => (
   item.exact ? pathname === item.path : pathname.startsWith(item.path)
 );
 
-export const AdminMobileShell = ({ children, onLogout }) => {
+export const AdminMobileShell = ({ children, onLogout, theme, onToggleTheme }) => {
   const location = useLocation();
   const { isRefreshing, refresh } = useAdminPageRefresh();
 
@@ -21,6 +21,7 @@ export const AdminMobileShell = ({ children, onLogout }) => {
           HUB Commerce
         </span>
         <div className="flex items-center gap-1">
+          <IconButton icon={theme === 'light' ? Moon : Sun} label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'} onClick={onToggleTheme} />
           <IconButton
             icon={RefreshCw}
             label="Atualizar dados desta tela"

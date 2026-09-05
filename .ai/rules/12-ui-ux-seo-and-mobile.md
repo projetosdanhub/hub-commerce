@@ -13,7 +13,7 @@ Esta regra complementa `05-frontend-react.md` e `06-design-system.md`. É obriga
 ## Direção visual do HUB Commerce
 
 - Manter Tailwind v4 e tokens em `resources/css/tokens.css`; componentes reutilizáveis pertencem ao DesignSystem.
-- Painel: desktop-first, dark minimalista sutil, vidro discreto, superfícies conectadas e densidade operacional. Evitar cards isolados sem relação visual.
+- Painel: desktop-first, temas escuro minimalista e claro com azul-marinho, vidro discreto, superfícies conectadas e densidade operacional. A preferência de aparência pode persistir localmente, sem dados de negócio; não muda a vitrine. Evitar cards isolados sem relação visual.
 - Storefront: clareza de compra, contraste, hierarquia e desempenho; o tema vem do tenant, mas o comportamento canônico permanece.
 - Usar Lucide React. Sem emojis, bibliotecas paralelas de ícones ou SVG manual duplicado.
 - Sidebar deve ser harmoniosa e recolhível; scrollbars são finas e controles têm estados hover, focus-visible, loading e disabled.

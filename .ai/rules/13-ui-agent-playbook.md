@@ -30,9 +30,9 @@ Em caso de divergência, a solicitação explícita do responsável, `AGENTS.md`
 | Navegação por ícone ou vitrine | `IconLink` |
 | Filtro real | `FilterButton` e/ou `FilterSelect` |
 | Aba e submenu | `SectionTabs` |
-| Métrica real | `MetricCard` com tooltip quando a definição não for óbvia |
+| Métrica real | `MetricCard` de Pedidos e `MetricDictionaryDialog` para definições |
 | Carregamento | `Skeleton` dentro de contêiner que anuncia o estado uma vez |
-| Ajuda curta | `Tooltip` |
+| Ajuda curta | Texto contextual legível, sem popup |
 
 ## Proibições sem exceção aprovada
 
@@ -50,7 +50,7 @@ Em caso de divergência, a solicitação explícita do responsável, `AGENTS.md`
 - Painel: desktop-first, superfícies conectadas, dark minimalista sutil e vidro discreto.
 - Sidebar: estados expandido/recolhido coerentes; ícones centralizados quando recolhida.
 - Cada controle tem hover, `focus-visible`, disabled e loading quando aplicáveis.
-- Todo input possui label; todo ícone interativo possui nome acessível e tooltip.
+- Todo input possui label; todo ícone interativo possui nome acessível. Não renderizar tooltip visual nem botão de ajuda sem ação.
 - Diálogos controlam foco, Escape e retorno de foco.
 - Não criar rolagem horizontal global. Tabelas recebem wrapper no desktop e alternativa legível no mobile.
 - Validar 320 px, 768 px, 1024 px, zoom de 200%, teclado e `prefers-reduced-motion`.
@@ -67,6 +67,6 @@ Em caso de divergência, a solicitação explícita do responsável, `AGENTS.md`
 
 - O refresh manual existe uma única vez no topo do shell. Ele deve atualizar as queries ativas da rota e qualquer aba interna registrada; não adicionar “Atualizar dados” por página, card ou detalhe.
 - Filtros de período ficam junto da busca principal, nunca dentro da trilha de abas de status. Para datas, usar `DateRangeFilter`: Todo o período, Hoje, Últimos 7 dias, Este mês, Último mês e Personalizado com datas inicial/final e ação Filtrar.
-- Popovers, tooltips e menus precisam usar a superfície escura translúcida do DesignSystem, z-index de token e Escape/fechamento fora quando aplicável. Não podem ser cortados por `overflow` ou contêiner flex.
-- Textos variáveis em tabela, métrica, cartão ou campo usam truncamento controlado e revelam o conteúdo completo por tooltip, sem ampliar nem causar scroll horizontal na página.
+- Popovers e menus usam superfície translúcida do tema ativo, z-index de token e Escape/fechamento fora quando aplicável. Tooltips visuais foram removidos. Nunca aplicar `.hub-admin` a uma caixa flutuante: a classe também define a altura do painel.
+- Textos variáveis quebram dentro do campo com `min-width: 0` e `overflow-wrap`, sem tooltip, corte de informação essencial ou scroll horizontal global. O adaptador `TruncatedText` mantém compatibilidade, mas exibe o conteúdo completo.
 - `SectionTabs` é o padrão dos submenus por status. Preserve contraste de item ativo, foco e rolagem interna, mas não misture filtros de período com as abas.

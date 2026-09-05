@@ -7,13 +7,13 @@ Este diretório é a fonte canônica dos controles reutilizáveis do painel admi
 | Necessidade | Componente canônico | Regra |
 |---|---|---|
 | Criar, salvar, atualizar, confirmar, cancelar | `primitives/Button` | Use a variante que corresponde à consequência da ação. |
-| Editar, excluir ou outra ação compacta real | `primitives/IconButton` | Sempre exige rótulo acessível, tooltip e ação disponível. |
+| Editar, excluir ou outra ação compacta real | `primitives/IconButton` | Sempre exige rótulo acessível e ação disponível, sem tooltip visual. |
 | Abrir uma rota ou a vitrine | `primitives/IconLink` | Navegação é link, não botão. |
 | Filtros e período | `FilterButton` + `FilterSelect` | Só controla consultas que já existem. |
 | Métrica operacional | `MetricCard` | Valor deve vir da API ou de cálculo sobre a resposta atual. |
 | Carregamento | `Skeleton` | Preserve espaço; anuncie carregamento uma única vez no contêiner. |
 | Menu de conteúdo e submenus | `patterns/SectionTabs` | Reutilize para abas de módulo e editor. |
-| Ajuda de ícone/métrica | `Tooltip` | Não esconda informação essencial apenas no tooltip. |
+| Ajuda de ícone/métrica | Texto contextual / `MetricDictionaryDialog` | Informação legível, sem popup vazio. |
 
 ## Estados e atualização
 
@@ -39,8 +39,8 @@ O painel usa shells independentes. No mobile, filtros podem ser recolhidos, tabe
 - A atualização manual é global: use `AdminPageRefreshProvider` no shell e `useRegisterAdminPageRefresh` somente para uma tela que precise de uma composição de refetch específica. Não repetir botões “Atualizar dados” em cabeçalhos, abas ou detalhes.
 - Para período, use `patterns/DateRangeFilter` ao lado da busca. Ele oferece Todo o período, Hoje, Últimos 7 dias, Este mês, Último mês e Personalizado com intervalo validado. O seletor nativo `FilterSelect` continua reservado a listas simples.
 - O submenu de status usa `SectionTabs`; filtros temporais não fazem parte da mesma trilha visual.
-- Use `TruncatedText` em colunas, títulos ou identificadores que possam exceder seu contêiner. Preserve o texto completo no tooltip e mantenha o layout sem overflow.
-- `Tooltip` é renderizado acima da interface por portal; não criar variações locais que possam ser cortadas por `overflow`, flex ou superfícies.
+- `TruncatedText` preserva seu nome por compatibilidade, mas exibe o conteúdo completo com quebra de texto dentro do campo.
+- `Tooltip` é um adaptador legado que apenas retorna os filhos. Os tooltips visuais foram retirados por decisão do responsável; não adicionar novos consumidores nem botões sem ação.
 
 
 ## Operação: métricas, listas e busca
@@ -50,3 +50,11 @@ O painel usa shells independentes. No mobile, filtros podem ser recolhidos, tabe
 - `MetricDictionaryDialog` explica métricas com nome à esquerda e definição/cálculo à direita. `MetricPreferencesDialog` permite ordenar por arraste ou teclado e alternar visibilidade, mas sua configuração deve ter endpoint tenant-aware persistido.
 - O filtro de período mostra o nome de presets e reserva datas para período personalizado. Em Personalizado, o formulário substitui a lista de opções e `Voltar` restaura os presets.
 - Para regras completas, incluindo comprovantes privados e transições de reembolso, consulte `.ai/rules/14-operational-admin-interactions.md`.
+
+## Interações e aparência (UI-021)
+
+- `useDebouncedValue`: aguarda 350 ms sem digitação para atualizar o parâmetro remoto. Pedidos desabilita a consulta enquanto o texto não estabiliza; não altera dados financeiros ou filtros no servidor.
+- `useDialogLifecycle`: foco/Tab/Escape, scroll lock com contagem para modais sobrepostos e saída pelo token de motion. `ModalDialog` aceita children como função de `requestClose` para os botões Fechar/Voltar. Mutações pendentes usam `busy`.
+- Tema do painel: atributo `data-theme` no shell, modo escuro ou claro com azul-marinho. Aparência local não contém dados remotos; preferências de métricas continuam no servidor.
+- O primeiro teste isolado é `npm run test:ui:interactions` (Node nativo, sem instalar dependências). Cobre debounce e propriedade/liberação de scroll lock. Não substitui a homologação visual, React, build ou API.
+- Esta etapa cobre os diálogos de métricas e operações de Pedidos. Migrar os demais diálogos legados em seus blocos; não afirmar que todo modal do repositório já utiliza o lifecycle.
