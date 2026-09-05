@@ -14,7 +14,6 @@ export const IconLink = ({
       {...props}
     >
       <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
-      {children}
     </a>
   </Tooltip>
 );
