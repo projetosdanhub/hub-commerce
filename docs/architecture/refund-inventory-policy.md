@@ -11,7 +11,7 @@ Um reembolso financeiro sem confirmação de devolução física não cria nem i
 ## Fluxo esperado
 
 1. Cancelamento em `A_PAGAR`: apenas libera a reserva existente conforme a regra de estoque; não é reembolso nem retorno físico.
-2. Solicitação/confirmacão de reembolso: registra a operação financeira, os comprovantes privados e a auditoria. Não move estoque por si só.
+2. Solicitação/confirmação de reembolso: registra a operação financeira, os comprovantes privados e a auditoria. Não move estoque por si só.
 3. Recebimento físico da devolução: operador identifica pedido, item, SKU e variante e registra a entrada no estoque de reembolso.
 4. Triagem: o operador autorizado transfere explicitamente do estoque de reembolso para o estoque vendável ou registra baixa definitiva/avaria. A tela deve mostrar motivo, quantidade, responsável e data.
 
