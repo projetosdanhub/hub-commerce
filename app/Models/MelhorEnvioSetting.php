@@ -12,6 +12,7 @@ class MelhorEnvioSetting extends Model
 
     protected $fillable = [
         'access_token',
+        'environment',
         'carriers_ativas',
         'sender_info'
     ];
