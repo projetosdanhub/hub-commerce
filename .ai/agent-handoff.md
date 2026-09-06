@@ -252,3 +252,13 @@ Copie este bloco para cada handoff relevante:
 - Documentação: UI-022 marcado `[~]` no board. `AGENTS.md` e a regra operacional 14 já continham as regras globais vigentes e não exigiram alteração adicional.
 - Validação: nenhuma CI foi iniciada nesta etapa, conforme protocolo do responsável. Testes de feature, build, Tests, E2E Tests, Security Scans e homologação visual ainda pendentes.
 - Próxima ação única: abrir a PR exclusiva do UI-022, o que iniciará a CI; interromper o trabalho imediatamente após a abertura e aguardar aprovação explícita do responsável antes de qualquer merge.
+
+
+### 2026-09-06 — Codex — UI-026, fundação de valores verificáveis
+- Objetivo e escopo: substituir a fundação financeira legada do checkout sem criar frete, desconto ou pagamento fictício.
+- Branch e commits: `orders-financial-snapshot`; base de snapshot até `35e3123`, endurecimento/precificação até `f01f362`, regras e board até `780ae6e`.
+- Task board: UI-026 [~] — contrato financeiro e precificação server-side iniciados; checkout atômico ainda depende de cotação persistida e payment attempts.
+- Arquivos alterados: migration/model de snapshot, `OrderFinancialSnapshotBuilder`, `CheckoutPricingService`, testes unitários, regra 15, índice de regras e board.
+- Evidências: testes de unidade adicionados, mas nenhuma CI foi aberta ou executada nesta branch.
+- Riscos, bloqueios e itens não verificados: o checkout legado ainda não pode ser integrado ao novo fluxo até existir cotação de frete tenant-scoped, expirada/verificável, e adapter de pagamento com idempotência. Gateway continua explicitamente indisponível; não há aprovação simulada.
+- Próxima ação única: criar contrato persistido da cotação de frete, validar seu vínculo ao carrinho/endereço e então conectar o snapshot ao checkout.
