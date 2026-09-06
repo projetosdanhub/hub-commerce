@@ -192,11 +192,29 @@ class OrderController extends Controller
                 'frete_valor' => (float) $order->frete,
                 'desconto' => (float) $order->desconto,
                 'total' => (float) $order->total,
+                'financeiro' => [
+                    'subtotal' => (float) $order->subtotal,
+                    'frete_cobrado' => (float) $order->frete,
+                    'desconto_total' => (float) $order->desconto,
+                    'total_bruto' => (float) $order->subtotal + (float) $order->frete,
+                    'total_liquido' => (float) $order->total,
+                    'taxa_gateway' => (float) $order->gateway_fee,
+                    'cupons' => collect($order->applied_coupons ?? [])
+                        ->filter(static fn (mixed $coupon): bool => is_array($coupon))
+                        ->map(static function (array $coupon): array {
+                            $value = $coupon['valor'] ?? $coupon['value'] ?? null;
 
-                'desconto_loja' => (float) $order->desconto, 
-                'desconto_vip_produtos' => 0, 
-                'desconto_vip_frete' => 0, 
-                'desconto_frete' => 0,
+                            return [
+                                'nome' => $coupon['nome'] ?? $coupon['name'] ?? $coupon['codigo'] ?? null,
+                                'tipo' => $coupon['tipo'] ?? $coupon['type'] ?? null,
+                                'valor' => is_numeric($value) ? (float) $value : null,
+                            ];
+                        })
+                        ->filter(static fn (array $coupon): bool => filled($coupon['nome']))
+                        ->values()
+                        ->all(),
+                    'origens_de_desconto_disponiveis' => false,
+                ],
 
                 'tracking_code' => $order->tracking_code,
                 'carrier' => $order->carrier ? $order->carrier->nome : 'Aguardando Despacho', 
