@@ -23,7 +23,7 @@ final class OrderFinancialSnapshotBuilder
         }
 
         foreach ($benefits as $benefit) {
-            if (!is_array($benefit)) {
+            if (! is_array($benefit)) {
                 throw new InvalidArgumentException('Benefício financeiro inválido.');
             }
         }
@@ -42,7 +42,7 @@ final class OrderFinancialSnapshotBuilder
             $scope = strtoupper((string) ($benefit['scope'] ?? ''));
             $amountCents = $benefit['amount_cents'] ?? null;
 
-            if (!in_array($source, ['COUPON', 'VIP', 'STORE'], true) || !array_key_exists($scope, $bases) || !is_int($amountCents) || $amountCents < 0) {
+            if (! in_array($source, ['COUPON', 'VIP', 'STORE'], true) || ! array_key_exists($scope, $bases) || ! is_int($amountCents) || $amountCents < 0) {
                 throw new InvalidArgumentException('Benefício financeiro inválido.');
             }
 
