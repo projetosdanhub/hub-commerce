@@ -82,3 +82,20 @@ export const updateOrderTracking = async ({ orderId, trackingCode }) => api.post
 export const cancelMelhorEnvioCart = async (orderId) => api.post(
   `/admin/orders/${orderId}/cancel-me-cart`,
 );
+
+export const openOrderDocument = async ({ url, download = false }) => {
+  const response = await api.get(url, {
+    params: download ? { download: 1 } : undefined,
+    responseType: 'blob',
+  });
+  const objectUrl = URL.createObjectURL(response.data);
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  link.target = download ? '_self' : '_blank';
+  link.rel = 'noreferrer';
+  if (download) link.download = '';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+};

@@ -164,6 +164,33 @@ class OrderController extends Controller
                 ])
                 ->all();
 
+            $documents = collect([
+                $order->payment_receipt ? [
+                    'id' => 'payment-receipt',
+                    'name' => 'Comprovante de pagamento',
+                    'kind' => $this->documentKind($order->payment_receipt),
+                    'url' => route('admin.orders.documents.show', ['id' => $order->getKey(), 'type' => 'payment']),
+                ] : null,
+                $order->delivery_receipt ? [
+                    'id' => 'delivery-receipt',
+                    'name' => 'Comprovante de entrega',
+                    'kind' => $this->documentKind($order->delivery_receipt),
+                    'url' => route('admin.orders.documents.show', ['id' => $order->getKey(), 'type' => 'delivery']),
+                ] : null,
+                $order->refund_receipt ? [
+                    'id' => 'legacy-refund-receipt',
+                    'name' => 'Comprovante de reembolso',
+                    'kind' => $this->documentKind($order->refund_receipt),
+                    'url' => route('admin.orders.documents.show', ['id' => $order->getKey(), 'type' => 'refund']),
+                ] : null,
+                $order->romaneio_url ? [
+                    'id' => 'delivery-manifest',
+                    'name' => 'Romaneio de entrega',
+                    'kind' => $this->documentKind($order->romaneio_url),
+                    'url' => route('admin.orders.documents.show', ['id' => $order->getKey(), 'type' => 'manifest']),
+                ] : null,
+            ])->filter()->merge($refundReceipts)->values()->all();
+
             $ltv = $userMetrics[$order->user_id]['ltv'] ?? 0.0;
             $compras = $userMetrics[$order->user_id]['compras'] ?? 0;
             
@@ -190,20 +217,41 @@ class OrderController extends Controller
                 'desconto' => (float) $order->desconto,
                 'total' => (float) $order->total,
 
-                'desconto_loja' => (float) $order->desconto, 
-                'desconto_vip_produtos' => 0, 
-                'desconto_vip_frete' => 0, 
-                'desconto_frete' => 0,
+                // Pedidos antigos guardam apenas o desconto agregado. Não atribua
+                // artificialmente esse valor a loja, VIP, cupom ou frete.
+                'desconto_loja' => null,
+                'desconto_vip_produtos' => null,
+                'desconto_vip_frete' => null,
+                'desconto_frete' => null,
+                'financeiro' => [
+                    'subtotal' => (float) $order->subtotal,
+                    'frete' => (float) $order->frete,
+                    'total_bruto' => (float) $order->subtotal + (float) $order->frete,
+                    'total_liquido' => (float) $order->total,
+                    'desconto_total' => (float) $order->desconto,
+                    'detalhamento_disponivel' => false,
+                    'descontos' => (float) $order->desconto > 0 ? [[
+                        'tipo' => 'Desconto registrado no pedido',
+                        'valor' => (float) $order->desconto,
+                    ]] : [],
+                ],
 
                 'tracking_code' => $order->tracking_code,
                 'carrier' => $order->carrier ? $order->carrier->nome : 'Aguardando Despacho', 
                 
                 'motivo_cancelamento' => $order->cancel_reason,
-                'comprovante_reembolso' => $order->refund_receipt ? asset('storage/' . $order->refund_receipt) : null,
+                'comprovante_reembolso' => $order->refund_receipt
+                    ? route('admin.orders.documents.show', ['id' => $order->getKey(), 'type' => 'refund'])
+                    : null,
                 'comprovantes_reembolso' => $refundReceipts,
-                'comprovante_pagamento' => $order->payment_receipt ? asset('storage/' . $order->payment_receipt) : null,
-                'comprovante_entrega' => $order->delivery_receipt ? asset('storage/' . $order->delivery_receipt) : null,
-                'metodo_reembolso' => $order->refund_method ?? 'Estorno/Transferência',
+                'comprovante_pagamento' => $order->payment_receipt
+                    ? route('admin.orders.documents.show', ['id' => $order->getKey(), 'type' => 'payment'])
+                    : null,
+                'comprovante_entrega' => $order->delivery_receipt
+                    ? route('admin.orders.documents.show', ['id' => $order->getKey(), 'type' => 'delivery'])
+                    : null,
+                'documentos' => $documents,
+                'metodo_reembolso' => $order->refund_method,
                 'coupons' => is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : ($order->applied_coupons ?? []),
                 
                 'pagamento_metodo' => $order->payment_method ?? 'A Vista',
@@ -292,6 +340,31 @@ class OrderController extends Controller
             'comprovante-reembolso-'.($receiptIndex + 1),
             ['Content-Disposition' => 'inline'],
         );
+    }
+
+    public function orderDocument(Request $request, $id, string $type)
+    {
+        $order = Order::findOrFail($id);
+
+        [$disk, $path, $name] = match ($type) {
+            'payment' => ['public', $order->payment_receipt, 'comprovante-pagamento'],
+            'delivery' => ['public', $order->delivery_receipt, 'comprovante-entrega'],
+            'refund' => ['public', $order->refund_receipt, 'comprovante-reembolso'],
+            'manifest' => ['local', $order->romaneio_url, 'romaneio-entrega'],
+            default => abort(404),
+        };
+
+        abort_unless(is_string($path) && $path !== '' && Storage::disk($disk)->exists($path), 404);
+
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $downloadName = $name.($extension !== '' ? '.'.$extension : '');
+        $disposition = $request->boolean('download') ? 'attachment' : 'inline';
+
+        return Storage::disk($disk)->response($path, $downloadName, [
+            'Content-Disposition' => $disposition.'; filename="'.$downloadName.'"',
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function metrics(Request $request)
@@ -404,30 +477,19 @@ class OrderController extends Controller
             'tipo' => ['required', Rule::in([
                 'CANCELADO',
                 'SOLICITACAO_REEMBOLSO',
-                'REEMBOLSADO',
             ])],
-            'motivo' => ['required', 'string'],
-            'comprovante' => [
-                Rule::requiredIf($request->input('tipo') === 'REEMBOLSADO'),
-                'file',
-                'mimes:jpeg,png,jpg,pdf',
-                'max:5120',
-            ],
+            'motivo' => ['required', 'string', 'max:1000'],
         ]);
 
         $order = Order::findOrFail($id);
         $target = match ($validated['tipo']) {
-            'REEMBOLSADO' => OrderStatus::REFUNDED,
             'SOLICITACAO_REEMBOLSO' => OrderStatus::REFUND_REVIEW,
             default => OrderStatus::CANCELLED,
         };
 
         $this->statusTransitions->assertCanTransition($order, $target);
 
-        if ($target === OrderStatus::REFUNDED) {
-            $order->refund_receipt = $request->file('comprovante')->store('reembolsos', 'public');
-            $message = "Reembolso Aprovado. Motivo: {$validated['motivo']}";
-        } elseif ($target === OrderStatus::REFUND_REVIEW) {
+        if ($target === OrderStatus::REFUND_REVIEW) {
             $message = "Análise de Reembolso Iniciada. Motivo: {$validated['motivo']}";
         } else {
             $message = "Pedido Cancelado. Motivo: {$validated['motivo']}";
@@ -446,6 +508,16 @@ class OrderController extends Controller
     {
         $order = Order::findOrFail($id);
         $acao = $request->input('acao');
+
+        if ($acao === 'CANCELAR_REEMBOLSO') {
+            $validated = $request->validate(['motivo' => ['required', 'string', 'max:1000']]);
+            $this->statusTransitions->cancelRefund(
+                $order,
+                'Solicitação de reembolso cancelada. Motivo: '.$validated['motivo'],
+            );
+
+            return response()->json(['status' => 'success', 'message' => 'Solicitação de reembolso cancelada e etapa anterior restaurada.']);
+        }
         $targetStatus = match ($acao) {
             'PAGAR' => OrderStatus::PICKING,
             'SEPARAR' => OrderStatus::READY_TO_SHIP,
@@ -478,7 +550,7 @@ class OrderController extends Controller
                 'motivo' => ['required', 'string'],
                 'refund_method' => ['required', Rule::in(['TRANSFERENCIA', 'CASHBACK'])],
                 'comprovantes' => ['required', 'array', 'min:1', 'max:2'],
-                'comprovantes.*' => ['required', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:5120'],
+                'comprovantes.*' => ['required', 'file', 'image', 'mimes:jpeg,png,jpg', 'max:5120', 'dimensions:max_width=8000,max_height=8000'],
             ]);
 
             $refundReceiptPaths = collect($request->file('comprovantes', []))
@@ -512,8 +584,20 @@ class OrderController extends Controller
 
             // 🟢 FLUXO EXPEDIÇÃO: Gera a Etiqueta e passa para DESPACHADO
             case 'DESPACHAR':
-                $dispatchType = $request->input('dispatch_type');
+                $dispatchData = $request->validate([
+                    'dispatch_type' => ['required', Rule::in(['MANUAL', 'MELHORENVIO'])],
+                    'doc_tipo' => ['required', Rule::in(['DECLARACAO', 'NFE'])],
+                ]);
+                $dispatchType = $dispatchData['dispatch_type'];
                 $trackingCode = $request->input('tracking_code');
+
+                if ($dispatchData['doc_tipo'] === 'NFE') {
+                    return response()->json([
+                        'status' => 'error',
+                        'code' => 'FISCAL_CONFIGURATION_REQUIRED',
+                        'message' => 'A NF-e ainda não está habilitada: configure certificado A1, emitente e provedor fiscal antes da expedição.',
+                    ], 422);
+                }
 
                 if ($dispatchType === 'MANUAL') {
                     $request->validate(['carrier_id' => 'required'], [
@@ -534,6 +618,16 @@ class OrderController extends Controller
 
                     $remetente = $meConfig->sender_info;
                     $destinatario = $order->address;
+
+                    if (! $order->user || ! $destinatario
+                        || ! $order->user->name || ! $order->user->email
+                        || ! $order->user->telefone || ! $order->user->cpf) {
+                        return response()->json([
+                            'status' => 'error',
+                            'code' => 'ORDER_RECIPIENT_INCOMPLETE',
+                            'message' => 'Complete nome, e-mail, telefone, CPF/CNPJ e endereço do destinatário antes de gerar a etiqueta.',
+                        ], 422);
+                    }
                     
                     $produtosApi = $order->items->map(function($item) {
                         return [
@@ -572,10 +666,10 @@ class OrderController extends Controller
                             'postal_code' => preg_replace('/\D/', '', $remetente['cep'])
                         ],
                         'to' => [
-                            'name' => $order->user ? $order->user->name : 'Cliente',
-                            'phone' => preg_replace('/\D/', '', $order->user->telefone ?? '11999999999'),
-                            'email' => $order->user ? $order->user->email : 'cliente@email.com',
-                            'document' => preg_replace('/\D/', '', $order->user->cpf ?? '00000000000'),
+                            'name' => $order->user->name,
+                            'phone' => preg_replace('/\D/', '', $order->user->telefone),
+                            'email' => $order->user->email,
+                            'document' => preg_replace('/\D/', '', $order->user->cpf),
                             'address' => $destinatario->rua,
                             'complement' => $destinatario->complemento ?? '',
                             'number' => $destinatario->num,
@@ -724,113 +818,37 @@ class OrderController extends Controller
     {
         /** @var \App\Models\Order $order */
         $order = Order::with(['user', 'items', 'address'])->findOrFail($id);
-        $tipo = $request->query('tipo', 'DECLARACAO');
-        
-        $remetente = \App\Models\MelhorEnvioSetting::first()->sender_info ?? [
-            'nome' => 'Sua Loja', 'rua' => 'Rua Exemplo', 'numero' => '123', 'bairro' => 'Centro', 'cidade' => 'Sua Cidade', 'uf' => 'SP', 'cep' => '00000-000', 'documento' => '000.000.000-00'
-        ];
+        $tipo = $request->validate([
+            'tipo' => ['nullable', Rule::in(['DECLARACAO', 'NFE'])],
+        ])['tipo'] ?? 'DECLARACAO';
 
-        // 🟢 PREPARA AS LINHAS DA TABELA ANTES (Resolve o erro do Editor e limpa o código)
-        $linhasTabela = '';
-        foreach ($order->items as $item) {
-            $variacao = $item->variation_name ?: '-';
-            $precoUnitario = number_format($item->price, 2, ',', '.');
-            $precoTotal = number_format($item->price * $item->quantity, 2, ',', '.');
-
-            $linhasTabela .= '
-                <tr>
-                    <td>' . $item->product_name . '</td>
-                    <td>' . $variacao . '</td>
-                    <td style="text-align:center;">' . $item->quantity . '</td>
-                    <td>R$ ' . $precoUnitario . '</td>
-                    <td>R$ ' . $precoTotal . '</td>
-                </tr>';
+        if ($tipo === 'NFE') {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'FISCAL_CONFIGURATION_REQUIRED',
+                'message' => 'A NF-e só pode ser emitida após configurar certificado A1 válido e provedor fiscal. Nenhum espelho fiscal foi gerado.',
+            ], 422);
         }
 
-        return response()->make('
-            <!DOCTYPE html>
-            <html lang="pt-BR">
-            <head>
-                <meta charset="UTF-8">
-                <title>Documento Auxiliar - Pedido #'.$order->id.'</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 40px; margin: 0; color: #000; font-size: 12px; }
-                    .page { max-width: 800px; margin: 0 auto; border: 1px solid #000; padding: 20px; }
-                    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-                    .header h1 { margin: 0; font-size: 18px; text-transform: uppercase; }
-                    .flex { display: flex; justify-content: space-between; margin-bottom: 20px; }
-                    .box { width: 48%; border: 1px solid #000; padding: 10px; }
-                    .box h3 { margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 12px; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                    th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-                    th { background-color: #f0f0f0; }
-                    .footer { text-align: justify; font-size: 10px; margin-top: 30px; border-top: 1px solid #000; padding-top: 10px; }
-                    .signature { margin-top: 50px; text-align: center; }
-                    .signature span { border-top: 1px solid #000; padding: 5px 40px; display: inline-block; }
-                    @media print { body { padding: 0; } .no-print { display: none; } }
-                </style>
-            </head>
-            <body>
-                <div style="text-align: right; margin-bottom: 10px;" class="no-print">
-                    <button onclick="window.print()" style="padding: 10px 20px; background: #2563eb; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Imprimir Documento</button>
-                </div>
-                <div class="page">
-                    <div class="header">
-                        <h1>' . ($tipo === 'NFE' ? 'Recibo Provisório / Espelho de Nota Fiscal' : 'Declaração de Conteúdo') . '</h1>
-                        <p>Pedido #HUB-'.$order->id.' | Data: '.$order->created_at->format('d/m/Y H:i').'</p>
-                    </div>
-                    
-                    <div class="flex">
-                        <div class="box">
-                            <h3>REMETENTE</h3>
-                            <strong>Nome:</strong> '.$remetente['nome'].'<br>
-                            <strong>Endereço:</strong> '.$remetente['rua'].', '.$remetente['numero'].'<br>
-                            <strong>Bairro:</strong> '.$remetente['bairro'].' - '.$remetente['cidade'].'/'.$remetente['uf'].'<br>
-                            <strong>CEP:</strong> '.$remetente['cep'].'<br>
-                            <strong>CPF/CNPJ:</strong> '.$remetente['documento'].'
-                        </div>
-                        <div class="box">
-                            <h3>DESTINATÁRIO</h3>
-                            <strong>Nome:</strong> '.($order->user->name ?? 'Cliente').'<br>
-                            <strong>Endereço:</strong> '.$order->address->rua.', '.$order->address->num.' '.($order->address->complemento ?? '').'<br>
-                            <strong>Bairro:</strong> '.$order->address->bairro.' - '.$order->address->cidade.'/'.$order->address->uf.'<br>
-                            <strong>CEP:</strong> '.$order->address->cep.'<br>
-                            <strong>CPF/CNPJ:</strong> '.($order->user->cpf ?? 'Não informado').'
-                        </div>
-                    </div>
+        $shippingSettings = \App\Models\MelhorEnvioSetting::query()->first();
+        $remetente = $shippingSettings?->sender_info;
+        $requiredSenderFields = ['nome', 'rua', 'numero', 'bairro', 'cidade', 'uf', 'cep', 'documento'];
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Descrição / Variação</th>
-                                <th>Qtd</th>
-                                <th>Valor Unitário</th>
-                                <th>Valor Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ' . $linhasTabela . '
-                        </tbody>
-                    </table>
+        if (! is_array($remetente) || collect($requiredSenderFields)->contains(
+            fn (string $field): bool => ! isset($remetente[$field]) || trim((string) $remetente[$field]) === '',
+        )) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'SENDER_CONFIGURATION_REQUIRED',
+                'message' => 'Complete os dados reais do remetente nas configurações de envio antes de gerar a declaração.',
+            ], 422);
+        }
 
-                    <div style="text-align: right; margin-bottom: 20px;">
-                        <strong>TOTAL DECLARADO: R$ '.number_format($order->total, 2, ',', '.').'</strong>
-                    </div>
+        abort_unless($order->user && $order->address, 422, 'O pedido não possui cliente e endereço completos para gerar a declaração.');
 
-                    <div class="footer">
-                        <p>Declaro que não estou postando material inflamável, corrosivo, explosivo ou perigoso, nem qualquer outro item proibido pela legislação vigente.</p>
-                    </div>
-
-                    <div class="signature">
-                        <span>Assinatura do Remetente</span>
-                        <p>___________________, _____ de ________________ de ______</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-        ', 200, ['Content-Type' => 'text/html']);
+        return response()->view('documents.order-declaration', compact('order', 'remetente'));
     }
+
     // 🟢 CANCELAR ETIQUETA NO CARRINHO DO MELHOR ENVIO
     public function cancelMelhorEnvioCart($id) 
     {

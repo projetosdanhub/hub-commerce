@@ -31,6 +31,7 @@ class Order extends Model
         'refund_receipt',
         'refund_receipts',
         'refund_method',
+        'refund_previous_status',
         'payment_receipt',    // 🟢 ADICIONADO: Comprovante de Pagamento Manual
         'delivery_receipt'    // 🟢 ADICIONADO: Comprovante de Entrega / Assinatura
     ];
@@ -49,6 +50,7 @@ class Order extends Model
             'payment_installments' => 'integer',
             'applied_coupons'      => 'array', // Converte JSON do banco para Lista no React automaticamente
             'refund_receipts'     => 'array',
+            'refund_previous_status' => OrderStatus::class,
         ];
     }
 

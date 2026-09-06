@@ -1377,3 +1377,120 @@ html.hub-modal-open .hub-sidebar-scroll {
   .hub-expandable-search,
   .hub-expandable-search-field { transition: none; }
 }
+
+/* Detalhe de pedido: composição estável para pedidos simples e personalizados. */
+.hub-order-item {
+  align-items: flex-start;
+  min-width: 0;
+}
+.hub-order-item-content { flex: 1 1 auto; min-width: 0; }
+.hub-order-item-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--hub-space-3);
+}
+.hub-order-item-heading > div { min-width: 0; }
+.hub-order-item-heading strong,
+.hub-order-item-heading span,
+.hub-order-customization strong { overflow-wrap: anywhere; }
+.hub-order-item-price { flex: 0 0 auto; white-space: nowrap; }
+.hub-order-customization {
+  display: grid;
+  gap: var(--hub-space-3);
+  margin-top: var(--hub-space-3);
+  padding: var(--hub-space-3);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-md);
+  background: var(--hub-surface-accent);
+}
+.hub-order-customization p { margin: 0; }
+.hub-order-customization p > span {
+  display: block;
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-caption);
+  text-transform: capitalize;
+}
+.hub-order-customization-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--hub-space-3);
+}
+.hub-order-customization-images a {
+  display: grid;
+  gap: var(--hub-space-2);
+  min-width: 0;
+  color: var(--hub-text-secondary);
+  font-size: var(--hub-text-caption);
+  text-decoration: none;
+}
+.hub-order-customization-images img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--hub-radius-md);
+  object-fit: cover;
+}
+.hub-order-customization-images span { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.hub-order-totals small {
+  display: block;
+  max-width: 38rem;
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-caption);
+  overflow-wrap: anywhere;
+}
+.hub-order-payment-method {
+  display: flex;
+  align-items: center;
+  gap: var(--hub-space-3);
+  min-height: 3.5rem;
+  margin-bottom: var(--hub-space-4);
+}
+.hub-order-payment-method > span {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-md);
+  color: var(--hub-primary);
+  background: var(--hub-primary-soft);
+}
+.hub-order-payment-method div { display: grid; min-width: 0; }
+.hub-order-payment-method small { color: var(--hub-text-muted); text-transform: uppercase; }
+.hub-order-document-list { display: grid; gap: var(--hub-space-2); margin: 0; padding: 0; list-style: none; }
+.hub-order-document-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--hub-space-2);
+  min-height: 3.5rem;
+  padding: var(--hub-space-2);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-md);
+  background: var(--hub-surface-accent);
+}
+.hub-order-document-list li > div { display: grid; min-width: 0; }
+.hub-order-document-list strong,
+.hub-order-document-list small { overflow-wrap: anywhere; }
+.hub-order-document-list small { color: var(--hub-text-muted); }
+.hub-order-refund-receipts .hub-orders-form-hint { display: flex; align-items: center; gap: var(--hub-space-2); }
+.hub-order-receipt-preview > a:first-child { display: block; min-width: 0; }
+.hub-order-receipt-download { color: var(--hub-primary); font-size: var(--hub-text-caption); font-weight: 700; }
+.hub-order-progress li[data-active="true"] > span {
+  animation: hub-order-progress-pulse 1.8s var(--hub-ease-in-out) infinite;
+}
+@keyframes hub-order-progress-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--hub-primary) 34%, transparent); }
+  50% { box-shadow: 0 0 0 7px transparent; }
+}
+@media (max-width: 639px) {
+  .hub-order-item { display: grid; grid-template-columns: auto minmax(0, 1fr); }
+  .hub-order-item-price { grid-column: 2; margin-top: var(--hub-space-2); }
+  .hub-order-item-heading { flex-direction: column; }
+  .hub-order-customization-images { grid-template-columns: 1fr 1fr; }
+  .hub-order-document-list li { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .hub-order-document-list li .hub-icon-button:last-child { grid-column: 3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-order-progress li[data-active="true"] > span { animation: none; }
+}

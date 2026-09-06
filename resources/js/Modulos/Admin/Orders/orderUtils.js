@@ -53,6 +53,7 @@ export const getInitials = (name = '') => name
   .toUpperCase() || 'CL';
 
 export const getOrderAddress = (address = {}) => {
+  address = address ?? {};
   const street = address.rua || address.street || 'Endereço indisponível';
   const numberValue = address.numero || address.num || address.number || '';
   const complement = address.complemento || address.complement || '';
@@ -64,6 +65,38 @@ export const getOrderAddress = (address = {}) => {
     city,
     postalCode,
   };
+};
+
+export const paymentKind = (payment = {}) => {
+  const method = String(payment.metodo || payment.payment_method || '').toLowerCase();
+
+  if (method.includes('pix')) return 'pix';
+  if (method.includes('boleto')) return 'boleto';
+  if (method.includes('cart') || method.includes('credit') || method.includes('debit')) return 'card';
+  return 'other';
+};
+
+export const normalizeCustomization = (customization) => {
+  if (!customization || typeof customization !== 'object') return { images: [], fields: [] };
+
+  const images = [];
+  const fields = [];
+  const imageKeys = /imagem|image|arquivo|file|url/i;
+
+  Object.entries(customization).forEach(([key, rawValue]) => {
+    const values = Array.isArray(rawValue) ? rawValue : [rawValue];
+
+    values.forEach((value) => {
+      if (typeof value !== 'string' || !value.trim()) return;
+      if (imageKeys.test(key) && /^(https?:\/\/|\/|data:image\/)/i.test(value)) {
+        images.push({ label: key.replaceAll('_', ' '), url: value });
+      } else {
+        fields.push({ label: key.replaceAll('_', ' '), value });
+      }
+    });
+  });
+
+  return { images, fields };
 };
 
 export const actionForStatus = (status) => ({

@@ -1,13 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import {
   ArrowLeft,
+  Barcode,
   CheckCircle2,
   ClipboardList,
+  CreditCard,
   Download,
+  Eye,
   FileText,
   MapPin,
   MoreHorizontal,
   Package,
+  QrCode,
   RotateCcw,
   Truck,
   UserRound,
@@ -23,6 +27,8 @@ import {
   getInitials,
   getOrderAddress,
   getOrderStatus,
+  normalizeCustomization,
+  paymentKind,
   timelineTone,
 } from './orderUtils';
 
@@ -71,20 +77,60 @@ const DetailField = ({ label, children }) => (
 
 const OrderItems = ({ items = [] }) => (
   <ul className="hub-order-items">
-    {items.map((item) => (
-      <li key={item.id}>
-        <div className="hub-order-product-image" aria-hidden="true">
-          {item.img ? <img src={item.img} alt="" /> : <Package size={18} />}
-        </div>
-        <div>
-          <strong>{item.nome || 'Produto indisponível'}</strong>
-          <span>{[item.variacao, item.sku || item.variacaoSku].filter(Boolean).join(' · ') || 'Sem variação'}</span>
-        </div>
-        <span>{item.quantidade || item.qtd || 0} × {formatCurrency(item.preco)}</span>
-      </li>
-    ))}
+    {items.map((item) => {
+      const customization = normalizeCustomization(item.personalizacao);
+      const customized = customization.images.length || customization.fields.length;
+
+      return (
+        <li key={item.id} className="hub-order-item">
+          <div className="hub-order-product-image">
+            {item.img ? <img src={item.img} alt={'Imagem de ' + (item.nome || 'produto')} /> : <Package aria-hidden="true" size={18} />}
+          </div>
+          <div className="hub-order-item-content">
+            <div className="hub-order-item-heading">
+              <div>
+                <strong>{item.nome || 'Produto indisponível'}</strong>
+                <span>{[item.variacao, item.variacaoSku, item.sku].filter(Boolean).join(' · ') || 'Sem variação'}</span>
+              </div>
+              {customized ? <Badge variant="danger">Personalizado</Badge> : null}
+            </div>
+            {customized ? (
+              <div className="hub-order-customization">
+                {customization.fields.map((field) => (
+                  <p key={field.label + field.value}><span>{field.label}</span><strong>{field.value}</strong></p>
+                ))}
+                {customization.images.length ? (
+                  <div className="hub-order-customization-images">
+                    {customization.images.map((image, index) => (
+                      <a key={image.url + index} href={image.url} target="_blank" rel="noreferrer" download>
+                        <img src={image.url} alt={`${image.label} de ${item.nome || 'produto'}`} />
+                        <span><Eye aria-hidden="true" size={14} /> Visualizar · <Download aria-hidden="true" size={14} /> baixar original</span>
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+          <span className="hub-order-item-price">{item.quantidade || item.qtd || 0} × {formatCurrency(item.preco)}</span>
+        </li>
+      );
+    })}
   </ul>
 );
+
+const PaymentMethod = ({ payment = {} }) => {
+  const kind = paymentKind(payment);
+  const Icon = kind === 'pix' ? QrCode : kind === 'boleto' ? Barcode : CreditCard;
+  const brand = kind === 'card' ? payment.bandeira || payment.card_brand : null;
+
+  return (
+    <div className="hub-order-payment-method">
+      <span><Icon aria-hidden="true" size={19} /></span>
+      <div><strong>{payment.metodo || 'Pagamento não informado'}</strong>{brand ? <small>{brand}</small> : null}</div>
+    </div>
+  );
+};
 
 const Timeline = ({ entries = [] }) => {
   const ordered = [...entries].sort((a, b) => String(b.data_raw || b.data).localeCompare(String(a.data_raw || a.data)));
@@ -108,39 +154,22 @@ const Timeline = ({ entries = [] }) => {
   );
 };
 
-const RefundReceipts = ({ order }) => {
-  const currentReceipts = order.comprovantes_reembolso?.length
-    ? order.comprovantes_reembolso
-    : order.comprovante_reembolso
-      ? [{ id: 'legacy', name: 'Comprovante de reembolso', kind: 'document', url: order.comprovante_reembolso }]
-      : [];
-
-  const mayHaveRefundReceipt = currentReceipts.length
-    || ['EM_ANALISE_REEMBOLSO', 'REEMBOLSADO'].includes(order.status);
-
-  if (!mayHaveRefundReceipt) return null;
-
-  if (!currentReceipts.length) {
-    return <p className="hub-orders-form-hint">Os comprovantes enviados na confirmação do reembolso aparecerão aqui.</p>;
+const OrderDocuments = ({ documents = [], onOpen }) => {
+  if (!documents.length) {
+    return <p className="hub-orders-form-hint">Nenhum documento foi anexado ou gerado para este pedido.</p>;
   }
 
   return (
-    <div className="hub-order-receipt-gallery">
-      {currentReceipts.map((receipt, index) => (
-        <a key={receipt.id} href={receipt.url} target="_blank" rel="noreferrer" className="hub-order-receipt-card">
-          {receipt.kind === 'image' ? (
-            <img src={receipt.url} alt={'Prévia de ' + receipt.name} />
-          ) : (
-            <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={24} /></span>
-          )}
-          <span>
-            <strong>{receipt.name || 'Comprovante ' + (index + 1)}</strong>
-            <small>{receipt.kind === 'image' ? 'Abrir imagem em tamanho maior' : 'Abrir documento em nova aba'}</small>
-          </span>
-          <Download aria-hidden="true" size={16} />
-        </a>
+    <ul className="hub-order-document-list">
+      {documents.map((document) => (
+        <li key={document.id}>
+          <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={20} /></span>
+          <div><strong>{document.name}</strong><small>{document.kind === 'image' ? 'Imagem protegida' : 'Documento protegido'}</small></div>
+          <IconButton icon={Eye} label={'Visualizar ' + document.name} size="sm" onClick={() => onOpen(document, false)} />
+          <IconButton icon={Download} label={'Baixar ' + document.name} size="sm" onClick={() => onOpen(document, true)} />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 };
 
@@ -148,7 +177,8 @@ const SecondaryActions = ({ order, onAction, onPreviewDocument }) => {
   const [open, setOpen] = useState(false);
   const isTerminal = ['CANCELADO', 'REEMBOLSADO'].includes(order.status);
   const canCancel = order.status === 'A_PAGAR';
-  const canRequestRefund = !isTerminal && !canCancel;
+  const refundPending = order.status === 'EM_ANALISE_REEMBOLSO';
+  const canRequestRefund = !isTerminal && !canCancel && !refundPending;
   const canUpdateTracking = ['DESPACHADO', 'ENTREGUE'].includes(order.status);
   const canCancelMeCart = String(order.tracking_code || '').length > 20;
 
@@ -177,6 +207,11 @@ const SecondaryActions = ({ order, onAction, onPreviewDocument }) => {
               <RotateCcw aria-hidden="true" size={16} /> Solicitar reembolso
             </button>
           ) : null}
+          {refundPending ? (
+            <button type="button" role="menuitem" onClick={() => { onAction('CANCELAR_REEMBOLSO'); setOpen(false); }}>
+              <RotateCcw aria-hidden="true" size={16} /> Cancelar solicitação de reembolso
+            </button>
+          ) : null}
           {canCancel ? (
             <button type="button" role="menuitem" data-danger onClick={() => { onAction('CANCELAR'); setOpen(false); }}>
               <RotateCcw aria-hidden="true" size={16} /> Cancelar pedido
@@ -193,16 +228,20 @@ export const OrderDetail = ({
   onBack,
   onAction,
   onPreviewDocument,
+  onOpenDocument,
 }) => {
   const shouldReduceMotion = useReducedMotion();
   const primaryAction = actionForStatus(order.status);
   const status = getOrderStatus(order.status);
   const address = getOrderAddress(order.endereco);
   const totals = useMemo(() => ({
-    subtotal: Number(order.subtotal) || 0,
-    discount: Number(order.desconto) || 0,
-    shipping: Number(order.frete_valor) || 0,
-    total: Number(order.total) || 0,
+    subtotal: Number(order.financeiro?.subtotal ?? order.subtotal) || 0,
+    discount: Number(order.financeiro?.desconto_total ?? order.desconto) || 0,
+    shipping: Number(order.financeiro?.frete ?? order.frete_valor) || 0,
+    gross: Number(order.financeiro?.total_bruto) || 0,
+    net: Number(order.financeiro?.total_liquido ?? order.total) || 0,
+    discounts: order.financeiro?.descontos ?? [],
+    detailed: Boolean(order.financeiro?.detalhamento_disponivel),
   }), [order]);
 
   return (
@@ -218,7 +257,7 @@ export const OrderDetail = ({
           <div>
             <p>Pedido</p>
             <h1>HUB-{order.id} <Badge variant={status.variant}>{status.label}</Badge></h1>
-            <span>{formatOrderDate(order.data_raw || order.created_at)} · {order.pagamento_metodo || 'Pagamento não informado'}</span>
+            <span>{formatOrderDate(order.data_raw || order.created_at)}</span>
           </div>
         </div>
         <div className="hub-order-detail-actions">
@@ -237,11 +276,15 @@ export const OrderDetail = ({
         <div className="hub-order-detail-main">
           <Section title="Itens do pedido" icon={Package}>
             <OrderItems items={order.items} />
-            <div className="hub-order-totals">
+            <div className="hub-order-totals" aria-label="Resumo financeiro do pedido">
               <span>Subtotal <strong>{formatCurrency(totals.subtotal)}</strong></span>
               <span>Frete <strong>{formatCurrency(totals.shipping)}</strong></span>
-              <span>Descontos <strong>− {formatCurrency(totals.discount)}</strong></span>
-              <span className="hub-order-total">Total <strong>{formatCurrency(totals.total)}</strong></span>
+              <span>Total bruto <strong>{formatCurrency(totals.gross)}</strong></span>
+              {totals.discounts.map((discount, index) => (
+                <span key={(discount.tipo || 'desconto') + index}>{discount.tipo || 'Desconto'} <strong>− {formatCurrency(discount.valor)}</strong></span>
+              ))}
+              {!totals.detailed && totals.discount > 0 ? <small>Este pedido antigo registra o desconto total, sem separar a origem do benefício.</small> : null}
+              <span className="hub-order-total">Total líquido <strong>{formatCurrency(totals.net)}</strong></span>
             </div>
           </Section>
 
@@ -262,8 +305,18 @@ export const OrderDetail = ({
             <div className="hub-order-detail-fields">
               <DetailField label="Telefone">{order.cliente?.telefone}</DetailField>
               <DetailField label="CPF">{order.cliente?.cpf}</DetailField>
+              <DetailField label="Nascimento">{order.cliente?.nascimento}</DetailField>
+              <DetailField label="Origem">{order.cliente?.origem}</DetailField>
               <DetailField label="Nível">{order.cliente?.rank}</DetailField>
               <DetailField label="LTV">{formatCurrency(order.cliente?.ltv)}</DetailField>
+            </div>
+          </Section>
+
+          <Section title="Pagamento" icon={CreditCard}>
+            <PaymentMethod payment={order.pagamento} />
+            <div className="hub-order-detail-fields">
+              <DetailField label="Gateway">{order.pagamento?.gateway}</DetailField>
+              <DetailField label="Parcelas">{order.pagamento?.parcelas ? `${order.pagamento.parcelas} × ${formatCurrency(order.pagamento.valor_parcela)}` : 'À vista'}</DetailField>
             </div>
           </Section>
 
@@ -283,12 +336,7 @@ export const OrderDetail = ({
             action={<Button variant="ghost" size="sm" icon={FileText} onClick={() => onPreviewDocument('DECLARACAO')}>Gerar</Button>}
           >
             <div className="hub-order-documents">
-              {order.comprovante_pagamento ? <a href={order.comprovante_pagamento} target="_blank" rel="noreferrer"><Download aria-hidden="true" size={15} /> Comprovante de pagamento</a> : null}
-              {order.comprovante_entrega ? <a href={order.comprovante_entrega} target="_blank" rel="noreferrer"><Download aria-hidden="true" size={15} /> Comprovante de entrega</a> : null}
-              <RefundReceipts order={order} />
-              {!order.comprovante_pagamento && !order.comprovante_entrega && !(order.comprovantes_reembolso?.length || order.comprovante_reembolso) ? (
-                <p className="hub-orders-form-hint">Os comprovantes enviados nas operações aparecerão aqui.</p>
-              ) : null}
+              <OrderDocuments documents={order.documentos} onOpen={onOpenDocument} />
             </div>
           </Section>
         </aside>

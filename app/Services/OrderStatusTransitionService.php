@@ -42,6 +42,10 @@ final class OrderStatusTransitionService
 
             $this->assertCanTransition($lockedOrder, $target);
 
+            if ($target === OrderStatus::REFUND_REVIEW) {
+                $lockedOrder->refund_previous_status = $this->currentStatus($lockedOrder);
+            }
+
             $lockedOrder->fill($pendingAttributes);
 
             if ($afterLock !== null) {
@@ -49,6 +53,41 @@ final class OrderStatusTransitionService
             }
 
             $lockedOrder->status = $target;
+            $lockedOrder->save();
+
+            OrderHistory::query()->create([
+                'order_id' => $lockedOrder->getKey(),
+                'event' => $event,
+            ]);
+
+            return $lockedOrder;
+        });
+    }
+
+    public function cancelRefund(Order $order, string $event): Order
+    {
+        return DB::transaction(function () use ($order, $event): Order {
+            $lockedOrder = Order::query()
+                ->whereKey($order->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($this->currentStatus($lockedOrder) !== OrderStatus::REFUND_REVIEW) {
+                throw ValidationException::withMessages([
+                    'status' => 'Somente um reembolso em análise pode ser cancelado.',
+                ]);
+            }
+
+            $previousStatus = $lockedOrder->refund_previous_status;
+
+            if (! $previousStatus instanceof OrderStatus || $previousStatus === OrderStatus::REFUND_REVIEW) {
+                throw ValidationException::withMessages([
+                    'status' => 'A etapa anterior do pedido não está disponível para restauração segura.',
+                ]);
+            }
+
+            $lockedOrder->status = $previousStatus;
+            $lockedOrder->refund_previous_status = null;
             $lockedOrder->save();
 
             OrderHistory::query()->create([

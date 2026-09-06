@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   CreditCard,
   FileText,
+  ImagePlus,
   PackageCheck,
   RotateCcw,
   Truck,
@@ -61,6 +62,13 @@ const ACTION_COPY = {
     confirm: 'Confirmar reembolso',
     tone: 'danger',
   },
+  CANCELAR_REEMBOLSO: {
+    title: 'Cancelar solicitação de reembolso',
+    description: 'O pedido voltará para a etapa registrada antes da solicitação. A decisão ficará na auditoria.',
+    icon: RotateCcw,
+    confirm: 'Cancelar solicitação',
+    tone: 'warning',
+  },
   ALTERAR_RASTREIO: {
     title: 'Atualizar rastreio',
     description: 'Informe o novo código de rastreio da transportadora.',
@@ -85,7 +93,7 @@ const buildInitialState = (order, shipping) => {
     motivo: '',
     arquivo: null,
     comprovantes: [],
-    refund_method: 'TRANSFERENCIA',
+    refund_method: '',
     tracking_code: order?.tracking_code || '',
     dispatch_type: shipping?.settings?.data?.is_authenticated || shipping?.settings?.is_authenticated ? 'MELHORENVIO' : 'MANUAL',
     doc_tipo: 'DECLARACAO',
@@ -132,7 +140,9 @@ const ReceiptPreviewCard = ({ file, index, onRemove }) => {
   return (
     <article className="hub-order-receipt-preview">
       {previewUrl ? (
-        <img src={previewUrl} alt={'Prévia do comprovante ' + (index + 1)} />
+        <a href={previewUrl} target="_blank" rel="noreferrer" aria-label={'Abrir comprovante ' + (index + 1)}>
+          <img src={previewUrl} alt={'Prévia do comprovante ' + (index + 1)} />
+        </a>
       ) : (
         <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={22} /></span>
       )}
@@ -140,6 +150,7 @@ const ReceiptPreviewCard = ({ file, index, onRemove }) => {
         <strong>{file.name}</strong>
         <small>{previewUrl ? 'Imagem selecionada' : 'PDF selecionado'}</small>
       </div>
+      {previewUrl ? <a className="hub-order-receipt-download" href={previewUrl} download={file.name}>Baixar</a> : null}
       <IconButton icon={X} label={'Remover comprovante ' + (index + 1)} size="sm" onClick={onRemove} />
     </article>
   );
@@ -150,12 +161,12 @@ const RefundReceiptFields = ({ files, onChange }) => (
     <Field label="Comprovantes" required>
       <input
         type="file"
-        accept=".pdf,.jpg,.jpeg,.png"
+        accept="image/jpeg,image/png"
         multiple
         onChange={(event) => onChange(Array.from(event.target.files || []).slice(0, 2))}
       />
     </Field>
-    <p className="hub-orders-form-hint">Envie de um a dois comprovantes em PDF, JPG ou PNG. As imagens são exibidas antes da confirmação.</p>
+    <p className="hub-orders-form-hint"><ImagePlus aria-hidden="true" size={15} /> Envie de uma a duas imagens JPG ou PNG. Confira a prévia antes de confirmar.</p>
     {files.length ? (
       <div className="hub-order-receipt-preview-grid">
         {files.map((file, index) => (
@@ -219,7 +230,7 @@ const ShippingFields = ({ order, form, onChange, shipping, rates, calculating, o
           <Field label="Documento">
             <select value={form.doc_tipo} onChange={(event) => onChange({ doc_tipo: event.target.value })}>
               <option value="DECLARACAO">Declaração de conteúdo</option>
-              <option value="NFE">Nota fiscal (NFe)</option>
+              <option value="NFE" disabled>NF-e · requer configuração fiscal</option>
             </select>
           </Field>
           <Field label="Embalagem salva">
@@ -317,7 +328,7 @@ export const OrderActionDialog = ({
   const [error, setError] = useState('');
 
   const update = (changes) => setForm((current) => ({ ...current, ...changes }));
-  const requiresReason = useMemo(() => ['PAGAR', 'CANCELAR', 'INICIAR_REEMBOLSO', 'PROCESSAR_REEMBOLSO'].includes(action), [action]);
+  const requiresReason = useMemo(() => ['PAGAR', 'CANCELAR', 'INICIAR_REEMBOLSO', 'PROCESSAR_REEMBOLSO', 'CANCELAR_REEMBOLSO'].includes(action), [action]);
   const requiresFile = useMemo(() => ['PAGAR', 'ENTREGAR'].includes(action), [action]);
   const requiresRefundReceipts = action === 'PROCESSAR_REEMBOLSO';
 
@@ -370,6 +381,10 @@ export const OrderActionDialog = ({
       setError('Anexe ao menos um comprovante para confirmar o reembolso.');
       return;
     }
+    if (requiresRefundReceipts && !form.refund_method) {
+      setError('Selecione a modalidade usada no reembolso.');
+      return;
+    }
     if (isShippingAction(action)) {
       if (!form.vol_altura || !form.vol_largura || !form.vol_comprimento || !form.vol_peso) {
         setError('Informe todas as dimensões e o peso do pacote.');
@@ -393,6 +408,7 @@ export const OrderActionDialog = ({
       } else {
         await onSubmit(action, form);
       }
+      requestClose();
     } catch (requestError) {
       setError(errorMessage(requestError));
     }
@@ -401,14 +417,7 @@ export const OrderActionDialog = ({
   const Icon = copy.icon;
 
   return (
-    <div
-      className="hub-order-dialog-backdrop"
-      data-closing={closing}
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.currentTarget === event.target) requestClose();
-      }}
-    >
+    <div className="hub-order-dialog-backdrop" data-closing={closing} role="presentation">
       <div ref={dialogRef} className="hub-order-dialog" role="dialog" aria-modal="true" aria-labelledby="order-action-title" aria-describedby="order-action-description" tabIndex={-1}>
         <header>
           <DialogIcon Icon={Icon} tone={copy.tone} />
@@ -446,6 +455,7 @@ export const OrderActionDialog = ({
                 <>
                   <Field label="Modalidade" required>
                     <select value={form.refund_method} onChange={(event) => update({ refund_method: event.target.value })}>
+                      <option value="">Selecione a modalidade</option>
                       <option value="TRANSFERENCIA">Transferência ou estorno manual</option>
                       <option value="CASHBACK">Crédito no cashback do cliente</option>
                     </select>

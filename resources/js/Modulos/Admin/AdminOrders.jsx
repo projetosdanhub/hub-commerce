@@ -18,6 +18,7 @@ import {
   fetchOrderMetrics,
   fetchOrders,
   fetchShippingSupport,
+  openOrderDocument,
   submitManualOrderAction,
   updateOrderMetricPreferences,
   updateOrderTracking,
@@ -130,7 +131,6 @@ export default function AdminOrders() {
       });
     },
     onSuccess: async (_, variables) => {
-      setAction(null);
       await refreshCurrentData();
       setNotice({
         tone: 'success',
@@ -177,6 +177,14 @@ export default function AdminOrders() {
 
   const executeAction = async (type, fields = {}) => mutation.mutateAsync({ type, fields });
 
+  const openDocument = async (document, download) => {
+    try {
+      await openOrderDocument({ url: document.url, download });
+    } catch (requestError) {
+      setNotice({ tone: 'error', message: errorMessage(requestError, 'Não foi possível abrir o documento protegido.') });
+    }
+  };
+
   if (ordersQuery.isError) {
     return (
       <section className="hub-surface hub-error-state" role="alert">
@@ -199,6 +207,7 @@ export default function AdminOrders() {
           onBack={closeOrder}
           onAction={setAction}
           onPreviewDocument={previewDocument}
+          onOpenDocument={openDocument}
         />
         <OrderActionDialog
           key={action ? `${selectedOrder.id}-${action}` : 'closed'}

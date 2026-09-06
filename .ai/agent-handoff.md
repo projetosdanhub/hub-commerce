@@ -242,3 +242,11 @@ Copie este bloco para cada handoff relevante:
 - Evidências: [Tests #243](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033758), [E2E #61](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033728) e [Security #61](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033769) concluíram com sucesso na PR #43. Tests executou `npm run test:ui`, incluindo `npm run test:ui:interactions`, e o build.
 - Riscos, bloqueios e itens não verificados: a regra de estoque não foi implementada porque o serviço transacional CAT-003 e o estoque de reembolso CAT-009 ainda não existem. Reembolso financeiro sem recebimento físico não pode criar saldo. Outros diálogos legados continuam fora do lifecycle até seus blocos.
 - Próxima ação única: acompanhar os checks da atualização documental na PR #43 e fazer merge somente se permanecerem verdes; a homologação visual segue registrada como pendência.
+
+### 2026-09-06 — Codex — Pedidos, blocos UI-022 a UI-026
+- Auditoria: comprovantes legados eram expostos por URL pública, a conclusão antiga de reembolso não exigia modalidade e o preview fiscal fabricava remetente/NF-e. Valores de desconto também eram atribuídos a categorias não persistidas.
+- Implementado: restauração do estado anterior do reembolso sob transação/lock; modalidade explícita; 1–2 imagens privadas; documentos com leitura autenticada; personalizações agrupadas por item; resumo financeiro honesto; ícones de pagamento; progresso animado; declaração Blade escapada; gate explícito para NF-e sem configuração.
+- Mobile/tema: novas composições usam tokens, quebra segura de texto e grade mobile separada; animações respeitam `prefers-reduced-motion`.
+- Limites registrados no board: cashback ainda depende de PAY-009/CRM-003; personalizações e anexos públicos exigem migração; emissão real depende de certificado A1, adapter e homologação; detalhamento dos descontos exige snapshot no checkout.
+- Validação local direcionada: `node --test tests/ui/admin-interactions.node.mjs` com 6 testes verdes. PHP/build/CI pendentes neste ponto do handoff.
+- Próxima ação única: executar o teste direcionado de debounce/scroll lock, comunicar resultado e pausar aguardando a continuação do responsável.

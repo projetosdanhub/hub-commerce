@@ -1,13 +1,13 @@
 # Pedidos: preparação fiscal e contratos pendentes
 
-Revisão: 2026-09-05. Documento de implementação; integração fiscal ainda não entregue.
+Revisão: 2026-09-06. Documento de implementação; integração fiscal ainda não entregue.
 
 ## Evidência no código atual
 
-- `OrderController::previewDoc` rotula o caminho NFE como “Recibo Provisório / Espelho de Nota Fiscal”. Isso não comprova assinatura, envio à SEFAZ, protocolo ou autorização.
-- O payload administrativo de Pedidos preenche `desconto_vip_produtos` e `desconto_vip_frete` com zero fixo. Não usar esses valores para afirmar ausência de benefício.
-- `OrderItem.customization` persiste JSON e é exposto como `personalizacao`, mas o detalhe atual não apresenta seus anexos/textos por item.
-- `OrderStatus::REFUND_REVIEW` permite somente REFUNDED; cancelar a solicitação exige recuperar o estado anterior real e validar a transição sob lock. Não basta adicionar um botão.
+- A prévia fictícia de NF-e foi bloqueada. Enquanto não houver configuração fiscal e adapter homologado, o backend responde `FISCAL_CONFIGURATION_REQUIRED` e não apresenta espelho como documento emitido.
+- A declaração usa template Blade próprio, escapa conteúdo variável e exige dados reais do remetente, cliente e endereço.
+- Pedidos antigos guardam somente desconto agregado. A API marca o detalhamento como indisponível em vez de preencher loja/VIP/frete com zeros inventados.
+- O estado anterior ao pedido de reembolso agora é persistido e restaurado sob lock quando a solicitação é cancelada.
 
 ## Referências consultadas
 
@@ -27,6 +27,6 @@ Sua API de empresas tem particularidade importante: cadastro opera em produção
 6. Melhorar declaração de conteúdo em template próprio, com itens/quantidades e identificação necessários; separar claramente da NF-e e preservar escape de todos os campos.
 7. Homologar antes de produção: configuração incompleta, certificado expirado, rejeição fiscal, timeout, duplicidade, reconciliação e tentativa entre tenants.
 
-## Limites desta entrega
+## Limites atuais
 
-Nenhum certificado, credencial ou CNPJ foi cadastrado em fornecedor. Não foi enviada requisição de emissão. O adapter, persistência fiscal, gate da API, templates e integração documental ficam em UI-025. A UI não pode anunciar essas pendências como concluídas.
+Nenhum certificado, credencial ou CNPJ foi cadastrado em fornecedor e nenhuma requisição fiscal foi enviada. O gate e o template de declaração estão prontos; configuração por tenant, persistência fiscal, adapter, webhooks, XML, protocolo e DANFE permanecem em UI-025. A UI não pode anunciar essas pendências como concluídas.

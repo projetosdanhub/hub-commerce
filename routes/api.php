@@ -192,6 +192,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::get('/{id}/refund-receipts/{receiptIndex}', [OrderController::class, 'refundReceipt'])
             ->middleware('tenant.permission:tenant.orders.view')
             ->name('admin.orders.refund-receipts.show');
+        Route::get('/{id}/documents/{type}', [OrderController::class, 'orderDocument'])
+            ->middleware('tenant.permission:tenant.orders.view')
+            ->name('admin.orders.documents.show');
         
         // Cancelar Etiqueta no Carrinho do Melhor Envio
         Route::post('/{id}/cancel-me-cart', [OrderController::class, 'cancelMelhorEnvioCart'])->middleware('tenant.permission:tenant.orders.manage');

@@ -145,11 +145,22 @@ class OrderStatusTransitionTest extends TestCase
             ->withServerVariables(['HTTP_HOST' => 'reembolso.test', 'SERVER_NAME' => 'reembolso.test'])
             ->post("http://reembolso.test/api/admin/orders/{$refundOrder->id}/status-manual", [
                 'acao' => 'PROCESSAR_REEMBOLSO',
+                'motivo' => 'Arquivo inválido.',
+                'refund_method' => 'TRANSFERENCIA',
+                'comprovantes' => [UploadedFile::fake()->create('comprovante.pdf', 10, 'application/pdf')],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('comprovantes.0');
+
+        $this->actingAs($owner, 'sanctum')
+            ->withServerVariables(['HTTP_HOST' => 'reembolso.test', 'SERVER_NAME' => 'reembolso.test'])
+            ->post("http://reembolso.test/api/admin/orders/{$refundOrder->id}/status-manual", [
+                'acao' => 'PROCESSAR_REEMBOLSO',
                 'motivo' => 'Devolução confirmada.',
                 'refund_method' => 'TRANSFERENCIA',
                 'comprovantes' => [
                     UploadedFile::fake()->image('comprovante-1.png'),
-                    UploadedFile::fake()->create('comprovante-2.pdf', 10, 'application/pdf'),
+                    UploadedFile::fake()->image('comprovante-2.jpg'),
                 ],
             ])
             ->assertOk();
@@ -162,6 +173,40 @@ class OrderStatusTransitionTest extends TestCase
         foreach ($refundOrder->refund_receipts as $receipt) {
             Storage::disk('local')->assertExists($receipt);
         }
+    }
+
+    public function test_cancelling_refund_restores_the_recorded_previous_status(): void
+    {
+        [$tenant, $owner] = $this->tenantWithOwner(
+            'Loja restauração',
+            'restauracao-reembolso',
+            'restauracao.test',
+            'owner@restauracao.test',
+        );
+        $order = $this->createOrder($tenant, OrderStatus::SHIPPED);
+
+        $this->actingAs($owner, 'sanctum')
+            ->withServerVariables(['HTTP_HOST' => 'restauracao.test', 'SERVER_NAME' => 'restauracao.test'])
+            ->postJson("http://restauracao.test/api/admin/orders/{$order->id}/status-manual", [
+                'acao' => 'INICIAR_REEMBOLSO',
+                'motivo' => 'Cliente relatou avaria.',
+            ])
+            ->assertOk();
+
+        $this->actingAs($owner, 'sanctum')
+            ->withServerVariables(['HTTP_HOST' => 'restauracao.test', 'SERVER_NAME' => 'restauracao.test'])
+            ->postJson("http://restauracao.test/api/admin/orders/{$order->id}/status-manual", [
+                'acao' => 'CANCELAR_REEMBOLSO',
+                'motivo' => 'Cliente desistiu da solicitação.',
+            ])
+            ->assertOk();
+
+        $this->setTenantContext($tenant, 'restauracao.test');
+        $order->refresh();
+
+        $this->assertSame(OrderStatus::SHIPPED, $order->status);
+        $this->assertNull($order->refund_previous_status);
+        $this->assertDatabaseCount('order_histories', 2);
     }
 
     public function test_owner_preferences_for_order_metrics_are_isolated_by_tenant(): void
