@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Domain\Tenancy\TenantStorage;
 use App\Http\Controllers\Controller;
 use App\Models\GlobalSetting;
+use App\Models\Produto;
 use App\Models\TenantAppInstallation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -72,6 +73,8 @@ class AppCenterController extends Controller
         $certificatePath = $config['certificate_path'] ?? null;
         $certificateReady = is_string($certificatePath) && Storage::disk('local')->exists($certificatePath);
 
+        $catalog = $this->catalogFiscalPreflight();
+
         return response()->json([
             'issuer' => [
                 'legal_name' => $config['legal_name'] ?? '',
@@ -91,6 +94,7 @@ class AppCenterController extends Controller
                 'certificate' => $certificateReady,
                 'provider' => filled($config['provider'] ?? null)
                     && filled($config['api_token'] ?? null),
+                'catalog' => $catalog,
                 'adapter_homologated' => false,
                 'can_emit' => false,
             ],
@@ -144,6 +148,43 @@ class AppCenterController extends Controller
         );
 
         return $this->fiscal();
+    }
+
+    /**
+     * Este diagnóstico usa o catálogo real do tenant. A regra tributária final
+     * continua dependente do cenário da operação e do adapter homologado.
+     *
+     * @return array{ready: bool, active_products: int, incomplete_products: int}
+     */
+    private function catalogFiscalPreflight(): array
+    {
+        $products = Produto::query()->where('ativo', true);
+        $activeProducts = (clone $products)->count();
+
+        $incompleteProducts = (clone $products)
+            ->where(function ($query): void {
+                $query
+                    ->whereNull('ncm')
+                    ->orWhere('ncm', '')
+                    ->orWhereNull('origem')
+                    ->orWhere('origem', '')
+                    ->orWhere(function ($cfopQuery): void {
+                        $cfopQuery
+                            ->whereNull('cfop')
+                            ->orWhere('cfop', '')
+                            ->whereNull('cfop_dentro')
+                            ->orWhere('cfop_dentro', '')
+                            ->whereNull('cfop_fora')
+                            ->orWhere('cfop_fora', '');
+                    });
+            })
+            ->count();
+
+        return [
+            'ready' => $activeProducts > 0 && $incompleteProducts === 0,
+            'active_products' => $activeProducts,
+            'incomplete_products' => $incompleteProducts,
+        ];
     }
 
     private function fiscalConfig(): array
