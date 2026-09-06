@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
   Package,
   RotateCcw,
+  Tags,
   Truck,
   UserRound,
 } from 'lucide-react';
@@ -70,20 +71,121 @@ const DetailField = ({ label, children }) => (
   </div>
 );
 
+const displayCustomizationLabel = (key) => String(key || 'Detalhe')
+  .replace(/([a-z])([A-Z])/g, '$1 $2')
+  .replaceAll('_', ' ')
+  .replaceAll('-', ' ')
+  .replace(/^./, (letter) => letter.toUpperCase());
+
+const isAuthorizedCustomizationMedia = (value) => Boolean(
+  value
+  && typeof value === 'object'
+  && typeof value.preview_url === 'string'
+  && typeof value.download_url === 'string',
+);
+
+const customizationDetails = (value, prefix = '', entries = []) => {
+  if (value === null || value === undefined || value === '') return entries;
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => customizationDetails(item, prefix || `Opção ${index + 1}`, entries));
+    return entries;
+  }
+
+  if (typeof value !== 'object') {
+    if (typeof value === 'string' && /^(https?:|data:|\/)/i.test(value.trim())) return entries;
+    entries.push({ label: displayCustomizationLabel(prefix), value: String(value) });
+    return entries;
+  }
+
+  Object.entries(value).forEach(([key, item]) => {
+    if (['media', 'preview_url', 'download_url', 'url', 'image', 'imagem', 'file', 'arquivo'].includes(key)) return;
+    customizationDetails(item, displayCustomizationLabel(key), entries);
+  });
+
+  return entries;
+};
+
+const getCustomization = (value) => {
+  const source = value && typeof value === 'object' ? value : {};
+  const media = Array.isArray(source.media)
+    ? source.media.filter(isAuthorizedCustomizationMedia)
+    : [];
+  const details = customizationDetails(source);
+  const hasLegacyMedia = Array.isArray(source.media) && source.media.length > 0;
+
+  return {
+    details,
+    media,
+    hasCustomization: details.length > 0 || media.length > 0 || hasLegacyMedia,
+  };
+};
+
+const CustomizationPanel = ({ value }) => {
+  const customization = getCustomization(value);
+
+  if (!customization.hasCustomization) return null;
+
+  return (
+    <div className="hub-order-item-customization">
+      <div className="hub-order-item-customization-heading">
+        <Tags aria-hidden="true" size={15} />
+        <strong>Personalização deste item</strong>
+      </div>
+      {customization.details.length ? (
+        <dl className="hub-order-item-customization-details">
+          {customization.details.map((detail, index) => (
+            <div key={`${detail.label}-${index}`}>
+              <dt>{detail.label}</dt>
+              <dd>{detail.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+      {customization.media.length ? (
+        <div className="hub-order-item-customization-media" aria-label="Arquivos de personalização">
+          {customization.media.map((media, index) => (
+            <article key={media.id || media.download_url || index}>
+              <img src={media.preview_url} alt={media.name || `Prévia da personalização ${index + 1}`} />
+              <div>
+                <strong>{media.name || `Arquivo ${index + 1}`}</strong>
+                <a href={media.download_url} download>
+                  <Download aria-hidden="true" size={14} /> Baixar original
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : null}
+      {!customization.media.length && Array.isArray(value?.media) && value.media.length ? (
+        <p className="hub-orders-form-hint">Os arquivos deste item aguardam migração para a mídia privada autorizada.</p>
+      ) : null}
+    </div>
+  );
+};
+
 const OrderItems = ({ items = [] }) => (
   <ul className="hub-order-items">
-    {items.map((item) => (
-      <li key={item.id}>
-        <div className="hub-order-product-image" aria-hidden="true">
-          {item.img ? <img src={item.img} alt="" /> : <Package size={18} />}
-        </div>
-        <div>
-          <strong>{item.nome || 'Produto indisponível'}</strong>
-          <span>{[item.variacao, item.sku || item.variacaoSku].filter(Boolean).join(' · ') || 'Sem variação'}</span>
-        </div>
-        <span>{item.quantidade || item.qtd || 0} × {formatCurrency(item.preco)}</span>
-      </li>
-    ))}
+    {items.map((item) => {
+      const customization = getCustomization(item.personalizacao);
+
+      return (
+        <li key={item.id} data-customized={customization.hasCustomization}>
+          <div className="hub-order-product-image" aria-hidden="true">
+            {item.img ? <img src={item.img} alt="" /> : <Package size={18} />}
+          </div>
+          <div className="hub-order-item-content">
+            <div className="hub-order-item-name">
+              <strong>{item.nome || 'Produto indisponível'}</strong>
+              {customization.hasCustomization ? <Badge variant="special">Personalizado</Badge> : null}
+            </div>
+            <span>{[item.variacao, item.sku || item.variacaoSku].filter(Boolean).join(' · ') || 'Sem variação'}</span>
+            <CustomizationPanel value={item.personalizacao} />
+          </div>
+          <span>{item.quantidade || item.qtd || 0} × {formatCurrency(item.preco)}</span>
+        </li>
+      );
+    })}
   </ul>
 );
 
@@ -275,11 +377,17 @@ export const OrderDetail = ({
                 <small>{order.cliente?.email || 'E-mail indisponível'}</small>
               </div>
             </div>
-            <div className="hub-order-detail-fields">
+            <div className="hub-order-detail-fields hub-order-customer-fields">
               <DetailField label="Telefone">{order.cliente?.telefone}</DetailField>
               <DetailField label="CPF">{order.cliente?.cpf}</DetailField>
+              <DetailField label="Nascimento">{order.cliente?.nascimento}</DetailField>
+              <DetailField label="Origem">{order.cliente?.origem}</DetailField>
               <DetailField label="Nível">{order.cliente?.rank}</DetailField>
+              <DetailField label="Compras">{order.cliente?.compras}</DetailField>
               <DetailField label="LTV">{formatCurrency(order.cliente?.ltv)}</DetailField>
+            </div>
+            <div className="hub-order-customer-tags">
+              {(order.cliente?.tags || []).length ? order.cliente.tags.map((tag) => <Badge key={tag}>{tag}</Badge>) : null}
             </div>
           </Section>
 

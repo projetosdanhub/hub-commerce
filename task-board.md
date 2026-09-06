@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-06 — UI-022 implementado, aguardando CI  
+Atualizado em: 2026-09-06 — UI-022 integrado na PR #45; UI-023 em andamento  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -211,8 +211,8 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | UI-019 | P1 | Padronizar interações globais do painel | UI-005, UI-006, UI-013 | Refresh único no shell, tooltip sem clipping, período canônico, textos longos legíveis e sidebar recolhida consistente; PR #41 integrada com Tests, E2E Tests e Security Scans verdes |
 | [~] | UI-020 | P1 | Padronizar interações operacionais de dados | UI-005, UI-006, UI-013 | PR #42 integrada; revisão visual encontrou caixas de tooltip indevidas. Pendências separadas nos blocos UI-021 a UI-026; não considerar homologação visual concluída |
 | [~] | UI-021 | P1 | Corrigir interações globais e temas | UI-020 | Bloco implementado: tooltips visuais/remanescentes removidos, busca com debounce de 350 ms sem contorno, diálogos de Pedidos/métricas com scroll lock, saída e backdrop seguro, métricas refinadas, rota com motion por token e modo claro azul-marinho nos shells desktop/mobile. Teste direcionado, build, Tests, E2E Tests e Security Scans verdes na PR #43; revisão visual em navegador ainda pendente |
-| [~] | UI-022 | P1 | Completar reembolso com cancelamento e anexos | UI-021 | Implementado na branch `ui/orders-refund-completion`: solicitação repetida oculta; cancelamento restaura origem auditada sob lock; motivo, modalidade e 1–2 imagens JPEG/PNG obrigatórios; higienização e storage privado; prévia/download por URL temporária assinada. CI e homologação visual ainda pendentes. Cashback continua dependente de idempotência/ledger em PAY-009 e CRM-003; estoque físico segue CAT-009 |
-| [ ] | UI-023 | P1 | Detalhar personalizações e cliente do pedido | UI-021 | Tag Personalizado; imagens/textos agrupados por item/SKU/variante; originais em alta qualidade com download autorizado; perfil compatível com CRM e dados autorizados |
+| [x] | UI-022 | P1 | Completar reembolso com cancelamento e anexos | UI-021 | Integrado na PR #45 (`1cc6a81`): solicitação repetida oculta; cancelamento restaura origem auditada sob lock; motivo, modalidade e 1–2 imagens JPEG/PNG obrigatórios; higienização e storage privado; prévia/download por URL temporária assinada. Tests, E2E Tests e Security Scans verdes. Cashback continua dependente de idempotência/ledger em PAY-009 e CRM-003; estoque físico segue CAT-009 |
+| [~] | UI-023 | P1 | Detalhar personalizações e cliente do pedido | UI-021 | Em andamento: tag Personalizado e textos agrupados por item/SKU/variante; perfil usa somente campos já autorizados no contrato do CRM. Mídia só pode receber prévia/download quando o backend entregar URLs temporárias autorizadas; imagens legadas aguardam CAT-004 |
 | [ ] | UI-024 | P1 | Exibir documentos reais de cada operação | UI-022, UI-023 | Pagamento, entrega/romaneio, reembolso e documentos emitidos com preview/download; lista vazia só sem arquivos reais; migração dos anexos legados públicos |
 | [ ] | UI-025 | P1 | Preparar emissão fiscal e declaração | UI-024 | Configuração por tenant, certificado válido suportado, preflight backend, adapter homologado, XML/protocolo/DANFE reais; declaração redesenhada; espelho provisório nunca apresentado como NF-e emitida |
 | [ ] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Snapshot monetário com cupom antes de VIP, limites independentes por produto/frete; subtotal/bruto/líquido/custos reais; método e bandeira confirmada; trilha animada e transições de navegação; ambos os temas/mobile |
