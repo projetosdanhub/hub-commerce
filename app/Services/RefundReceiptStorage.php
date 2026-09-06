@@ -36,7 +36,7 @@ final class RefundReceiptStorage
             ]);
         }
 
-        $contents = @file_get_contents($file->getRealPath());
+        $contents = file_get_contents($file->getRealPath());
 
         if ($contents === false) {
             throw ValidationException::withMessages([
@@ -44,7 +44,7 @@ final class RefundReceiptStorage
             ]);
         }
 
-        $image = @imagecreatefromstring($contents);
+        $image = imagecreatefromstring($contents);
 
         if ($image === false) {
             throw ValidationException::withMessages([
