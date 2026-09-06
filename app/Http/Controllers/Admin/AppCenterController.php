@@ -170,12 +170,15 @@ class AppCenterController extends Controller
                     ->orWhere('origem', '')
                     ->orWhere(function ($cfopQuery): void {
                         $cfopQuery
-                            ->whereNull('cfop')
-                            ->orWhere('cfop', '')
-                            ->whereNull('cfop_dentro')
-                            ->orWhere('cfop_dentro', '')
-                            ->whereNull('cfop_fora')
-                            ->orWhere('cfop_fora', '');
+                            ->where(function ($field): void {
+                                $field->whereNull('cfop')->orWhere('cfop', '');
+                            })
+                            ->where(function ($field): void {
+                                $field->whereNull('cfop_dentro')->orWhere('cfop_dentro', '');
+                            })
+                            ->where(function ($field): void {
+                                $field->whereNull('cfop_fora')->orWhere('cfop_fora', '');
+                            });
                     });
             })
             ->count();
