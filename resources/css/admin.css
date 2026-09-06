@@ -3248,3 +3248,13 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.hub-order-receipt-card[data-pending] {
+  border-style: dashed;
+  background: var(--hub-surface-subtle);
+}
+
+.hub-order-receipt-card[data-pending] small {
+  color: var(--hub-text-muted);
+}

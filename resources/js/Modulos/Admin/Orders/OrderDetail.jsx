@@ -211,46 +211,50 @@ const Timeline = ({ entries = [] }) => {
   );
 };
 
-const RefundReceipts = ({ order }) => {
-  const currentReceipts = order.comprovantes_reembolso?.length
-    ? order.comprovantes_reembolso
-    : order.comprovante_reembolso
-      ? [{ id: 'legacy', name: 'Comprovante de reembolso', kind: 'document', url: order.comprovante_reembolso }]
-      : [];
+const OrderDocuments = ({ order }) => {
+  const refunds = (order.comprovantes_reembolso || []).map((receipt, index) => ({
+    id: receipt.id || `refund-${index}`,
+    name: receipt.name || `Comprovante de reembolso ${index + 1}`,
+    kind: receipt.kind || 'document',
+    preview_url: receipt.preview_url || receipt.url,
+    download_url: receipt.download_url || receipt.preview_url || receipt.url,
+    description: 'Reembolso privado higienizado',
+  }));
+  const documents = [...(order.documentos || []), ...refunds];
+  const visibleDocuments = documents.filter((document) => document.legacy_pending === false || document.preview_url);
 
-  const mayHaveRefundReceipt = currentReceipts.length
-    || ['EM_ANALISE_REEMBOLSO', 'REEMBOLSADO'].includes(order.status);
-
-  if (!mayHaveRefundReceipt) return null;
-
-  if (!currentReceipts.length) {
-    return <p className="hub-orders-form-hint">Os comprovantes enviados na confirmação do reembolso aparecerão aqui.</p>;
+  if (!documents.length) {
+    return <p className="hub-orders-form-hint">Os comprovantes e documentos gerados nas operações aparecerão aqui.</p>;
   }
 
   return (
     <div className="hub-order-receipt-gallery">
-      {currentReceipts.map((receipt, index) => {
-        const previewUrl = receipt.preview_url || receipt.url;
-        const downloadUrl = receipt.download_url || previewUrl;
-
-        return (
-          <article key={receipt.id} className="hub-order-receipt-card">
-            {receipt.kind === 'image' ? (
-              <img src={previewUrl} alt={'Prévia de ' + receipt.name} />
-            ) : (
-              <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={24} /></span>
-            )}
-            <div>
-              <strong>{receipt.name || 'Comprovante ' + (index + 1)}</strong>
-              <small>{receipt.kind === 'image' ? 'Imagem privada higienizada' : 'Documento privado'}</small>
-              <span className="hub-order-receipt-actions">
-                <a href={previewUrl} target="_blank" rel="noreferrer"><Eye aria-hidden="true" size={15} /> Ver prévia</a>
-                <a href={downloadUrl} download><Download aria-hidden="true" size={15} /> Baixar</a>
-              </span>
-            </div>
-          </article>
-        );
-      })}
+      {visibleDocuments.map((document, index) => (
+        <article key={document.id || `${document.type || 'document'}-${index}`} className="hub-order-receipt-card">
+          {document.kind === 'image' ? (
+            <img src={document.preview_url} alt={`Prévia de ${document.name}`} />
+          ) : (
+            <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={24} /></span>
+          )}
+          <div>
+            <strong>{document.name}</strong>
+            <small>{document.description || (document.type === 'romaneio' ? 'Documento de expedição privado' : 'Documento privado')}</small>
+            <span className="hub-order-receipt-actions">
+              <a href={document.preview_url} target="_blank" rel="noreferrer"><Eye aria-hidden="true" size={15} /> Ver prévia</a>
+              <a href={document.download_url} download><Download aria-hidden="true" size={15} /> Baixar</a>
+            </span>
+          </div>
+        </article>
+      ))}
+      {documents.filter((document) => document.legacy_pending).map((document) => (
+        <article key={`legacy-${document.type}`} className="hub-order-receipt-card" data-pending>
+          <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={24} /></span>
+          <div>
+            <strong>{document.name}</strong>
+            <small>Arquivo legado aguardando migração para o armazenamento privado.</small>
+          </div>
+        </article>
+      ))}
     </div>
   );
 };
@@ -407,12 +411,7 @@ export const OrderDetail = ({
             action={<Button variant="ghost" size="sm" icon={FileText} onClick={() => onPreviewDocument('DECLARACAO')}>Gerar</Button>}
           >
             <div className="hub-order-documents">
-              {order.comprovante_pagamento ? <a href={order.comprovante_pagamento} target="_blank" rel="noreferrer"><Download aria-hidden="true" size={15} /> Comprovante de pagamento</a> : null}
-              {order.comprovante_entrega ? <a href={order.comprovante_entrega} target="_blank" rel="noreferrer"><Download aria-hidden="true" size={15} /> Comprovante de entrega</a> : null}
-              <RefundReceipts order={order} />
-              {!order.comprovante_pagamento && !order.comprovante_entrega && !(order.comprovantes_reembolso?.length || order.comprovante_reembolso) ? (
-                <p className="hub-orders-form-hint">Os comprovantes enviados nas operações aparecerão aqui.</p>
-              ) : null}
+              <OrderDocuments order={order} />
             </div>
           </Section>
         </aside>
