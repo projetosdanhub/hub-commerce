@@ -280,6 +280,8 @@ Route::middleware(['signed', 'throttle:30,1', 'tenant'])->prefix('secure-downloa
         ->name('admin.carriers.documents.download');
     Route::get('/orders/{order}/romaneio', [CarrierController::class, 'downloadRomaneio'])
         ->name('admin.orders.romaneio.download');
+    Route::get('/orders/{order}/documents/{type}', [OrderController::class, 'document'])
+        ->name('secure-download.orders.documents');
     Route::get('/orders/{order}/refund-receipts/{receiptIndex}', [OrderController::class, 'refundReceipt'])
         ->name('secure-download.orders.refund-receipts');
 });
