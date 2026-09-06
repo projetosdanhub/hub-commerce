@@ -23,7 +23,6 @@ const CheckoutPage = ({ cartItems = [] }) => {
         img: item.img,
     }));
     const hasItems = itensCarrinho.length > 0;
-    const quote = null;
 
     // Estado do Formulário
     const [formData, setFormData] = useState({
