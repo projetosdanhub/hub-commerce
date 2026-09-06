@@ -18,7 +18,7 @@ class MelhorEnvioController extends Controller
 
     public function getSettings()
     {
-        $config = MelhorEnvioSetting::firstOrCreate([]);
+        $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
         
         // Se for o primeiro acesso, define os serviços padrão
         if (empty($config->carriers_ativas)) {
@@ -54,7 +54,7 @@ class MelhorEnvioController extends Controller
             ->get($this->baseUrl(new MelhorEnvioSetting(['environment' => $request->input('environment')])) . '/api/v2/me');
 
         if ($response->successful()) {
-            $config = MelhorEnvioSetting::firstOrCreate([]);
+            $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
             $config->access_token = $token;
             $config->environment = $request->input('environment');
             $config->save();
@@ -67,7 +67,7 @@ class MelhorEnvioController extends Controller
     public function saveCarriers(Request $request)
     {
         $request->validate(['carriers_ativas' => 'required|array']);
-        $config = MelhorEnvioSetting::firstOrCreate([]);
+        $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
         $config->carriers_ativas = $request->carriers_ativas;
         $config->save();
         
@@ -76,7 +76,7 @@ class MelhorEnvioController extends Controller
 
     public function saveSender(Request $request)
     {
-        $config = MelhorEnvioSetting::firstOrCreate([]);
+        $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
         $config->sender_info = $request->all();
         $config->save();
         return response()->json(['status' => 'success', 'message' => 'Remetente salvo!']);
