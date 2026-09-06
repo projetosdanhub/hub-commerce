@@ -13,12 +13,8 @@ final class RefundReceiptStorage
 {
     public function __construct(
         private readonly TenantStorage $tenantStorage,
-    ) {
-    }
+    ) {}
 
-    /**
-     * @return array{extension: 'jpg'|'png', contents: string}
-     */
     public function sanitize(UploadedFile $file): array
     {
         $mime = $file->getMimeType();
@@ -74,9 +70,6 @@ final class RefundReceiptStorage
         }
     }
 
-    /**
-     * @param array{extension: 'jpg'|'png', contents: string} $receipt
-     */
     public function store(Order $order, array $receipt): string
     {
         $path = $this->tenantStorage->path(
@@ -88,9 +81,6 @@ final class RefundReceiptStorage
         return $path;
     }
 
-    /**
-     * @param list<string> $paths
-     */
     public function delete(array $paths): void
     {
         Storage::disk('local')->delete(array_values(array_filter($paths)));
