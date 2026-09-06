@@ -112,7 +112,15 @@ class AppCenterController extends Controller
         ]);
 
         $config = $this->fiscalConfig();
-        $config = array_merge($config, collect($validated)->except('certificate')->all());
+        $incoming = collect($validated)->except('certificate')->all();
+
+        foreach (['api_token', 'certificate_password'] as $secret) {
+            if (blank($incoming[$secret] ?? null) && array_key_exists($secret, $config)) {
+                $incoming[$secret] = $config[$secret];
+            }
+        }
+
+        $config = array_merge($config, $incoming);
 
         if ($request->hasFile('certificate')) {
             $certificate = $request->file('certificate');
