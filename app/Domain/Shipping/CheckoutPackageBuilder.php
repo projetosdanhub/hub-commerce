@@ -2,6 +2,7 @@
 
 namespace App\Domain\Shipping;
 
+use App\Models\Produto;
 use App\Models\ShippingPackage;
 use DomainException;
 use Illuminate\Support\Collection;
@@ -9,7 +10,7 @@ use Illuminate\Support\Collection;
 final class CheckoutPackageBuilder
 {
     /**
-     * @param Collection<int, array{product: \App\Models\Produto, quantity: int}> $items
+     * @param Collection<int, array{product: Produto, quantity: int}> $items
      * @return array{height: string, width: string, length: string, weight: string}
      */
     public function build(Collection $items): array
