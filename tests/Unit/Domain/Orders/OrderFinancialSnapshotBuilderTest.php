@@ -36,4 +36,11 @@ class OrderFinancialSnapshotBuilderTest extends TestCase
             [['source' => 'VIP', 'scope' => 'SHIPPING', 'amount_cents' => 501]],
         );
     }
+
+    public function test_it_rejects_a_malformed_benefit_before_sorting(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new OrderFinancialSnapshotBuilder())->build(1_000, 500, ['beneficio-invalido']);
+    }
 }
