@@ -47,11 +47,17 @@ const AppCard = ({ app, busy, onInstall, onOpen }) => (
 );
 
 const FiscalReadiness = ({ preflight = {} }) => {
+  const catalog = preflight.catalog || {};
+  const catalogDetail = Number(catalog.active_products || 0) > 0
+    ? (catalog.incomplete_products || 0) + ' de ' + catalog.active_products + ' produto(s) ativo(s) com pendência'
+    : 'Nenhum produto ativo no catálogo';
+
   const rows = [
-    ['Dados do emitente', preflight.issuer],
-    ['Certificado A1', preflight.certificate],
-    ['Credencial do provedor', preflight.provider],
-    ['Adapter homologado', preflight.adapter_homologated],
+    ['Dados do emitente', preflight.issuer, null],
+    ['Certificado A1', preflight.certificate, null],
+    ['Credencial do provedor', preflight.provider, null],
+    ['Catálogo fiscal', Boolean(catalog.ready), catalogDetail],
+    ['Adapter homologado', preflight.adapter_homologated, 'A emissão permanece bloqueada até a homologação real'],
   ];
 
   return (
@@ -61,10 +67,13 @@ const FiscalReadiness = ({ preflight = {} }) => {
         <p>A emissão permanece bloqueada até todos os requisitos e a homologação do adapter.</p>
       </div>
       <ul>
-        {rows.map(([label, ready]) => (
+        {rows.map(([label, ready, detail]) => (
           <li key={label}>
             <span>{ready ? <BadgeCheck aria-hidden="true" size={18} /> : <Box aria-hidden="true" size={18} />}</span>
-            <strong>{label}</strong>
+            <div>
+              <strong>{label}</strong>
+              {detail ? <small>{detail}</small> : null}
+            </div>
             <Badge variant={ready ? 'success' : 'warning'}>{ready ? 'Pronto' : 'Pendente'}</Badge>
           </li>
         ))}
