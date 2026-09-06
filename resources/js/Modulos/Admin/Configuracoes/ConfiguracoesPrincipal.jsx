@@ -126,7 +126,7 @@ const ConfiguracoesPrincipal = () => {
     try {
       await api.post(`/admin/settings/apps/${app.key}/install`);
       await load();
-      setTab(app.key === 'fiscal' ? 'FISCAL' : 'APPS');
+      setTab(app.key === 'fiscal' ? 'FISCAL' : app.key === 'logistics' ? 'LOGISTICS' : 'APPS');
     } catch {
       setNotice({ tone: 'error', text: 'Não foi possível instalar este app.' });
     } finally {
