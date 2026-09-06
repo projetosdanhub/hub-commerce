@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-06 — UI-024 integrado na PR #47; UI-025 em andamento  
+Atualizado em: 2026-09-06 — UI-025: preparação fiscal e declaração segura entregues; emissão segue bloqueada até homologação  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -214,7 +214,8 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | UI-022 | P1 | Completar reembolso com cancelamento e anexos | UI-021 | Integrado na PR #45 (`1cc6a81`): solicitação repetida oculta; cancelamento restaura origem auditada sob lock; motivo, modalidade e 1–2 imagens JPEG/PNG obrigatórios; higienização e storage privado; prévia/download por URL temporária assinada. Tests, E2E Tests e Security Scans verdes. Cashback continua dependente de idempotência/ledger em PAY-009 e CRM-003; estoque físico segue CAT-009 |
 | [x] | UI-023 | P1 | Detalhar personalizações e cliente do pedido | UI-021 | Integrado na PR #46 (`4a38a7b`): tag Personalizado e textos agrupados por item/SKU/variante; perfil usa somente campos já autorizados do CRM. Mídia só renderiza prévia/download por URL temporária tenant-scoped; imagens legadas aguardam CAT-004 |
 | [x] | UI-024 | P1 | Exibir documentos reais de cada operação | UI-022, UI-023 | Integrado na PR #47 (`b8b81db`): catálogo unificado com prévia/download autorizado; novos comprovantes de pagamento/entrega em storage privado tenant-scoped. Arquivos públicos legados são identificados sem URL até migração; declaração é operacional, XML/DANFE continuam UI-025 |
-| [~] | UI-025 | P1 | Preparar emissão fiscal e declaração | UI-024 | Em andamento: Centro de Apps em Configurações, app fiscal por tenant, certificado A1/credenciais criptografados, preflight e declaração redesenhada. Emissão, XML/protocolo/DANFE só com adapter homologado; espelho provisório nunca é NF-e |
+| [~] | UI-025 | P1 | Preparar emissão fiscal e declaração | UI-024 | Entregues: Centro de Apps, configuração fiscal por tenant, A1/credenciais protegidos, diagnóstico do catálogo ativo e declaração segura. Emissão, XML/protocolo/DANFE só com adapter homologado; espelho provisório nunca é NF-e |
+| [!] | FIS-001 | P1 | Homologar adapter de emissão de NF-e | UI-025 | Provedor contratado, credenciais autorizadas, sandbox/homologação, assinatura, idempotência, webhook, XML/DANFE privados e autorização confirmada |
 | [ ] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Snapshot monetário com cupom antes de VIP, limites independentes por produto/frete; subtotal/bruto/líquido/custos reais; método e bandeira confirmada; trilha animada e transições de navegação; ambos os temas/mobile |
 
 ## Fase 11 — Storefront, SEO e desempenho
