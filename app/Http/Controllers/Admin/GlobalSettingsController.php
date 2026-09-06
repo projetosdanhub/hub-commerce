@@ -16,6 +16,8 @@ class GlobalSettingsController extends Controller
         'api_secret',
         'webhook_secret',
         'token',
+        'api_token',
+        'certificate_password',
     ];
 
     public function getGroup(string $group): JsonResponse

@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-06 — UI-023 integrado na PR #46; UI-024 em andamento  
+Atualizado em: 2026-09-06 — UI-024 integrado na PR #47; UI-025 em andamento  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -213,8 +213,8 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [~] | UI-021 | P1 | Corrigir interações globais e temas | UI-020 | Bloco implementado: tooltips visuais/remanescentes removidos, busca com debounce de 350 ms sem contorno, diálogos de Pedidos/métricas com scroll lock, saída e backdrop seguro, métricas refinadas, rota com motion por token e modo claro azul-marinho nos shells desktop/mobile. Teste direcionado, build, Tests, E2E Tests e Security Scans verdes na PR #43; revisão visual em navegador ainda pendente |
 | [x] | UI-022 | P1 | Completar reembolso com cancelamento e anexos | UI-021 | Integrado na PR #45 (`1cc6a81`): solicitação repetida oculta; cancelamento restaura origem auditada sob lock; motivo, modalidade e 1–2 imagens JPEG/PNG obrigatórios; higienização e storage privado; prévia/download por URL temporária assinada. Tests, E2E Tests e Security Scans verdes. Cashback continua dependente de idempotência/ledger em PAY-009 e CRM-003; estoque físico segue CAT-009 |
 | [x] | UI-023 | P1 | Detalhar personalizações e cliente do pedido | UI-021 | Integrado na PR #46 (`4a38a7b`): tag Personalizado e textos agrupados por item/SKU/variante; perfil usa somente campos já autorizados do CRM. Mídia só renderiza prévia/download por URL temporária tenant-scoped; imagens legadas aguardam CAT-004 |
-| [~] | UI-024 | P1 | Exibir documentos reais de cada operação | UI-022, UI-023 | Em andamento: catálogo unificado com prévia/download autorizado; novos comprovantes de pagamento/entrega em storage privado tenant-scoped. Arquivos públicos legados são identificados sem URL até migração; declaração é operacional, XML/DANFE continuam UI-025 |
-| [ ] | UI-025 | P1 | Preparar emissão fiscal e declaração | UI-024 | Configuração por tenant, certificado válido suportado, preflight backend, adapter homologado, XML/protocolo/DANFE reais; declaração redesenhada; espelho provisório nunca apresentado como NF-e emitida |
+| [x] | UI-024 | P1 | Exibir documentos reais de cada operação | UI-022, UI-023 | Integrado na PR #47 (`b8b81db`): catálogo unificado com prévia/download autorizado; novos comprovantes de pagamento/entrega em storage privado tenant-scoped. Arquivos públicos legados são identificados sem URL até migração; declaração é operacional, XML/DANFE continuam UI-025 |
+| [~] | UI-025 | P1 | Preparar emissão fiscal e declaração | UI-024 | Em andamento: Centro de Apps em Configurações, app fiscal por tenant, certificado A1/credenciais criptografados, preflight e declaração redesenhada. Emissão, XML/protocolo/DANFE só com adapter homologado; espelho provisório nunca é NF-e |
 | [ ] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Snapshot monetário com cupom antes de VIP, limites independentes por produto/frete; subtotal/bruto/líquido/custos reais; método e bandeira confirmada; trilha animada e transições de navegação; ambos os temas/mobile |
 
 ## Fase 11 — Storefront, SEO e desempenho
