@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\Shipping\MelhorEnvioRateAdapter;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\MelhorEnvioSetting;
@@ -93,63 +94,48 @@ class MelhorEnvioController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Desconectado.']);
     }
 
-    // 🟢 MAGIA: Cotação Real de Frete via API
-    public function calculate(Request $request)
+    public function calculate(Request $request, MelhorEnvioRateAdapter $adapter)
     {
-        $request->validate([
+        $validated = $request->validate([
             'to_postal_code' => 'required|string',
-            'height' => 'required|numeric',
-            'width' => 'required|numeric',
-            'length' => 'required|numeric',
-            'weight' => 'required|numeric',
-            'insurance_value' => 'required|numeric',
+            'height' => 'required|numeric|gt:0',
+            'width' => 'required|numeric|gt:0',
+            'length' => 'required|numeric|gt:0',
+            'weight' => 'required|numeric|gt:0',
+            'insurance_value' => 'required|numeric|min:0',
         ]);
 
         $config = MelhorEnvioSetting::first();
-        if (!$config || !$config->access_token) {
-            return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Melhor Envio não conectado.'], 400);
+
+        if ($config === null) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'REQUEST_FAILED',
+                'message' => 'Melhor Envio não conectado.',
+            ], 400);
         }
 
-        $senderInfo = $config->sender_info;
-        if (empty($senderInfo['cep'])) {
-            return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Endereço da Loja (Remetente) não configurado.'], 400);
-        }
-
-        $response = Http::withToken($config->access_token)
-            ->withHeaders(['Accept' => 'application/json', 'User-Agent' => 'HUB Commerce (suporte@hubcommerce.com)'])
-            ->post($this->baseUrl($config) . '/api/v2/me/shipment/calculate', [
-                'from' => ['postal_code' => preg_replace('/\D/', '', $senderInfo['cep'])],
-                'to' => ['postal_code' => preg_replace('/\D/', '', $request->to_postal_code)],
-                'package' => [
-                    'height' => (float) $request->height,
-                    'width' => (float) $request->width,
-                    'length' => (float) $request->length,
-                    'weight' => (float) $request->weight,
+        try {
+            $rates = $adapter->calculate(
+                $config,
+                $validated['to_postal_code'],
+                [
+                    'height' => $validated['height'],
+                    'width' => $validated['width'],
+                    'length' => $validated['length'],
+                    'weight' => $validated['weight'],
                 ],
-                'options' => [
-                    'insurance_value' => (float) $request->insurance_value,
-                    'receipt' => false,
-                    'own_hand' => false,
-                ]
-            ]);
-
-        if ($response->successful()) {
-            $rates = $response->json();
-            
-            // Filtra os retornos inválidos (ex: caixa fora do limite) e limpa os dados
-            $validRates = collect($rates)->filter(function ($rate) {
-                return !isset($rate['error']);
-            })->map(function ($rate) {
-                return [
-                    'id' => (string) $rate['id'],
-                    'price' => (float) $rate['price'],
-                    'delivery_time' => (int) $rate['delivery_time'],
-                ];
-            })->values();
-
-            return response()->json(['status' => 'success', 'data' => $validRates]);
+                (string) $validated['insurance_value'],
+            );
+        } catch (\DomainException $exception) {
+            return response()->json([
+                'status' => 'error',
+                'code' => 'REQUEST_FAILED',
+                'message' => $exception->getMessage(),
+            ], 422);
         }
 
-        return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Nao foi possivel calcular o frete. Verifique os dados informados.'], 502);
+        return response()->json(['status' => 'success', 'data' => $rates]);
     }
+
 }
