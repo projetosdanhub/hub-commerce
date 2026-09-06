@@ -25,7 +25,7 @@ final class CheckoutPricingService
             $productId = $requestedItem['id'] ?? null;
             $quantity = $requestedItem['quantity'] ?? null;
 
-            if (!is_int($productId) || $productId < 1 || !is_int($quantity) || $quantity < 1) {
+            if (! is_int($productId) || $productId < 1 || ! is_int($quantity) || $quantity < 1) {
                 throw new InvalidArgumentException('Item de checkout inválido.');
             }
 
@@ -80,7 +80,7 @@ final class CheckoutPricingService
     {
         $normalized = str_replace(',', '.', trim((string) $amount));
 
-        if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $normalized)) {
+        if (! preg_match('/^\d+(?:\.\d{1,2})?$/', $normalized)) {
             throw new DomainException('Preço de produto inválido.');
         }
 
