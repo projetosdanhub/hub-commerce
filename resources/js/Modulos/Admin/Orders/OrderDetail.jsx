@@ -6,7 +6,6 @@ import {
   Download,
   Eye,
   FileText,
-  ImageIcon,
   MapPin,
   MoreHorizontal,
   Package,
@@ -113,11 +112,12 @@ const getCustomization = (value) => {
     ? source.media.filter(isAuthorizedCustomizationMedia)
     : [];
   const details = customizationDetails(source);
+  const hasLegacyMedia = Array.isArray(source.media) && source.media.length > 0;
 
   return {
     details,
     media,
-    hasCustomization: details.length > 0 || media.length > 0,
+    hasCustomization: details.length > 0 || media.length > 0 || hasLegacyMedia,
   };
 };
 
