@@ -45,7 +45,7 @@ class AppCenterController extends Controller
                 'key' => $key,
                 ...$app,
                 'installed' => $installation !== null,
-                'status' => $installation?->status ?? 'AVAILABLE',
+                'status' => $installation !== null ? $installation->status : 'AVAILABLE',
                 'location' => $app['location'],
             ];
         })->values());
