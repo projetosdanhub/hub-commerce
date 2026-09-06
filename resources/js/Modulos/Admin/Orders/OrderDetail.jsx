@@ -54,6 +54,7 @@ const PaymentMethod = ({ payment }) => {
 };
 
 const StatusProgress = ({ status }) => {
+  const shouldReduceMotion = useReducedMotion();
   const current = STATUS_FLOW.indexOf(status);
   const progress = current <= 0 ? 0 : Math.round((current / (STATUS_FLOW.length - 1)) * 100);
 
@@ -69,7 +70,7 @@ const StatusProgress = ({ status }) => {
             <motion.span
               initial={false}
               animate={{ scale: active ? 1.08 : 1 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
             >
               {complete ? <CheckCircle2 aria-hidden="true" size={15} /> : index + 1}
             </motion.span>
