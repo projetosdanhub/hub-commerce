@@ -21,6 +21,7 @@ Esta regra é obrigatória para qualquer checkout, orçamento, pedido, pagamento
 - O frete aceito pelo checkout vem de cotação persistida, tenant-scoped, vinculada ao carrinho/endereço e com expiração.
 - O cliente seleciona somente o identificador opaco de uma opção ainda válida. O servidor confirma composição do carrinho, destino, provider, serviço e valor antes de montar o snapshot.
 - Preço, prazo, limites, regiões, remetente, embalagem e ambiente pertencem à configuração logística e ao adapter; não ficam hardcoded no controller ou no frontend.
+- Sandbox e produção são escolhas explícitas por tenant no App de logística. Cada ambiente usa credencial própria, criptografada e nunca retornada ao navegador; a troca de ambiente sem nova credencial invalida a anterior.
 - Provider sem credencial válida, cotação inválida ou frete não elegível bloqueia a conclusão da compra com mensagem segura. Não substituir por preço arbitrário.
 - Múltiplas origens, peso volumétrico e regras avançadas são implementados apenas quando catálogo, estoque e checkout suportarem o contrato completo.
 
