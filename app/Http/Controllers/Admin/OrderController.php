@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use App\Models\VipLevel;
+use App\Services\OrderDocumentStorage;
 use App\Services\OrderStatusTransitionService;
 use App\Services\RefundReceiptStorage;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ use Illuminate\Validation\ValidationException;
 class OrderController extends Controller
 {
     public function __construct(
+        private readonly OrderDocumentStorage $orderDocuments,
         private readonly OrderStatusTransitionService $statusTransitions,
         private readonly RefundReceiptStorage $refundReceipts,
     ) {
@@ -203,8 +205,9 @@ class OrderController extends Controller
                 'motivo_cancelamento' => $order->cancel_reason,
                 'comprovante_reembolso' => $order->refund_receipt ? asset('storage/' . $order->refund_receipt) : null,
                 'comprovantes_reembolso' => $refundReceipts,
-                'comprovante_pagamento' => $order->payment_receipt ? asset('storage/' . $order->payment_receipt) : null,
-                'comprovante_entrega' => $order->delivery_receipt ? asset('storage/' . $order->delivery_receipt) : null,
+                'comprovante_pagamento' => null,
+                'comprovante_entrega' => null,
+                'documentos' => $this->documentsFor($order),
                 'metodo_reembolso' => $order->refund_method ?? 'Estorno/Transferência',
                 'motivo_reembolso' => $order->refund_reason,
                 'pode_cancelar_reembolso' => $this->canCancelRefundRequest($order),
@@ -282,6 +285,68 @@ class OrderController extends Controller
         $paginator->setCollection($formatted);
 
         return response()->json($paginator);
+    }
+
+    public function document(Request $request, $id, string $type)
+    {
+        $order = Order::findOrFail($id);
+        $path = $this->orderDocuments->existingPath($order, $type);
+
+        abort_unless($path !== null, 404);
+
+        return Storage::disk('local')->response(
+            $path,
+            'pedido-'.$order->getKey().'-'.$type.'.'.pathinfo($path, PATHINFO_EXTENSION),
+            ['Content-Disposition' => $request->boolean('download') ? 'attachment' : 'inline'],
+        );
+    }
+
+    private function documentsFor(Order $order): array
+    {
+        $labels = [
+            'payment' => 'Comprovante de pagamento',
+            'delivery' => 'Comprovante de entrega',
+            'romaneio' => 'Romaneio',
+        ];
+
+        return collect($labels)
+            ->map(function (string $name, string $type) use ($order): ?array {
+                $field = $this->orderDocuments->fieldFor($type);
+                $path = $this->orderDocuments->existingPath($order, $type);
+
+                if ($path === null) {
+                    return $field !== null && filled($order->{$field})
+                        ? ['type' => $type, 'name' => $name, 'legacy_pending' => true]
+                        : null;
+                }
+
+                $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+                return [
+                    'type' => $type,
+                    'name' => $name,
+                    'kind' => in_array($extension, ['jpg', 'jpeg', 'png'], true) ? 'image' : 'document',
+                    'preview_url' => $this->orderDocumentUrl($order, $type),
+                    'download_url' => $this->orderDocumentUrl($order, $type, true),
+                    'legacy_pending' => false,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function orderDocumentUrl(Order $order, string $type, bool $download = false): string
+    {
+        return URL::temporarySignedRoute(
+            'secure-download.orders.documents',
+            now()->addMinutes(10),
+            [
+                'order' => $order->getKey(),
+                'type' => $type,
+                'download' => $download ? 1 : null,
+            ],
+        );
     }
 
     public function refundReceipt(Request $request, $id, int $receiptIndex)
@@ -512,21 +577,22 @@ class OrderController extends Controller
         }
 
         if ($request->hasFile('arquivo')) {
-            $request->validate(['arquivo' => 'file|mimes:jpeg,png,jpg,pdf|max:5120']);
-            if ($acao === 'ENTREGAR') {
-                $pasta = 'comprovantes_entrega';
-            } elseif ($acao === 'PAGAR') {
-                $pasta = 'comprovantes_pagamento';
-            } else {
-                $pasta = 'reembolsos';
+            if ($acao === 'PAGAR' || $acao === 'ENTREGAR') {
+                $tipoDocumento = $acao === 'PAGAR' ? 'payment' : 'delivery';
+                $caminhoComprovante = $this->orderDocuments->store(
+                    $order,
+                    $request->file('arquivo'),
+                    $tipoDocumento,
+                );
             }
-            $caminhoComprovante = $request->file('arquivo')->store($pasta, 'public');
         }
 
         switch ($acao) {
             case 'PAGAR':
                 $request->validate(['motivo' => 'required|string']);
-                $order->payment_receipt = $caminhoComprovante; // <-- SALVA O COMPROVANTE AQUI
+                if ($caminhoComprovante !== null) {
+                    $order->payment_receipt = $caminhoComprovante;
+                }
                 $msg = "Pagamento Aprovado Manualmente. Motivo/Parecer: {$motivo}";
                 break;
 
@@ -664,7 +730,7 @@ class OrderController extends Controller
 
             case 'ENTREGAR':
                 $request->validate(['arquivo' => 'required|file']);
-                $order->delivery_receipt = $caminhoComprovante; // <-- SALVA O COMPROVANTE AQUI
+                $order->delivery_receipt = $caminhoComprovante;
                 $msg = "Entrega Confirmada. Comprovante de entrega anexado aos arquivos da ordem.";
                 break;
 
