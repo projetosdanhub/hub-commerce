@@ -10,7 +10,7 @@ Esta pasta contém o contrato operacional da KIA e de outros agentes que trabalh
 - Qualquer entidade de negócio: 03-multitenancy.md.
 - Laravel/PHP: 04-backend-laravel.md.
 - React/UI: 05-frontend-react.md, 06-design-system.md, 12-ui-ux-seo-and-mobile.md, 13-ui-agent-playbook.md e 14-operational-admin-interactions.md.
-- Checkout ou gateways: 07-payments.md.
+- Checkout, frete, pedidos, benefícios ou gateways: 07-payments.md e 15-checkout-financial-snapshots.md.
 - Schema ou migration: 08-database-and-migrations.md.
 - Toda entrega: 09-testing-and-quality.md e 10-git-and-delivery.md.
 - Comportamento do agente: 11-agent-operating-protocol.md.
