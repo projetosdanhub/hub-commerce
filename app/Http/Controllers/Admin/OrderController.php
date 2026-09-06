@@ -829,118 +829,184 @@ class OrderController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Operação processada e auditada com sucesso.']);
     }
 
-    // 🟢 GERAÇÃO DE DOCUMENTOS (NFe / Declaração de Conteúdo)
+    // Geração de declaração de conteúdo. A NF-e só existe após adapter autorizado.
     public function previewDoc(Request $request, $id)
     {
         /** @var \App\Models\Order $order */
         $order = Order::with(['user', 'items', 'address'])->findOrFail($id);
         $tipo = $request->query('tipo', 'DECLARACAO');
-        
-        $remetente = \App\Models\MelhorEnvioSetting::first()->sender_info ?? [
-            'nome' => 'Sua Loja', 'rua' => 'Rua Exemplo', 'numero' => '123', 'bairro' => 'Centro', 'cidade' => 'Sua Cidade', 'uf' => 'SP', 'cep' => '00000-000', 'documento' => '000.000.000-00'
+
+        if ($tipo !== 'DECLARACAO') {
+            throw ValidationException::withMessages([
+                'tipo' => 'A NF-e não está disponível sem adapter fiscal homologado e autorização confirmada.',
+            ]);
+        }
+
+        $remetente = \App\Models\MelhorEnvioSetting::query()->first()?->sender_info;
+        $requiredSenderFields = ['nome', 'rua', 'numero', 'bairro', 'cidade', 'uf', 'cep', 'documento'];
+
+        if (
+            ! is_array($remetente)
+            || collect($requiredSenderFields)->contains(
+                fn (string $field): bool => blank($remetente[$field] ?? null),
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'remetente' => 'Configure o remetente completo na Central de Logística antes de gerar a declaração.',
+            ]);
+        }
+
+        $recipient = $order->user;
+        $address = $order->address;
+        $requiredRecipientFields = ['name', 'cpf'];
+
+        if (
+            $recipient === null
+            || $address === null
+            || collect($requiredRecipientFields)->contains(
+                fn (string $field): bool => blank($recipient->{$field} ?? null),
+            )
+            || collect(['rua', 'num', 'bairro', 'cidade', 'uf', 'cep'])->contains(
+                fn (string $field): bool => blank($address->{$field} ?? null),
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'destinatario' => 'O pedido precisa ter destinatário e endereço completos para gerar a declaração.',
+            ]);
+        }
+
+        $escape = static fn (mixed $value): string => e((string) $value);
+        $remetente = collect($remetente)
+            ->map($escape)
+            ->all();
+        $destinatario = [
+            'nome' => $escape($recipient->name),
+            'documento' => $escape($recipient->cpf),
+            'rua' => $escape($address->rua),
+            'numero' => $escape($address->num),
+            'complemento' => filled($address->complemento ?? null) ? ' — '.$escape($address->complemento) : '',
+            'bairro' => $escape($address->bairro),
+            'cidade' => $escape($address->cidade),
+            'uf' => $escape($address->uf),
+            'cep' => $escape($address->cep),
         ];
 
-        // 🟢 PREPARA AS LINHAS DA TABELA ANTES (Resolve o erro do Editor e limpa o código)
         $linhasTabela = '';
         foreach ($order->items as $item) {
-            $variacao = $item->variation_name ?: '-';
-            $precoUnitario = number_format($item->price, 2, ',', '.');
-            $precoTotal = number_format($item->price * $item->quantity, 2, ',', '.');
+            $variacao = filled($item->variation_name) ? $escape($item->variation_name) : '—';
+            $precoUnitario = number_format((float) $item->price, 2, ',', '.');
+            $precoTotal = number_format((float) $item->price * (int) $item->quantity, 2, ',', '.');
 
             $linhasTabela .= '
                 <tr>
-                    <td>' . $item->product_name . '</td>
-                    <td>' . $variacao . '</td>
-                    <td style="text-align:center;">' . $item->quantity . '</td>
-                    <td>R$ ' . $precoUnitario . '</td>
-                    <td>R$ ' . $precoTotal . '</td>
+                    <td>'.$escape($item->product_name).'</td>
+                    <td>'.$variacao.'</td>
+                    <td class="quantity">'.(int) $item->quantity.'</td>
+                    <td>R$ '.$precoUnitario.'</td>
+                    <td>R$ '.$precoTotal.'</td>
                 </tr>';
         }
+
+        $orderNumber = $escape($order->id);
+        $createdAt = $escape($order->created_at->format('d/m/Y H:i'));
+        $total = number_format((float) $order->total, 2, ',', '.');
 
         return response()->make('
             <!DOCTYPE html>
             <html lang="pt-BR">
             <head>
                 <meta charset="UTF-8">
-                <title>Documento Auxiliar - Pedido #'.$order->id.'</title>
+                <title>Declaração de Conteúdo — Pedido #HUB-'.$orderNumber.'</title>
                 <style>
-                    body { font-family: Arial, sans-serif; padding: 40px; margin: 0; color: #000; font-size: 12px; }
-                    .page { max-width: 800px; margin: 0 auto; border: 1px solid #000; padding: 20px; }
-                    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-                    .header h1 { margin: 0; font-size: 18px; text-transform: uppercase; }
-                    .flex { display: flex; justify-content: space-between; margin-bottom: 20px; }
-                    .box { width: 48%; border: 1px solid #000; padding: 10px; }
-                    .box h3 { margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 12px; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                    th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-                    th { background-color: #f0f0f0; }
-                    .footer { text-align: justify; font-size: 10px; margin-top: 30px; border-top: 1px solid #000; padding-top: 10px; }
-                    .signature { margin-top: 50px; text-align: center; }
-                    .signature span { border-top: 1px solid #000; padding: 5px 40px; display: inline-block; }
-                    @media print { body { padding: 0; } .no-print { display: none; } }
+                    @page { size: A4; margin: 14mm; }
+                    * { box-sizing: border-box; }
+                    body { font-family: Arial, sans-serif; margin: 0; color: #172033; font-size: 11px; line-height: 1.45; }
+                    .toolbar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+                    .print { padding: 9px 14px; background: #123c72; color: #fff; border: 0; border-radius: 6px; cursor: pointer; font-weight: 700; }
+                    .page { border: 1px solid #22304a; padding: 20px; }
+                    .header { display: flex; justify-content: space-between; gap: 20px; align-items: start; border-bottom: 2px solid #123c72; padding-bottom: 14px; margin-bottom: 16px; }
+                    h1 { margin: 0 0 4px; color: #123c72; font-size: 19px; text-transform: uppercase; letter-spacing: .03em; }
+                    .subtitle, .meta { margin: 0; color: #4d5c72; }
+                    .meta { text-align: right; white-space: nowrap; }
+                    .notice { border: 1px solid #b8c7db; background: #f2f6fb; padding: 9px 11px; margin-bottom: 16px; color: #253a58; }
+                    .parties { display: flex; gap: 12px; margin-bottom: 16px; }
+                    .box { width: 50%; border: 1px solid #aab7c9; padding: 11px; }
+                    .box h2 { margin: 0 0 8px; color: #123c72; font-size: 11px; letter-spacing: .04em; }
+                    .label { color: #4d5c72; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+                    th, td { border: 1px solid #aab7c9; padding: 8px; vertical-align: top; text-align: left; }
+                    th { color: #172033; background: #eaf0f8; font-size: 10px; text-transform: uppercase; }
+                    .quantity { text-align: center; }
+                    .total { text-align: right; font-size: 12px; font-weight: 700; }
+                    .declaration { border-top: 1px solid #aab7c9; padding-top: 12px; text-align: justify; }
+                    .signature { margin-top: 42px; text-align: center; }
+                    .signature-line { border-top: 1px solid #172033; display: inline-block; min-width: 260px; padding-top: 5px; }
+                    @media print { .no-print { display: none; } .page { border: 0; padding: 0; } }
+                    @media screen and (max-width: 640px) { .header, .parties { display: block; } .meta { text-align: left; margin-top: 8px; } .box { width: 100%; margin-bottom: 10px; } }
                 </style>
             </head>
             <body>
-                <div style="text-align: right; margin-bottom: 10px;" class="no-print">
-                    <button onclick="window.print()" style="padding: 10px 20px; background: #2563eb; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Imprimir Documento</button>
+                <div class="toolbar no-print">
+                    <button class="print" onclick="window.print()">Imprimir declaração</button>
                 </div>
-                <div class="page">
-                    <div class="header">
-                        <h1>' . ($tipo === 'NFE' ? 'Recibo Provisório / Espelho de Nota Fiscal' : 'Declaração de Conteúdo') . '</h1>
-                        <p>Pedido #HUB-'.$order->id.' | Data: '.$order->created_at->format('d/m/Y H:i').'</p>
-                    </div>
-                    
-                    <div class="flex">
-                        <div class="box">
-                            <h3>REMETENTE</h3>
-                            <strong>Nome:</strong> '.$remetente['nome'].'<br>
-                            <strong>Endereço:</strong> '.$remetente['rua'].', '.$remetente['numero'].'<br>
-                            <strong>Bairro:</strong> '.$remetente['bairro'].' - '.$remetente['cidade'].'/'.$remetente['uf'].'<br>
-                            <strong>CEP:</strong> '.$remetente['cep'].'<br>
-                            <strong>CPF/CNPJ:</strong> '.$remetente['documento'].'
+                <main class="page">
+                    <header class="header">
+                        <div>
+                            <h1>Declaração de conteúdo</h1>
+                            <p class="subtitle">Documento auxiliar para despacho do pedido.</p>
                         </div>
-                        <div class="box">
-                            <h3>DESTINATÁRIO</h3>
-                            <strong>Nome:</strong> '.($order->user->name ?? 'Cliente').'<br>
-                            <strong>Endereço:</strong> '.$order->address->rua.', '.$order->address->num.' '.($order->address->complemento ?? '').'<br>
-                            <strong>Bairro:</strong> '.$order->address->bairro.' - '.$order->address->cidade.'/'.$order->address->uf.'<br>
-                            <strong>CEP:</strong> '.$order->address->cep.'<br>
-                            <strong>CPF/CNPJ:</strong> '.($order->user->cpf ?? 'Não informado').'
-                        </div>
-                    </div>
+                        <p class="meta">Pedido #HUB-'.$orderNumber.'<br>Emitido em '.$createdAt.'</p>
+                    </header>
+
+                    <p class="notice"><strong>Atenção:</strong> esta declaração não substitui a NF-e e não comprova autorização fiscal.</p>
+
+                    <section class="parties">
+                        <section class="box">
+                            <h2>Remetente</h2>
+                            <span class="label">Nome:</span> '.$remetente['nome'].'<br>
+                            <span class="label">Endereço:</span> '.$remetente['rua'].', '.$remetente['numero'].'<br>
+                            <span class="label">Bairro/Cidade:</span> '.$remetente['bairro'].' — '.$remetente['cidade'].'/'.$remetente['uf'].'<br>
+                            <span class="label">CEP:</span> '.$remetente['cep'].'<br>
+                            <span class="label">CPF/CNPJ:</span> '.$remetente['documento'].'
+                        </section>
+                        <section class="box">
+                            <h2>Destinatário</h2>
+                            <span class="label">Nome:</span> '.$destinatario['nome'].'<br>
+                            <span class="label">Endereço:</span> '.$destinatario['rua'].', '.$destinatario['numero'].$destinatario['complemento'].'<br>
+                            <span class="label">Bairro/Cidade:</span> '.$destinatario['bairro'].' — '.$destinatario['cidade'].'/'.$destinatario['uf'].'<br>
+                            <span class="label">CEP:</span> '.$destinatario['cep'].'<br>
+                            <span class="label">CPF/CNPJ:</span> '.$destinatario['documento'].'
+                        </section>
+                    </section>
 
                     <table>
                         <thead>
                             <tr>
                                 <th>Item</th>
-                                <th>Descrição / Variação</th>
-                                <th>Qtd</th>
-                                <th>Valor Unitário</th>
-                                <th>Valor Total</th>
+                                <th>Variação</th>
+                                <th>Qtd.</th>
+                                <th>Valor unitário</th>
+                                <th>Valor declarado</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            ' . $linhasTabela . '
-                        </tbody>
+                        <tbody>'.$linhasTabela.'</tbody>
                     </table>
 
-                    <div style="text-align: right; margin-bottom: 20px;">
-                        <strong>TOTAL DECLARADO: R$ '.number_format($order->total, 2, ',', '.').'</strong>
-                    </div>
+                    <p class="total">Total declarado: R$ '.$total.'</p>
 
-                    <div class="footer">
-                        <p>Declaro que não estou postando material inflamável, corrosivo, explosivo ou perigoso, nem qualquer outro item proibido pela legislação vigente.</p>
-                    </div>
+                    <section class="declaration">
+                        Declaro, sob as penas da lei, que o conteúdo acima descrito corresponde aos bens enviados neste pedido e que a remessa não contém material inflamável, corrosivo, explosivo, perigoso ou item proibido pela legislação aplicável.
+                    </section>
 
-                    <div class="signature">
-                        <span>Assinatura do Remetente</span>
-                        <p>___________________, _____ de ________________ de ______</p>
-                    </div>
-                </div>
+                    <footer class="signature">
+                        <span class="signature-line">Assinatura do remetente</span>
+                    </footer>
+                </main>
             </body>
             </html>
-        ', 200, ['Content-Type' => 'text/html']);
+        ', 200, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
+
     // 🟢 CANCELAR ETIQUETA NO CARRINHO DO MELHOR ENVIO
     public function cancelMelhorEnvioCart($id) 
     {

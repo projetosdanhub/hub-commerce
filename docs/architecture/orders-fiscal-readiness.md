@@ -1,10 +1,10 @@
 # Pedidos: preparação fiscal e contratos pendentes
 
-Revisão: 2026-09-05. Documento de implementação; integração fiscal ainda não entregue.
+Revisão: 2026-09-06. Base de preparação fiscal e declaração segura entregues; emissão ainda depende de adapter homologado.
 
 ## Evidência no código atual
 
-- `OrderController::previewDoc` rotula o caminho NFE como “Recibo Provisório / Espelho de Nota Fiscal”. Isso não comprova assinatura, envio à SEFAZ, protocolo ou autorização.
+- `OrderController::previewDoc` aceita somente `DECLARACAO`; qualquer tentativa de NF-e falha de forma explícita. A declaração valida remetente/destinatário e escapa os campos antes de gerar HTML.
 - O payload administrativo de Pedidos preenche `desconto_vip_produtos` e `desconto_vip_frete` com zero fixo. Não usar esses valores para afirmar ausência de benefício.
 - `OrderItem.customization` persiste JSON e é exposto como `personalizacao`, mas o detalhe atual não apresenta seus anexos/textos por item.
 - `OrderStatus::REFUND_REVIEW` permite somente REFUNDED; cancelar a solicitação exige recuperar o estado anterior real e validar a transição sob lock. Não basta adicionar um botão.
@@ -21,12 +21,18 @@ Sua API de empresas tem particularidade importante: cadastro opera em produção
 
 1. Configurações > Fiscal por tenant: emitente, CNPJ/IE, regime, endereço, ambiente, série/numeração e provedor. Certificado A1/PFX e senha criptografados no servidor; resposta contém apenas metadados/validade. Outro tipo só é aceito se houver suporte real de assinatura no adapter; não tratar A3 como simples upload de A1.
 2. Snapshot fiscal dos itens: preservar SKU, descrição, unidade, NCM, origem e tributação vigente no pedido/emissão. Natureza/CFOP e impostos dependem do cenário da operação; não copiar uma alíquota universal para toda loja.
-3. Preflight no backend: conferir tenant, permissão, certificado válido/capacidade de assinatura, emitente e itens completos. Rejeitar emissão não configurada com erro seguro e indicação das pendências. Não gerar uma nota fictícia.
+3. Preflight no backend: conferir tenant, permissão, emitente, certificado armazenado e o catálogo ativo (NCM, origem e CFOP). A validade criptográfica do certificado e os itens do pedido serão conferidos pelo adapter real. Rejeitar emissão não configurada com erro seguro e indicação das pendências. Não gerar uma nota fictícia.
 4. Serviço de emissão com adapter, timeout e chave idempotente por tenant/pedido/documento. Persistir solicitado, processando, autorizado, rejeitado e cancelado; reconciliar retorno/webhook autenticado e não repetir emissão por retry do navegador.
 5. Armazenar XML, protocolo/chave e DANFE reais, com download autorizado e isolamento por tenant. Somente autorização confirmada permite apresentar “NF-e emitida”.
-6. Melhorar declaração de conteúdo em template próprio, com itens/quantidades e identificação necessários; separar claramente da NF-e e preservar escape de todos os campos.
+6. Declaração de conteúdo usa template próprio responsivo para impressão, itens/quantidades, remetente/destinatário completos e escape de todos os campos. Ela declara expressamente que não substitui NF-e.
 7. Homologar antes de produção: configuração incompleta, certificado expirado, rejeição fiscal, timeout, duplicidade, reconciliação e tentativa entre tenants.
 
-## Limites desta entrega
+## Entregue nesta etapa
 
-Nenhum certificado, credencial ou CNPJ foi cadastrado em fornecedor. Não foi enviada requisição de emissão. O adapter, persistência fiscal, gate da API, templates e integração documental ficam em UI-025. A UI não pode anunciar essas pendências como concluídas.
+- Centro de Apps com configuração fiscal por tenant; o certificado A1/PFX e segredos ficam no servidor em armazenamento/valor criptografados e nunca retornam ao navegador.
+- Diagnóstico mostra emitente, certificado, credencial, adapter e pendências reais do catálogo ativo.
+- Declaração de conteúdo profissional para impressão, sem fallback de dados ou rótulo de NF-e provisória.
+
+## Limites e próximo gate
+
+Nenhum certificado, credencial ou CNPJ foi cadastrado em fornecedor e não foi enviada requisição de emissão. Ainda falta selecionar/contratar um provedor e homologar seu adapter, incluindo assinatura, validade do certificado, dados fiscais do pedido, idempotência, webhooks, XML, protocolo e DANFE privados. Até a autorização confirmada, a UI e a API não podem anunciar NF-e emitida.
