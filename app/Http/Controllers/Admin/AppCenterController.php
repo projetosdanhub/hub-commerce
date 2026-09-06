@@ -30,8 +30,7 @@ class AppCenterController extends Controller
 
     public function __construct(
         private readonly TenantStorage $tenantStorage,
-    ) {
-    }
+    ) {}
 
     public function index(): JsonResponse
     {
