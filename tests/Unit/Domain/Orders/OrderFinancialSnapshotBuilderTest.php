@@ -10,7 +10,7 @@ class OrderFinancialSnapshotBuilderTest extends TestCase
 {
     public function test_it_applies_coupon_before_vip_without_mixing_bases(): void
     {
-        $snapshot = (new OrderFinancialSnapshotBuilder())->build(
+        $snapshot = (new OrderFinancialSnapshotBuilder)->build(
             10_000,
             1_500,
             [
@@ -30,7 +30,7 @@ class OrderFinancialSnapshotBuilderTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new OrderFinancialSnapshotBuilder())->build(
+        (new OrderFinancialSnapshotBuilder)->build(
             1_000,
             500,
             [['source' => 'VIP', 'scope' => 'SHIPPING', 'amount_cents' => 501]],
@@ -41,6 +41,6 @@ class OrderFinancialSnapshotBuilderTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new OrderFinancialSnapshotBuilder())->build(1_000, 500, ['beneficio-invalido']);
+        (new OrderFinancialSnapshotBuilder)->build(1_000, 500, ['beneficio-invalido']);
     }
 }
