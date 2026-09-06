@@ -30,7 +30,7 @@ final class RefundReceiptStorage
             ]),
         };
 
-        if (!$file->isValid() || !function_exists('imagecreatefromstring')) {
+        if ($file->isValid() === false || function_exists('imagecreatefromstring') === false) {
             throw ValidationException::withMessages([
                 'comprovantes' => 'Não foi possível higienizar a imagem enviada.',
             ]);
@@ -59,7 +59,7 @@ final class RefundReceiptStorage
                 : $this->writePng($image);
             $sanitized = ob_get_clean();
 
-            if (!$written || !is_string($sanitized) || $sanitized === '') {
+            if ($written === false || is_string($sanitized) === false || $sanitized === '') {
                 throw ValidationException::withMessages([
                     'comprovantes' => 'Não foi possível higienizar a imagem enviada.',
                 ]);
