@@ -9,16 +9,16 @@ use Illuminate\Support\Facades\Http;
 
 class MelhorEnvioController extends Controller
 {
-    // Mude para 'true' apenas se for usar a Sandbox de testes do Melhor Envio no futuro.
-    private $isSandbox = true; 
-
-    private function getBaseUrl() {
-        return $this->isSandbox ? 'https://sandbox.melhorenvio.com.br' : 'https://www.melhorenvio.com.br';
+    private function baseUrl(MelhorEnvioSetting $config): string
+    {
+        return $config->environment === 'PRODUCTION'
+            ? 'https://www.melhorenvio.com.br'
+            : 'https://sandbox.melhorenvio.com.br';
     }
 
     public function getSettings()
     {
-        $config = MelhorEnvioSetting::firstOrCreate(['id' => 1]);
+        $config = MelhorEnvioSetting::firstOrCreate([]);
         
         // Se for o primeiro acesso, define os serviços padrão
         if (empty($config->carriers_ativas)) {
@@ -38,23 +38,25 @@ class MelhorEnvioController extends Controller
             'data' => [
                 'is_authenticated' => !empty($config->access_token),
                 'carriers_ativas'  => $config->carriers_ativas,
-                'sender_info'      => $config->sender_info ?? []
+                'sender_info'      => $config->sender_info ?? [],
+                'environment'      => $config->environment,
             ]
         ]);
     }
 
     public function verifyToken(Request $request)
     {
-        $request->validate(['access_token' => 'required|string']);
+        $request->validate(['access_token' => 'required|string', 'environment' => 'required|in:SANDBOX,PRODUCTION']);
         $token = $request->access_token;
 
         $response = Http::withToken($token)
             ->withHeaders(['Accept' => 'application/json', 'User-Agent' => 'HUB Commerce (suporte@hubcommerce.com)'])
-            ->get($this->getBaseUrl() . '/api/v2/me');
+            ->get($this->baseUrl(new MelhorEnvioSetting(['environment' => $request->input('environment')])) . '/api/v2/me');
 
         if ($response->successful()) {
-            $config = MelhorEnvioSetting::firstOrCreate(['id' => 1]);
+            $config = MelhorEnvioSetting::firstOrCreate([]);
             $config->access_token = $token;
+            $config->environment = $request->input('environment');
             $config->save();
             return response()->json(['status' => 'success', 'message' => 'Sincronizado com sucesso!']);
         }
@@ -65,7 +67,7 @@ class MelhorEnvioController extends Controller
     public function saveCarriers(Request $request)
     {
         $request->validate(['carriers_ativas' => 'required|array']);
-        $config = MelhorEnvioSetting::firstOrCreate(['id' => 1]);
+        $config = MelhorEnvioSetting::firstOrCreate([]);
         $config->carriers_ativas = $request->carriers_ativas;
         $config->save();
         
@@ -74,7 +76,7 @@ class MelhorEnvioController extends Controller
 
     public function saveSender(Request $request)
     {
-        $config = MelhorEnvioSetting::firstOrCreate(['id' => 1]);
+        $config = MelhorEnvioSetting::firstOrCreate([]);
         $config->sender_info = $request->all();
         $config->save();
         return response()->json(['status' => 'success', 'message' => 'Remetente salvo!']);
@@ -115,7 +117,7 @@ class MelhorEnvioController extends Controller
 
         $response = Http::withToken($config->access_token)
             ->withHeaders(['Accept' => 'application/json', 'User-Agent' => 'HUB Commerce (suporte@hubcommerce.com)'])
-            ->post($this->getBaseUrl() . '/api/v2/me/shipment/calculate', [
+            ->post($this->baseUrl($config) . '/api/v2/me/shipment/calculate', [
                 'from' => ['postal_code' => preg_replace('/\D/', '', $senderInfo['cep'])],
                 'to' => ['postal_code' => preg_replace('/\D/', '', $request->to_postal_code)],
                 'package' => [
