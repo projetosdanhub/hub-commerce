@@ -9,8 +9,11 @@ import './Configuracoes.css';
 
 const TABS = [
   { value: 'APPS', label: 'Apps' },
+  { value: 'LOGISTICS', label: 'Logística' },
   { value: 'FISCAL', label: 'Fiscal' },
 ];
+
+const emptyLogistics = { environment: 'SANDBOX', access_token: '' };
 
 const emptyFiscal = {
   legal_name: '',
@@ -87,6 +90,7 @@ const ConfiguracoesPrincipal = () => {
   const [tab, setTab] = useState('APPS');
   const [apps, setApps] = useState([]);
   const [fiscal, setFiscal] = useState(emptyFiscal);
+  const [logistics, setLogistics] = useState(emptyLogistics);
   const [preflight, setPreflight] = useState({});
   const [certificate, setCertificate] = useState(null);
   const [certificateMeta, setCertificateMeta] = useState(null);
@@ -97,15 +101,17 @@ const ConfiguracoesPrincipal = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const [appsResponse, fiscalResponse] = await Promise.all([
+      const [appsResponse, fiscalResponse, logisticsResponse] = await Promise.all([
         api.get('/admin/settings/apps'),
         api.get('/admin/settings/fiscal'),
+        api.get('/admin/settings/logistics'),
       ]);
       setApps(Array.isArray(appsResponse.data) ? appsResponse.data : []);
       const issuer = fiscalResponse.data?.issuer || {};
       setFiscal((current) => ({ ...current, ...issuer }));
       setPreflight(fiscalResponse.data?.preflight || {});
       setCertificateMeta(fiscalResponse.data?.certificate || null);
+      setLogistics((current) => ({ ...current, environment: logisticsResponse.data?.environment || 'SANDBOX', access_token: '' }));
     } catch {
       setNotice({ tone: 'error', text: 'Não foi possível carregar as configurações desta loja.' });
     } finally {
@@ -123,6 +129,22 @@ const ConfiguracoesPrincipal = () => {
       setTab(app.key === 'fiscal' ? 'FISCAL' : 'APPS');
     } catch {
       setNotice({ tone: 'error', text: 'Não foi possível instalar este app.' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveLogistics = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setNotice(null);
+    try {
+      await api.post('/admin/settings/logistics', logistics);
+      setLogistics((current) => ({ ...current, access_token: '' }));
+      setNotice({ tone: 'success', text: 'Configuração logística salva com segurança.' });
+      await load();
+    } catch (error) {
+      setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível salvar a configuração logística.' });
     } finally {
       setSaving(false);
     }
@@ -172,10 +194,19 @@ const ConfiguracoesPrincipal = () => {
           </div>
           <div className="hub-app-grid">
             {apps.map((app) => (
-              <AppCard key={app.key} app={app} busy={saving} onInstall={() => install(app)} onOpen={() => app.location ? navigate(app.location) : setTab('FISCAL')} />
+              <AppCard key={app.key} app={app} busy={saving} onInstall={() => install(app)} onOpen={() => app.key === 'logistics' ? setTab('LOGISTICS') : app.location ? navigate(app.location) : setTab('FISCAL')} />
             ))}
           </div>
         </section>
+      ) : tab === 'LOGISTICS' ? (
+        <form className="hub-fiscal-form hub-surface" onSubmit={saveLogistics}>
+          <header><span><PackageCheck aria-hidden="true" size={20} /></span><div><h2>App Melhor Envio</h2><p>Ative sandbox para testes ou produção para operar. Cada ambiente exige seu próprio token.</p></div></header>
+          <div className="hub-fiscal-fields">
+            <label>Ambiente<select value={logistics.environment} onChange={(event) => setLogistics({ ...logistics, environment: event.target.value })}><option value="SANDBOX">Sandbox</option><option value="PRODUCTION">Produção</option></select></label>
+            <label>Token do Melhor Envio<input type="password" value={logistics.access_token} onChange={(event) => setLogistics({ ...logistics, access_token: event.target.value })} placeholder="Informe o token deste ambiente" /><small>O token não é exibido depois de salvo. Ao mudar de ambiente, informe a credencial correspondente.</small></label>
+          </div>
+          <div className="hub-fiscal-form-footer"><MapPinned aria-hidden="true" size={17} /><p>Remetente, embalagens e etiquetas continuam na Central de Logística & Envios.</p><Button type="submit" loading={saving} icon={ShieldCheck}>Salvar configuração</Button></div>
+        </form>
       ) : (
         <div className="hub-fiscal-layout">
           <FiscalReadiness preflight={preflight} />
