@@ -89,11 +89,12 @@ class AppCenterController extends Controller
         ]);
 
         $config = MelhorEnvioSetting::query()->firstOrCreate([], ['environment' => 'SANDBOX']);
+        $previousEnvironment = $config->environment;
         $config->environment = $validated['environment'];
 
         if (filled($validated['access_token'] ?? null)) {
             $config->access_token = $validated['access_token'];
-        } elseif ($config->environment !== $request->input('current_environment')) {
+        } elseif ($config->environment !== $previousEnvironment) {
             $config->access_token = null;
         }
 
