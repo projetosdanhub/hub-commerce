@@ -8,7 +8,7 @@ const CheckIcon = () => <svg className="w-5 h-5 text-white" fill="none" stroke="
 const LockIcon = () => <svg className="w-4 h-4 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>;
 const CreditCardIcon = () => <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>;
 
-const CheckoutPage = () => {
+const CheckoutPage = ({ cartItems = [] }) => {
     const navigate = useNavigate();
 
     // Gestão do Estado dos Passos do Checkout
@@ -16,14 +16,14 @@ const CheckoutPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     
-    // Dados Fictícios do Carrinho (No mundo real, pegaria do Contexto ou LocalStorage)
-    const itensCarrinho = [
-        { id: 1, nome: 'Tênis Nike Air Max', preco: 254.91, qtd: 1, img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100' },
-    ];
-    
-    const subtotal = itensCarrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
-    const valorFrete = 15.90;
-    const total = subtotal + valorFrete;
+    const itensCarrinho = cartItems.map((item) => ({
+        id: item.id,
+        nome: item.nome,
+        qtd: Number(item.quantidade) || 1,
+        img: item.img,
+    }));
+    const hasItems = itensCarrinho.length > 0;
+    const quote = null;
 
     // Estado do Formulário
     const [formData, setFormData] = useState({
@@ -38,7 +38,6 @@ const CheckoutPage = () => {
             detail: {
                 event: 'InitiateCheckout',
                 data: {
-                    value: total,
                     currency: 'BRL',
                     content_ids: itensCarrinho.map(i => i.id),
                     content_type: 'product',
@@ -65,9 +64,8 @@ const CheckoutPage = () => {
                 event: 'AddPaymentInfo',
                 ecommerce: {
                     currency: 'BRL',
-                    value: total,
                     payment_type: formData.pagamento.metodo,
-                    items: itensCarrinho.map(item => ({ item_id: item.id, item_name: item.nome, price: item.preco, quantity: item.qtd }))
+                    items: itensCarrinho.map(item => ({ item_id: item.id, item_name: item.nome, quantity: item.qtd }))
                 }
             };
             window.dispatchEvent(new CustomEvent('tracker:event', { detail: eventPayload }));
@@ -108,7 +106,6 @@ const CheckoutPage = () => {
                 detail: {
                     event: 'Purchase',
                     data: {
-                        value: total,
                         currency: 'BRL',
                         content_ids: itensCarrinho.map(i => i.id),
                         content_type: 'product',
@@ -310,7 +307,7 @@ const CheckoutPage = () => {
                                     </div>
                                     <div className="flex-grow flex flex-col justify-center">
                                         <h4 className="text-sm font-medium text-gray-800 line-clamp-1">{item.nome}</h4>
-                                        <span className="text-sm text-gray-500 font-medium">R$ {item.preco.toFixed(2)}</span>
+                                        <span className="text-sm text-gray-500 font-medium">Valor confirmado no checkout</span>
                                     </div>
                                 </div>
                             ))}
@@ -319,16 +316,13 @@ const CheckoutPage = () => {
                         {/* Totais */}
                         <div className="border-t border-gray-100 pt-4 space-y-2 text-sm text-gray-600">
                             <div className="flex justify-between">
-                                <span>Subtotal</span>
-                                <span className="font-medium text-gray-800">R$ {subtotal.toFixed(2)}</span>
+                                <span>Itens</span>
+                                <span className="font-medium text-gray-800">{itensCarrinho.length}</span>
                             </div>
-                            <div className="flex justify-between">
-                                <span>Frete (Correios PAC)</span>
-                                <span className="font-medium text-gray-800">R$ {valorFrete.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100 mt-2">
-                                <span>Total a Pagar</span>
-                                <span className="text-blue-600">R$ {total.toFixed(2)}</span>
+                            <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 text-amber-800">
+                                {hasItems
+                                    ? 'Frete, descontos e total serão confirmados pelo servidor após a cotação.'
+                                    : 'Seu carrinho está vazio.'}
                             </div>
                         </div>
 
