@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TrackingCollectorController; // 🟢 IMPORTAÇÃO ATUALIZADA
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\AppCenterController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CarrierController; 
 use App\Http\Controllers\Admin\ShippingPackageController;
@@ -241,6 +242,10 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     // --- MÓDULO: CONFIGURAÇÕES GERAIS (GATEWAYS E LOGÍSTICA) ---
     Route::prefix('settings')->group(function () {
+        Route::get('/apps', [AppCenterController::class, 'index'])->middleware('tenant.permission:tenant.settings.view');
+        Route::post('/apps/{app}/install', [AppCenterController::class, 'install'])->middleware('tenant.permission:tenant.settings.manage');
+        Route::get('/fiscal', [AppCenterController::class, 'fiscal'])->middleware('tenant.permission:tenant.settings.view');
+        Route::post('/fiscal', [AppCenterController::class, 'saveFiscal'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/{group}', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'getGroup'])->middleware('tenant.permission:tenant.settings.view');
         Route::post('/', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'setSetting'])->middleware('tenant.permission:tenant.settings.manage');
     });
