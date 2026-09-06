@@ -13,7 +13,7 @@ class CheckoutShippingQuoteIssuerTest extends TestCase
     {
         $this->expectException(DomainException::class);
 
-        (new CheckoutShippingQuoteIssuer())->issue(
+        (new CheckoutShippingQuoteIssuer)->issue(
             str_repeat('a', 64),
             str_repeat('b', 64),
             [['id' => '1', 'price' => '12.50', 'delivery_time' => 3]],
