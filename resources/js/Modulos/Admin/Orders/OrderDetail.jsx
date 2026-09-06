@@ -1,7 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ArrowLeft,
+  Barcode,
   CheckCircle2,
+  CreditCard,
   ClipboardList,
   Download,
   Eye,
@@ -9,9 +11,11 @@ import {
   MapPin,
   MoreHorizontal,
   Package,
+  QrCode,
   RotateCcw,
   Tags,
   Truck,
+  WalletCards,
   UserRound,
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -30,24 +34,90 @@ import {
 
 const STATUS_FLOW = ['A_PAGAR', 'SEPARACAO', 'SEPARADO', 'DESPACHADO', 'ENTREGUE'];
 
+const paymentPresentation = (payment = {}) => {
+  const method = String(payment.metodo || payment.method || '').trim();
+  const normalized = method.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  if (normalized.includes('pix')) return { label: method, Icon: QrCode };
+  if (normalized.includes('boleto')) return { label: method, Icon: Barcode };
+  if (normalized.includes('cartao') || normalized.includes('credito') || normalized.includes('debito')) {
+    return { label: method, Icon: CreditCard };
+  }
+
+  return { label: method || 'Pagamento não informado', Icon: WalletCards };
+};
+
+const PaymentMethod = ({ payment }) => {
+  const { label, Icon } = paymentPresentation(payment);
+
+  return <span className="hub-order-payment-method"><Icon aria-hidden="true" size={15} />{label}</span>;
+};
+
 const StatusProgress = ({ status }) => {
+  const shouldReduceMotion = useReducedMotion();
   const current = STATUS_FLOW.indexOf(status);
+  const progress = current <= 0 ? 0 : Math.round((current / (STATUS_FLOW.length - 1)) * 100);
 
   return (
-    <ol className="hub-order-progress" aria-label="Progresso do pedido">
+    <ol className="hub-order-progress" aria-label="Progresso do pedido" style={{ '--hub-order-progress-value': String(progress) + '%' }}>
       {STATUS_FLOW.map((step, index) => {
         const meta = getOrderStatus(step);
         const complete = current >= index;
         const active = current === index;
 
         return (
-          <li key={step} data-complete={complete} data-active={active}>
-            <span>{complete ? <CheckCircle2 aria-hidden="true" size={15} /> : index + 1}</span>
+          <li key={step} data-complete={complete} data-active={active} aria-current={active ? 'step' : undefined}>
+            <motion.span
+              initial={false}
+              animate={{ scale: active ? 1.08 : 1 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+            >
+              {complete ? <CheckCircle2 aria-hidden="true" size={15} /> : index + 1}
+            </motion.span>
             <small>{meta.label}</small>
           </li>
         );
       })}
     </ol>
+  );
+};
+
+const isKnownMoney = (value) => value !== null
+  && value !== undefined
+  && value !== ''
+  && Number.isFinite(Number(value));
+
+const FinancialSummary = ({ financial }) => {
+  if (!financial) {
+    return <p className="hub-orders-form-hint">O resumo financeiro deste pedido não está disponível.</p>;
+  }
+
+  const value = (amount) => (isKnownMoney(amount) ? formatCurrency(amount) : 'Não informado');
+  const coupons = Array.isArray(financial.cupons) ? financial.cupons : [];
+
+  return (
+    <div className="hub-order-financial-summary">
+      <div className="hub-order-totals">
+        <span>Subtotal <strong>{value(financial.subtotal)}</strong></span>
+        <span>Frete cobrado <strong>{value(financial.frete_cobrado)}</strong></span>
+        <span>Total bruto <strong>{value(financial.total_bruto)}</strong></span>
+        <span>Desconto total <strong>− {value(financial.desconto_total)}</strong></span>
+        <span className="hub-order-total">Total líquido <strong>{value(financial.total_liquido)}</strong></span>
+      </div>
+      {coupons.length ? (
+        <ul className="hub-order-coupons" aria-label="Cupons aplicados">
+          {coupons.map((coupon, index) => (
+            <li key={coupon.nome + '-' + index}>
+              <span>{coupon.nome}{coupon.tipo ? ' · ' + coupon.tipo : ''}</span>
+              {isKnownMoney(coupon.valor) ? <strong>− {formatCurrency(coupon.valor)}</strong> : null}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {!financial.origens_de_desconto_disponiveis && isKnownMoney(financial.desconto_total) && Number(financial.desconto_total) > 0 ? (
+        <p className="hub-orders-form-hint">A origem detalhada dos descontos será exibida quando existir snapshot financeiro persistido.</p>
+      ) : null}
+    </div>
   );
 };
 
@@ -320,12 +390,7 @@ export const OrderDetail = ({
   const primaryAction = actionForStatus(order.status);
   const status = getOrderStatus(order.status);
   const address = getOrderAddress(order.endereco);
-  const totals = useMemo(() => ({
-    subtotal: Number(order.subtotal) || 0,
-    discount: Number(order.desconto) || 0,
-    shipping: Number(order.frete_valor) || 0,
-    total: Number(order.total) || 0,
-  }), [order]);
+  const financial = order.financeiro || null;
 
   return (
     <motion.div
@@ -340,7 +405,7 @@ export const OrderDetail = ({
           <div>
             <p>Pedido</p>
             <h1>HUB-{order.id} <Badge variant={status.variant}>{status.label}</Badge></h1>
-            <span>{formatOrderDate(order.data_raw || order.created_at)} · {order.pagamento_metodo || 'Pagamento não informado'}</span>
+            <div className="hub-order-detail-meta"><span>{formatOrderDate(order.data_raw || order.created_at)}</span><PaymentMethod payment={order.pagamento} /></div>
           </div>
         </div>
         <div className="hub-order-detail-actions">
@@ -359,12 +424,7 @@ export const OrderDetail = ({
         <div className="hub-order-detail-main">
           <Section title="Itens do pedido" icon={Package}>
             <OrderItems items={order.items} />
-            <div className="hub-order-totals">
-              <span>Subtotal <strong>{formatCurrency(totals.subtotal)}</strong></span>
-              <span>Frete <strong>{formatCurrency(totals.shipping)}</strong></span>
-              <span>Descontos <strong>− {formatCurrency(totals.discount)}</strong></span>
-              <span className="hub-order-total">Total <strong>{formatCurrency(totals.total)}</strong></span>
-            </div>
+            <FinancialSummary financial={financial} />
           </Section>
 
           <Section title="Auditoria do pedido" icon={ClipboardList}>

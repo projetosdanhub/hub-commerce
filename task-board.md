@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-06 — UI-025: preparação fiscal e declaração segura entregues; emissão segue bloqueada até homologação  
+Atualizado em: 2026-09-06 — UI-026 em andamento; FIS-001 segue bloqueado até homologação externa  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -216,7 +216,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | UI-024 | P1 | Exibir documentos reais de cada operação | UI-022, UI-023 | Integrado na PR #47 (`b8b81db`): catálogo unificado com prévia/download autorizado; novos comprovantes de pagamento/entrega em storage privado tenant-scoped. Arquivos públicos legados são identificados sem URL até migração; declaração é operacional, XML/DANFE continuam UI-025 |
 | [~] | UI-025 | P1 | Preparar emissão fiscal e declaração | UI-024 | Entregues: Centro de Apps, configuração fiscal por tenant, A1/credenciais protegidos, diagnóstico do catálogo ativo e declaração segura. Emissão, XML/protocolo/DANFE só com adapter homologado; espelho provisório nunca é NF-e |
 | [!] | FIS-001 | P1 | Homologar adapter de emissão de NF-e | UI-025 | Provedor contratado, credenciais autorizadas, sandbox/homologação, assinatura, idempotência, webhook, XML/DANFE privados e autorização confirmada |
-| [ ] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Snapshot monetário com cupom antes de VIP, limites independentes por produto/frete; subtotal/bruto/líquido/custos reais; método e bandeira confirmada; trilha animada e transições de navegação; ambos os temas/mobile |
+| [~] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Em andamento: resumo usa subtotal/frete/desconto/total e cupons persistidos; não atribui VIP/loja/frete sem snapshot. Ícone usa método confirmado, bandeira só com metadado real; trilha animada, ambos os temas/mobile. Snapshot monetário por origem/custos continua dependente de contrato persistido |
 
 ## Fase 11 — Storefront, SEO e desempenho
 
