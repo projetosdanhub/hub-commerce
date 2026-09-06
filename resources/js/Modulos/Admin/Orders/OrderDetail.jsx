@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   ClipboardList,
   Download,
+  Eye,
   FileText,
   MapPin,
   MoreHorizontal,
@@ -126,20 +127,28 @@ const RefundReceipts = ({ order }) => {
 
   return (
     <div className="hub-order-receipt-gallery">
-      {currentReceipts.map((receipt, index) => (
-        <a key={receipt.id} href={receipt.url} target="_blank" rel="noreferrer" className="hub-order-receipt-card">
-          {receipt.kind === 'image' ? (
-            <img src={receipt.url} alt={'Prévia de ' + receipt.name} />
-          ) : (
-            <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={24} /></span>
-          )}
-          <span>
-            <strong>{receipt.name || 'Comprovante ' + (index + 1)}</strong>
-            <small>{receipt.kind === 'image' ? 'Abrir imagem em tamanho maior' : 'Abrir documento em nova aba'}</small>
-          </span>
-          <Download aria-hidden="true" size={16} />
-        </a>
-      ))}
+      {currentReceipts.map((receipt, index) => {
+        const previewUrl = receipt.preview_url || receipt.url;
+        const downloadUrl = receipt.download_url || previewUrl;
+
+        return (
+          <article key={receipt.id} className="hub-order-receipt-card">
+            {receipt.kind === 'image' ? (
+              <img src={previewUrl} alt={'Prévia de ' + receipt.name} />
+            ) : (
+              <span className="hub-order-receipt-file-icon"><FileText aria-hidden="true" size={24} /></span>
+            )}
+            <div>
+              <strong>{receipt.name || 'Comprovante ' + (index + 1)}</strong>
+              <small>{receipt.kind === 'image' ? 'Imagem privada higienizada' : 'Documento privado'}</small>
+              <span className="hub-order-receipt-actions">
+                <a href={previewUrl} target="_blank" rel="noreferrer"><Eye aria-hidden="true" size={15} /> Ver prévia</a>
+                <a href={downloadUrl} download><Download aria-hidden="true" size={15} /> Baixar</a>
+              </span>
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 };
@@ -148,7 +157,9 @@ const SecondaryActions = ({ order, onAction, onPreviewDocument }) => {
   const [open, setOpen] = useState(false);
   const isTerminal = ['CANCELADO', 'REEMBOLSADO'].includes(order.status);
   const canCancel = order.status === 'A_PAGAR';
-  const canRequestRefund = !isTerminal && !canCancel;
+  const refundPending = order.status === 'EM_ANALISE_REEMBOLSO';
+  const canRequestRefund = !isTerminal && !canCancel && !refundPending;
+  const canCancelRefund = refundPending && order.pode_cancelar_reembolso;
   const canUpdateTracking = ['DESPACHADO', 'ENTREGUE'].includes(order.status);
   const canCancelMeCart = String(order.tracking_code || '').length > 20;
 
@@ -175,6 +186,11 @@ const SecondaryActions = ({ order, onAction, onPreviewDocument }) => {
           {canRequestRefund ? (
             <button type="button" role="menuitem" onClick={() => { onAction('INICIAR_REEMBOLSO'); setOpen(false); }}>
               <RotateCcw aria-hidden="true" size={16} /> Solicitar reembolso
+            </button>
+          ) : null}
+          {canCancelRefund ? (
+            <button type="button" role="menuitem" data-danger onClick={() => { onAction('CANCELAR_REEMBOLSO'); setOpen(false); }}>
+              <RotateCcw aria-hidden="true" size={16} /> Cancelar solicitação de reembolso
             </button>
           ) : null}
           {canCancel ? (

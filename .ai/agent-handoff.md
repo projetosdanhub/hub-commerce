@@ -242,3 +242,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: [Tests #243](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033758), [E2E #61](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033728) e [Security #61](https://github.com/projetosdanhub/hub-commerce/actions/runs/33999033769) concluíram com sucesso na PR #43. Tests executou `npm run test:ui`, incluindo `npm run test:ui:interactions`, e o build.
 - Riscos, bloqueios e itens não verificados: a regra de estoque não foi implementada porque o serviço transacional CAT-003 e o estoque de reembolso CAT-009 ainda não existem. Reembolso financeiro sem recebimento físico não pode criar saldo. Outros diálogos legados continuam fora do lifecycle até seus blocos.
 - Próxima ação única: acompanhar os checks da atualização documental na PR #43 e fazer merge somente se permanecerem verdes; a homologação visual segue registrada como pendência.
+
+
+### 2026-09-06 — Codex — UI-022, auditoria e preparação de CI
+- Objetivo: concluir exclusivamente o fluxo operacional de reembolso de Pedidos, sem avançar para documentos gerais, personalizações, fiscal ou resumo financeiro.
+- Branch: `ui/orders-refund-completion`, commit de implementação `d8019e3b68a02f10ef0342f2609c56b1a8b7faf5`, baseada na main `e53d3a73630d3d61446cd1d266fd53bb667358b4`.
+- Implementado: cancelamento da solicitação restaura somente o status de origem persistido, com lock transacional e histórico; nova solicitação fica oculta durante a análise; confirmação exige motivo, modalidade `TRANSFERENCIA` ou `CASHBACK` e 1–2 imagens JPEG/PNG de até 5 MB; imagens são reprocessadas, armazenadas em área privada tenant-scoped e oferecidas em prévia/download por URL assinada temporária.
+- Contratos preservados: cancelamento direto continua restrito a `A_PAGAR`; reembolso financeiro não cria estoque; retorno físico permanece dependente de CAT-009; não há integração bancária simulada. Cashback continua dependente da evolução idempotente do ledger em PAY-009/CRM-003.
+- Documentação: UI-022 marcado `[~]` no board. `AGENTS.md` e a regra operacional 14 já continham as regras globais vigentes e não exigiram alteração adicional.
+- Validação: nenhuma CI foi iniciada nesta etapa, conforme protocolo do responsável. Testes de feature, build, Tests, E2E Tests, Security Scans e homologação visual ainda pendentes.
+- Próxima ação única: abrir a PR exclusiva do UI-022, o que iniciará a CI; interromper o trabalho imediatamente após a abertura e aguardar aprovação explícita do responsável antes de qualquer merge.

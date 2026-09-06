@@ -109,7 +109,7 @@ class OrderStatusTransitionTest extends TestCase
         $this->assertDatabaseCount('order_histories', 0);
     }
 
-    public function test_paid_order_cannot_be_cancelled_and_refund_requires_two_or_fewer_private_receipts(): void
+    public function test_paid_order_cannot_be_cancelled_and_refund_requires_one_or_two_private_images(): void
     {
         [$tenant, $owner] = $this->tenantWithOwner(
             'Loja de reembolso',
@@ -136,6 +136,7 @@ class OrderStatusTransitionTest extends TestCase
             'desconto' => 0,
             'total' => 110,
             'status' => OrderStatus::REFUND_REVIEW,
+            'refund_requested_from_status' => OrderStatus::PICKING->value,
             'payment_installments' => 1,
         ]);
         app(TenantContextStore::class)->clear();
@@ -149,7 +150,7 @@ class OrderStatusTransitionTest extends TestCase
                 'refund_method' => 'TRANSFERENCIA',
                 'comprovantes' => [
                     UploadedFile::fake()->image('comprovante-1.png'),
-                    UploadedFile::fake()->create('comprovante-2.pdf', 10, 'application/pdf'),
+                    UploadedFile::fake()->image('comprovante-2.jpg'),
                 ],
             ])
             ->assertOk();
@@ -160,8 +161,75 @@ class OrderStatusTransitionTest extends TestCase
         $this->assertSame(OrderStatus::REFUNDED, $refundOrder->status);
         $this->assertCount(2, $refundOrder->refund_receipts);
         foreach ($refundOrder->refund_receipts as $receipt) {
+            $this->assertStringStartsWith(
+                'tenants/'.$tenant->uuid.'/private/orders/'.$refundOrder->id.'/refunds/',
+                $receipt,
+            );
             Storage::disk('local')->assertExists($receipt);
         }
+
+        app(TenantContextStore::class)->clear();
+
+        $this->actingAs($owner, 'sanctum')
+            ->withServerVariables(['HTTP_HOST' => 'reembolso.test', 'SERVER_NAME' => 'reembolso.test'])
+            ->post("http://reembolso.test/api/admin/orders/{$refundOrder->id}/status-manual", [
+                'acao' => 'PROCESSAR_REEMBOLSO',
+                'motivo' => 'Tentativa duplicada.',
+                'refund_method' => 'TRANSFERENCIA',
+                'comprovantes' => [UploadedFile::fake()->image('duplicado.png')],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('status');
+
+        $this->setTenantContext($tenant, 'reembolso.test');
+        $this->assertCount(2, $refundOrder->fresh()->refund_receipts);
+    }
+
+    public function test_refund_request_can_only_be_cancelled_back_to_its_audited_origin_status(): void
+    {
+        [$tenant, $owner] = $this->tenantWithOwner(
+            'Loja de cancelamento',
+            'cancelamento-reembolso',
+            'cancelamento-reembolso.test',
+            'owner@cancelamento-reembolso.test',
+        );
+
+        $order = $this->createOrder($tenant, OrderStatus::SHIPPED);
+
+        $this->actingAs($owner, 'sanctum')
+            ->withServerVariables(['HTTP_HOST' => 'cancelamento-reembolso.test', 'SERVER_NAME' => 'cancelamento-reembolso.test'])
+            ->postJson("http://cancelamento-reembolso.test/api/admin/orders/{$order->id}/status-manual", [
+                'acao' => 'INICIAR_REEMBOLSO',
+                'motivo' => 'Cliente solicitou análise.',
+            ])
+            ->assertOk();
+
+        $this->setTenantContext($tenant, 'cancelamento-reembolso.test');
+        $order->refresh();
+        $this->assertSame(OrderStatus::REFUND_REVIEW, $order->status);
+        $this->assertSame(OrderStatus::SHIPPED->value, $order->refund_requested_from_status);
+        $this->assertSame('Cliente solicitou análise.', $order->refund_reason);
+        app(TenantContextStore::class)->clear();
+
+        $this->actingAs($owner, 'sanctum')
+            ->withServerVariables(['HTTP_HOST' => 'cancelamento-reembolso.test', 'SERVER_NAME' => 'cancelamento-reembolso.test'])
+            ->postJson("http://cancelamento-reembolso.test/api/admin/orders/{$order->id}/status-manual", [
+                'acao' => 'CANCELAR_REEMBOLSO',
+                'motivo' => 'A devolução não será necessária.',
+            ])
+            ->assertOk()
+            ->assertJsonPath('order_status', OrderStatus::SHIPPED->value);
+
+        $this->setTenantContext($tenant, 'cancelamento-reembolso.test');
+        $order->refresh();
+        $this->assertSame(OrderStatus::SHIPPED, $order->status);
+        $this->assertNull($order->refund_requested_from_status);
+        $this->assertNull($order->refund_reason);
+        $this->assertDatabaseHas('order_histories', [
+            'tenant_id' => $tenant->id,
+            'order_id' => $order->id,
+            'event' => 'Solicitação de reembolso cancelada. Retorno para o status anterior. Motivo: A devolução não será necessária.',
+        ]);
     }
 
     public function test_owner_preferences_for_order_metrics_are_isolated_by_tenant(): void

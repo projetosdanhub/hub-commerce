@@ -31,6 +31,8 @@ class Order extends Model
         'refund_receipt',
         'refund_receipts',
         'refund_method',
+        'refund_reason',
+        'refund_requested_from_status',
         'payment_receipt',    // 🟢 ADICIONADO: Comprovante de Pagamento Manual
         'delivery_receipt'    // 🟢 ADICIONADO: Comprovante de Entrega / Assinatura
     ];
