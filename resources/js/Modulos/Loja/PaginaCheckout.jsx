@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 // Ícones
 const CheckIcon = () => <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>;
@@ -9,11 +9,8 @@ const LockIcon = () => <svg className="w-4 h-4 text-gray-400 mr-1" fill="none" s
 const CreditCardIcon = () => <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>;
 
 const CheckoutPage = ({ cartItems = [] }) => {
-    const navigate = useNavigate();
-
     // Gestão do Estado dos Passos do Checkout
     const [currentStep, setCurrentStep] = useState(1);
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     
     const itensCarrinho = cartItems.map((item) => ({
@@ -72,57 +69,6 @@ const CheckoutPage = ({ cartItems = [] }) => {
         setCurrentStep(nextStep);
     };
 
-    const handleProcessCheckout = async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const response = await fetch('/api/storefront/checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    cliente: formData.cliente,
-                    endereco: formData.endereco,
-                    pagamento: formData.pagamento,
-                    items: itensCarrinho.map(item => ({
-                        id: item.id,
-                        quantity: item.qtd
-                    }))
-                })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || 'Erro ao processar o checkout.');
-            }
-
-            // Dispara evento do Pixel: Purchase
-            window.dispatchEvent(new CustomEvent('tracker:event', {
-                detail: {
-                    event: 'Purchase',
-                    data: {
-                        currency: 'BRL',
-                        content_ids: itensCarrinho.map(i => i.id),
-                        content_type: 'product',
-                        transaction_id: result.data.order_id
-                    }
-                }
-            }));
-
-            alert('Pedido #'+result.data.order_id+' realizado com sucesso!');
-            navigate('/'); // Redirecionar para página de obrigado
-
-        } catch (err) {
-            console.error('Erro no checkout:', err);
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Componente auxiliar para os marcadores de passo (Bolinhas)
     const StepIndicator = ({ stepNum, label, isCurrent, isCompleted }) => (
