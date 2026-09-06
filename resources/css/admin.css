@@ -1078,7 +1078,7 @@
   font-size: var(--hub-text-body-sm);
 }
 
-.hub-order-payment-method {
+.hub-order-detail-back .hub-order-payment-method {
   display: inline-flex;
   align-items: center;
   gap: var(--hub-space-1);
@@ -1142,6 +1142,12 @@
 
 .hub-order-progress li[data-active="true"] span {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--hub-primary) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-order-progress::before {
+    transition: none;
+  }
 }
 
 .hub-order-detail-grid {
