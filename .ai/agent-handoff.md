@@ -262,3 +262,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: testes de unidade adicionados, mas nenhuma CI foi aberta ou executada nesta branch.
 - Riscos, bloqueios e itens não verificados: o checkout legado ainda não pode ser integrado ao novo fluxo até existir cotação de frete tenant-scoped, expirada/verificável, e adapter de pagamento com idempotência. Gateway continua explicitamente indisponível; não há aprovação simulada.
 - Próxima ação única: criar contrato persistido da cotação de frete, validar seu vínculo ao carrinho/endereço e então conectar o snapshot ao checkout.
+
+
+### 2026-09-06 — Codex — UI-026, cotação persistida
+- Objetivo e escopo: preparar a referência segura de frete para o checkout, sem chamar provider, cobrar, criar pedido ou aceitar preço do cliente.
+- Branch e commit: `orders-financial-snapshot`, contrato de cotação até `f0d6e23`; board atualizado em `9b7593c`.
+- Task board: UI-026 [~] — cotação tenant-scoped opaca possui token, fingerprints de carrinho/destino, expiração, invalidação e valor em centavos; adapter de cotação e checkout atômico seguem pendentes.
+- Arquivos alterados: migration/model `CheckoutShippingQuote`, `CheckoutFingerprint`, resolver de cotação, teste de fingerprint, board e regra 15.
+- Evidências: teste unitário adicionado; CI ainda não foi iniciada nesta branch.
+- Riscos, bloqueios e itens não verificados: a tabela não cria cotação sozinha. Melhor Envio legado ainda precisa ser extraído para adapter tenant-scoped antes de qualquer rota pública de cotação. Nenhum valor de frete é aceito do frontend.
+- Próxima ação única: extrair e testar adapter de cotação do Melhor Envio, sem fallback de preço, e persistir suas opções nesse contrato.
