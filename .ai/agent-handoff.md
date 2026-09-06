@@ -291,3 +291,12 @@ Copie este bloco para cada handoff relevante:
 - Arquivos alterados: AppCenterController, rotas, ConfiguracoesPrincipal, regra 15 e handoff.
 - Evidências: revisão estática; o formulário usa campo password, API responde apenas `credential_configured` e troca de ambiente sem novo token limpa a credencial anterior.
 - Próxima ação única: testar e persistir opções reais retornadas pelo adapter como CheckoutShippingQuote.
+
+
+### 2026-09-06 — Codex — Carrinho e checkout da Loja
+- Objetivo e escopo: remover o carrinho, frete e totais fictícios da página de checkout e conectá-la ao carrinho real do storefront.
+- Branch e commits: `orders-financial-snapshot`; passagem do carrinho em `461dff1`; remoção do fluxo fictício até `5f5cf4f`.
+- Task board: UI-026 [~]; checkout público permanece bloqueado até cotação pública e gateway idempotente.
+- Arquivos alterados: `app.jsx`, `PaginaCheckout.jsx` e handoff.
+- Evidências: revisão estática; a página recebe `cartItems`, não calcula dinheiro localmente, não anuncia Purchase e não submete pedido legado.
+- Próxima ação única: implementar endpoint público de cotação que monta volumes a partir do catálogo e persiste apenas opções reais do adapter.
