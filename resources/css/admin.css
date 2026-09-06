@@ -1070,7 +1070,22 @@
   letter-spacing: -0.04em;
 }
 
+.hub-order-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hub-space-2);
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-body-sm);
+}
+
+.hub-order-payment-method {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hub-space-1);
+}
+
 .hub-order-progress {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   margin: 0;
@@ -1078,7 +1093,21 @@
   list-style: none;
 }
 
+.hub-order-progress::before {
+  position: absolute;
+  z-index: 0;
+  top: .875rem;
+  right: 10%;
+  left: 10%;
+  height: 2px;
+  content: "";
+  background: linear-gradient(to right, var(--hub-success) 0 var(--hub-order-progress-value), var(--hub-border) var(--hub-order-progress-value) 100%);
+  transition: background 200ms ease;
+}
+
 .hub-order-progress li {
+  position: relative;
+  z-index: 1;
   display: grid;
   justify-items: center;
   gap: var(--hub-space-2);
@@ -1087,13 +1116,6 @@
   font-size: 0.6875rem;
   font-weight: var(--hub-font-weight-medium);
   text-align: center;
-}
-
-.hub-order-progress li::before {
-  position: absolute;
-  width: 100%;
-  height: 1px;
-  content: "";
 }
 
 .hub-order-progress li span {
@@ -1256,6 +1278,32 @@
   border-top: 1px solid var(--hub-border);
   color: var(--hub-text-primary);
   font-size: var(--hub-text-body);
+}
+
+.hub-order-coupons {
+  display: grid;
+  gap: var(--hub-space-2);
+  margin: 0;
+  padding: 0 var(--hub-space-5) var(--hub-space-4);
+  list-style: none;
+}
+
+.hub-order-coupons li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--hub-space-4);
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-body-sm);
+}
+
+.hub-order-coupons strong {
+  color: var(--hub-text-secondary);
+  font-weight: var(--hub-font-weight-medium);
+}
+
+.hub-order-financial-summary > .hub-orders-form-hint {
+  margin: 0;
+  padding: 0 var(--hub-space-5) var(--hub-space-5);
 }
 
 .hub-order-detail-fields {
