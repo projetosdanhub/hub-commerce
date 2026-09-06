@@ -835,10 +835,27 @@ class OrderController extends Controller
         /** @var \App\Models\Order $order */
         $order = Order::with(['user', 'items', 'address'])->findOrFail($id);
         $tipo = $request->query('tipo', 'DECLARACAO');
-        
-        $remetente = \App\Models\MelhorEnvioSetting::first()->sender_info ?? [
-            'nome' => 'Sua Loja', 'rua' => 'Rua Exemplo', 'numero' => '123', 'bairro' => 'Centro', 'cidade' => 'Sua Cidade', 'uf' => 'SP', 'cep' => '00000-000', 'documento' => '000.000.000-00'
-        ];
+
+        if ($tipo !== 'DECLARACAO') {
+            throw ValidationException::withMessages([
+                'tipo' => 'A NF-e não está disponível sem adapter fiscal homologado e autorização confirmada.',
+            ]);
+        }
+
+        $remetente = \App\Models\MelhorEnvioSetting::query()->first()?->sender_info;
+
+        $requiredSenderFields = ['nome', 'rua', 'numero', 'bairro', 'cidade', 'uf', 'cep', 'documento'];
+
+        if (
+            ! is_array($remetente)
+            || collect($requiredSenderFields)->contains(
+                fn (string $field): bool => blank($remetente[$field] ?? null),
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'remetente' => 'Configure o remetente completo na Central de Logística antes de gerar a declaração.',
+            ]);
+        }
 
         // 🟢 PREPARA AS LINHAS DA TABELA ANTES (Resolve o erro do Editor e limpa o código)
         $linhasTabela = '';
@@ -886,7 +903,7 @@ class OrderController extends Controller
                 </div>
                 <div class="page">
                     <div class="header">
-                        <h1>' . ($tipo === 'NFE' ? 'Recibo Provisório / Espelho de Nota Fiscal' : 'Declaração de Conteúdo') . '</h1>
+                        <h1>' . 'Declaração de Conteúdo' . '</h1>
                         <p>Pedido #HUB-'.$order->id.' | Data: '.$order->created_at->format('d/m/Y H:i').'</p>
                     </div>
                     
