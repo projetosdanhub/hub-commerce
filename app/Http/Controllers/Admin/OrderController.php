@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Domain\Tenancy\TenantStorage;
 use App\Support\Http\Pagination;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
@@ -203,7 +202,7 @@ class OrderController extends Controller
                 'carrier' => $order->carrier ? $order->carrier->nome : 'Aguardando Despacho', 
                 
                 'motivo_cancelamento' => $order->cancel_reason,
-                'comprovante_reembolso' => $order->refund_receipt ? asset('storage/' . $order->refund_receipt) : null,
+                'comprovante_reembolso' => null,
                 'comprovantes_reembolso' => $refundReceipts,
                 'comprovante_pagamento' => null,
                 'comprovante_entrega' => null,
