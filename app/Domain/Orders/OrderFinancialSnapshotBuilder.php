@@ -22,6 +22,12 @@ final class OrderFinancialSnapshotBuilder
             throw new InvalidArgumentException('As bases financeiras não podem ser negativas.');
         }
 
+        foreach ($benefits as $benefit) {
+            if (! is_array($benefit)) {
+                throw new InvalidArgumentException('Benefício financeiro inválido.');
+            }
+        }
+
         $bases = [
             'PRODUCT' => $productSubtotalCents,
             'SHIPPING' => $shippingCents,
