@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\CarrierController;
 use App\Http\Controllers\Admin\ShippingPackageController;
 use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
+use App\Http\Controllers\Storefront\ShippingQuoteController;
 use App\Http\Controllers\Admin\TrackingController;
 use App\Http\Controllers\Admin\NavigationMenuController;
 use App\Http\Controllers\Identity\AuthorizationAuditController;
@@ -84,6 +85,7 @@ Route::get('/storefront/menu', [StorefrontController::class, 'getMenu']);
 Route::get('/storefront/categories', [StorefrontController::class, 'getCategories']);
 Route::get('/storefront/products', [StorefrontController::class, 'getProducts']);
 Route::get('/storefront/products/{id}', [StorefrontController::class, 'getProduct']);
+Route::post('/storefront/shipping-quotes', [ShippingQuoteController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/storefront/checkout', [StorefrontController::class, 'checkout'])->middleware('throttle:10,1');
 Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middleware('throttle:60,1');
 
