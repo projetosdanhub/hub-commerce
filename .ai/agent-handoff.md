@@ -272,3 +272,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: teste unitário adicionado; CI ainda não foi iniciada nesta branch.
 - Riscos, bloqueios e itens não verificados: a tabela não cria cotação sozinha. Melhor Envio legado ainda precisa ser extraído para adapter tenant-scoped antes de qualquer rota pública de cotação. Nenhum valor de frete é aceito do frontend.
 - Próxima ação única: extrair e testar adapter de cotação do Melhor Envio, sem fallback de preço, e persistir suas opções nesse contrato.
+
+
+### 2026-09-06 — Codex — UI-026, adapter e configuração de frete
+- Objetivo e escopo: iniciar a remoção segura do legado de cotação, mantendo a rota administrativa compatível e sem expor a cotação ao checkout público ainda.
+- Branch e commits: `orders-financial-snapshot`; configuração tenant-scoped até `a7704b6`, adapter até `e9725cd`, teste até `6922161`, board até `1d15f9b`.
+- Task board: UI-026 [~]; SHIP-001/002/004 [~]. Nenhum item concluído sem CI.
+- Arquivos alterados: `AGENTS.md`, migration/model de ambiente, controller Melhor Envio, `MelhorEnvioRateAdapter`, teste unitário, board.
+- Evidências: teste unitário do adapter criado; CI ainda não iniciada.
+- Riscos, bloqueios e itens não verificados: a rota administrativa ainda não é o endpoint público de checkout. Falta criar a seleção/persistência de cada taxa retornada, validar package a partir do carrinho e completar o fluxo público com cotação opaca. Verificação de token permanece no controller e deve migrar junto com a configuração do App de logística.
+- Próxima ação única: persistir taxas reais retornadas pelo adapter como `CheckoutShippingQuote`, vinculadas ao carrinho/endereço e expiração, antes de expor a seleção no checkout.
