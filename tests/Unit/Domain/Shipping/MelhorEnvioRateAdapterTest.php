@@ -25,7 +25,7 @@ class MelhorEnvioRateAdapterTest extends TestCase
             'sender_info' => ['cep' => '01001-000'],
         ]);
 
-        $rates = (new MelhorEnvioRateAdapter())->calculate(
+        $rates = (new MelhorEnvioRateAdapter)->calculate(
             $config,
             '20040-020',
             ['height' => 10, 'width' => 20, 'length' => 30, 'weight' => 1],
