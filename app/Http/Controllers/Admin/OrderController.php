@@ -236,6 +236,7 @@ class OrderController extends Controller
                     'tags' => $order->user->tags ?? [],
                     'avatar' => $order->user->avatar ?? null,
                     'ltv' => $ltv,
+                    'compras' => $compras,
                     'cupons_usados' => $compras,
                     'rank' => $rank
                 ],
