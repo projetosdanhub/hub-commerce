@@ -21,6 +21,7 @@ use App\Http\Controllers\Storefront\FreeShippingProgressController;
 use App\Http\Controllers\Storefront\CheckoutSummaryController;
 use App\Http\Controllers\Storefront\PostalCodeLookupController;
 use App\Http\Controllers\Storefront\ShippingQuoteController;
+use App\Http\Controllers\Storefront\StripeCheckoutController;
 use App\Http\Controllers\Admin\TrackingController;
 use App\Http\Controllers\Admin\NavigationMenuController;
 use App\Http\Controllers\Identity\AuthorizationAuditController;
@@ -101,6 +102,7 @@ Route::post('/storefront/checkout/summary', [CheckoutSummaryController::class, '
 Route::middleware('auth:sanctum')->prefix('storefront/checkout')->group(function (): void {
     Route::get('/addresses', [CheckoutAddressController::class, 'index'])->middleware('throttle:30,1');
     Route::post('/addresses', [CheckoutAddressController::class, 'store'])->middleware('throttle:10,1');
+    Route::post('/stripe/payment-intent', [StripeCheckoutController::class, 'store'])->middleware('throttle:5,1');
 });
 Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middleware('throttle:60,1');
 
