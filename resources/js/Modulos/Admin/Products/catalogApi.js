@@ -71,3 +71,7 @@ export const saveProduct = async ({ product, categoryId }) => {
 
   return api.post('/admin/products', body, { headers: { 'Content-Type': 'multipart/form-data' } });
 };
+
+
+export const fetchFreeShippingSettings = async () => unwrap(await api.get('/admin/products/free-shipping'));
+export const saveFreeShippingSettings = async (payload) => unwrap(await api.put('/admin/products/free-shipping', payload));
