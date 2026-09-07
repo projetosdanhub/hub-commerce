@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('payment_method', 40);
             $table->string('status', 24)->default('PENDING');
             $table->uuid('idempotency_key');
+            $table->char('checkout_fingerprint', 64);
             $table->unsignedBigInteger('amount_cents');
             $table->char('currency', 3);
             $table->string('gateway_payment_id', 191)->nullable();
