@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Domain\Tenancy\TenantStorage;
 use App\Http\Controllers\Controller;
 use App\Models\GlobalSetting;
+use App\Models\MelhorEnvioSetting;
 use App\Models\Produto;
 use App\Models\TenantAppInstallation;
 use Illuminate\Http\JsonResponse;
@@ -65,6 +66,46 @@ class AppCenterController extends Controller
             'app_key' => $installation->app_key,
             'status' => $installation->status,
         ]);
+    }
+
+
+    public function logistics(): JsonResponse
+    {
+        $config = MelhorEnvioSetting::query()->first();
+
+        return response()->json([
+            'provider' => 'melhor_envio',
+            'environment' => $config?->environment,
+            'credential_configured' => filled($config?->access_token),
+            'sender_configured' => filled($config?->sender_info['cep'] ?? null),
+        ]);
+    }
+
+    public function saveLogistics(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'environment' => ['required', Rule::in(['SANDBOX', 'PRODUCTION'])],
+            'access_token' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $config = MelhorEnvioSetting::query()->firstOrCreate([], ['environment' => 'SANDBOX']);
+        $previousEnvironment = $config->environment;
+        $config->environment = $validated['environment'];
+
+        if (filled($validated['access_token'] ?? null)) {
+            $config->access_token = $validated['access_token'];
+        } elseif ($config->environment !== $previousEnvironment) {
+            $config->access_token = null;
+        }
+
+        $config->save();
+
+        TenantAppInstallation::query()->firstOrCreate(
+            ['app_key' => 'logistics'],
+            ['status' => 'INSTALLED', 'installed_at' => now()],
+        );
+
+        return $this->logistics();
     }
 
     public function fiscal(): JsonResponse

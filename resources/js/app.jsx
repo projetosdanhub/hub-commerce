@@ -233,7 +233,7 @@ const AppContent = () => {
                     <Route path="/carrinho" element={<PaginaCarrinho cartItems={cartItems} setCartItems={setCartItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
                     <Route path="/perfil" element={<PaginaPerfil cartCount={totalItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
                     <Route path="/afiliados" element={<PainelAfiliados cartCount={totalItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
-                    <Route path="/checkout" element={<PaginaCheckout />} />
+                    <Route path="/checkout" element={<PaginaCheckout cartItems={cartItems} />} />
                     <Route path="/categoria/:slug" element={<PaginaCategoria />} />
                     <Route path="/login" element={<PaginaAutenticacao />} />
 

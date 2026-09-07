@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\CarrierController;
 use App\Http\Controllers\Admin\ShippingPackageController;
 use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
+use App\Http\Controllers\Storefront\ShippingQuoteController;
 use App\Http\Controllers\Admin\TrackingController;
 use App\Http\Controllers\Admin\NavigationMenuController;
 use App\Http\Controllers\Identity\AuthorizationAuditController;
@@ -84,6 +85,7 @@ Route::get('/storefront/menu', [StorefrontController::class, 'getMenu']);
 Route::get('/storefront/categories', [StorefrontController::class, 'getCategories']);
 Route::get('/storefront/products', [StorefrontController::class, 'getProducts']);
 Route::get('/storefront/products/{id}', [StorefrontController::class, 'getProduct']);
+Route::post('/storefront/shipping-quotes', [ShippingQuoteController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/storefront/checkout', [StorefrontController::class, 'checkout'])->middleware('throttle:10,1');
 Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middleware('throttle:60,1');
 
@@ -244,6 +246,8 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::prefix('settings')->group(function () {
         Route::get('/apps', [AppCenterController::class, 'index'])->middleware('tenant.permission:tenant.settings.view');
         Route::post('/apps/{app}/install', [AppCenterController::class, 'install'])->middleware('tenant.permission:tenant.settings.manage');
+        Route::get('/logistics', [AppCenterController::class, 'logistics'])->middleware('tenant.permission:tenant.settings.view');
+        Route::post('/logistics', [AppCenterController::class, 'saveLogistics'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/fiscal', [AppCenterController::class, 'fiscal'])->middleware('tenant.permission:tenant.settings.view');
         Route::post('/fiscal', [AppCenterController::class, 'saveFiscal'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/{group}', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'getGroup'])->middleware('tenant.permission:tenant.settings.view');

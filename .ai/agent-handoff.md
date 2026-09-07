@@ -252,3 +252,51 @@ Copie este bloco para cada handoff relevante:
 - Documentação: UI-022 marcado `[~]` no board. `AGENTS.md` e a regra operacional 14 já continham as regras globais vigentes e não exigiram alteração adicional.
 - Validação: nenhuma CI foi iniciada nesta etapa, conforme protocolo do responsável. Testes de feature, build, Tests, E2E Tests, Security Scans e homologação visual ainda pendentes.
 - Próxima ação única: abrir a PR exclusiva do UI-022, o que iniciará a CI; interromper o trabalho imediatamente após a abertura e aguardar aprovação explícita do responsável antes de qualquer merge.
+
+
+### 2026-09-06 — Codex — UI-026, fundação de valores verificáveis
+- Objetivo e escopo: substituir a fundação financeira legada do checkout sem criar frete, desconto ou pagamento fictício.
+- Branch e commits: `orders-financial-snapshot`; base de snapshot até `35e3123`, endurecimento/precificação até `f01f362`, regras e board até `780ae6e`.
+- Task board: UI-026 [~] — contrato financeiro e precificação server-side iniciados; checkout atômico ainda depende de cotação persistida e payment attempts.
+- Arquivos alterados: migration/model de snapshot, `OrderFinancialSnapshotBuilder`, `CheckoutPricingService`, testes unitários, regra 15, índice de regras e board.
+- Evidências: testes de unidade adicionados, mas nenhuma CI foi aberta ou executada nesta branch.
+- Riscos, bloqueios e itens não verificados: o checkout legado ainda não pode ser integrado ao novo fluxo até existir cotação de frete tenant-scoped, expirada/verificável, e adapter de pagamento com idempotência. Gateway continua explicitamente indisponível; não há aprovação simulada.
+- Próxima ação única: criar contrato persistido da cotação de frete, validar seu vínculo ao carrinho/endereço e então conectar o snapshot ao checkout.
+
+
+### 2026-09-06 — Codex — UI-026, cotação persistida
+- Objetivo e escopo: preparar a referência segura de frete para o checkout, sem chamar provider, cobrar, criar pedido ou aceitar preço do cliente.
+- Branch e commit: `orders-financial-snapshot`, contrato de cotação até `f0d6e23`; board atualizado em `9b7593c`.
+- Task board: UI-026 [~] — cotação tenant-scoped opaca possui token, fingerprints de carrinho/destino, expiração, invalidação e valor em centavos; adapter de cotação e checkout atômico seguem pendentes.
+- Arquivos alterados: migration/model `CheckoutShippingQuote`, `CheckoutFingerprint`, resolver de cotação, teste de fingerprint, board e regra 15.
+- Evidências: teste unitário adicionado; CI ainda não foi iniciada nesta branch.
+- Riscos, bloqueios e itens não verificados: a tabela não cria cotação sozinha. Melhor Envio legado ainda precisa ser extraído para adapter tenant-scoped antes de qualquer rota pública de cotação. Nenhum valor de frete é aceito do frontend.
+- Próxima ação única: extrair e testar adapter de cotação do Melhor Envio, sem fallback de preço, e persistir suas opções nesse contrato.
+
+
+### 2026-09-06 — Codex — UI-026, adapter e configuração de frete
+- Objetivo e escopo: iniciar a remoção segura do legado de cotação, mantendo a rota administrativa compatível e sem expor a cotação ao checkout público ainda.
+- Branch e commits: `orders-financial-snapshot`; configuração tenant-scoped até `a7704b6`, adapter até `e9725cd`, teste até `6922161`, board até `1d15f9b`.
+- Task board: UI-026 [~]; SHIP-001/002/004 [~]. Nenhum item concluído sem CI.
+- Arquivos alterados: `AGENTS.md`, migration/model de ambiente, controller Melhor Envio, `MelhorEnvioRateAdapter`, teste unitário, board.
+- Evidências: teste unitário do adapter criado; CI ainda não iniciada.
+- Riscos, bloqueios e itens não verificados: a rota administrativa ainda não é o endpoint público de checkout. Falta criar a seleção/persistência de cada taxa retornada, validar package a partir do carrinho e completar o fluxo público com cotação opaca. Verificação de token permanece no controller e deve migrar junto com a configuração do App de logística.
+- Próxima ação única: persistir taxas reais retornadas pelo adapter como `CheckoutShippingQuote`, vinculadas ao carrinho/endereço e expiração, antes de expor a seleção no checkout.
+
+
+### 2026-09-06 — Codex — App Melhor Envio
+- Objetivo e escopo: mover a seleção sandbox/produção e a credencial do Melhor Envio para o Centro de Apps, com isolamento por tenant e sem exibir segredo.
+- Branch e commits: `orders-financial-snapshot`; API/rotas até `2d4a5e6`, interface até `59affc2`, regra até `4799472`.
+- Task board: SHIP-001/002/004 [~]; UI-026 [~]. CI ainda não iniciada.
+- Arquivos alterados: AppCenterController, rotas, ConfiguracoesPrincipal, regra 15 e handoff.
+- Evidências: revisão estática; o formulário usa campo password, API responde apenas `credential_configured` e troca de ambiente sem novo token limpa a credencial anterior.
+- Próxima ação única: testar e persistir opções reais retornadas pelo adapter como CheckoutShippingQuote.
+
+
+### 2026-09-06 — Codex — Carrinho e checkout da Loja
+- Objetivo e escopo: remover o carrinho, frete e totais fictícios da página de checkout e conectá-la ao carrinho real do storefront.
+- Branch e commits: `orders-financial-snapshot`; passagem do carrinho em `461dff1`; remoção do fluxo fictício até `5f5cf4f`.
+- Task board: UI-026 [~]; checkout público permanece bloqueado até cotação pública e gateway idempotente.
+- Arquivos alterados: `app.jsx`, `PaginaCheckout.jsx` e handoff.
+- Evidências: revisão estática; a página recebe `cartItems`, não calcula dinheiro localmente, não anuncia Purchase e não submete pedido legado.
+- Próxima ação única: implementar endpoint público de cotação que monta volumes a partir do catálogo e persiste apenas opções reais do adapter.

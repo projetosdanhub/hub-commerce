@@ -40,6 +40,8 @@ Em caso de conflito, pare, descreva o conflito e peça uma decisão. Não escolh
 - Autenticação não substitui autorização: rotas administrativas exigem papel e permissão.
 - Queries, cache, filas, arquivos, eventos e unicidades devem ser isolados por tenant.
 - Não usar dados fictícios como fallback silencioso em fluxos reais.
+- Checkout, cotação e pagamentos: o navegador nunca define preço, benefício, frete, total, comissão ou estado financeiro. O servidor relê catálogo e regras do tenant, usa centavos no cálculo, valida cotação opaca expirada/vinculada ao carrinho e persiste snapshot versionado e imutável. Sem provider/cotação/gateway real configurado, retornar indisponibilidade segura — jamais preço fixo, desconto zero inferido ou aprovação simulada.
+- Benefícios financeiros declaram origem, referência e base elegível (produto ou frete); cupom antecede VIP e nenhum benefício pode exceder ou transferir saldo entre bases. Ajuste posterior gera evento ou fluxo auditável, nunca altera snapshot silenciosamente.
 - Ao modernizar um módulo, remover mocks, métricas simuladas, personas e imagens de demonstração do caminho de produção. Sem contrato real tenant-scoped, o recurso deve exibir estado indisponível e permanecer no task board; nunca simular funcionamento.
 - Não expor exceções, stack traces ou respostas integrais de fornecedores ao cliente.
 - Não criar dependências entre a loja pública e endpoints administrativos.
