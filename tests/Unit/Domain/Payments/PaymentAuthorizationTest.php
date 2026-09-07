@@ -16,6 +16,7 @@ class PaymentAuthorizationTest extends TestCase
             12_500,
             'BRL',
             'provider-token',
+            'SANDBOX',
         );
 
         $this->assertSame(12_500, $authorization->amountCents);
