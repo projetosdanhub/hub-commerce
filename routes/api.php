@@ -15,6 +15,10 @@ use App\Http\Controllers\Admin\CarrierController;
 use App\Http\Controllers\Admin\ShippingPackageController;
 use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
+use App\Http\Controllers\Storefront\CheckoutAddressController;
+use App\Http\Controllers\Storefront\CheckoutCustomerSessionController;
+use App\Http\Controllers\Storefront\CheckoutSummaryController;
+use App\Http\Controllers\Storefront\PostalCodeLookupController;
 use App\Http\Controllers\Storefront\ShippingQuoteController;
 use App\Http\Controllers\Admin\TrackingController;
 use App\Http\Controllers\Admin\NavigationMenuController;
@@ -85,8 +89,14 @@ Route::get('/storefront/menu', [StorefrontController::class, 'getMenu']);
 Route::get('/storefront/categories', [StorefrontController::class, 'getCategories']);
 Route::get('/storefront/products', [StorefrontController::class, 'getProducts']);
 Route::get('/storefront/products/{id}', [StorefrontController::class, 'getProduct']);
+Route::get('/storefront/postal-codes/{postalCode}', [PostalCodeLookupController::class, 'show'])->middleware('throttle:30,1');
 Route::post('/storefront/shipping-quotes', [ShippingQuoteController::class, 'store'])->middleware('throttle:10,1');
-Route::post('/storefront/checkout', [StorefrontController::class, 'checkout'])->middleware('throttle:10,1');
+Route::post('/storefront/checkout/customer-session', [CheckoutCustomerSessionController::class, 'store'])->middleware('throttle:5,1');
+Route::post('/storefront/checkout/summary', [CheckoutSummaryController::class, 'store'])->middleware('throttle:10,1');
+Route::middleware('auth:sanctum')->prefix('storefront/checkout')->group(function (): void {
+    Route::get('/addresses', [CheckoutAddressController::class, 'index'])->middleware('throttle:30,1');
+    Route::post('/addresses', [CheckoutAddressController::class, 'store'])->middleware('throttle:10,1');
+});
 Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middleware('throttle:60,1');
 
 // 🟢 INGESTÃO DE DADOS (DATA LAYER): Recebe os eventos de conversão da loja pública

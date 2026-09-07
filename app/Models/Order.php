@@ -14,6 +14,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'storefront_customer_id',
         'carrier_id',
         'subtotal',
         'frete',
@@ -65,6 +66,10 @@ class Order extends Model
     // 1 Pedido PERTENCE a 1 Cliente
     public function user() {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function storefrontCustomer() {
+        return $this->belongsTo(StorefrontCustomer::class, 'storefront_customer_id');
     }
 
     // 1 Pedido PERTENCE a 1 Transportadora
