@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\Shipping\ShippingBenefitRuleType;
+use App\Domain\Tenancy\TenantContextStore;
 use App\Http\Controllers\Controller;
 use App\Models\Produto;
 use App\Models\ShippingBenefitRule;
@@ -15,7 +17,7 @@ class ProductFreeShippingController extends Controller
     public function show(): JsonResponse
     {
         $threshold = ShippingBenefitRule::query()
-            ->where('type', ShippingBenefitRule::FREE_ABOVE_SUBTOTAL)
+            ->where('type', ShippingBenefitRuleType::FREE_ABOVE_SUBTOTAL)
             ->where('is_active', true)
             ->orderBy('priority')
             ->value('minimum_order_cents');
@@ -46,12 +48,12 @@ class ProductFreeShippingController extends Controller
             }
 
             ShippingBenefitRule::query()
-                ->where('type', ShippingBenefitRule::FREE_ABOVE_SUBTOTAL)
+                ->where('type', ShippingBenefitRuleType::FREE_ABOVE_SUBTOTAL)
                 ->update(['is_active' => false]);
 
             if ($data['minimum_order_cents'] !== null) {
                 ShippingBenefitRule::query()->create([
-                    'type' => ShippingBenefitRule::FREE_ABOVE_SUBTOTAL,
+                    'type' => ShippingBenefitRuleType::FREE_ABOVE_SUBTOTAL,
                     'minimum_order_cents' => $data['minimum_order_cents'],
                     'priority' => 50,
                     'is_active' => true,
