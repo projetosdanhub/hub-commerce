@@ -208,6 +208,13 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | BEN-007 | P1 | Migrar afiliados para regras e comissões auditáveis | MKT-002, PAY-008 | Atribuição confiável, comissão por pedido pago e reversão idempotente |
 | [~] | APP-001 | P1 | Transformar Centro de Apps em catálogo operacional | UI-028, TEN-009 | Catálogo já expõe instalação, ambiente e configuração segura de Logística/Fiscal por tenant; faltam adapters homologados para os gateways e validação visual/CI |
 
+## Fase 10.1 — Estrutura do frontend administrativo
+
+| Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
+|---|---|---:|---|---|---|
+| [~] | ADM-ARC-001 | P1 | Normalizar domínios, nomes e entry points do Admin | GOV-008, UI-001 | Cada domínio possui uma única pasta inglesa, sem cópias monolíticas ou imports para caminhos legados; build e E2E verdes |
+| [ ] | ADM-ARC-002 | P1 | Fracionar Marketing em subdomínios verificáveis | ADM-ARC-001, MKT-001, BEN-001 | Campanhas, cupons, fidelidade e métricas só recebem UI após contratos tenant-scoped; mocks removidos |
+
 ## Fase 10 — UI do painel e design system
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
