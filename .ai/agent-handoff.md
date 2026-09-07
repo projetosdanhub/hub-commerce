@@ -358,3 +358,11 @@ Copie este bloco para cada handoff relevante:
 - Testes adicionados: `CheckoutOrderCreatorTest` cobre persistência atômica, valor relido no servidor, repetição idêntica, alteração do carrinho e reutilização entre clientes.
 - Contratos preservados: não há endpoint público, adapter, credencial, PAN/CVV, token de cartão, cobrança, confirmação de frontend ou alteração para pago. Estoque ainda não é reservado: ORD-003/CAT-003 continua dependência explícita antes de exposição ao checkout.
 - Próxima ação única: revisar o diff e abrir a PR da fundação de pagamentos; aguardar Tests, E2E Tests e Security Scans antes de marcar PAY-001/PAY-002/PAY-003 como concluídos ou iniciar Stripe.
+
+
+### 2026-09-07 — Codex — PR #57 integrada e próxima fase Stripe
+- Evidência: PR #57 integrada na `main` por squash em `c69d53ff5683c490d4869b126522f00badebf336`; Tests, E2E Tests e Security Scans concluíram com sucesso no commit `1237785`.
+- Board: PAY-001, PAY-002 e PAY-003 passam a `[x]`; PAY-004 inicia em `[~]`.
+- Próxima branch: `payments/stripe-sandbox`, criada a partir da `main` após a integração.
+- Escopo autorizado: apenas mapear e implementar configuração tenant-scoped, adapter Stripe em sandbox e o contrato de webhook assinado/idempotente. Produção, credenciais reais, captura de cartão, cobrança e confirmação de frontend permanecem desabilitadas até haver testes e homologação.
+- Próxima ação única: localizar os contratos atuais do Centro de Apps, autorização de administrador e rotas para configurar Stripe sem expor segredo e sem criar um fluxo paralelo de pedidos.
