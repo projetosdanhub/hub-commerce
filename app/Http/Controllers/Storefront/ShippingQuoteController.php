@@ -8,6 +8,7 @@ use App\Domain\Orders\CheckoutShippingQuoteIssuer;
 use App\Domain\Shipping\CheckoutPackageBuilder;
 use App\Domain\Shipping\MelhorEnvioRateAdapter;
 use App\Http\Controllers\Controller;
+use App\Models\CheckoutShippingQuote;
 use App\Models\MelhorEnvioSetting;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -72,7 +73,7 @@ class ShippingQuoteController extends Controller
             );
 
             return response()->json([
-                'data' => collect($quotes)->map(fn (\App\Models\CheckoutShippingQuote $quote): array => [
+                'data' => collect($quotes)->map(fn (CheckoutShippingQuote $quote): array => [
                     'token' => $quote->token,
                     'service_code' => $quote->service_code,
                     'shipping_cents' => $quote->shipping_cents,
