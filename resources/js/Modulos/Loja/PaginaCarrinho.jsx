@@ -216,7 +216,10 @@ export default function PaginaCarrinho({ cartItems = [], setCartItems = () => {}
                         <section className="space-y-4 lg:col-span-2" aria-labelledby="cart-items-title">
                             <h2 id="cart-items-title" className="sr-only">Itens do carrinho</h2>
                             <AnimatePresence initial={false}>
-                                {cartItems.map((item) => (
+                                {cartItems.map((item) => {
+                                    const imageUrl = item.imagem || (Array.isArray(item.imagens) ? item.imagens[0] : null);
+
+                                    return (
                                     <motion.article
                                         key={item.id}
                                         layout
@@ -227,9 +230,9 @@ export default function PaginaCarrinho({ cartItems = [], setCartItems = () => {}
                                     >
                                         <div className="flex gap-4">
                                             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100 sm:h-24 sm:w-24">
-                                                {item.imagem || Array.isArray(item.imagens) && item.imagens[0] ? (
+                                                {imageUrl ? (
                                                     <img
-                                                        src={item.imagem || item.imagens[0]}
+                                                        src={imageUrl}
                                                         alt={item.nome || 'Produto'}
                                                         className="h-full w-full object-cover"
                                                     />
@@ -281,7 +284,8 @@ export default function PaginaCarrinho({ cartItems = [], setCartItems = () => {}
                                             </button>
                                         </div>
                                     </motion.article>
-                                ))}
+                                    );
+                                })}
                             </AnimatePresence>
 
                             <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5">
