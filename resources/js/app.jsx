@@ -36,15 +36,15 @@ import PaginaAutenticacao from './Modulos/Loja/PaginaAutenticacao';
 import AdminLayout from './Modulos/Admin/AdminLayout';
 import DashboardPage from './Modulos/Admin/Dashboard/DashboardPage';
 import OrdersPage from './Modulos/Admin/Orders/OrdersPage';
-import CategoriasPrincipal from './Modulos/Admin/Categorias/CategoriasPrincipal';
-import MenusPrincipal from './Modulos/Admin/Menus/MenusPrincipal';
+import CategoriesPage from './Modulos/Admin/Categories/CategoriesPage';
+import NavigationPage from './Modulos/Admin/Navigation/NavigationPage';
 import ProductsPage from './Modulos/Admin/Products/ProductsPage';
 import MarketingPage from './Modulos/Admin/Marketing/MarketingPage';
 import { BenefitsHub } from './Modulos/Admin/Growth/GrowthHub';
 import CustomersPage from './Modulos/Admin/Customers/CustomersPage';
 import AffiliatesPage from './Modulos/Admin/Affiliates/AffiliatesPage';
 import ConstrutorVitrinePrincipal from './Modulos/Admin/ConstrutorVitrine/ConstrutorVitrinePrincipal';
-import ConfiguracoesPrincipal from './Modulos/Admin/Configuracoes/ConfiguracoesPrincipal';
+import SettingsPage from './Modulos/Admin/Settings/SettingsPage';
 import ReviewsPage from './Modulos/Admin/Reviews/ReviewsPage';
 import AdminLoginPage from './Modulos/Admin/Authentication/AdminLoginPage';
 import CarriersPage from './Modulos/Admin/Carriers/CarriersPage';
@@ -244,8 +244,8 @@ const AppContent = () => {
                     <Route path="/admin" element={<AdminLayout />}>
                         <Route index element={<DashboardPage />} />
                         <Route path="pedidos" element={<OrdersPage />} />
-                        <Route path="categorias" element={<CategoriasPrincipal />} />
-                        <Route path="menus" element={<MenusPrincipal />} />
+                        <Route path="categorias" element={<CategoriesPage />} />
+                        <Route path="menus" element={<NavigationPage />} />
                         <Route path="produtos" element={<ProductsPage />} />
                         <Route path="marketing" element={<MarketingPage />} />
                         <Route path="beneficios" element={<BenefitsHub />} />
@@ -253,7 +253,7 @@ const AppContent = () => {
                         <Route path="clientes" element={<CustomersPage />} />
                         <Route path="afiliados" element={<AffiliatesPage />} />
                         <Route path="vitrine" element={<ConstrutorVitrinePrincipal />} />
-                        <Route path="configuracoes" element={<ConfiguracoesPrincipal />} />
+                        <Route path="configuracoes" element={<SettingsPage />} />
                         <Route path="avaliacoes" element={<ReviewsPage />} />
                         <Route path="transportadoras" element={<CarriersPage />} />
                         <Route path="estoque" element={<div className="p-8 text-slate-500">Módulo de Estoque (Em construção)</div>} />
