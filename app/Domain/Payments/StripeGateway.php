@@ -4,13 +4,13 @@ namespace App\Domain\Payments;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
-use Throwable;
 
 final readonly class StripeGateway implements PaymentGateway
 {
     public function __construct(
         private StripeGatewayConfiguration $configuration,
-    ) {}
+    ) {
+    }
 
     public function key(): string
     {
@@ -50,7 +50,7 @@ final readonly class StripeGateway implements PaymentGateway
 
         $paymentIntentId = $response->json('id');
 
-        if (! is_string($paymentIntentId) || str_starts_with($paymentIntentId, 'pi_') === false) {
+        if (!is_string($paymentIntentId) || str_starts_with($paymentIntentId, 'pi_') === false) {
             throw new StripeGatewayUnavailableException('O Stripe retornou uma resposta inválida.');
         }
 
