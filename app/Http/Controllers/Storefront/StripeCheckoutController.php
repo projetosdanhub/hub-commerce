@@ -65,15 +65,15 @@ class StripeCheckoutController extends Controller
                     'publishable_key' => $intent['publishable_key'],
                 ],
             ])->header('Cache-Control', 'no-store, private');
-        } catch (DomainException|InvalidArgumentException) {
-            return response()->json([
-                'code' => 'CHECKOUT_UNAVAILABLE',
-                'message' => 'Revise o carrinho e a entrega antes de continuar.',
-            ], 422);
         } catch (StripeGatewayUnavailableException) {
             return response()->json([
                 'code' => 'STRIPE_UNAVAILABLE',
                 'message' => 'O pagamento por cartão não está disponível nesta loja.',
+            ], 422);
+        } catch (DomainException|InvalidArgumentException) {
+            return response()->json([
+                'code' => 'CHECKOUT_UNAVAILABLE',
+                'message' => 'Revise o carrinho e a entrega antes de continuar.',
             ], 422);
         }
     }
