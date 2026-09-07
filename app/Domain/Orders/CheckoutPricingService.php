@@ -10,7 +10,7 @@ use InvalidArgumentException;
 final class CheckoutPricingService
 {
     /**
-     * @param  array<int, array{id: int, quantity: int}>  $requestedItems
+     * @param  array<int, mixed>  $requestedItems
      * @return array{product_subtotal_cents: int, items: array<int, array{product: Produto, quantity: int, unit_price_cents: int, line_total_cents: int}>}
      */
     public function priceItems(array $requestedItems): array
