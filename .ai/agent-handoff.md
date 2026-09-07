@@ -406,3 +406,10 @@ Copie este bloco para cada handoff relevante:
 - Testes: `StripeGatewayTest` usa `Http::fake()` para simular PaymentIntent nos dois ambientes e confirma que até uma resposta `succeeded` permanece `PENDING` localmente. A auditoria da API impede a serialização de segredos.
 - Riscos e bloqueios: chaves reais ainda não foram configuradas; a validação externa, tokenização oficial no navegador, endpoint público protegido, webhook assinado/idempotente, estoque e reconciliação seguem pendentes. O Stripe não deve ser marcado como pronto para cobrança.
 - Próxima ação única: executar CI da branch e corrigir apenas os erros; após os gates verdes, iniciar PAY-007 (webhook Stripe assinado e idempotente) antes de liberar checkout.
+
+
+## 2026-09-07 — Stripe por tenant (validação em andamento)
+
+- PR: #61 `payments/stripe-tenant-configuration`.
+- A primeira rodada de CI encontrou somente estilo PHP e uma fixture inerte do Stripe sinalizada por Gitleaks; ambos foram corrigidos sem inserir chaves reais.
+- Security Scans e a simulação E2E inicial passaram. A rodada final de Tests/E2E permanece pendente; não liberar checkout, não configurar chaves reais e não marcar pagamentos como aprovados até webhook assinado e idempotente.
