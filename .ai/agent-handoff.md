@@ -319,3 +319,23 @@ Copie este bloco para cada handoff relevante:
 - Contratos preservados: nenhuma cotação, preço, desconto ou total vindo do navegador é fonte de verdade; pagamento segue indisponível; não há cupom de teste nem frete grátis fictício.
 - Riscos, bloqueios e itens não verificados: endereços salvos continuam no checkout após autenticação da conta da loja. Para exibi-los no carrinho é necessário um contrato de sessão de cliente adequado ao retorno à loja; cupons de produto/frete e benefícios precisam de um serviço server-side que consolide regra por produto, loja e cupom.
 - Próxima ação única: executar CI da branch e corrigir apenas os erros encontrados antes de abrir a PR do UI-027.
+
+
+### 2026-09-07 — Codex — Etapa 4, fundação de navegação de crescimento
+- Objetivo e escopo: iniciar a reorganização de UI/UX de Marketing, Benefícios/Fidelidade, Clientes/VIP e Afiliados, sem habilitar dados, métricas, filtros ou ações simuladas.
+- Branch: `ui/marketing-benefits-foundation`.
+- Task board: BEN-001, UI-010, UI-028 e APP-001 permanecem `[~]`. A etapa 4 continua antes de pagamento (etapa 1), motor de benefícios (etapa 2) e moeda por produto (etapa 3).
+- Implementado: a sidebar separa Clientes, Benefícios & VIP, Marketing, Afiliados e Pixels; `/admin/beneficios` centraliza Cupons, Hub Coins, Recompensas, Loja de Cupons e VIP em submenus; Marketing e Afiliados deixaram de montar os monólitos legados com dados hardcoded.
+- Contratos preservados: não há leitura/escrita de cupom, saldo, recompensa, comissão, métrica ou filtro porque os endpoints tenant-scoped ainda não existem. VIP mantém somente o atalho ao perfil de Clientes; o cálculo segue bloqueado até BEN-004. Centro de Apps mantém as instalações reais já existentes.
+- Arquivos alterados: regra 16 e índice de regras; task-board; AppShell/AdminNavigation; rota React; novos componentes Growth e CSS com tokens; superfícies Marketing/Afiliados substituídas.
+- Validação pendente: revisão da API real do Centro de Apps, refatoração visual de Apps, testes de UI/build, e homologação em 320/768/1024 px, teclado, zoom 200%, claro/escuro e reduced motion. Nenhuma CI foi disparada nesta branch.
+- Próxima ação única: concluir APP-001 usando apenas o catálogo de instalações retornado por `GET /api/admin/settings/apps`, sem anunciar gateways antes de seus adapters homologados.
+
+
+### 2026-09-07 — Codex — Etapa 4, Centro de Apps operacional
+- Objetivo e escopo: transformar a apresentação existente do Centro de Apps em catálogo operacional sem divulgar credenciais nem anunciar integrações de pagamento inexistentes.
+- Branch: `ui/marketing-benefits-foundation`.
+- Implementado: `GET /api/admin/settings/apps` retorna somente `environment` e `credential_configured` para Logística e Fiscal; a UI usa esses dados para cartões responsivos de instalação/configuração e deixa explícito que somente um ambiente fica ativo por aplicativo. Fiscal apresenta “Teste (homologação)” e Produção.
+- Contratos preservados: token do Melhor Envio, token fiscal e senha de certificado não retornam na lista. Stripe, Mercado Pago, Pagar.me e PagBank não foram inseridos como cards porque ainda não possuem adapter, tentativa idempotente e webhook homologados.
+- Teste adicionado: `AdminApiAuditTest::test_app_catalog_returns_only_safe_configuration_metadata` assegura estrutura segura da resposta e ausência de segredos.
+- Próxima ação única: abrir a PR da Etapa 4 e validar Tests, E2E Tests e Security Scans antes de iniciar PAY-001.

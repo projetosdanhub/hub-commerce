@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-07 — UI-027 de carrinho verificável em andamento; FIS-001 segue bloqueado até homologação externa  
+Atualizado em: 2026-09-07 — reorganização de Benefícios/Fidelidade/Afiliados e UI-028 em andamento; FIS-001 segue bloqueado até homologação externa  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -21,6 +21,15 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 3. Não pular dependências sem registrar uma ADR.
 4. Toda entrega atualiza este board, os testes e a documentação afetada.
 5. Itens novos devem receber ID estável; não renumerar itens existentes.
+
+## Sequência autorizada — 2026-09-07
+
+1. **Etapa 4 — atual:** organizar a navegação, os submenus, o dicionário de regras, os filtros e os estados visuais de Marketing, Benefícios, Fidelidade, Clientes/VIP, Afiliados e Loja de Aplicativos. Esta etapa não pode apresentar dados simulados como operacionais. A primeira entrega separa Clientes, Benefícios & VIP, Marketing e Afiliados; filtros e métricas continuam bloqueados até cada domínio publicar sua consulta tenant-scoped.
+2. **Etapa 1:** criar a fundação de pedido e pagamento — snapshot atômico, adapter, tentativa e idempotência.
+3. **Etapa 2:** consolidar o motor de benefícios, cupom, Hub Coins, VIP e resgate para aplicá-los no carrinho e checkout com snapshot.
+4. **Etapa 3:** habilitar moeda por produto e restringir USD/EUR ao Stripe configurado no tenant.
+
+Cada etapa abre branch e PR próprios; a próxima só começa depois de evidência verde da anterior, salvo documentação de planejamento.
 
 ## Fase 0 — Governança e preparação
 
@@ -131,11 +140,11 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 |---|---|---:|---|---|---|
 | [ ] | CRM-001 | P1 | Isolar cadastro de cliente por tenant | TEN-008 | Mesmo e-mail permitido em lojas distintas |
 | [ ] | CRM-002 | P1 | Normalizar perfil e endereços | CRM-001 | Dados reais substituem mocks |
-| [ ] | CRM-003 | P1 | Corrigir carteira, coins e cashback | BASE-009 | Ledger transacional e auditável |
+| [~] | CRM-003 | P1 | Corrigir carteira, Hub Coins e cashback | BASE-009 | Fundação de domínio iniciada: ledger tenant-scoped, idempotência, auditoria e projeção de saldo; implementação depende de BEN-003 |
 | [ ] | CRM-004 | P1 | Proteger alterações de CPF/e-mail/telefone | SEC-009, IAM-003 | Reautorização e comprovante privado |
 | [ ] | CRM-005 | P1 | Criar consentimentos e preferências | SEC-016 | Consentimento versionado |
 | [ ] | CRM-006 | P1 | Implementar exportação e exclusão LGPD | SEC-016 | Solicitação rastreável e segura |
-| [ ] | CRM-007 | P2 | Consolidar VIP e segmentação | CRM-001 | Regras isoladas por tenant |
+| [~] | CRM-007 | P2 | Consolidar VIP e segmentação | CRM-001 | Arquitetura iniciada: critérios e benefícios tenant-scoped; cálculo e integração no checkout dependem de BEN-004 |
 | [ ] | CRM-008 | P2 | Remover dados pessoais fictícios do frontend | CRM-002 | Nenhuma persona hardcoded em produção |
 
 ## Fase 7 — Carrinho, pedidos e pagamentos
@@ -182,9 +191,22 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [ ] | TRK-005 | P1 | Definir retenção e agregação de eventos | SEC-016 | Limpeza automatizada |
 | [ ] | TRK-006 | P1 | Endurecer jobs CAPI | SEC-013 | Retry, timeout e failed definidos |
 | [ ] | TRK-007 | P2 | Criar deduplicação browser/server | TRK-006 | event_id consistente |
-| [ ] | MKT-001 | P2 | Remover campanhas e métricas simuladas | BASE-011 | Dados reais ou recurso desativado |
-| [ ] | MKT-002 | P2 | Projetar afiliados multitenant | TEN-006 | Regras e comissões auditáveis |
+| [~] | MKT-001 | P2 | Remover campanhas e métricas simuladas | BASE-011 | Auditoria identificou dados hardcoded no menu legado; a nova UI só expõe contratos reais ou estado indisponível |
+| [~] | MKT-002 | P2 | Projetar afiliados multitenant | TEN-006 | Auditoria identificou modelo legado sem tenant; migrar vínculo, atribuição, comissão e repasse com auditoria antes de nova UI operacional |
 | [ ] | MKT-003 | P2 | Projetar avaliações e moderação | CRM-001 | Autoria e status verificáveis |
+
+## Fase 9.1 — Benefícios, fidelidade e afiliados
+
+| Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
+|---|---|---:|---|---|---|
+| [~] | BEN-001 | P0 | Consolidar domínio e navegação de Benefícios | TEN-006, MKT-001 | Marketing, Benefícios/Cupons, Fidelidade, Clientes/VIP e Afiliados têm fronteiras, permissões, estados e regras documentados |
+| [ ] | BEN-002 | P0 | Criar cupons e benefícios tenant-scoped | BEN-001 | Código, base, teto, vigência, limite, elegibilidade e uso atômico; nenhum desconto vem do navegador |
+| [ ] | BEN-003 | P0 | Criar ledger e regras de Hub Coins | BEN-001, CRM-003 | Créditos, débitos, resgates, expiração e recompensas idempotentes/auditáveis por tenant |
+| [ ] | BEN-004 | P1 | Calcular elegibilidade e benefícios VIP | BEN-002, CRM-007 | Critérios e benefícios por base são calculados no servidor e não alteram snapshots históricos |
+| [ ] | BEN-005 | P0 | Aplicar benefícios no carrinho e checkout | BEN-002, BEN-003, BEN-004, UI-027 | Cupom antes de VIP, bases separadas, endereço obrigatório para frete e snapshot imutável |
+| [ ] | BEN-006 | P1 | Criar Loja de Cupons e resgate seguro | BEN-003, BEN-002 | Resgate debita Hub Coins e emite/reserva benefício em uma única transação |
+| [ ] | BEN-007 | P1 | Migrar afiliados para regras e comissões auditáveis | MKT-002, PAY-008 | Atribuição confiável, comissão por pedido pago e reversão idempotente |
+| [~] | APP-001 | P1 | Transformar Centro de Apps em catálogo operacional | UI-028, TEN-009 | Catálogo já expõe instalação, ambiente e configuração segura de Logística/Fiscal por tenant; faltam adapters homologados para os gateways e validação visual/CI |
 
 ## Fase 10 — UI do painel e design system
 
@@ -199,7 +221,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | UI-007 | P1 | Dividir AdminPerfilCRM | UI-005, CRM-002 | Perfil 360º modularizado; contratos preservados e checks verdes no PR #23 |
 | [x] | UI-008 | P1 | Dividir AdminOrders | UI-005, ORD-004 | Fluxos separados, contratos preservados e checks verdes; pendências de domínio continuam abertas |
 | [x] | UI-009 | P1 | Dividir AdminCustomers | UI-005, CRM-002 | Lista, painel, benefícios e perfil modularizados; checks verdes no PR #23 |
-| [ ] | UI-010 | P2 | Dividir Marketing e Afiliados | UI-006 | Sem componentes monolíticos |
+| [~] | UI-010 | P2 | Dividir Marketing e Afiliados | UI-006, BEN-001 | As superfícies hardcoded foram removidas da navegação em favor de estados operacionais honestos; falta publicar os contratos reais de campanhas, audiência e afiliados antes de habilitar ações ou métricas |
 | [~] | UI-011 | P1 | Padronizar loading/empty/error/success | UI-005 | Todos os módulos críticos cobertos |
 | [ ] | UI-012 | P1 | Auditar WCAG 2.2 AA e teclado | UI-006 | Checklist e testes aprovados |
 | [~] | UI-013 | P1 | Corrigir responsividade e zoom 200% | UI-006 | Sem scroll horizontal global |
@@ -216,7 +238,10 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | UI-024 | P1 | Exibir documentos reais de cada operação | UI-022, UI-023 | Integrado na PR #47 (`b8b81db`): catálogo unificado com prévia/download autorizado; novos comprovantes de pagamento/entrega em storage privado tenant-scoped. Arquivos públicos legados são identificados sem URL até migração; declaração é operacional, XML/DANFE continuam UI-025 |
 | [~] | UI-025 | P1 | Preparar emissão fiscal e declaração | UI-024 | Entregues: Centro de Apps, configuração fiscal por tenant, A1/credenciais protegidos, diagnóstico do catálogo ativo e declaração segura. Emissão, XML/protocolo/DANFE só com adapter homologado; espelho provisório nunca é NF-e |
 | [!] | FIS-001 | P1 | Homologar adapter de emissão de NF-e | UI-025 | Provedor contratado, credenciais autorizadas, sandbox/homologação, assinatura, idempotência, webhook, XML/DANFE privados e autorização confirmada |
-| [x] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Integrado na PR #54 (`66b58e8`): checkout claro e responsivo com CEP editável, cotações opacas, resumo financeiro relido no servidor, conta por loja e endereço padrão salvo/selecionável. Tests, E2E Tests e Security Scans verdes. Pagamento, cupons, payment_attempt, pedido atômico e tela de conclusão continuam dependentes de adapter homologado, idempotência e webhook |\n| [~] | UI-027 | P1 | Tornar frete e total do carrinho verificáveis | UI-026 | Em andamento: carrinho usa CEP editável, cotações opacas e resumo financeiro reconstruído pelo servidor; o rascunho da entrega é revalidado no checkout. Cupons/benefícios e seleção de endereço salvo no carrinho aguardam contrato autenticado e regra server-side, sem códigos ou descontos simulados |
+| [x] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Integrado na PR #54 (`66b58e8`): checkout claro e responsivo com CEP editável, cotações opacas, resumo financeiro relido no servidor, conta por loja e endereço padrão salvo/selecionável. Tests, E2E Tests e Security Scans verdes. Pagamento, cupons, payment_attempt, pedido atômico e tela de conclusão continuam dependentes de adapter homologado, idempotência e webhook |
+| [x] | UI-027 | P1 | Tornar frete e total do carrinho verificáveis | UI-026 | Integrado na PR #55 (`ea6ab85`): carrinho usa CEP editável, cotações opacas e resumo financeiro reconstruído pelo servidor; o rascunho é revalidado no checkout. Tests, E2E Tests e Security Scans verdes |
+| [~] | UI-028 | P1 | Reorganizar navegação, submenus e espaçamento operacional | UI-006, BEN-001 | Navegação já separa Clientes, Benefícios & VIP, Marketing e Afiliados; hubs usam submenus, tokens, estados honestos e links para contratos existentes. Falta refatorar Centro de Apps, consolidar densidade nos menus restantes e validar desktop/mobile, claro/escuro e teclado |
+| [ ] | UI-029 | P1 | Consolidar tokens de densidade e tema nos menus | UI-028, UI-001 | Espaçamentos internos, superfícies, estados de interação e padrões mobile documentados e aplicados sem valores arbitrários |
 
 ## Fase 11 — Storefront, SEO e desempenho
 

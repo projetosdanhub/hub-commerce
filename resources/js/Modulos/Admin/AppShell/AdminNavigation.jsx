@@ -6,6 +6,8 @@ import {
   Cog,
   LayoutDashboard,
   Megaphone,
+  Gift,
+  Handshake,
   Menu,
   Package,
   PanelsTopLeft,
@@ -33,10 +35,17 @@ const navigationGroups = [
     ],
   },
   {
-    label: 'Clientes e crescimento',
+    label: 'Clientes e benefícios',
     items: [
       { label: 'Clientes', path: '/admin/clientes', icon: Users },
+      { label: 'Benefícios & VIP', path: '/admin/beneficios', icon: Gift },
+    ],
+  },
+  {
+    label: 'Crescimento',
+    items: [
       { label: 'Marketing', path: '/admin/marketing', icon: Megaphone },
+      { label: 'Afiliados', path: '/admin/afiliados', icon: Handshake },
       { label: 'Pixels', path: '/admin/pixels', icon: PanelsTopLeft },
     ],
   },
