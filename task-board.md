@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-07 — Etapa 1 de pagamentos em andamento; FIS-001 segue bloqueado até homologação externa  
+Atualizado em: 2026-09-07 — refatoração estrutural do Admin pronta para validação; Stripe permanece pausado  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -207,6 +207,13 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | BEN-006 | P1 | Criar Loja de Cupons e resgate seguro | BEN-003, BEN-002 | Resgate debita Hub Coins e emite/reserva benefício em uma única transação |
 | [ ] | BEN-007 | P1 | Migrar afiliados para regras e comissões auditáveis | MKT-002, PAY-008 | Atribuição confiável, comissão por pedido pago e reversão idempotente |
 | [~] | APP-001 | P1 | Transformar Centro de Apps em catálogo operacional | UI-028, TEN-009 | Catálogo já expõe instalação, ambiente e configuração segura de Logística/Fiscal por tenant; faltam adapters homologados para os gateways e validação visual/CI |
+
+## Fase 10.1 — Estrutura do frontend administrativo
+
+| Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
+|---|---|---:|---|---|---|
+| [~] | ADM-ARC-001 | P1 | Normalizar domínios, nomes e entry points do Admin | GOV-008, UI-001 | Implementação concluída na branch; cada domínio possui uma única pasta inglesa, sem cópias monolíticas ou imports para caminhos legados. Aguardando build, Tests, E2E e Security verdes |
+| [ ] | ADM-ARC-002 | P1 | Fracionar Marketing em subdomínios verificáveis | ADM-ARC-001, MKT-001, BEN-001 | Campanhas, cupons, fidelidade e métricas só recebem UI após contratos tenant-scoped; mocks removidos |
 
 ## Fase 10 — UI do painel e design system
 

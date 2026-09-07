@@ -4,7 +4,7 @@ import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
-import { toProductEditorModel } from '../Produtos/produtoContract';
+import { toProductEditorModel } from './productContract';
 import { saveProduct, validateProductSkus } from './catalogApi';
 import { ProductFiscalForm } from './ProductFiscalForm';
 import { ProductGeneralForm } from './ProductGeneralForm';

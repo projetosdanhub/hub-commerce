@@ -358,3 +358,21 @@ Copie este bloco para cada handoff relevante:
 - Testes adicionados: `CheckoutOrderCreatorTest` cobre persistência atômica, valor relido no servidor, repetição idêntica, alteração do carrinho e reutilização entre clientes.
 - Contratos preservados: não há endpoint público, adapter, credencial, PAN/CVV, token de cartão, cobrança, confirmação de frontend ou alteração para pago. Estoque ainda não é reservado: ORD-003/CAT-003 continua dependência explícita antes de exposição ao checkout.
 - Próxima ação única: revisar o diff e abrir a PR da fundação de pagamentos; aguardar Tests, E2E Tests e Security Scans antes de marcar PAY-001/PAY-002/PAY-003 como concluídos ou iniciar Stripe.
+
+
+### 2026-09-07 — Codex — Refatoração da estrutura administrativa
+- Priorização: Stripe foi pausado antes de qualquer adapter por solicitação do responsável.
+- Branch: `refactor/admin-domain-structure`, criada da `main` após a PR #57.
+- Diagnóstico: a árvore Admin possui entry points na raiz, pastas em português/inglês e cópias de domínios. A rota ativa ainda importa `AdminMarketing.jsx` e `AdminCarriers.jsx`; `Marketing/MarketingPrincipal.jsx` e `Logistica/Carriers/` são duplicações legadas.
+- Decisão: ADR-0003 define uma pasta inglesa e um entry point canônico por domínio; sem reexports de compatibilidade e sem manter código duplicado.
+- Board: ADM-ARC-001 iniciado; ADM-ARC-002 registra que Marketing ainda precisa de fracionamento real com contratos tenant-scoped.
+- Próxima ação única: mover Transportadoras para `Carriers/CarriersPage.jsx`, renomear seus subdomínios em inglês, atualizar imports/rota e remover a cópia em `Logistica/Carriers`.
+
+### 2026-09-07 — Codex — Normalização estrutural completa do Admin
+- Objetivo e escopo: remover duplicações e caminhos técnicos em português de `resources/js/Modulos/Admin`, sem avançar em Stripe ou alterar contratos de negócio.
+- Branch: `refactor/admin-domain-structure`.
+- Implementado: entradas canônicas por domínio (`<Domain>Page.jsx`) e uma única pasta inglesa para Dashboard, Orders, Products, Customers, Affiliates, Reviews, Marketing, Carriers, Categories, Navigation, Settings, StorefrontBuilder e Pixels; `AppShell`, `Authentication` e `Shared` também foram organizados. As rotas em `app.jsx` foram atualizadas junto de cada movimento.
+- Duplicações removidas: raízes `Admin*.jsx`, Marketing monolítico, `Produtos`, `Pedidos`, `Logistica`, CRM legado, caminhos `Compartilhado` e subpastas em português de Pixels, Vitrine e Carriers. A implementação ativa de Customers/Orders/Products foi preservada; Marketing continua em estado operacional até contratos tenant-scoped.
+- Auditoria: varredura de 133 módulos JS confirmou zero imports para os caminhos administrativos removidos; um import de produto e um reexport de tooltip foram corrigidos durante a revisão.
+- Validação pendente: abrir PR, executar build/Tests/E2E/Security e homologar as rotas administrativas. Só após os gates verdes, marcar ADM-ARC-001 como concluído e retomar PAY-004/Stripe sandbox.
+- Próxima ação única: revisar o diff estrutural e abrir a PR da refatoração; pausar após o início da CI.
