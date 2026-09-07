@@ -23,7 +23,11 @@ final class CheckoutShippingQuoteIssuer
             throw new DomainException('A expiração da cotação deve estar no futuro.');
         }
 
-        return array_map(function (array $rate) use ($cartFingerprint, $destinationFingerprint, $expiresAt): CheckoutShippingQuote {
+        return array_map(function (mixed $rate) use ($cartFingerprint, $destinationFingerprint, $expiresAt): CheckoutShippingQuote {
+            if (is_array($rate) === false) {
+                throw new DomainException('Taxa de frete inválida.');
+            }
+
             $serviceCode = $rate['id'] ?? null;
             $price = $rate['price'] ?? null;
             $deliveryTime = $rate['delivery_time'] ?? null;
