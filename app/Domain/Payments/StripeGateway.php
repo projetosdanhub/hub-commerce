@@ -9,8 +9,7 @@ final readonly class StripeGateway implements PaymentGateway
 {
     public function __construct(
         private StripeGatewayConfiguration $configuration,
-    ) {
-    }
+    ) {}
 
     public function key(): string
     {
