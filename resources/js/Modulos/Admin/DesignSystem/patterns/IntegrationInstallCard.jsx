@@ -12,12 +12,6 @@ const icons = {
   pagbank: AppWindow,
 };
 
-const environmentLabel = (environment) => ({
-  SANDBOX: 'Teste',
-  HOMOLOGATION: 'Homologação',
-  PRODUCTION: 'Produção',
-}[environment] || 'Sem ambiente');
-
 const authLabel = (strategy) => ({
   OAUTH2: 'OAuth 2.0',
   API_KEYS: 'Chaves seguras',
