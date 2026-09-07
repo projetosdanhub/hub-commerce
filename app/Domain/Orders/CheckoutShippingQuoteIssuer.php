@@ -57,6 +57,8 @@ final class CheckoutShippingQuoteIssuer
 
         [$whole, $fraction = ''] = explode('.', $amount, 2);
 
-        return ((int) $whole * 100) + (int) str_pad($fraction, 2, '0');
+        $fraction = str_pad($fraction, 2, '0');
+
+        return ((int) $whole * 100) + (int) $fraction;
     }
 }
