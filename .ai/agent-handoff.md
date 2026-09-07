@@ -300,3 +300,12 @@ Copie este bloco para cada handoff relevante:
 - Arquivos alterados: `app.jsx`, `PaginaCheckout.jsx` e handoff.
 - Evidências: revisão estática; a página recebe `cartItems`, não calcula dinheiro localmente, não anuncia Purchase e não submete pedido legado.
 - Próxima ação única: implementar endpoint público de cotação que monta volumes a partir do catálogo e persiste apenas opções reais do adapter.
+
+### 2026-09-07 — Codex — UI-026, checkout verificável
+- Objetivo e escopo: substituir o mock de /checkout por uma jornada pública clara e responsiva, sem valores, frete ou pagamento simulados.
+- Branch e commits: ui/checkout-real-shipping-selection; base em 6382e5c; identidade tenant-scoped em 808834c; resumo verificado em 45bc7d8; CEP em d327449; interface em ebd353d e endereços salvos em 995638a.
+- Task board: UI-026 [~] — conta de compra por tenant, CEP editável, cotação opaca e resumo relido no servidor foram implementados. Continua sem pagamento, cupom, payment_attempt, pedido atômico ou tela de conclusão.
+- Arquivos alterados: migrations/modelos de conta e endereço da vitrine; controllers, FormRequests e serviços de sessão, CEP, resumo e endereço; rotas públicas; testes de feature; PaginaCheckout e componentes de checkout.
+- Evidências: testes de feature foram adicionados para isolamento de e-mail por tenant, endereço padrão, CEP e resumo/tamper de cotação. Nenhum workflow foi executado ainda nesta branch.
+- Riscos, bloqueios e itens não verificados: o token de sessão fica apenas em memória; pagamento continua indisponível e nenhum pedido é criado. Seleção de endereço foi entregue no checkout; o carrinho ainda não expõe a seleção antes da navegação para o checkout. Não há gateway, cupom de frete, payment_attempt, webhook, multi-moeda por produto ou tela pós-compra nesta entrega.
+- Próxima ação única: abrir a PR do UI-026 e aguardar Tests, E2E Tests e Security Scans antes de integrar.
