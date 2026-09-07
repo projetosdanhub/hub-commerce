@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Ruler, Truck } from 'lucide-react';
+import { Box, Ruler } from 'lucide-react';
 
 export const ProductLogisticsForm = ({ product, onChange }) => {
   const update = (field, value) => onChange({ ...product, [field]: value });
@@ -34,10 +34,6 @@ export const ProductLogisticsForm = ({ product, onChange }) => {
         <label className="hub-product-option">
           <input type="checkbox" checked={Boolean(product.agrupavel)} onChange={(event) => update('agrupavel', event.target.checked)} />
           <span><strong>Agrupável no carrinho</strong><small>Permite considerar este item junto a outros na mesma embalagem.</small></span>
-        </label>
-        <label className="hub-product-option">
-          <input type="checkbox" checked={Boolean(product.freteGratis)} onChange={(event) => update('freteGratis', event.target.checked)} />
-          <span><strong><Truck aria-hidden="true" size={16} /> Frete grátis para este produto</strong><small>O benefício só é aplicado quando todos os itens do carrinho também tiverem frete grátis; assim o custo de entrega não é transferido para itens não elegíveis.</small></span>
         </label>
       </section>
     </div>
