@@ -206,7 +206,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | BEN-005 | P0 | Aplicar benefícios no carrinho e checkout | BEN-002, BEN-003, BEN-004, UI-027 | Cupom antes de VIP, bases separadas, endereço obrigatório para frete e snapshot imutável |
 | [ ] | BEN-006 | P1 | Criar Loja de Cupons e resgate seguro | BEN-003, BEN-002 | Resgate debita Hub Coins e emite/reserva benefício em uma única transação |
 | [ ] | BEN-007 | P1 | Migrar afiliados para regras e comissões auditáveis | MKT-002, PAY-008 | Atribuição confiável, comissão por pedido pago e reversão idempotente |
-| [~] | APP-001 | P1 | Transformar Centro de Apps em catálogo operacional | UI-028, TEN-009 | Cards de aplicativo, conexão, ambiente, diagnóstico e permissões reais; credenciais mascaradas |
+| [~] | APP-001 | P1 | Transformar Centro de Apps em catálogo operacional | UI-028, TEN-009 | Catálogo já expõe instalação, ambiente e configuração segura de Logística/Fiscal por tenant; faltam adapters homologados para os gateways e validação visual/CI |
 
 ## Fase 10 — UI do painel e design system
 
