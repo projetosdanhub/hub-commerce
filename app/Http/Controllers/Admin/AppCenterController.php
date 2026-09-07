@@ -12,6 +12,7 @@ use App\Models\Produto;
 use App\Models\TenantAppInstallation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -87,12 +88,26 @@ class AppCenterController extends Controller
             ->map(function (array $app, string $key) use ($installed, $logistics, $fiscal, $stripe): array {
                 $installation = $installed->get($key);
                 $isInstalled = $installation?->status === 'INSTALLED';
+                $activeInCategory = $installed->first(function (TenantAppInstallation $candidate) use ($app, $key): bool {
+                    $candidateApp = self::APPS[$candidate->app_key] ?? null;
+
+                    return $candidate->status === 'INSTALLED'
+                        && $candidate->app_key !== $key
+                        && $candidateApp !== null
+                        && $candidateApp['category'] === $app['category'];
+                });
 
                 return [
                     'key' => $key,
                     ...$app,
                     'installed' => $isInstalled,
                     'status' => $installation?->status ?? 'AVAILABLE',
+                    'blocked_by' => $isInstalled || $activeInCategory === null
+                        ? null
+                        : [
+                            'key' => $activeInCategory->app_key,
+                            'name' => self::APPS[$activeInCategory->app_key]['name'],
+                        ],
                     'configuration' => $this->appConfiguration($key, $logistics, $fiscal, $stripe),
                 ];
             });
@@ -108,15 +123,43 @@ class AppCenterController extends Controller
     {
         $this->knownApp($app);
 
-        $installation = TenantAppInstallation::query()->firstOrNew(['app_key' => $app]);
-        $installation->status = 'INSTALLED';
-        $installation->installed_at = now();
-        $installation->save();
+        return DB::transaction(function () use ($app): JsonResponse {
+            $installation = TenantAppInstallation::query()
+                ->where('app_key', $app)
+                ->lockForUpdate()
+                ->firstOrNew(['app_key' => $app]);
 
-        return response()->json([
-            'app_key' => $installation->app_key,
-            'status' => $installation->status,
-        ]);
+            $activeInCategory = TenantAppInstallation::query()
+                ->lockForUpdate()
+                ->get()
+                ->first(function (TenantAppInstallation $candidate) use ($app): bool {
+                    $candidateApp = self::APPS[$candidate->app_key] ?? null;
+
+                    return $candidate->status === 'INSTALLED'
+                        && $candidate->app_key !== $app
+                        && $candidateApp !== null
+                        && $candidateApp['category'] === self::APPS[$app]['category'];
+                });
+
+            if ($activeInCategory !== null) {
+                throw ValidationException::withMessages([
+                    'app' => sprintf(
+                        'Desinstale %s antes de instalar %s nesta categoria.',
+                        self::APPS[$activeInCategory->app_key]['name'],
+                        self::APPS[$app]['name'],
+                    ),
+                ]);
+            }
+
+            $installation->status = 'INSTALLED';
+            $installation->installed_at ??= now();
+            $installation->save();
+
+            return response()->json([
+                'app_key' => $installation->app_key,
+                'status' => $installation->status,
+            ]);
+        });
     }
 
     public function uninstall(string $app): JsonResponse
@@ -137,6 +180,8 @@ class AppCenterController extends Controller
 
     public function logistics(): JsonResponse
     {
+        $this->requireInstalled('logistics');
+
         $config = MelhorEnvioSetting::query()->first();
 
         return response()->json([
@@ -151,6 +196,8 @@ class AppCenterController extends Controller
 
     public function saveLogistics(Request $request): JsonResponse
     {
+        $this->requireInstalled('logistics');
+
         $validated = $request->validate([
             'environment' => ['required', Rule::in(['SANDBOX', 'PRODUCTION'])],
             'access_token' => ['nullable', 'string', 'max:2000'],
@@ -168,26 +215,28 @@ class AppCenterController extends Controller
 
         $config->save();
 
-        $this->markInstalled('logistics');
-
         return $this->logistics();
     }
 
     public function stripe(): JsonResponse
     {
+        $this->requireInstalled('stripe');
+
         return response()->json($this->stripe->safeStatus());
     }
 
     public function saveStripe(SaveStripeSettingsRequest $request): JsonResponse
     {
+        $this->requireInstalled('stripe');
         $this->stripe->save($request->validated());
-        $this->markInstalled('stripe');
 
         return $this->stripe();
     }
 
     public function fiscal(): JsonResponse
     {
+        $this->requireInstalled('fiscal');
+
         $config = $this->fiscalConfig();
         $certificatePath = $config['certificate_path'] ?? null;
         $certificateReady = is_string($certificatePath) && Storage::disk('local')->exists($certificatePath);
@@ -221,6 +270,8 @@ class AppCenterController extends Controller
 
     public function saveFiscal(Request $request): JsonResponse
     {
+        $this->requireInstalled('fiscal');
+
         $validated = $request->validate([
             'legal_name' => ['required', 'string', 'max:255'],
             'cnpj' => ['required', 'string', 'max:30'],
@@ -259,8 +310,6 @@ class AppCenterController extends Controller
             'key' => 'configuration',
         ]);
         $setting->setSecureValue($config)->save();
-
-        $this->markInstalled('fiscal');
 
         return $this->fiscal();
     }
@@ -336,12 +385,16 @@ class AppCenterController extends Controller
         };
     }
 
-    private function markInstalled(string $app): void
+    private function requireInstalled(string $app): void
     {
-        $installation = TenantAppInstallation::query()->firstOrNew(['app_key' => $app]);
-        $installation->status = 'INSTALLED';
-        $installation->installed_at ??= now();
-        $installation->save();
+        $isInstalled = TenantAppInstallation::query()
+            ->where('app_key', $app)
+            ->where('status', 'INSTALLED')
+            ->exists();
+
+        if ($isInstalled === false) {
+            abort(409, sprintf('Instale %s antes de acessar esta configuração.', self::APPS[$app]['name']));
+        }
     }
 
     private function fiscalConfig(): array
