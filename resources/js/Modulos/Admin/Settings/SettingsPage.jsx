@@ -182,23 +182,24 @@ const SettingsPage = () => {
   const [uninstallTarget, setUninstallTarget] = useState(null);
   const [notice, setNotice] = useState(null);
 
-  const loadApps = async (category = appCategory) => {
-    const response = await api.get('/admin/settings/apps', {
-      params: category === 'ALL' ? {} : { category },
-    });
-    setApps(Array.isArray(response.data) ? response.data : []);
+  const loadApps = async () => {
+    const response = await api.get('/admin/settings/apps');
+    const nextApps = Array.isArray(response.data) ? response.data : [];
+    setApps(nextApps);
+
+    return nextApps;
   };
 
   const load = async () => {
     setLoading(true);
     try {
-      const [appsResponse, fiscalResponse, logisticsResponse, stripeResponse] = await Promise.all([
-        api.get('/admin/settings/apps', { params: appCategory === 'ALL' ? {} : { category: appCategory } }),
-        api.get('/admin/settings/fiscal'),
-        api.get('/admin/settings/logistics'),
-        api.get('/admin/settings/stripe'),
+      const nextApps = await loadApps();
+      const isInstalled = (key) => nextApps.some((app) => app.key === key && app.installed);
+      const [fiscalResponse, logisticsResponse, stripeResponse] = await Promise.all([
+        isInstalled('fiscal') ? api.get('/admin/settings/fiscal') : Promise.resolve({ data: {} }),
+        isInstalled('logistics') ? api.get('/admin/settings/logistics') : Promise.resolve({ data: {} }),
+        isInstalled('stripe') ? api.get('/admin/settings/stripe') : Promise.resolve({ data: {} }),
       ]);
-      setApps(Array.isArray(appsResponse.data) ? appsResponse.data : []);
       const issuer = fiscalResponse.data?.issuer || {};
       setFiscal((current) => ({ ...current, ...issuer }));
       setPreflight(fiscalResponse.data?.preflight || {});
@@ -216,19 +217,25 @@ const SettingsPage = () => {
   useEffect(() => { load(); }, []);
 
   const filteredInstalledApps = useMemo(() => apps.filter((app) => app.installed), [apps]);
+  const visibleApps = useMemo(
+    () => apps.filter((app) => appCategory === 'ALL' || app.category === appCategory),
+    [apps, appCategory],
+  );
+  const availableTabs = useMemo(() => TABS.filter((item) => {
+    if (item.value === 'APPS') return true;
+
+    const category = item.value === 'LOGISTICS' ? 'LOGISTICS' : item.value;
+    return filteredInstalledApps.some((app) => app.category === category);
+  }), [filteredInstalledApps]);
+  const activeTab = availableTabs.some((item) => item.value === tab) ? tab : 'APPS';
   const activeGateway = useMemo(
-    () => apps.find((app) => app.key === selectedGateway),
+    () => apps.find((app) => app.key === selectedGateway && app.installed)
+      || apps.find((app) => app.category === 'GATEWAYS' && app.installed),
     [apps, selectedGateway],
   );
 
-  const changeAppCategory = async (event) => {
-    const category = event.target.value;
-    setAppCategory(category);
-    try {
-      await loadApps(category);
-    } catch {
-      setNotice({ tone: 'error', text: 'Não foi possível filtrar o catálogo de aplicativos.' });
-    }
+  const changeAppCategory = (event) => {
+    setAppCategory(event.target.value);
   };
 
   const install = async (app) => {
@@ -352,10 +359,10 @@ const SettingsPage = () => {
         </div>
       </header>
 
-      <SectionTabs ariaLabel="Configurações" items={TABS} value={tab} onChange={setTab} />
+      <SectionTabs ariaLabel="Configurações" items={availableTabs} value={activeTab} onChange={setTab} />
       {notice ? <div className={'hub-settings-notice hub-settings-notice-' + notice.tone} role="status">{notice.text}</div> : null}
 
-      {tab === 'APPS' ? (
+      {activeTab === 'APPS' ? (
         <section className="hub-settings-apps hub-stable-data-region">
           <header className="hub-settings-section-heading">
             <div><h2>Catálogo da operação</h2><p>Instalações ficam isoladas por loja. O progresso confirma a operação no servidor antes de liberar a configuração.</p></div>
@@ -365,9 +372,9 @@ const SettingsPage = () => {
               </select>
             </label>
           </header>
-          {apps.length ? (
+          {visibleApps.length ? (
             <div className="hub-app-grid">
-              {apps.map((app) => (
+              {visibleApps.map((app) => (
                 <IntegrationInstallCard
                   app={app}
                   installState={installState}
@@ -384,7 +391,7 @@ const SettingsPage = () => {
         </section>
       ) : null}
 
-      {tab === 'LOGISTICS' ? (
+      {activeTab === 'LOGISTICS' ? (
         <form className="hub-settings-form hub-surface" onSubmit={saveLogistics}>
           <header><span><PackageCheck aria-hidden="true" size={20} /></span><div><h2>Melhor Envio</h2><p>OAuth 2.0 é o destino desta integração. Enquanto o aplicativo OAuth não estiver registrado, a configuração segura por token mantém o contrato atual sem fingir uma conexão.</p></div></header>
           <div className="hub-settings-fields">
@@ -395,7 +402,7 @@ const SettingsPage = () => {
         </form>
       ) : null}
 
-      {tab === 'GATEWAYS' ? (
+      {activeTab === 'GATEWAYS' ? (
         <section className="hub-settings-gateways hub-stable-data-region">
           <header className="hub-settings-section-heading">
             <div><h2>Gateways instalados</h2><p>Instale o gateway primeiro. A configuração só é liberada quando existe adapter real, tokenização oficial e webhook assinado.</p></div>
@@ -414,7 +421,7 @@ const SettingsPage = () => {
         </section>
       ) : null}
 
-      {tab === 'FISCAL' ? (
+      {activeTab === 'FISCAL' ? (
         <div className="hub-settings-form-grid">
           <FiscalReadiness preflight={preflight} />
           <form className="hub-settings-form hub-surface" onSubmit={saveFiscal}>
