@@ -11,6 +11,14 @@ Esta regra é obrigatória para benefícios comerciais, fidelidade, Hub Coins, n
 - Cupons pertencem ao domínio Benefits; a Loja de Cupons é apenas o canal de resgate, nunca uma segunda regra de desconto.
 - Cada grupo pode possuir rota e submenu próprios no painel, mas não duplica API, estado remoto ou regra de negócio.
 
+## Estrutura de frontend por subdomínio
+
+- Um monólito administrativo não recebe novos fluxos de Marketing, Benefits, Loyalty, Customers/VIP, Affiliates ou Apps.
+- Cada domínio fica em pasta própria, com página-orquestradora, componentes locais, consultas/mutações e testes próximos ao contrato que utiliza. Componentes visuais e interações genéricas permanecem no Design System.
+- Dependências entre domínios atravessam contratos públicos, eventos ou serviços de aplicação; um componente não lê estado interno de outro domínio.
+- Arquivos de página/orquestração permanecem pequenos e delegam seções a componentes semânticos. Não recriar ícones, CSS global, modais ou consultas já canônicas.
+- Rotas de transição podem apresentar apenas estado operacional honesto enquanto o contrato não estiver pronto; não preservam mocks para preencher a interface.
+
 ## Fonte de verdade e isolamento
 
 - Toda regra, cupom, recompensa, resgate, vínculo de afiliado, comissão e transação de Hub Coins é tenant-scoped.
