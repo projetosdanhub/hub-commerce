@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Domain\Tenancy\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
+/** @property \Carbon\CarbonInterface $expires_at */
 class CheckoutShippingQuote extends Model
 {
     use BelongsToTenant;
