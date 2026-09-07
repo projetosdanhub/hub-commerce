@@ -39,7 +39,7 @@ import AdminOrders from './Modulos/Admin/AdminOrders';
 import CategoriasPrincipal from './Modulos/Admin/Categorias/CategoriasPrincipal';
 import MenusPrincipal from './Modulos/Admin/Menus/MenusPrincipal';
 import AdminProducts from './Modulos/Admin/Produtos/ProdutosPrincipal';
-import AdminMarketing from './Modulos/Admin/AdminMarketing';
+import MarketingPage from './Modulos/Admin/Marketing/MarketingPage';
 import { BenefitsHub } from './Modulos/Admin/Growth/GrowthHub';
 import AdminCustomers from './Modulos/Admin/AdminCustomers';
 import AdminAfiliados from './Modulos/Admin/AdminAfiliados';
@@ -247,7 +247,7 @@ const AppContent = () => {
                         <Route path="categorias" element={<CategoriasPrincipal />} />
                         <Route path="menus" element={<MenusPrincipal />} />
                         <Route path="produtos" element={<AdminProducts />} />
-                        <Route path="marketing" element={<AdminMarketing />} />
+                        <Route path="marketing" element={<MarketingPage />} />
                         <Route path="beneficios" element={<BenefitsHub />} />
                         <Route path="pixels" element={<AdminPixels />} />
                         <Route path="clientes" element={<AdminCustomers />} />
