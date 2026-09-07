@@ -316,7 +316,15 @@ export default function PaginaCheckout({ cartItems = [] }) {
                             />
                         )}
 
-                        {currentStep === 3 && <CheckoutPaymentStep onBack={() => setCurrentStep(2)} />}
+                        {currentStep === 3 && (
+                            <CheckoutPaymentStep
+                                checkoutToken={customerSession}
+                                items={items}
+                                address={address}
+                                shippingQuoteToken={selectedQuote?.token}
+                                onBack={() => setCurrentStep(2)}
+                            />
+                        )}
                     </motion.div>
                 </section>
 
