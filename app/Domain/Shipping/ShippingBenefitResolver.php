@@ -2,7 +2,6 @@
 
 namespace App\Domain\Shipping;
 
-use App\Models\Produto;
 use App\Models\ShippingBenefitRule;
 use Carbon\CarbonImmutable;
 
@@ -32,19 +31,19 @@ final class ShippingBenefitResolver
             ->orderBy('priority')->orderBy('id')->get();
 
         foreach ($rules as $rule) {
-            if ($rule->type === ShippingBenefitRule::FREE_FOR_ALL) {
+            if ($rule->type === ShippingBenefitRuleType::FREE_FOR_ALL) {
                 return [$this->shippingBenefit($shippingCents, 'shipping-rule:'.$rule->getKey())];
             }
 
-            if ($rule->type === ShippingBenefitRule::FREE_FOR_PRODUCT && $this->allProductsMatchRule($pricedItems, (int) $rule->product_id)) {
+            if ($rule->type === ShippingBenefitRuleType::FREE_FOR_PRODUCT && $this->allProductsMatchRule($pricedItems, (int) $rule->product_id)) {
                 return [$this->shippingBenefit($shippingCents, 'shipping-rule:'.$rule->getKey())];
             }
 
-            if ($rule->type === ShippingBenefitRule::FREE_ABOVE_SUBTOTAL && $rule->minimum_order_cents !== null && $subtotalCents >= $rule->minimum_order_cents) {
+            if ($rule->type === ShippingBenefitRuleType::FREE_ABOVE_SUBTOTAL && $rule->minimum_order_cents !== null && $subtotalCents >= $rule->minimum_order_cents) {
                 return [$this->shippingBenefit($shippingCents, 'shipping-rule:'.$rule->getKey())];
             }
 
-            if ($rule->type === ShippingBenefitRule::PERCENTAGE && $rule->percentage !== null) {
+            if ($rule->type === ShippingBenefitRuleType::PERCENTAGE && $rule->percentage !== null) {
                 $discount = intdiv($shippingCents * $rule->percentage, 100);
 
                 if ($discount > 0) {
