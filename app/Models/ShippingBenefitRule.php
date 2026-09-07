@@ -12,23 +12,17 @@ class ShippingBenefitRule extends Model
 
     public const FREE_FOR_ALL = 'FREE_FOR_ALL';
     public const FREE_FOR_PRODUCT = 'FREE_FOR_PRODUCT';
+    public const FREE_ABOVE_SUBTOTAL = 'FREE_ABOVE_SUBTOTAL';
     public const PERCENTAGE = 'PERCENTAGE';
 
-    protected $fillable = [
-        'type',
-        'product_id',
-        'percentage',
-        'priority',
-        'is_active',
-        'starts_at',
-        'ends_at',
-    ];
+    protected $fillable = ['type', 'product_id', 'percentage', 'minimum_order_cents', 'priority', 'is_active', 'starts_at', 'ends_at'];
 
     protected function casts(): array
     {
         return [
             'product_id' => 'integer',
             'percentage' => 'integer',
+            'minimum_order_cents' => 'integer',
             'priority' => 'integer',
             'is_active' => 'boolean',
             'starts_at' => 'immutable_datetime',
