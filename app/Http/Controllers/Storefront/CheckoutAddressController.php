@@ -9,6 +9,7 @@ use App\Models\StorefrontCustomerAddress;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class CheckoutAddressController extends Controller
 {
@@ -61,9 +62,19 @@ class CheckoutAddressController extends Controller
 
     private function customer(Request $request): StorefrontCustomer
     {
-        $customer = $request->user();
+        $accessToken = PersonalAccessToken::findToken($request->bearerToken());
 
-        if (! $customer instanceof StorefrontCustomer || ! $customer->tokenCan('storefront.checkout')) {
+        if (
+            $accessToken === null
+            || $accessToken->tokenable_type !== StorefrontCustomer::class
+            || ! $accessToken->can('storefront.checkout')
+        ) {
+            abort(403);
+        }
+
+        $customer = StorefrontCustomer::query()->find($accessToken->tokenable_id);
+
+        if ($customer === null || ! $customer->isActive()) {
             abort(403);
         }
 
