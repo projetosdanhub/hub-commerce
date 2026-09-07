@@ -72,4 +72,39 @@ class AdminApiAuditTest extends TestCase
             $response->assertSuccessful();
         }
     }
+
+    public function test_app_catalog_returns_only_safe_configuration_metadata(): void
+    {
+        $tenant = Tenant::where('slug', 'loja-inicial')->firstOrFail();
+        $domain = TenantDomain::where('tenant_id', $tenant->id)
+            ->where('domain', 'demo.hubcommerce.test')
+            ->firstOrFail();
+
+        $this->withServerVariables(['HTTP_HOST' => $domain->domain]);
+        $this->actingAs(User::where('email', 'admin@hubcommerce.com')->firstOrFail(), 'sanctum');
+
+        $this->getJson('/api/admin/settings/apps')
+            ->assertSuccessful()
+            ->assertJsonPath('0.key', 'logistics')
+            ->assertJsonStructure([
+                '*' => [
+                    'key',
+                    'name',
+                    'description',
+                    'installed',
+                    'status',
+                    'location',
+                    'configuration' => [
+                        'environment',
+                        'credential_configured',
+                    ],
+                ],
+            ])
+            ->assertJsonMissing([
+                'access_token',
+                'api_token',
+                'certificate_password',
+            ]);
+    }
+
 }
