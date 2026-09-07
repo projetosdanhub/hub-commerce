@@ -49,6 +49,7 @@ class CheckoutSummaryTest extends TestCase
             'categoria_id' => $category->id,
             'nome' => 'Produto com promoção real',
             'slug' => 'produto-promocao-real',
+            'descricao' => 'Produto usado para validar o resumo financeiro do checkout.',
             'preco' => '100.00',
             'preco_promo' => '0.00',
             'quantidade_estoque' => 2,
