@@ -1,19 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { CircleAlert, Gift, LoaderCircle, Save, Truck } from 'lucide-react';
 import { Button } from '../DesignSystem/primitives/Button';
 
 const toCurrency = (cents) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((Number(cents) || 0) / 100);
 
 export function FreeShippingManager({ products, settings, loading, onSave }) {
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [minimum, setMinimum] = useState('');
+  const [selectedIds, setSelectedIds] = useState(() => settings?.product_ids || []);
+  const [minimum, setMinimum] = useState(() => settings?.minimum_order_cents ? String(settings.minimum_order_cents / 100) : '');
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null);
-
-  useEffect(() => {
-    setSelectedIds(settings?.product_ids || []);
-    setMinimum(settings?.minimum_order_cents ? String(settings.minimum_order_cents / 100) : '');
-  }, [settings]);
 
   const selected = useMemo(() => new Set(selectedIds), [selectedIds]);
   const toggleProduct = (id) => setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
