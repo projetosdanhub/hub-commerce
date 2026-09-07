@@ -20,7 +20,11 @@ final class CheckoutShippingQuoteResolver
             ->whereNull('invalidated_at')
             ->first();
 
-        if ($quote === null || $quote->expires_at->lessThanOrEqualTo(CarbonImmutable::now())) {
+        if ($quote === null) {
+            throw new DomainException('A cotação de frete não está mais disponível.');
+        }
+
+        if ($quote->expires_at->lessThanOrEqualTo(CarbonImmutable::now())) {
             throw new DomainException('A cotação de frete não está mais disponível.');
         }
 
