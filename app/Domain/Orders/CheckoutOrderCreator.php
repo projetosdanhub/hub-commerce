@@ -3,6 +3,7 @@
 namespace App\Domain\Orders;
 
 use App\Domain\Payments\PaymentAttemptStatus;
+use App\Domain\Shipping\ShippingBenefitResolver;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\OrderAddress;
@@ -20,6 +21,7 @@ final class CheckoutOrderCreator
         private readonly CheckoutPricingService $pricing,
         private readonly CheckoutShippingQuoteResolver $shippingQuotes,
         private readonly OrderFinancialSnapshotBuilder $snapshots,
+        private readonly ShippingBenefitResolver $shippingBenefits,
     ) {}
 
     public function create(CheckoutOrderCommand $command): CheckoutOrderResult
@@ -56,7 +58,7 @@ final class CheckoutOrderCreator
                 $snapshot = $this->snapshots->build(
                     $priced['product_subtotal_cents'],
                     $quote->shipping_cents,
-                    [],
+                    $this->shippingBenefits->benefitsFor($priced['items'], $quote->shipping_cents),
                 );
 
                 $order = Order::query()->create([
