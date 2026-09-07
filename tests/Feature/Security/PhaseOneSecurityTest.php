@@ -3,55 +3,14 @@
 namespace Tests\Feature\Security;
 
 use App\Models\User;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class PhaseOneSecurityTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // A suíte reutiliza users e tokens para testar limites de autenticação.
-        // A Fase 4 adiciona uma FK de user_sessions para tokens; remova a
-        // dependência antes de reconstruir estas tabelas isoladas.
-        Schema::dropIfExists('user_sessions');
-        Schema::dropIfExists('personal_access_tokens');
-        Schema::dropIfExists('users');
-
-        Schema::create('users', function (Blueprint $table): void {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->string('role')->default('cliente');
-            $table->string('status')->default('ATIVO');
-            $table->rememberToken();
-            $table->timestamps();
-        });
-
-        Schema::create('personal_access_tokens', function (Blueprint $table): void {
-            $table->id();
-            $table->morphs('tokenable');
-            $table->string('name');
-            $table->string('token', 64)->unique();
-            $table->text('abilities')->nullable();
-            $table->timestamp('last_used_at')->nullable();
-            $table->timestamp('expires_at')->nullable();
-            $table->timestamps();
-        });
-    }
-
-    protected function tearDown(): void
-    {
-        Schema::dropIfExists('personal_access_tokens');
-        Schema::dropIfExists('users');
-
-        parent::tearDown();
-    }
+    use RefreshDatabase;
 
     public function test_customer_never_receives_an_admin_token(): void
     {
@@ -133,7 +92,7 @@ class PhaseOneSecurityTest extends TestCase
         $router = app('router');
 
         $login = $router->getRoutes()->match(Request::create('/api/admin/login', 'POST'));
-        $checkout = $router->getRoutes()->match(Request::create('/api/storefront/checkout', 'POST'));
+        $checkout = $router->getRoutes()->match(Request::create('/api/storefront/checkout/summary', 'POST'));
         $tracking = $router->getRoutes()->match(Request::create('/api/tracking/collect', 'POST'));
 
         $this->assertContains('throttle:6,1', $login->gatherMiddleware());
@@ -160,4 +119,3 @@ class PhaseOneSecurityTest extends TestCase
             ->assertHeader('Content-Security-Policy');
     }
 }
-

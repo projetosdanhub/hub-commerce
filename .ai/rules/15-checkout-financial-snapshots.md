@@ -8,6 +8,13 @@ Esta regra é obrigatória para qualquer checkout, orçamento, pedido, pagamento
 - O navegador envia itens, endereço, seleção e identificadores opacos. Nunca envia subtotal, desconto, frete, total, custo, comissão ou estado financeiro como fonte de verdade.
 - Falta de configuração, produto indisponível, cotação expirada ou adapter não homologado deve retornar estado indisponível explícito. Não criar pedido parcial, não aplicar valor fixo e não usar fallback silencioso.
 
+## Conta e endereços do cliente
+
+- A identidade de compra da vitrine é tenant-scoped e não reutiliza a tabela global de usuários administrativos.
+- Nome, e-mail e senha são obrigatórios ao criar a conta no checkout. O e-mail é único apenas dentro da mesma loja; o mesmo e-mail pode existir em tenants distintos.
+- A sessão curta de checkout tem a menor capacidade possível e não pode ser registrada em logs, analytics ou armazenamento persistente do navegador.
+- Endereços salvos pertencem à conta e ao tenant. O comprador pode escolher um endereço padrão ou informar outro, sempre mantendo os campos editáveis.
+
 ## Precificação e benefícios
 
 - Preços são relidos do catálogo no servidor no instante do checkout. Promoção é válida somente quando persistida; `0,00` pode ser preço real e não pode ser substituído por fallback.
