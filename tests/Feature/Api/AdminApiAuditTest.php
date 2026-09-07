@@ -86,6 +86,7 @@ class AdminApiAuditTest extends TestCase
         $this->getJson('/api/admin/settings/apps')
             ->assertSuccessful()
             ->assertJsonPath('0.key', 'logistics')
+            ->assertJsonPath('2.key', 'stripe')
             ->assertJsonStructure([
                 '*' => [
                     'key',
@@ -104,6 +105,10 @@ class AdminApiAuditTest extends TestCase
                 'access_token',
                 'api_token',
                 'certificate_password',
+                'secret_key',
+                'webhook_secret',
+                'sandbox_secret_key',
+                'production_secret_key',
             ]);
     }
 
