@@ -9,9 +9,11 @@ import CheckoutOrderSummary from './checkout/CheckoutOrderSummary';
 import CheckoutPaymentStep from './checkout/CheckoutPaymentStep';
 import CheckoutProgress from './checkout/CheckoutProgress';
 import {
+    getCheckoutAddresses,
     lookupPostalCode,
     requestCheckoutSummary,
     requestShippingQuotes,
+    saveCheckoutAddress,
     responseMessage,
     startCheckoutCustomerSession,
 } from './checkout/checkoutApi';
@@ -39,11 +41,14 @@ export default function PaginaCheckout({ cartItems = [] }) {
     const [customer, setCustomer] = useState(emptyCustomer);
     const [customerSession, setCustomerSession] = useState(null);
     const [address, setAddress] = useState(emptyAddress);
+    const [savedAddresses, setSavedAddresses] = useState([]);
+    const [saveAsDefault, setSaveAsDefault] = useState(false);
     const [quotes, setQuotes] = useState([]);
     const [selectedQuote, setSelectedQuote] = useState(null);
     const [summary, setSummary] = useState(null);
     const [isSubmittingAccount, setIsSubmittingAccount] = useState(false);
     const [isLookingUpPostalCode, setIsLookingUpPostalCode] = useState(false);
+    const [isLoadingSavedAddresses, setIsLoadingSavedAddresses] = useState(false);
     const [isRequestingQuotes, setIsRequestingQuotes] = useState(false);
     const [isSummarizing, setIsSummarizing] = useState(false);
     const [error, setError] = useState(null);
@@ -80,6 +85,18 @@ export default function PaginaCheckout({ cartItems = [] }) {
             const session = await startCheckoutCustomerSession(customer);
 
             setCustomerSession(session.token);
+            setIsLoadingSavedAddresses(true);
+
+            try {
+                const addresses = await getCheckoutAddresses(session.token);
+
+                setSavedAddresses(addresses);
+            } catch (requestError) {
+                setError(responseMessage(requestError, 'Não foi possível carregar os endereços salvos. Você pode informar um novo endereço.'));
+            } finally {
+                setIsLoadingSavedAddresses(false);
+            }
+
             setCurrentStep(2);
         } catch (requestError) {
             setError(responseMessage(requestError, 'Não foi possível preparar sua conta. Tente novamente.'));
@@ -113,6 +130,26 @@ export default function PaginaCheckout({ cartItems = [] }) {
         }
     };
 
+    const handleSelectSavedAddress = (savedAddress) => {
+        clearDeliveryCalculation();
+        setAddress({
+            cep: savedAddress.cep,
+            rua: savedAddress.rua,
+            numero: savedAddress.numero,
+            complemento: savedAddress.complemento || '',
+            bairro: savedAddress.bairro,
+            cidade: savedAddress.cidade,
+            uf: savedAddress.uf,
+        });
+        setSaveAsDefault(false);
+    };
+
+    const handleNewAddress = () => {
+        clearDeliveryCalculation();
+        setAddress(emptyAddress);
+        setSaveAsDefault(false);
+    };
+
     const handleRequestQuotes = async () => {
         if (items.length === 0) {
             setError('Seu carrinho está vazio.');
@@ -123,6 +160,22 @@ export default function PaginaCheckout({ cartItems = [] }) {
         setIsRequestingQuotes(true);
 
         try {
+            if (saveAsDefault) {
+                const storedAddress = await saveCheckoutAddress(customerSession, {
+                    ...address,
+                    is_default: true,
+                });
+
+                setSavedAddresses((current) => [
+                    storedAddress,
+                    ...current.map((savedAddress) => ({
+                        ...savedAddress,
+                        is_default: false,
+                    })),
+                ]);
+                setSaveAsDefault(false);
+            }
+
             const nextQuotes = await requestShippingQuotes(items, address);
 
             setQuotes(nextQuotes);
@@ -203,8 +256,8 @@ export default function PaginaCheckout({ cartItems = [] }) {
                 </div>
             </header>
 
-            <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:py-10">
-                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+            <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-3 lg:items-start lg:py-10">
+                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8 lg:col-span-2">
                     <CheckoutProgress currentStep={currentStep} reducedMotion={prefersReducedMotion} />
 
                     {error && (
@@ -250,6 +303,12 @@ export default function PaginaCheckout({ cartItems = [] }) {
                                 isSummarizing={isSummarizing}
                                 onBack={() => setCurrentStep(1)}
                                 onContinue={handleContinueToPayment}
+                                savedAddresses={savedAddresses}
+                                isLoadingSavedAddresses={isLoadingSavedAddresses}
+                                onSelectSavedAddress={handleSelectSavedAddress}
+                                onNewAddress={handleNewAddress}
+                                saveAsDefault={saveAsDefault}
+                                onSaveAsDefaultChange={setSaveAsDefault}
                             />
                         )}
 

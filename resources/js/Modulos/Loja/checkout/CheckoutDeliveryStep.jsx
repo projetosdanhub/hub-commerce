@@ -18,6 +18,12 @@ export default function CheckoutDeliveryStep({
     isSummarizing,
     onBack,
     onContinue,
+    savedAddresses,
+    isLoadingSavedAddresses,
+    onSelectSavedAddress,
+    onNewAddress,
+    saveAsDefault,
+    onSaveAsDefaultChange,
 }) {
     return (
         <section className="space-y-6" aria-labelledby="checkout-delivery-title">
@@ -41,6 +47,46 @@ export default function CheckoutDeliveryStep({
                     Voltar
                 </button>
             </div>
+
+            {(isLoadingSavedAddresses || savedAddresses.length > 0) && (
+                <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4" aria-labelledby="saved-addresses-title">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h2 id="saved-addresses-title" className="font-bold text-slate-900">Endereços salvos</h2>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">Escolha um endereço da sua conta ou informe outro.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={onNewAddress}
+                            className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                        >
+                            Usar outro endereço
+                        </button>
+                    </div>
+
+                    {isLoadingSavedAddresses ? (
+                        <p className="mt-4 text-sm text-slate-600">Carregando seus endereços…</p>
+                    ) : (
+                        <div className="mt-4 grid gap-3">
+                            {savedAddresses.map((savedAddress) => (
+                                <button
+                                    key={savedAddress.id}
+                                    type="button"
+                                    onClick={() => onSelectSavedAddress(savedAddress)}
+                                    className="rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                                >
+                                    <span className="block font-bold text-slate-900">
+                                        {savedAddress.is_default ? 'Endereço padrão' : savedAddress.label || 'Endereço salvo'}
+                                    </span>
+                                    <span className="mt-1 block text-sm leading-6 text-slate-600">
+                                        {savedAddress.rua}, {savedAddress.numero} — {savedAddress.bairro}, {savedAddress.cidade}/{savedAddress.uf}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-6">
                 <label className="block sm:col-span-3">
@@ -133,6 +179,19 @@ export default function CheckoutDeliveryStep({
                     />
                 </label>
             </div>
+
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
+                <input
+                    type="checkbox"
+                    checked={saveAsDefault}
+                    onChange={(event) => onSaveAsDefaultChange(event.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600"
+                />
+                <span>
+                    <span className="block font-bold text-slate-900">Salvar como endereço padrão</span>
+                    O endereço ficará disponível nas próximas compras desta loja.
+                </span>
+            </label>
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">

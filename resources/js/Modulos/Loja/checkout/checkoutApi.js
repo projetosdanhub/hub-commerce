@@ -34,6 +34,22 @@ export async function requestCheckoutSummary(items, address, shippingQuoteToken)
     return dataFrom(response);
 }
 
+export async function getCheckoutAddresses(checkoutToken) {
+    const response = await storefrontApi.get('/storefront/checkout/addresses', {
+        headers: { Authorization: 'Bearer ' + checkoutToken },
+    });
+
+    return dataFrom(response);
+}
+
+export async function saveCheckoutAddress(checkoutToken, address) {
+    const response = await storefrontApi.post('/storefront/checkout/addresses', address, {
+        headers: { Authorization: 'Bearer ' + checkoutToken },
+    });
+
+    return dataFrom(response);
+}
+
 export function responseMessage(error, fallback) {
     return error.response?.data?.message || fallback;
 }
