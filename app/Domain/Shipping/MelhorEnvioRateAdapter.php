@@ -62,10 +62,6 @@ final class MelhorEnvioRateAdapter
         return collect($payload)
             ->filter(fn (mixed $rate): bool => is_array($rate) && isset($rate['error']) === false)
             ->map(function (mixed $rate): array {
-                if (is_array($rate) === false) {
-                    throw new DomainException('O provedor retornou uma cotação inválida.');
-                }
-
                 $price = $rate['price'] ?? null;
                 $deliveryTime = $rate['delivery_time'] ?? null;
                 $serviceId = $rate['id'] ?? null;
