@@ -348,3 +348,13 @@ Copie este bloco para cada handoff relevante:
 - Contratos preservados: dados brutos de cartão e tokens completos não são persistidos; tentativa não confirma pedido; não há adapter, credencial, endpoint público de pagamento, cobrança, webhook ou aprovação simulada.
 - Teste adicionado: `PaymentAuthorizationTest` cobre valor positivo, moeda ISO e estados terminais/não terminais.
 - Próxima ação única: criar o caso de uso atômico que revalida carrinho/endereço/cotação, persiste pedido+itens+endereço+snapshot e abre a tentativa idempotente sem chamar gateway.
+
+
+### 2026-09-07 — Codex — Etapa 1, checkout atômico e idempotente
+- Objetivo e escopo: concluir a fundação de pedido antes de qualquer adapter, tokenização de cartão, cobrança ou webhook.
+- Branch: `payments/secure-foundation`, baseada no merge `d782fb5` da PR #56.
+- Implementado: `CheckoutOrderCreator` revalida no servidor cliente ativo, carrinho/catalogo, endereço, cotação opaca e expiração; em uma transação grava pedido, itens, endereço, snapshot financeiro imutável e `payment_attempt` pendente. A cotação é invalidada somente após a persistência bem-sucedida.
+- Idempotência e isolamento: chave UUID única por tenant+gateway; sua impressão inclui cliente, carrinho, endereço, cotação, gateway, ambiente e método. Uma repetição idêntica devolve o mesmo pedido; qualquer alteração, inclusive outro cliente da mesma loja, é recusada sem duplicar pedido ou tentativa.
+- Testes adicionados: `CheckoutOrderCreatorTest` cobre persistência atômica, valor relido no servidor, repetição idêntica, alteração do carrinho e reutilização entre clientes.
+- Contratos preservados: não há endpoint público, adapter, credencial, PAN/CVV, token de cartão, cobrança, confirmação de frontend ou alteração para pago. Estoque ainda não é reservado: ORD-003/CAT-003 continua dependência explícita antes de exposição ao checkout.
+- Próxima ação única: revisar o diff e abrir a PR da fundação de pagamentos; aguardar Tests, E2E Tests e Security Scans antes de marcar PAY-001/PAY-002/PAY-003 como concluídos ou iniciar Stripe.
