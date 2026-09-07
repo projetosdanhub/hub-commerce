@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use App\Domain\Tenancy\Concerns\BelongsToTenant;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @property \Carbon\CarbonInterface $expires_at
+ * @property CarbonInterface $expires_at
  * @property \Carbon\CarbonInterface|null $invalidated_at
  * @property int $shipping_cents
  * @property int $estimated_delivery_days
