@@ -309,3 +309,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: testes de feature foram adicionados para isolamento de e-mail por tenant, endereço padrão, CEP e resumo/tamper de cotação. Nenhum workflow foi executado ainda nesta branch.
 - Riscos, bloqueios e itens não verificados: o token de sessão fica apenas em memória; pagamento continua indisponível e nenhum pedido é criado. Seleção de endereço foi entregue no checkout; o carrinho ainda não expõe a seleção antes da navegação para o checkout. Não há gateway, cupom de frete, payment_attempt, webhook, multi-moeda por produto ou tela pós-compra nesta entrega.
 - Próxima ação única: abrir a PR do UI-026 e aguardar Tests, E2E Tests e Security Scans antes de integrar.
+
+
+### 2026-09-07 — Codex — UI-027, carrinho com entrega verificável
+- Objetivo e escopo: remover os valores de frete, cupom e total simulados do carrinho e reaproveitar apenas os contratos públicos já verificados de CEP, cotação persistida e resumo financeiro.
+- Branch e commits: `ui/cart-delivery-selection`; implementação inicial até `d4ac978`, documentação até `1afb5de`.
+- Task board: UI-027 [~]. UI-026 foi integrado na main pela PR #54 (`66b58e8`) com Tests, E2E Tests e Security Scans verdes.
+- Implementado: carrinho coleta CEP e endereço editável, consulta cotações reais, permite selecionar somente token de cotação persistido e mostra subtotal/frete/total apenas no resumo reconstruído pelo servidor. O rascunho segue para o checkout somente como dado de UI e é revalidado lá.
+- Contratos preservados: nenhuma cotação, preço, desconto ou total vindo do navegador é fonte de verdade; pagamento segue indisponível; não há cupom de teste nem frete grátis fictício.
+- Riscos, bloqueios e itens não verificados: endereços salvos continuam no checkout após autenticação da conta da loja. Para exibi-los no carrinho é necessário um contrato de sessão de cliente adequado ao retorno à loja; cupons de produto/frete e benefícios precisam de um serviço server-side que consolide regra por produto, loja e cupom.
+- Próxima ação única: executar CI da branch e corrigir apenas os erros encontrados antes de abrir a PR do UI-027.
