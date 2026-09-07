@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('type', 32);
             $table->foreignId('product_id')->nullable()->constrained('produtos')->cascadeOnDelete();
             $table->unsignedTinyInteger('percentage')->nullable();
+            $table->unsignedBigInteger('minimum_order_cents')->nullable();
             $table->unsignedInteger('priority')->default(100);
             $table->boolean('is_active')->default(true);
             $table->timestamp('starts_at')->nullable();
