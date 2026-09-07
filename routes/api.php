@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
 use App\Http\Controllers\Storefront\CheckoutAddressController;
 use App\Http\Controllers\Storefront\CheckoutCustomerSessionController;
+use App\Http\Controllers\Storefront\FreeShippingProgressController;
 use App\Http\Controllers\Storefront\CheckoutSummaryController;
 use App\Http\Controllers\Storefront\PostalCodeLookupController;
 use App\Http\Controllers\Storefront\ShippingQuoteController;
