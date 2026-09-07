@@ -376,3 +376,23 @@ Copie este bloco para cada handoff relevante:
 - Auditoria: varredura de 133 módulos JS confirmou zero imports para os caminhos administrativos removidos; um import de produto e um reexport de tooltip foram corrigidos durante a revisão.
 - Validação pendente: abrir PR, executar build/Tests/E2E/Security e homologar as rotas administrativas. Só após os gates verdes, marcar ADM-ARC-001 como concluído e retomar PAY-004/Stripe sandbox.
 - Próxima ação única: revisar o diff estrutural e abrir a PR da refatoração; pausar após o início da CI.
+
+
+### 2026-09-07 — Codex — Regras comerciais de frete
+- Objetivo e escopo: iniciar regras tenant-scoped de frete grátis por produto/loja e desconto percentual, sempre calculadas no servidor e registradas no snapshot financeiro.
+- Branch: `benefits/shipping-rules`.
+- Task board: BEN-002 `[~]` — fundação de benefício de frete iniciada; cupom persistido, regras por região/valor e UI administrativa global permanecem pendentes.
+- Arquivos alterados: migration/model/resolvedor de regras de frete; checkout summary/order creator; contrato, validação e editor de produto; teste unitário.
+- Evidências: `ShippingBenefitResolverTest` adicionado. CI ainda não foi disparada, pois a entrega está em composição e sem PR aberta.
+- Riscos, bloqueios e itens não verificados: o produto pode ser marcado para frete grátis; o benefício somente vale se todos os itens do carrinho forem elegíveis. A tela para regra global/percentual, cupom de frete após endereço e a regra de moeda/frete internacional ainda não foram implementadas. Nenhuma cobrança ou gateway foi habilitado.
+- Próxima ação única: concluir a API e a UI de regras de frete no hub Benefícios, depois aplicar a apresentação no carrinho.
+
+
+### 2026-09-07 — Codex — Frete grátis centralizado
+- Objetivo e escopo: corrigir o conflito de carrinho misto e centralizar a gestão de produtos elegíveis, além de iniciar frete grátis por valor mínimo da compra.
+- Branch: `benefits/shipping-rules`, PR #59 draft.
+- Task board: BEN-002 `[~]` — seleção central de produtos e regra de valor mínimo iniciadas; cupom de frete após endereço, percentual configurável, progresso no carrinho e APIs/UI de Marketing seguem pendentes.
+- Implementado: Produtos ganhou a aba Frete grátis; a seleção atualiza o tenant inteiro de forma atômica e não é alterada pela edição comum de produto. Regra por produto só concede frete grátis se todos os itens forem elegíveis; carrinho misto mostra frete. A regra por valor mínimo é resolvida no servidor após a cotação.
+- Evidências: `ShippingBenefitResolverTest` cobre elegibilidade e não sobreposição inicial. CI ainda não iniciou para o HEAD atual.
+- Riscos, bloqueios e itens não verificados: o indicador animado de quanto falta no carrinho, cupom de frete após endereço e a tela de regra percentual ainda não foram implementados. Nenhum gateway/pagamento foi habilitado.
+- Próxima ação única: expor o progresso de frete grátis no contrato de resumo e renderizá-lo no carrinho com movimento reduzível.

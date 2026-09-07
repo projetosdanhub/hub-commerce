@@ -181,6 +181,8 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     });
     // --- MÓDULO: PRODUTOS ---
     Route::prefix('products')->group(function () {
+        Route::get('/free-shipping', [ProductFreeShippingController::class, 'show'])->middleware('tenant.permission:tenant.catalog.view');
+        Route::put('/free-shipping', [ProductFreeShippingController::class, 'update'])->middleware('tenant.permission:tenant.catalog.manage');
         Route::get('/audits', [AdminProductController::class, 'getAudits'])->middleware('tenant.permission:tenant.catalog.view');
         Route::get('/', [AdminProductController::class, 'index'])->middleware('tenant.permission:tenant.catalog.view');
         Route::post('/validate-skus', [AdminProductController::class, 'validateSkus'])->middleware('tenant.permission:tenant.catalog.manage');

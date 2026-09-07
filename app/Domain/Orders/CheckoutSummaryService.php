@@ -2,6 +2,7 @@
 
 namespace App\Domain\Orders;
 
+use App\Domain\Shipping\ShippingBenefitResolver;
 use App\Models\Produto;
 
 final class CheckoutSummaryService
@@ -11,6 +12,7 @@ final class CheckoutSummaryService
         private readonly CheckoutPricingService $pricing,
         private readonly CheckoutShippingQuoteResolver $shippingQuotes,
         private readonly OrderFinancialSnapshotBuilder $snapshots,
+        private readonly ShippingBenefitResolver $shippingBenefits,
     ) {}
 
     /**
@@ -32,7 +34,7 @@ final class CheckoutSummaryService
         $snapshot = $this->snapshots->build(
             $priced['product_subtotal_cents'],
             $quote->shipping_cents,
-            [],
+            $this->shippingBenefits->benefitsFor($priced['items'], $quote->shipping_cents),
         );
 
         return [

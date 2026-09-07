@@ -4,27 +4,13 @@ const unwrap = (response) => response.data?.data ?? response.data;
 
 export const fetchProducts = async (filters) => {
   const response = await api.get('/admin/products', {
-    params: {
-      page: filters.page,
-      per_page: filters.perPage,
-      busca: filters.search || undefined,
-      categoria: filters.category !== 'TODAS' ? filters.category : undefined,
-      status: filters.status !== 'TODOS' ? filters.status : undefined,
-    },
+    params: { page: filters.page, per_page: filters.perPage, busca: filters.search || undefined, categoria: filters.category !== 'TODAS' ? filters.category : undefined, status: filters.status !== 'TODOS' ? filters.status : undefined },
   });
   return unwrap(response);
 };
 
-export const fetchProductCategories = async () => {
-  const response = await api.get('/admin/categories');
-  return unwrap(response);
-};
-
-export const fetchProductAudits = async () => {
-  const response = await api.get('/admin/products/audits');
-  return unwrap(response);
-};
-
+export const fetchProductCategories = async () => unwrap(await api.get('/admin/categories'));
+export const fetchProductAudits = async () => unwrap(await api.get('/admin/products/audits'));
 export const validateProductSkus = async (payload) => unwrap(await api.post('/admin/products/validate-skus', payload));
 
 const append = (body, key, value) => {
@@ -84,3 +70,7 @@ export const saveProduct = async ({ product, categoryId }) => {
 
   return api.post('/admin/products', body, { headers: { 'Content-Type': 'multipart/form-data' } });
 };
+
+
+export const fetchFreeShippingSettings = async () => unwrap(await api.get('/admin/products/free-shipping'));
+export const saveFreeShippingSettings = async (payload) => unwrap(await api.put('/admin/products/free-shipping', payload));

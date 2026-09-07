@@ -200,7 +200,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
 | [~] | BEN-001 | P0 | Consolidar domínio e navegação de Benefícios | TEN-006, MKT-001 | Marketing, Benefícios/Cupons, Fidelidade, Clientes/VIP e Afiliados têm fronteiras, permissões, estados e regras documentados |
-| [ ] | BEN-002 | P0 | Criar cupons e benefícios tenant-scoped | BEN-001 | Código, base, teto, vigência, limite, elegibilidade e uso atômico; nenhum desconto vem do navegador |
+| [~] | BEN-002 | P0 | Criar cupons e benefícios tenant-scoped | BEN-001 | Fundação de benefício de frete iniciada: regras tenant-scoped, prioridade/vigência e aplicação server-side; cupom persistido, regras globais e UI administrativa continuam pendentes |
 | [ ] | BEN-003 | P0 | Criar ledger e regras de Hub Coins | BEN-001, CRM-003 | Créditos, débitos, resgates, expiração e recompensas idempotentes/auditáveis por tenant |
 | [ ] | BEN-004 | P1 | Calcular elegibilidade e benefícios VIP | BEN-002, CRM-007 | Critérios e benefícios por base são calculados no servidor e não alteram snapshots históricos |
 | [ ] | BEN-005 | P0 | Aplicar benefícios no carrinho e checkout | BEN-002, BEN-003, BEN-004, UI-027 | Cupom antes de VIP, bases separadas, endereço obrigatório para frete e snapshot imutável |

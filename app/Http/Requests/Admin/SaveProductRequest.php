@@ -11,7 +11,6 @@ class SaveProductRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // A autorização tenant-scoped é exigida pela rota.
         return true;
     }
 
@@ -61,13 +60,7 @@ class SaveProductRequest extends FormRequest
 
         return [
             'id' => ['nullable', 'integer', 'min:1'],
-            'categoria_id' => [
-                'required',
-                'integer',
-                Rule::exists('categorias', 'id')->where(
-                    fn ($query) => $query->where('tenant_id', $tenantId)
-                ),
-            ],
+            'categoria_id' => ['required', 'integer', Rule::exists('categorias', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId))],
             'nome' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'descricao' => ['nullable', 'string', 'max:50000'],
@@ -94,24 +87,12 @@ class SaveProductRequest extends FormRequest
             'galeria_urls' => ['nullable', 'array', 'max:10'],
             'galeria_urls.*' => ['string', 'max:2048'],
             'variaveis_json' => ['nullable', 'json'],
-            'ncm' => ['nullable', 'string', 'max:20'],
-            'cest' => ['nullable', 'string', 'max:20'],
-            'gtin' => ['nullable', 'string', 'max:32'],
-            'origem' => ['nullable', 'string', 'max:10'],
-            'csosn' => ['nullable', 'string', 'max:10'],
-            'cst' => ['nullable', 'string', 'max:10'],
-            'cfop_dentro' => ['nullable', 'string', 'max:10'],
-            'cfop_fora' => ['nullable', 'string', 'max:10'],
-            'unidade_medida' => ['nullable', 'string', 'max:10'],
-            'icms_perc' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'ipi_perc' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'peso' => ['nullable', 'numeric', 'min:0'],
-            'altura' => ['nullable', 'numeric', 'min:0'],
-            'largura' => ['nullable', 'numeric', 'min:0'],
-            'comprimento' => ['nullable', 'numeric', 'min:0'],
-            'agrupavel' => ['nullable', 'boolean'],
-            'meta_title' => ['nullable', 'string', 'max:255'],
-            'meta_desc' => ['nullable', 'string', 'max:1000'],
+            'ncm' => ['nullable', 'string', 'max:20'], 'cest' => ['nullable', 'string', 'max:20'], 'gtin' => ['nullable', 'string', 'max:32'],
+            'origem' => ['nullable', 'string', 'max:10'], 'csosn' => ['nullable', 'string', 'max:10'], 'cst' => ['nullable', 'string', 'max:10'],
+            'cfop_dentro' => ['nullable', 'string', 'max:10'], 'cfop_fora' => ['nullable', 'string', 'max:10'], 'unidade_medida' => ['nullable', 'string', 'max:10'],
+            'icms_perc' => ['nullable', 'numeric', 'min:0', 'max:100'], 'ipi_perc' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'peso' => ['nullable', 'numeric', 'min:0'], 'altura' => ['nullable', 'numeric', 'min:0'], 'largura' => ['nullable', 'numeric', 'min:0'], 'comprimento' => ['nullable', 'numeric', 'min:0'],
+            'agrupavel' => ['nullable', 'boolean'], 'meta_title' => ['nullable', 'string', 'max:255'], 'meta_desc' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -138,42 +119,12 @@ class SaveProductRequest extends FormRequest
     public function productData(): array
     {
         return $this->safe()->only([
-            'categoria_id',
-            'nome',
-            'slug',
-            'descricao',
-            'preco',
-            'preco_promo',
-            'quantidade_estoque',
-            'status_vitrine',
-            'sku_ref',
-            'sku_sufixo',
-            'controlar_estoque',
-            'alerta_estoque',
-            'alerta_moderado',
-            'alerta_alto',
-            'pre_venda',
-            'ficha_tecnica',
-            'badges',
-            'categorias_secundarias',
-            'ncm',
-            'cest',
-            'gtin',
-            'origem',
-            'csosn',
-            'cst',
-            'cfop_dentro',
-            'cfop_fora',
-            'unidade_medida',
-            'icms_perc',
-            'ipi_perc',
-            'peso',
-            'altura',
-            'largura',
-            'comprimento',
-            'agrupavel',
-            'meta_title',
-            'meta_desc',
+            'categoria_id', 'nome', 'slug', 'descricao', 'preco', 'preco_promo', 'quantidade_estoque',
+            'status_vitrine', 'sku_ref', 'sku_sufixo', 'controlar_estoque', 'alerta_estoque',
+            'alerta_moderado', 'alerta_alto', 'pre_venda', 'ficha_tecnica', 'badges',
+            'categorias_secundarias', 'ncm', 'cest', 'gtin', 'origem', 'csosn', 'cst', 'cfop_dentro',
+            'cfop_fora', 'unidade_medida', 'icms_perc', 'ipi_perc', 'peso', 'altura', 'largura',
+            'comprimento', 'agrupavel', 'meta_title', 'meta_desc',
         ]);
     }
 }
