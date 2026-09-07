@@ -7,7 +7,7 @@ use InvalidArgumentException;
 final class CheckoutFingerprint
 {
     /**
-     * @param  array<int, array{id: int, quantity: int}>  $items
+     * @param  array<int, mixed>  $items
      */
     public function cart(array $items): string
     {

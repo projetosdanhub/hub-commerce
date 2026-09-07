@@ -22,7 +22,13 @@ final class MelhorEnvioRateAdapter
             throw new DomainException('Melhor Envio não conectado.');
         }
 
-        $senderPostalCode = $config->sender_info['cep'] ?? null;
+        $senderInfo = $config->sender_info;
+
+        if (is_array($senderInfo) === false) {
+            throw new DomainException('Endereço da loja não configurado.');
+        }
+
+        $senderPostalCode = $senderInfo['cep'] ?? null;
 
         if (is_string($senderPostalCode) === false || $senderPostalCode === '') {
             throw new DomainException('Endereço da loja não configurado.');
@@ -47,13 +53,19 @@ final class MelhorEnvioRateAdapter
                 ],
             ]);
 
-        if ($response->successful() === false || is_array($response->json()) === false) {
+        $payload = $response->json();
+
+        if ($response->successful() === false || is_array($payload) === false) {
             throw new DomainException('Não foi possível calcular o frete.');
         }
 
-        return collect($response->json())
+        return collect($payload)
             ->filter(fn (mixed $rate): bool => is_array($rate) && isset($rate['error']) === false)
-            ->map(function (array $rate): array {
+            ->map(function (mixed $rate): array {
+                if (is_array($rate) === false) {
+                    throw new DomainException('O provedor retornou uma cotação inválida.');
+                }
+
                 $price = $rate['price'] ?? null;
                 $deliveryTime = $rate['delivery_time'] ?? null;
                 $serviceId = $rate['id'] ?? null;

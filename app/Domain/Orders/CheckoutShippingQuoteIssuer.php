@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 final class CheckoutShippingQuoteIssuer
 {
     /**
-     * @param  array<int, array{id: string, price: string, delivery_time: int}>  $rates
+     * @param  array<int, mixed>  $rates
      * @return array<int, CheckoutShippingQuote>
      */
     public function issue(
@@ -23,7 +23,11 @@ final class CheckoutShippingQuoteIssuer
             throw new DomainException('A expiração da cotação deve estar no futuro.');
         }
 
-        return array_map(function (array $rate) use ($cartFingerprint, $destinationFingerprint, $expiresAt): CheckoutShippingQuote {
+        return array_map(function (mixed $rate) use ($cartFingerprint, $destinationFingerprint, $expiresAt): CheckoutShippingQuote {
+            if (is_array($rate) === false) {
+                throw new DomainException('Taxa de frete inválida.');
+            }
+
             $serviceCode = $rate['id'] ?? null;
             $price = $rate['price'] ?? null;
             $deliveryTime = $rate['delivery_time'] ?? null;
@@ -51,8 +55,12 @@ final class CheckoutShippingQuoteIssuer
             throw new DomainException('Valor de frete inválido.');
         }
 
-        [$whole, $fraction = ''] = explode('.', $amount, 2);
+        $parts = explode('.', $amount, 2);
+        $whole = $parts[0];
+        $fraction = $parts[1] ?? '';
 
-        return ((int) $whole * 100) + (int) str_pad($fraction, 2, '0');
+        $fraction = str_pad($fraction, 2, '0', STR_PAD_RIGHT);
+
+        return ((int) $whole * 100) + (int) $fraction;
     }
 }

@@ -6,6 +6,11 @@ use App\Domain\Tenancy\Concerns\BelongsToTenant;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string|null $access_token
+ * @property string $environment
+ * @property array<string, mixed>|null $sender_info
+ */
 class MelhorEnvioSetting extends Model
 {
     use BelongsToTenant;
