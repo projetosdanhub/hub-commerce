@@ -11,6 +11,7 @@ final class CheckoutShippingQuoteIssuer
 {
     /**
      * @param array<int, array{id: string, price: string, delivery_time: int}> $rates
+     *
      * @return array<int, CheckoutShippingQuote>
      */
     public function issue(
@@ -28,7 +29,7 @@ final class CheckoutShippingQuoteIssuer
             $price = $rate['price'] ?? null;
             $deliveryTime = $rate['delivery_time'] ?? null;
 
-            if (! is_string($serviceCode) || ! is_string($price) || ! is_int($deliveryTime) || $deliveryTime < 0) {
+            if (is_string($serviceCode) === false || is_string($price) === false || is_int($deliveryTime) === false || $deliveryTime < 0) {
                 throw new DomainException('Taxa de frete inválida.');
             }
 
@@ -47,7 +48,7 @@ final class CheckoutShippingQuoteIssuer
 
     private function toCents(string $amount): int
     {
-        if (! preg_match('/^\d+(?:\.\d{1,2})?$/', $amount)) {
+        if (preg_match('/^\d+(?:\.\d{1,2})?$/', $amount) !== 1) {
             throw new DomainException('Valor de frete inválido.');
         }
 
