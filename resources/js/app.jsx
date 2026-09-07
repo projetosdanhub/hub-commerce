@@ -48,7 +48,7 @@ import SettingsPage from './Modulos/Admin/Settings/SettingsPage';
 import ReviewsPage from './Modulos/Admin/Reviews/ReviewsPage';
 import AdminLoginPage from './Modulos/Admin/Authentication/AdminLoginPage';
 import CarriersPage from './Modulos/Admin/Carriers/CarriersPage';
-import AdminPixels from './Modulos/Admin/Pixels/PixelsPrincipal';
+import PixelsPage from './Modulos/Admin/Pixels/PixelsPage';
 
 // Mocks Temporários
 const PaginaCategoria = () => <div className="p-20 text-center text-2xl font-bold">Página de Categoria / Departamentos</div>;
@@ -249,7 +249,7 @@ const AppContent = () => {
                         <Route path="produtos" element={<ProductsPage />} />
                         <Route path="marketing" element={<MarketingPage />} />
                         <Route path="beneficios" element={<BenefitsHub />} />
-                        <Route path="pixels" element={<AdminPixels />} />
+                        <Route path="pixels" element={<PixelsPage />} />
                         <Route path="clientes" element={<CustomersPage />} />
                         <Route path="afiliados" element={<AffiliatesPage />} />
                         <Route path="vitrine" element={<StorefrontBuilderPage />} />
