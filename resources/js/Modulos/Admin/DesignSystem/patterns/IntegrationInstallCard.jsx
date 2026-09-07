@@ -34,8 +34,10 @@ export const IntegrationInstallCard = ({
   const Icon = icons[app.key] || AppWindow;
   const configuration = app.configuration || {};
   const isInstalling = installState?.key === app.key;
+  const isAnotherAppInstalling = Boolean(installState) && !isInstalling;
   const progress = installState?.progress || 0;
   const configured = Boolean(configuration.credential_configured);
+  const blockedBy = app.blocked_by;
   const statusLabel = app.installed ? 'Instalado' : 'Disponível';
 
   return (
@@ -57,6 +59,11 @@ export const IntegrationInstallCard = ({
           <p className="hub-integration-readiness">
             <ShieldCheck aria-hidden="true" size={16} />
             {configured ? 'Configuração registrada com segurança.' : 'Configuração pendente.'}
+          </p>
+        ) : blockedBy ? (
+          <p className="hub-integration-readiness">
+            <ShieldCheck aria-hidden="true" size={16} />
+            Desinstale {blockedBy.name} para trocar o app desta categoria.
           </p>
         ) : (
           <p className="hub-integration-category">{app.category_label}</p>
@@ -83,8 +90,14 @@ export const IntegrationInstallCard = ({
             </Button>
           </>
         ) : (
-          <Button size="sm" icon={isInstalling ? CheckCircle2 : AppWindow} loading={isInstalling} onClick={() => onInstall(app)}>
-            Instalar
+          <Button
+            size="sm"
+            icon={isInstalling ? CheckCircle2 : AppWindow}
+            loading={isInstalling}
+            disabled={Boolean(blockedBy) || isAnotherAppInstalling}
+            onClick={() => onInstall(app)}
+          >
+            {blockedBy ? 'Troca bloqueada' : 'Instalar'}
           </Button>
         )}
       </footer>
