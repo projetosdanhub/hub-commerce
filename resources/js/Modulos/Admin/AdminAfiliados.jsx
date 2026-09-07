@@ -1,6 +1,6 @@
 import React from 'react';
 import { Handshake, UsersRound } from 'lucide-react';
-import { OperationalState } from './OperationalState';
+import { OperationalState } from './Growth/OperationalState';
 
 const AdminAffiliates = () => (
   <main className="hub-growth-page">
