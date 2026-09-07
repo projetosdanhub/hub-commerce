@@ -30,3 +30,4 @@ A página ativa de cada rota precisa apontar para o entry point canônico. Telas
 - Não há aliases ou caminhos de compatibilidade para duplicar código.
 - Marketing será reorganizado depois do mapa estrutural: a implementação monolítica e simulada não define o contrato futuro.
 - A configuração Stripe permanece em branch separada e só retoma após esta refatoração ser integrada.
+- A implementação deve passar por build, Tests, E2E e Security antes de o caminho antigo ser considerado definitivamente removido.
