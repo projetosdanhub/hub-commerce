@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import { OperationalState } from './OperationalState';
+import './Growth.css';
 
 const marketingTabs = [
   {
