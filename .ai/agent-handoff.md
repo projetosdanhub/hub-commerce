@@ -330,3 +330,12 @@ Copie este bloco para cada handoff relevante:
 - Arquivos alterados: regra 16 e índice de regras; task-board; AppShell/AdminNavigation; rota React; novos componentes Growth e CSS com tokens; superfícies Marketing/Afiliados substituídas.
 - Validação pendente: revisão da API real do Centro de Apps, refatoração visual de Apps, testes de UI/build, e homologação em 320/768/1024 px, teclado, zoom 200%, claro/escuro e reduced motion. Nenhuma CI foi disparada nesta branch.
 - Próxima ação única: concluir APP-001 usando apenas o catálogo de instalações retornado por `GET /api/admin/settings/apps`, sem anunciar gateways antes de seus adapters homologados.
+
+
+### 2026-09-07 — Codex — Etapa 4, Centro de Apps operacional
+- Objetivo e escopo: transformar a apresentação existente do Centro de Apps em catálogo operacional sem divulgar credenciais nem anunciar integrações de pagamento inexistentes.
+- Branch: `ui/marketing-benefits-foundation`.
+- Implementado: `GET /api/admin/settings/apps` retorna somente `environment` e `credential_configured` para Logística e Fiscal; a UI usa esses dados para cartões responsivos de instalação/configuração e deixa explícito que somente um ambiente fica ativo por aplicativo. Fiscal apresenta “Teste (homologação)” e Produção.
+- Contratos preservados: token do Melhor Envio, token fiscal e senha de certificado não retornam na lista. Stripe, Mercado Pago, Pagar.me e PagBank não foram inseridos como cards porque ainda não possuem adapter, tentativa idempotente e webhook homologados.
+- Teste adicionado: `AdminApiAuditTest::test_app_catalog_returns_only_safe_configuration_metadata` assegura estrutura segura da resposta e ausência de segredos.
+- Próxima ação única: abrir a PR da Etapa 4 e validar Tests, E2E Tests e Security Scans antes de iniciar PAY-001.
