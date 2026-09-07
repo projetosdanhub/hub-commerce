@@ -43,7 +43,7 @@ import MarketingPage from './Modulos/Admin/Marketing/MarketingPage';
 import { BenefitsHub } from './Modulos/Admin/Growth/GrowthHub';
 import CustomersPage from './Modulos/Admin/Customers/CustomersPage';
 import AffiliatesPage from './Modulos/Admin/Affiliates/AffiliatesPage';
-import ConstrutorVitrinePrincipal from './Modulos/Admin/ConstrutorVitrine/ConstrutorVitrinePrincipal';
+import StorefrontBuilderPage from './Modulos/Admin/StorefrontBuilder/StorefrontBuilderPage';
 import SettingsPage from './Modulos/Admin/Settings/SettingsPage';
 import ReviewsPage from './Modulos/Admin/Reviews/ReviewsPage';
 import AdminLoginPage from './Modulos/Admin/Authentication/AdminLoginPage';
@@ -252,7 +252,7 @@ const AppContent = () => {
                         <Route path="pixels" element={<AdminPixels />} />
                         <Route path="clientes" element={<CustomersPage />} />
                         <Route path="afiliados" element={<AffiliatesPage />} />
-                        <Route path="vitrine" element={<ConstrutorVitrinePrincipal />} />
+                        <Route path="vitrine" element={<StorefrontBuilderPage />} />
                         <Route path="configuracoes" element={<SettingsPage />} />
                         <Route path="avaliacoes" element={<ReviewsPage />} />
                         <Route path="transportadoras" element={<CarriersPage />} />
