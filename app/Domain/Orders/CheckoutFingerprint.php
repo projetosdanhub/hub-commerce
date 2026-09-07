@@ -30,7 +30,7 @@ final class CheckoutFingerprint
     }
 
     /**
-     * @param  array{cep: string, rua: string, numero: string, bairro: string, cidade: string, uf: string, complemento?: string|null}  $address
+     * @param  array<string, mixed>  $address
      */
     public function destination(array $address): string
     {
