@@ -9,7 +9,7 @@ final class OrderFinancialSnapshotBuilder
     public const VERSION = 1;
 
     /**
-     * @param  array<int, array{source: string, scope: string, amount_cents: int, reference?: string}> $benefits
+     * @param  array<int, array{source: string, scope: string, amount_cents: int, reference?: string}>  $benefits
      * @return array<string, mixed>
      */
     public function build(
