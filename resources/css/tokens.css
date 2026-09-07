@@ -153,26 +153,32 @@
 /* Tema claro do painel; não altera o tema da vitrine. */
 .hub-admin[data-theme="light"] {
   color-scheme: light;
-  --hub-bg-body: #f2f5fa;
+  --hub-brand-primary: #c2410c;
+  --hub-brand-primary-hover: #9a3412;
+  --hub-brand-primary-active: #7c2d12;
+  --hub-brand-secondary: #f97316;
+  --hub-brand-sky: #fdba74;
+  --hub-accent-gradient: linear-gradient(135deg, #ea580c 0%, #fb923c 52%, #f97316 100%);
+  --hub-bg-body: #fffaf5;
   --hub-surface: #ffffff;
   --hub-surface-raised: rgb(255 255 255 / 0.92);
-  --hub-surface-subtle: #eaf0f8;
-  --hub-surface-hover: #e2eaf5;
-  --hub-surface-active: #d7e3f2;
-  --hub-surface-accent: #e4edfa;
-  --hub-glass-bg: rgb(248 250 255 / 0.82);
-  --hub-glass-modal-bg: rgb(248 250 255 / 0.94);
-  --hub-text: #142b4f;
-  --hub-text-secondary: #334867;
-  --hub-text-muted: #536580;
-  --hub-border: #d3ddeb;
-  --hub-border-strong: #aabbd1;
-  --hub-primary: #193d70;
-  --hub-primary-hover: #234f8b;
-  --hub-primary-pressed: #102a50;
-  --hub-primary-soft: #dce8f7;
-  --hub-info: #075985;
-  --hub-info-soft: #e0f2fe;
+  --hub-surface-subtle: #fff3e8;
+  --hub-surface-hover: #ffead6;
+  --hub-surface-active: #fed7aa;
+  --hub-surface-accent: #fff1e5;
+  --hub-glass-bg: rgb(255 251 247 / 0.82);
+  --hub-glass-modal-bg: rgb(255 251 247 / 0.94);
+  --hub-text: #431407;
+  --hub-text-secondary: #7c2d12;
+  --hub-text-muted: #9a5a3a;
+  --hub-border: #fed7aa;
+  --hub-border-strong: #fdba74;
+  --hub-primary: #c2410c;
+  --hub-primary-hover: #9a3412;
+  --hub-primary-pressed: #7c2d12;
+  --hub-primary-soft: #ffedd5;
+  --hub-info: #9a3412;
+  --hub-info-soft: #ffedd5;
   --hub-success: #166534;
   --hub-success-soft: #dcfce7;
   --hub-warning: #92400e;
@@ -184,5 +190,5 @@
   --hub-shadow-low: 0 1px 2px rgb(20 43 79 / 0.06);
   --hub-shadow-medium: 0 12px 32px rgb(20 43 79 / 0.12);
   --hub-shadow-high: 0 24px 64px rgb(20 43 79 / 0.16);
-  --hub-focus-ring: 0 0 0 3px rgb(25 61 112 / 0.35);
+  --hub-focus-ring: 0 0 0 3px rgb(234 88 12 / 0.38);
 }
