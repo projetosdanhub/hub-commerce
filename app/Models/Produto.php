@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Domain\Tenancy\Concerns\BelongsToTenant;
 use App\Enums\ProductStatus;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,55 +16,15 @@ class Produto extends Model
     protected $table = 'produtos';
 
     protected $fillable = [
-        'categoria_id',
-        'nome',
-        'slug',
-        'descricao',
-        'preco',
-        'preco_promo',
-        'quantidade_estoque',
-        'destaque',
-        'ativo',
-        'status_vitrine',
-        'sku_ref',
-        'sku_sufixo',
-        'quick_view',
-        'controlar_estoque',
-        'alerta_estoque',
-        'alerta_moderado',
-        'alerta_alto',
-        'pre_venda',
-        'prep_tempo',
-        'prep_unidade',
-        'personalizado',
-        'custom_tipo',
-        'frete_gratis',
-        'badges',
-        'ficha_tecnica',
-        'categorias_secundarias',
-        'galeria',
-        'img',
-        'video',
-        'agrupavel',
-        'peso',
-        'altura',
-        'largura',
-        'comprimento',
-        'ncm',
-        'cest',
-        'origem',
-        'csosn',
-        'cfop_dentro',
-        'cfop_fora',
-        'gtin',
-        'cst',
-        'cfop',
-        'unidade',
-        'unidade_medida',
-        'icms_perc',
-        'ipi_perc',
-        'meta_title',
-        'meta_desc',
+        'categoria_id', 'nome', 'slug', 'descricao', 'preco', 'preco_promo',
+        'quantidade_estoque', 'destaque', 'ativo', 'status_vitrine', 'sku_ref',
+        'sku_sufixo', 'quick_view', 'controlar_estoque', 'alerta_estoque',
+        'alerta_moderado', 'alerta_alto', 'pre_venda', 'prep_tempo',
+        'prep_unidade', 'personalizado', 'custom_tipo', 'frete_gratis', 'badges',
+        'ficha_tecnica', 'categorias_secundarias', 'galeria', 'img', 'video',
+        'agrupavel', 'peso', 'altura', 'largura', 'comprimento', 'ncm', 'cest',
+        'origem', 'csosn', 'cfop_dentro', 'cfop_fora', 'gtin', 'cst', 'cfop',
+        'unidade', 'unidade_medida', 'icms_perc', 'ipi_perc', 'meta_title', 'meta_desc',
     ];
 
     protected function casts(): array
@@ -83,6 +42,7 @@ class Produto extends Model
             'alerta_moderado' => 'integer',
             'alerta_alto' => 'integer',
             'pre_venda' => 'boolean',
+            'frete_gratis' => 'boolean',
             'prep_tempo' => 'integer',
             'personalizado' => 'boolean',
             'frete_gratis' => 'boolean',
