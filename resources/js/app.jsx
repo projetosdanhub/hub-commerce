@@ -38,7 +38,7 @@ import DashboardPage from './Modulos/Admin/Dashboard/DashboardPage';
 import OrdersPage from './Modulos/Admin/Orders/OrdersPage';
 import CategoriasPrincipal from './Modulos/Admin/Categorias/CategoriasPrincipal';
 import MenusPrincipal from './Modulos/Admin/Menus/MenusPrincipal';
-import AdminProducts from './Modulos/Admin/Produtos/ProdutosPrincipal';
+import ProductsPage from './Modulos/Admin/Products/ProductsPage';
 import MarketingPage from './Modulos/Admin/Marketing/MarketingPage';
 import { BenefitsHub } from './Modulos/Admin/Growth/GrowthHub';
 import CustomersPage from './Modulos/Admin/Customers/CustomersPage';
@@ -246,7 +246,7 @@ const AppContent = () => {
                         <Route path="pedidos" element={<OrdersPage />} />
                         <Route path="categorias" element={<CategoriasPrincipal />} />
                         <Route path="menus" element={<MenusPrincipal />} />
-                        <Route path="produtos" element={<AdminProducts />} />
+                        <Route path="produtos" element={<ProductsPage />} />
                         <Route path="marketing" element={<MarketingPage />} />
                         <Route path="beneficios" element={<BenefitsHub />} />
                         <Route path="pixels" element={<AdminPixels />} />
