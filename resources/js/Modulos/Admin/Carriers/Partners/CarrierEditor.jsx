@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CarriersIcons, screenTransition } from '../Shared/CarriersUI';
-import { TopActionBar, ScrollToTopButton } from '../../Compartilhado/TopActionBar';
+import { TopActionBar, ScrollToTopButton } from '../../Shared/TopActionBar';
 
 export default function CarrierEditor({ carrierToEdit, onCancel, onSave, isSaving }) {
     const defaultCarrier = { id: null, nome: '', tempo_entrega: '', status: 'ATIVA', imagemUrl: null, file: null, cep: '', rua: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '', referencia: '', vehicle_plate: '', vehicle_model: '', vehicle_type: '', document_rg_front_file: null, document_rg_back_file: null, document_cnh_file: null };
