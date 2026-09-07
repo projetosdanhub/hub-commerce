@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,6 +16,7 @@ import {
 import {
     lookupPostalCode,
     requestCheckoutSummary,
+    requestFreeShippingProgress,
     requestShippingQuotes,
     responseMessage,
 } from './checkout/checkoutApi';
@@ -55,6 +56,9 @@ export default function PaginaCarrinho({ cartItems = [], setCartItems = () => {}
     const [isRequestingQuotes, setIsRequestingQuotes] = useState(false);
     const [isSummarizing, setIsSummarizing] = useState(false);
     const [error, setError] = useState(null);
+    const [freeShippingProgress, setFreeShippingProgress] = useState(null);
+    const [isFreeShippingUnlocking, setIsFreeShippingUnlocking] = useState(false);
+    const previousFreeShippingStatus = useRef(null);
 
     const items = useMemo(
         () => cartItems.map((item) => ({
@@ -67,6 +71,51 @@ export default function PaginaCarrinho({ cartItems = [], setCartItems = () => {}
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    useEffect(() => {
+        if (items.length === 0) {
+            previousFreeShippingStatus.current = null;
+            return undefined;
+        }
+
+        let cancelled = false;
+
+        const loadProgress = async () => {
+            try {
+                const nextProgress = await requestFreeShippingProgress(items);
+
+                if (cancelled) {
+                    return;
+                }
+
+                const isUnlocked = ['PRODUCTS_ELIGIBLE', 'THRESHOLD_REACHED'].includes(nextProgress.status);
+                const wasUnlocked = ['PRODUCTS_ELIGIBLE', 'THRESHOLD_REACHED'].includes(previousFreeShippingStatus.current);
+                setIsFreeShippingUnlocking(isUnlocked && !wasUnlocked);
+                previousFreeShippingStatus.current = nextProgress.status;
+                setFreeShippingProgress(nextProgress);
+            } catch {
+                if (!cancelled) {
+                    setFreeShippingProgress(null);
+                }
+            }
+        };
+
+        loadProgress();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [items]);
+
+    useEffect(() => {
+        if (!isFreeShippingUnlocking) {
+            return undefined;
+        }
+
+        const timeout = window.setTimeout(() => setIsFreeShippingUnlocking(false), 240);
+
+        return () => window.clearTimeout(timeout);
+    }, [isFreeShippingUnlocking]);
 
     const clearCalculation = () => {
         setQuotes([]);
@@ -198,6 +247,45 @@ export default function PaginaCarrinho({ cartItems = [], setCartItems = () => {}
                         {items.length} {items.length === 1 ? 'produto' : 'produtos'}
                     </span>
                 </div>
+
+                {freeShippingProgress && freeShippingProgress.status !== 'NOT_CONFIGURED' && (
+                    <motion.section
+                        initial={false}
+                        animate={isFreeShippingUnlocking && !reducedMotion ? { scale: [1, 1.015, 1] } : { scale: 1 }}
+                        transition={{ duration: reducedMotion ? 0 : 0.22 }}
+                        className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4"
+                        aria-live="polite"
+                    >
+                        <div className="flex items-start gap-3">
+                            <Truck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" aria-hidden="true" />
+                            <div className="min-w-0 flex-1">
+                                {['PRODUCTS_ELIGIBLE', 'THRESHOLD_REACHED'].includes(freeShippingProgress.status) ? (
+                                    <p className="text-sm font-bold text-emerald-950">Frete grátis desbloqueado para esta compra.</p>
+                                ) : (
+                                    <p className="text-sm font-semibold text-emerald-950">Faltam {formatCurrency(freeShippingProgress.remaining_cents)} para desbloquear o frete grátis.</p>
+                                )}
+                                <p className="mt-1 text-xs leading-5 text-emerald-900">
+                                    A elegibilidade final é confirmada pelo servidor após a cotação da entrega.
+                                </p>
+                                <div
+                                    className="mt-3 h-2 overflow-hidden rounded-full bg-emerald-100"
+                                    role="progressbar"
+                                    aria-label="Progresso para frete grátis"
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-valuenow={freeShippingProgress.progress_percent}
+                                >
+                                    <motion.div
+                                        initial={false}
+                                        animate={{ width: freeShippingProgress.progress_percent + '%' }}
+                                        transition={{ duration: reducedMotion ? 0 : 0.2 }}
+                                        className="h-full rounded-full bg-emerald-600"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </motion.section>
+                )}
 
                 {items.length === 0 ? (
                     <section className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
