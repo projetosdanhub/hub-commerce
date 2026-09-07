@@ -15,6 +15,7 @@ export const toProductEditorModel = (product) => ({
     categoriasSecundarias: product.categorias_secundarias ?? [],
     fichaTecnica: product.ficha_tecnica ?? [],
     preVenda: booleanValue(product.pre_venda, false),
+    freteGratis: booleanValue(product.frete_gratis, false),
     csosn: product.csosn ?? '',
     cfopDentro: product.cfop_dentro ?? '',
     cfopFora: product.cfop_fora ?? '',
