@@ -412,4 +412,4 @@ Copie este bloco para cada handoff relevante:
 
 - PR: #61 `payments/stripe-tenant-configuration`.
 - A primeira rodada de CI encontrou somente estilo PHP e uma fixture inerte do Stripe sinalizada por Gitleaks; ambos foram corrigidos sem inserir chaves reais.
-- Security Scans e a simulação E2E inicial passaram. A rodada final de Tests/E2E permanece pendente; não liberar checkout, não configurar chaves reais e não marcar pagamentos como aprovados até webhook assinado e idempotente.
+- No commit `93ec821`, Tests, Security Scans e E2E Tests passaram. Não liberar checkout, não configurar chaves reais e não marcar pagamentos como aprovados até webhook assinado e idempotente.
