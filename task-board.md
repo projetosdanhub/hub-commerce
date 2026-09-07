@@ -24,7 +24,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 ## Sequência autorizada — 2026-09-07
 
-1. **Etapa 4 — atual:** organizar a navegação, os submenus, o dicionário de regras, os filtros e os estados visuais de Marketing, Benefícios, Fidelidade, Clientes/VIP, Afiliados e Loja de Aplicativos. Esta etapa não pode apresentar dados simulados como operacionais.
+1. **Etapa 4 — atual:** organizar a navegação, os submenus, o dicionário de regras, os filtros e os estados visuais de Marketing, Benefícios, Fidelidade, Clientes/VIP, Afiliados e Loja de Aplicativos. Esta etapa não pode apresentar dados simulados como operacionais. A primeira entrega separa Clientes, Benefícios & VIP, Marketing e Afiliados; filtros e métricas continuam bloqueados até cada domínio publicar sua consulta tenant-scoped.
 2. **Etapa 1:** criar a fundação de pedido e pagamento — snapshot atômico, adapter, tentativa e idempotência.
 3. **Etapa 2:** consolidar o motor de benefícios, cupom, Hub Coins, VIP e resgate para aplicá-los no carrinho e checkout com snapshot.
 4. **Etapa 3:** habilitar moeda por produto e restringir USD/EUR ao Stripe configurado no tenant.
@@ -221,7 +221,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [x] | UI-007 | P1 | Dividir AdminPerfilCRM | UI-005, CRM-002 | Perfil 360º modularizado; contratos preservados e checks verdes no PR #23 |
 | [x] | UI-008 | P1 | Dividir AdminOrders | UI-005, ORD-004 | Fluxos separados, contratos preservados e checks verdes; pendências de domínio continuam abertas |
 | [x] | UI-009 | P1 | Dividir AdminCustomers | UI-005, CRM-002 | Lista, painel, benefícios e perfil modularizados; checks verdes no PR #23 |
-| [~] | UI-010 | P2 | Dividir Marketing e Afiliados | UI-006, BEN-001 | Em andamento: substituir módulo legado hardcoded por features de Marketing e Afiliados ligadas a contratos reais ou estado indisponível |
+| [~] | UI-010 | P2 | Dividir Marketing e Afiliados | UI-006, BEN-001 | As superfícies hardcoded foram removidas da navegação em favor de estados operacionais honestos; falta publicar os contratos reais de campanhas, audiência e afiliados antes de habilitar ações ou métricas |
 | [~] | UI-011 | P1 | Padronizar loading/empty/error/success | UI-005 | Todos os módulos críticos cobertos |
 | [ ] | UI-012 | P1 | Auditar WCAG 2.2 AA e teclado | UI-006 | Checklist e testes aprovados |
 | [~] | UI-013 | P1 | Corrigir responsividade e zoom 200% | UI-006 | Sem scroll horizontal global |
@@ -240,7 +240,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [!] | FIS-001 | P1 | Homologar adapter de emissão de NF-e | UI-025 | Provedor contratado, credenciais autorizadas, sandbox/homologação, assinatura, idempotência, webhook, XML/DANFE privados e autorização confirmada |
 | [x] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Integrado na PR #54 (`66b58e8`): checkout claro e responsivo com CEP editável, cotações opacas, resumo financeiro relido no servidor, conta por loja e endereço padrão salvo/selecionável. Tests, E2E Tests e Security Scans verdes. Pagamento, cupons, payment_attempt, pedido atômico e tela de conclusão continuam dependentes de adapter homologado, idempotência e webhook |
 | [x] | UI-027 | P1 | Tornar frete e total do carrinho verificáveis | UI-026 | Integrado na PR #55 (`ea6ab85`): carrinho usa CEP editável, cotações opacas e resumo financeiro reconstruído pelo servidor; o rascunho é revalidado no checkout. Tests, E2E Tests e Security Scans verdes |
-| [~] | UI-028 | P1 | Reorganizar navegação, submenus e espaçamento operacional | UI-006, BEN-001 | Painel separa Marketing, Benefícios/Cupons, Fidelidade, Clientes/VIP, Afiliados e Apps; desktop/mobile e claro/escuro seguem tokens, filtros reais e estados completos |
+| [~] | UI-028 | P1 | Reorganizar navegação, submenus e espaçamento operacional | UI-006, BEN-001 | Navegação já separa Clientes, Benefícios & VIP, Marketing e Afiliados; hubs usam submenus, tokens, estados honestos e links para contratos existentes. Falta refatorar Centro de Apps, consolidar densidade nos menus restantes e validar desktop/mobile, claro/escuro e teclado |
 | [ ] | UI-029 | P1 | Consolidar tokens de densidade e tema nos menus | UI-028, UI-001 | Espaçamentos internos, superfícies, estados de interação e padrões mobile documentados e aplicados sem valores arbitrários |
 
 ## Fase 11 — Storefront, SEO e desempenho
