@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, LockKeyhole, ShieldCheck } from 'lucide-react';
 import CheckoutAccountStep from './checkout/CheckoutAccountStep';
 import CheckoutDeliveryStep from './checkout/CheckoutDeliveryStep';
@@ -37,13 +37,17 @@ const emptyCustomer = {
 
 export default function PaginaCheckout({ cartItems = [] }) {
     const prefersReducedMotion = useReducedMotion();
+    const location = useLocation();
+    const deliveryDraft = location.state?.deliveryDraft;
+    const initialDraftAddress = deliveryDraft?.address || emptyAddress;
+    const initialDraftQuote = deliveryDraft?.quote || null;
     const [currentStep, setCurrentStep] = useState(1);
     const [customer, setCustomer] = useState(emptyCustomer);
     const [customerSession, setCustomerSession] = useState(null);
-    const [address, setAddress] = useState(emptyAddress);
+    const [address, setAddress] = useState(() => ({ ...emptyAddress, ...initialDraftAddress }));
     const [savedAddresses, setSavedAddresses] = useState([]);
     const [saveAsDefault, setSaveAsDefault] = useState(false);
-    const [quotes, setQuotes] = useState([]);
+    const [quotes, setQuotes] = useState(() => initialDraftQuote ? [initialDraftQuote] : []);
     const [selectedQuote, setSelectedQuote] = useState(null);
     const [summary, setSummary] = useState(null);
     const [isSubmittingAccount, setIsSubmittingAccount] = useState(false);
