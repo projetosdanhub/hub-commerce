@@ -8,3 +8,6 @@ Nenhum gateway pode ser marcado como disponível enquanto retornar aprovação s
 ## Estado após a Fase 1
 
 Todos os adapters fictícios foram desativados. O checkout rejeita PAN/CVV e retorna indisponibilidade até que um gateway real seja implementado e homologado. Nenhum resultado local pode transicionar o pedido para `paid` sem uma resposta aprovada de um adapter real.
+
+
+Consulte também [Stripe por loja](stripe.md) para o contrato de configuração Sandbox/Produção e os testes simulados do adapter.

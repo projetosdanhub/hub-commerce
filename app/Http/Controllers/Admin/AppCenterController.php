@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\Payments\StripeGatewayConfiguration;
 use App\Domain\Tenancy\TenantStorage;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SaveStripeSettingsRequest;
 use App\Models\GlobalSetting;
 use App\Models\MelhorEnvioSetting;
 use App\Models\Produto;
@@ -28,10 +30,16 @@ class AppCenterController extends Controller
             'description' => 'Emitente, certificado A1, preflight e emissão fiscal quando houver adapter homologado.',
             'location' => null,
         ],
+        'stripe' => [
+            'name' => 'Stripe',
+            'description' => 'Configuração de cartão tokenizado por loja, com ambientes de teste e produção separados.',
+            'location' => null,
+        ],
     ];
 
     public function __construct(
         private readonly TenantStorage $tenantStorage,
+        private readonly StripeGatewayConfiguration $stripe,
     ) {}
 
     public function index(): JsonResponse
@@ -41,8 +49,9 @@ class AppCenterController extends Controller
             ->keyBy('app_key');
         $logistics = MelhorEnvioSetting::query()->first();
         $fiscal = $this->fiscalConfig();
+        $stripe = $this->stripe->safeStatus();
 
-        return response()->json(collect(self::APPS)->map(function (array $app, string $key) use ($installed, $logistics, $fiscal): array {
+        return response()->json(collect(self::APPS)->map(function (array $app, string $key) use ($installed, $logistics, $fiscal, $stripe): array {
             $installation = $installed->get($key);
 
             return [
@@ -51,7 +60,7 @@ class AppCenterController extends Controller
                 'installed' => $installation !== null,
                 'status' => $installation !== null ? $installation->status : 'AVAILABLE',
                 'location' => $app['location'],
-                'configuration' => $this->appConfiguration($key, $logistics, $fiscal),
+                'configuration' => $this->appConfiguration($key, $logistics, $fiscal, $stripe),
             ];
         })->values());
     }
@@ -109,6 +118,23 @@ class AppCenterController extends Controller
         );
 
         return $this->logistics();
+    }
+
+    public function stripe(): JsonResponse
+    {
+        return response()->json($this->stripe->safeStatus());
+    }
+
+    public function saveStripe(SaveStripeSettingsRequest $request): JsonResponse
+    {
+        $this->stripe->save($request->validated());
+
+        TenantAppInstallation::query()->firstOrCreate(
+            ['app_key' => 'stripe'],
+            ['status' => 'INSTALLED', 'installed_at' => now()],
+        );
+
+        return $this->stripe();
     }
 
     public function fiscal(): JsonResponse
@@ -236,9 +262,10 @@ class AppCenterController extends Controller
 
     /**
      * @param  array<string, mixed>  $fiscal
+     * @param  array<string, mixed>  $stripe
      * @return array{environment: string|null, credential_configured: bool}
      */
-    private function appConfiguration(string $app, ?MelhorEnvioSetting $logistics, array $fiscal): array
+    private function appConfiguration(string $app, ?MelhorEnvioSetting $logistics, array $fiscal, array $stripe): array
     {
         return match ($app) {
             'logistics' => [
@@ -250,6 +277,15 @@ class AppCenterController extends Controller
                     ? $fiscal['environment']
                     : null,
                 'credential_configured' => filled($fiscal['api_token'] ?? null),
+            ],
+            'stripe' => [
+                'environment' => isset($stripe['active_environment']) && is_string($stripe['active_environment'])
+                    ? $stripe['active_environment']
+                    : null,
+                'credential_configured' => isset(
+                    $stripe['active_environment'],
+                    $stripe['environments'][$stripe['active_environment']]['secret_key_configured'],
+                ) && $stripe['environments'][$stripe['active_environment']]['secret_key_configured'] === true,
             ],
             default => [
                 'environment' => null,

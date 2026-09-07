@@ -396,3 +396,20 @@ Copie este bloco para cada handoff relevante:
 - Evidências: `ShippingBenefitResolverTest` cobre elegibilidade e não sobreposição inicial. CI ainda não iniciou para o HEAD atual.
 - Riscos, bloqueios e itens não verificados: o indicador animado de quanto falta no carrinho, cupom de frete após endereço e a tela de regra percentual ainda não foram implementados. Nenhum gateway/pagamento foi habilitado.
 - Próxima ação única: expor o progresso de frete grátis no contrato de resumo e renderizá-lo no carrinho com movimento reduzível.
+
+
+### 2026-09-07 — Codex — Stripe por tenant, sem chaves reais
+- Objetivo e escopo: preparar o app Stripe para Sandbox e Produção por loja, com adapter HTTP, credenciais criptografadas e testes simulados; não expor checkout, webhook ou aprovação local.
+- Branch: `payments/stripe-tenant-configuration`.
+- Task board: PAY-004 e PAY-011 permanecem `[~]`. PAY-007/PAY-008 continuam pendentes; nenhum pagamento pode ser confirmado nesta entrega.
+- Implementado: Centro de Apps passou a exibir Stripe; cada tenant pode registrar, sem retorno pela API, chave publicável, chave secreta e segredo de webhook separados para Sandbox e Produção. O adapter recebe só PaymentMethod tokenizado, valor relido em centavos, moeda ISO e chave de idempotência; ausência de credencial ou falha externa resulta em indisponibilidade segura.
+- Testes: `StripeGatewayTest` usa `Http::fake()` para simular PaymentIntent nos dois ambientes e confirma que até uma resposta `succeeded` permanece `PENDING` localmente. A auditoria da API impede a serialização de segredos.
+- Riscos e bloqueios: chaves reais ainda não foram configuradas; a validação externa, tokenização oficial no navegador, endpoint público protegido, webhook assinado/idempotente, estoque e reconciliação seguem pendentes. O Stripe não deve ser marcado como pronto para cobrança.
+- Próxima ação única: executar CI da branch e corrigir apenas os erros; após os gates verdes, iniciar PAY-007 (webhook Stripe assinado e idempotente) antes de liberar checkout.
+
+
+## 2026-09-07 — Stripe por tenant (validação em andamento)
+
+- PR: #61 `payments/stripe-tenant-configuration`.
+- A primeira rodada de CI encontrou somente estilo PHP e uma fixture inerte do Stripe sinalizada por Gitleaks; ambos foram corrigidos sem inserir chaves reais.
+- No commit `93ec821`, Tests, Security Scans e E2E Tests passaram. Não liberar checkout, não configurar chaves reais e não marcar pagamentos como aprovados até webhook assinado e idempotente.

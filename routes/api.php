@@ -260,6 +260,8 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::prefix('settings')->group(function () {
         Route::get('/apps', [AppCenterController::class, 'index'])->middleware('tenant.permission:tenant.settings.view');
         Route::post('/apps/{app}/install', [AppCenterController::class, 'install'])->middleware('tenant.permission:tenant.settings.manage');
+        Route::get('/stripe', [AppCenterController::class, 'stripe'])->middleware('tenant.permission:tenant.settings.view');
+        Route::post('/stripe', [AppCenterController::class, 'saveStripe'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/logistics', [AppCenterController::class, 'logistics'])->middleware('tenant.permission:tenant.settings.view');
         Route::post('/logistics', [AppCenterController::class, 'saveLogistics'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/fiscal', [AppCenterController::class, 'fiscal'])->middleware('tenant.permission:tenant.settings.view');

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AppWindow, BadgeCheck, Box, ChevronRight, FileKey2, LoaderCircle, MapPinned, PackageCheck, Settings2, ShieldCheck } from 'lucide-react';
+import { AppWindow, BadgeCheck, Box, ChevronRight, CreditCard, FileKey2, LoaderCircle, MapPinned, PackageCheck, Settings2, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../api';
 import { Badge } from '../DesignSystem/primitives/Badge';
@@ -10,10 +10,21 @@ import './settings.css';
 const TABS = [
   { value: 'APPS', label: 'Apps' },
   { value: 'LOGISTICS', label: 'Logística' },
+  { value: 'PAYMENTS', label: 'Pagamentos' },
   { value: 'FISCAL', label: 'Fiscal' },
 ];
 
 const emptyLogistics = { environment: 'SANDBOX', access_token: '' };
+
+const emptyStripe = {
+  active_environment: 'SANDBOX',
+  sandbox_publishable_key: '',
+  sandbox_secret_key: '',
+  sandbox_webhook_secret: '',
+  production_publishable_key: '',
+  production_secret_key: '',
+  production_webhook_secret: '',
+};
 
 const emptyFiscal = {
   legal_name: '',
@@ -32,7 +43,7 @@ const appEnvironmentLabel = (environment) => ({
 }[environment] || 'Não configurado');
 
 const AppCard = ({ app, busy, onInstall, onOpen }) => {
-  const Icon = app.key === 'fiscal' ? FileKey2 : PackageCheck;
+  const Icon = app.key === 'stripe' ? CreditCard : app.key === 'fiscal' ? FileKey2 : PackageCheck;
   const configuration = app.configuration || {};
   const configured = Boolean(configuration.credential_configured);
   const actionLabel = app.location ? 'Abrir app' : app.installed ? 'Configurar' : 'Instalar';
@@ -115,6 +126,8 @@ const SettingsPage = () => {
   const [apps, setApps] = useState([]);
   const [fiscal, setFiscal] = useState(emptyFiscal);
   const [logistics, setLogistics] = useState(emptyLogistics);
+  const [stripe, setStripe] = useState(emptyStripe);
+  const [stripeStatus, setStripeStatus] = useState({});
   const [preflight, setPreflight] = useState({});
   const [certificate, setCertificate] = useState(null);
   const [certificateMeta, setCertificateMeta] = useState(null);
@@ -125,10 +138,11 @@ const SettingsPage = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const [appsResponse, fiscalResponse, logisticsResponse] = await Promise.all([
+      const [appsResponse, fiscalResponse, logisticsResponse, stripeResponse] = await Promise.all([
         api.get('/admin/settings/apps'),
         api.get('/admin/settings/fiscal'),
         api.get('/admin/settings/logistics'),
+        api.get('/admin/settings/stripe'),
       ]);
       setApps(Array.isArray(appsResponse.data) ? appsResponse.data : []);
       const issuer = fiscalResponse.data?.issuer || {};
@@ -136,6 +150,8 @@ const SettingsPage = () => {
       setPreflight(fiscalResponse.data?.preflight || {});
       setCertificateMeta(fiscalResponse.data?.certificate || null);
       setLogistics((current) => ({ ...current, environment: logisticsResponse.data?.environment || 'SANDBOX', access_token: '' }));
+      setStripe((current) => ({ ...current, active_environment: stripeResponse.data?.active_environment || 'SANDBOX' }));
+      setStripeStatus(stripeResponse.data || {});
     } catch {
       setNotice({ tone: 'error', text: 'Não foi possível carregar as configurações desta loja.' });
     } finally {
@@ -150,7 +166,7 @@ const SettingsPage = () => {
     try {
       await api.post(`/admin/settings/apps/${app.key}/install`);
       await load();
-      setTab(app.key === 'fiscal' ? 'FISCAL' : app.key === 'logistics' ? 'LOGISTICS' : 'APPS');
+      setTab(app.key === 'fiscal' ? 'FISCAL' : app.key === 'logistics' ? 'LOGISTICS' : app.key === 'stripe' ? 'PAYMENTS' : 'APPS');
     } catch {
       setNotice({ tone: 'error', text: 'Não foi possível instalar este app.' });
     } finally {
@@ -169,6 +185,23 @@ const SettingsPage = () => {
       await load();
     } catch (error) {
       setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível salvar a configuração logística.' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveStripe = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setNotice(null);
+    try {
+      const response = await api.post('/admin/settings/stripe', stripe);
+      setStripe((current) => ({ ...emptyStripe, active_environment: response.data?.active_environment || current.active_environment }));
+      setStripeStatus(response.data || {});
+      setNotice({ tone: 'success', text: 'Configuração do Stripe salva com segurança. O checkout permanece bloqueado até a homologação do webhook.' });
+      await load();
+    } catch (error) {
+      setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível salvar a configuração do Stripe.' });
     } finally {
       setSaving(false);
     }
@@ -219,7 +252,7 @@ const SettingsPage = () => {
           {apps.length ? (
             <div className="hub-app-grid">
               {apps.map((app) => (
-                <AppCard key={app.key} app={app} busy={saving} onInstall={() => install(app)} onOpen={() => app.key === 'logistics' ? setTab('LOGISTICS') : app.location ? navigate(app.location) : setTab('FISCAL')} />
+                <AppCard key={app.key} app={app} busy={saving} onInstall={() => install(app)} onOpen={() => app.key === 'logistics' ? setTab('LOGISTICS') : app.key === 'stripe' ? setTab('PAYMENTS') : app.location ? navigate(app.location) : setTab('FISCAL')} />
               ))}
             </div>
           ) : (
@@ -236,6 +269,28 @@ const SettingsPage = () => {
             <label>Token do Melhor Envio<input type="password" value={logistics.access_token} onChange={(event) => setLogistics({ ...logistics, access_token: event.target.value })} placeholder="Informe o token deste ambiente" /><small>O token não é exibido depois de salvo. Ao mudar de ambiente, informe a credencial correspondente.</small></label>
           </div>
           <div className="hub-fiscal-form-footer"><MapPinned aria-hidden="true" size={17} /><p>Remetente, embalagens e etiquetas continuam na Central de Logística & Envios.</p><Button type="submit" loading={saving} icon={ShieldCheck}>Salvar configuração</Button></div>
+        </form>
+      ) : tab === 'PAYMENTS' ? (
+        <form className="hub-fiscal-form hub-surface" onSubmit={saveStripe}>
+          <header><span><CreditCard aria-hidden="true" size={20} /></span><div><h2>App Stripe</h2><p>As chaves de teste e de produção ficam separadas por loja. Nenhuma cobrança é liberada antes do webhook assinado.</p></div></header>
+          <div className="hub-fiscal-readiness">
+            <div><h2>Diagnóstico do Stripe</h2><p>As chaves nunca voltam ao navegador. Esta tela mostra apenas o estado de cada ambiente.</p></div>
+            <ul>
+              {['SANDBOX', 'PRODUCTION'].map((environment) => {
+                const configured = stripeStatus?.environments?.[environment] || {};
+                const ready = Boolean(configured.publishable_key_configured && configured.secret_key_configured);
+                return <li key={environment}><span>{ready ? <BadgeCheck aria-hidden="true" size={18} /> : <Box aria-hidden="true" size={18} />}</span><div><strong>{environment === 'SANDBOX' ? 'Sandbox' : 'Produção'}</strong><small>{configured.webhook_secret_configured ? 'Webhook registrado; processamento ainda depende da próxima entrega.' : 'Webhook ainda não registrado.'}</small></div><Badge variant={ready ? 'success' : 'warning'}>{ready ? 'Chaves prontas' : 'Configuração pendente'}</Badge></li>;
+              })}
+            </ul>
+          </div>
+          <div className="hub-fiscal-fields">
+            <label>Ambiente ativo<select value={stripe.active_environment} onChange={(event) => setStripe({ ...stripe, active_environment: event.target.value })}><option value="SANDBOX">Sandbox</option><option value="PRODUCTION">Produção</option></select><small>O ambiente escolhido será exigido pela tentativa de pagamento.</small></label>
+          </div>
+          <div className="hub-fiscal-layout">
+            <section className="hub-fiscal-form hub-surface"><header><span><CreditCard aria-hidden="true" size={20} /></span><div><h2>Sandbox</h2><p>Use exclusivamente chaves iniciadas por pk_test_ e sk_test_.</p></div></header><div className="hub-fiscal-fields"><label>Chave publicável<input type="password" value={stripe.sandbox_publishable_key} onChange={(event) => setStripe({ ...stripe, sandbox_publishable_key: event.target.value })} placeholder="pk_test_..." /></label><label>Chave secreta<input type="password" value={stripe.sandbox_secret_key} onChange={(event) => setStripe({ ...stripe, sandbox_secret_key: event.target.value })} placeholder="sk_test_..." /></label><label>Segredo do webhook<input type="password" value={stripe.sandbox_webhook_secret} onChange={(event) => setStripe({ ...stripe, sandbox_webhook_secret: event.target.value })} placeholder="whsec_..." /></label></div></section>
+            <section className="hub-fiscal-form hub-surface"><header><span><CreditCard aria-hidden="true" size={20} /></span><div><h2>Produção</h2><p>Use exclusivamente chaves iniciadas por pk_live_ e sk_live_.</p></div></header><div className="hub-fiscal-fields"><label>Chave publicável<input type="password" value={stripe.production_publishable_key} onChange={(event) => setStripe({ ...stripe, production_publishable_key: event.target.value })} placeholder="pk_live_..." /></label><label>Chave secreta<input type="password" value={stripe.production_secret_key} onChange={(event) => setStripe({ ...stripe, production_secret_key: event.target.value })} placeholder="sk_live_..." /></label><label>Segredo do webhook<input type="password" value={stripe.production_webhook_secret} onChange={(event) => setStripe({ ...stripe, production_webhook_secret: event.target.value })} placeholder="whsec_..." /></label></div></section>
+          </div>
+          <div className="hub-fiscal-form-footer"><ShieldCheck aria-hidden="true" size={17} /><p>Deixe um campo vazio para preservar a credencial já salva. Sem credencial configurada, o adapter retorna indisponibilidade segura.</p><Button type="submit" loading={saving} icon={ShieldCheck}>Salvar configuração</Button></div>
         </form>
       ) : (
         <div className="hub-fiscal-layout">
