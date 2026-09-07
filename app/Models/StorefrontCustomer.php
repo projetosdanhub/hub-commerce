@@ -32,11 +32,17 @@ class StorefrontCustomer extends Authenticatable
         ];
     }
 
+    /**
+     * @return HasMany<StorefrontCustomerAddress, $this>
+     */
     public function addresses(): HasMany
     {
         return $this->hasMany(StorefrontCustomerAddress::class);
     }
 
+    /**
+     * @return HasMany<Order, $this>
+     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
