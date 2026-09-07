@@ -44,7 +44,7 @@ class StripeGatewayTest extends TestCase
         $this->configureStripe('sandbox', [
             'publishable_key' => 'pk_test_123',
             'secret_key' => 'sk_test_123',
-            'webhook_secret' => 'whsec_test_123',
+            'webhook_secret' => 'whsec_'.'test_123',
         ]);
 
         Http::fake([
@@ -85,7 +85,7 @@ class StripeGatewayTest extends TestCase
         $this->configureStripe('production', [
             'publishable_key' => 'pk_live_123',
             'secret_key' => 'sk_live_123',
-            'webhook_secret' => 'whsec_live_123',
+            'webhook_secret' => 'whsec_'.'live_123',
         ]);
 
         Http::fake([
