@@ -42,7 +42,6 @@ class Produto extends Model
             'alerta_moderado' => 'integer',
             'alerta_alto' => 'integer',
             'pre_venda' => 'boolean',
-            'frete_gratis' => 'boolean',
             'prep_tempo' => 'integer',
             'personalizado' => 'boolean',
             'frete_gratis' => 'boolean',
