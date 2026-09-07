@@ -25,29 +25,53 @@ const emptyFiscal = {
   certificate_password: '',
 };
 
-const AppCard = ({ app, busy, onInstall, onOpen }) => (
-  <article className="hub-app-card">
-    <div className="hub-app-card-icon">
-      {app.key === 'fiscal' ? <FileKey2 aria-hidden="true" size={22} /> : <PackageCheck aria-hidden="true" size={22} />}
-    </div>
-    <div className="hub-app-card-content">
-      <div>
-        <h2>{app.name}</h2>
-        <p>{app.description}</p>
+const appEnvironmentLabel = (environment) => ({
+  SANDBOX: 'Teste',
+  HOMOLOGATION: 'Teste',
+  PRODUCTION: 'Produção',
+}[environment] || 'Não configurado');
+
+const AppCard = ({ app, busy, onInstall, onOpen }) => {
+  const Icon = app.key === 'fiscal' ? FileKey2 : PackageCheck;
+  const configuration = app.configuration || {};
+  const configured = Boolean(configuration.credential_configured);
+  const actionLabel = app.location ? 'Abrir app' : app.installed ? 'Configurar' : 'Instalar';
+
+  return (
+    <article className="hub-app-card" data-installed={app.installed}>
+      <header className="hub-app-card-header">
+        <div className="hub-app-card-icon"><Icon aria-hidden="true" size={22} /></div>
+        <div className="hub-app-card-meta">
+          <Badge variant={app.installed ? 'success' : 'neutral'}>{app.installed ? 'Instalado' : 'Disponível'}</Badge>
+          <Badge variant={configuration.environment === 'PRODUCTION' ? 'special' : 'info'}>{appEnvironmentLabel(configuration.environment)}</Badge>
+        </div>
+      </header>
+      <div className="hub-app-card-content">
+        <div>
+          <h2>{app.name}</h2>
+          <p>{app.description}</p>
+        </div>
+        {app.installed ? (
+          <p className="hub-app-card-readiness">
+            <ShieldCheck aria-hidden="true" size={16} />
+            {configured ? 'Credencial registrada com segurança.' : 'Configuração pendente.'}
+          </p>
+        ) : null}
       </div>
-      <div className="hub-app-card-footer">
-        <Badge variant={app.installed ? 'success' : 'neutral'}>{app.installed ? 'Instalado' : 'Disponível'}</Badge>
-        {app.location ? (
-          <Button size="sm" variant="secondary" icon={ChevronRight} onClick={onOpen}>Abrir</Button>
-        ) : app.installed ? (
-          <Button size="sm" variant="secondary" icon={Settings2} onClick={onOpen}>Configurar</Button>
-        ) : (
-          <Button size="sm" icon={AppWindow} loading={busy} onClick={onInstall}>Instalar</Button>
-        )}
-      </div>
-    </div>
-  </article>
-);
+      <footer className="hub-app-card-footer">
+        <Button
+          size="sm"
+          variant={app.installed ? 'secondary' : 'primary'}
+          icon={app.installed ? Settings2 : AppWindow}
+          loading={busy}
+          onClick={app.installed ? onOpen : onInstall}
+        >
+          {actionLabel}
+        </Button>
+      </footer>
+    </article>
+  );
+};
 
 const FiscalReadiness = ({ preflight = {} }) => {
   const catalog = preflight.catalog || {};
@@ -179,7 +203,7 @@ const ConfiguracoesPrincipal = () => {
         <div>
           <p>Configurações</p>
           <h1>Centro de Apps</h1>
-          <span>Instale e configure capacidades por loja, com permissões e credenciais protegidas.</span>
+          <span>Instale e configure capacidades por loja. Cada aplicativo opera em um único ambiente por vez e seus segredos permanecem protegidos.</span>
         </div>
       </header>
 
@@ -190,13 +214,19 @@ const ConfiguracoesPrincipal = () => {
       {tab === 'APPS' ? (
         <section className="hub-settings-apps">
           <div className="hub-settings-section-heading">
-            <div><h2>Apps da sua operação</h2><p>Logística fica na Central de Logística & Envios; fiscal é configurado por loja.</p></div>
+            <div><h2>Apps da sua operação</h2><p>O catálogo mostra somente capacidades que a loja pode instalar e configurar agora. Gateways de pagamento entrarão após adapter, idempotência e webhook homologados.</p></div>
           </div>
-          <div className="hub-app-grid">
-            {apps.map((app) => (
-              <AppCard key={app.key} app={app} busy={saving} onInstall={() => install(app)} onOpen={() => app.key === 'logistics' ? setTab('LOGISTICS') : app.location ? navigate(app.location) : setTab('FISCAL')} />
-            ))}
-          </div>
+          {apps.length ? (
+            <div className="hub-app-grid">
+              {apps.map((app) => (
+                <AppCard key={app.key} app={app} busy={saving} onInstall={() => install(app)} onOpen={() => app.key === 'logistics' ? setTab('LOGISTICS') : app.location ? navigate(app.location) : setTab('FISCAL')} />
+              ))}
+            </div>
+          ) : (
+            <section className="hub-empty-state hub-surface">
+              <div><h2>Nenhum aplicativo disponível</h2><p>Quando a loja tiver um aplicativo liberado, ele aparecerá neste catálogo.</p></div>
+            </section>
+          )}
         </section>
       ) : tab === 'LOGISTICS' ? (
         <form className="hub-fiscal-form hub-surface" onSubmit={saveLogistics}>
@@ -216,7 +246,7 @@ const ConfiguracoesPrincipal = () => {
               <label>Razão social<input required value={fiscal.legal_name} onChange={(event) => setFiscal({ ...fiscal, legal_name: event.target.value })} /></label>
               <label>CNPJ<input required value={fiscal.cnpj} onChange={(event) => setFiscal({ ...fiscal, cnpj: event.target.value })} /></label>
               <label>Inscrição estadual<input required value={fiscal.state_registration} onChange={(event) => setFiscal({ ...fiscal, state_registration: event.target.value })} /></label>
-              <label>Ambiente<select value={fiscal.environment} onChange={(event) => setFiscal({ ...fiscal, environment: event.target.value })}><option value="HOMOLOGATION">Homologação</option><option value="PRODUCTION">Produção</option></select></label>
+              <label>Ambiente<select value={fiscal.environment} onChange={(event) => setFiscal({ ...fiscal, environment: event.target.value })}><option value="HOMOLOGATION">Teste (homologação)</option><option value="PRODUCTION">Produção</option></select></label>
               <label>Provedor fiscal<input value={fiscal.provider} onChange={(event) => setFiscal({ ...fiscal, provider: event.target.value })} placeholder="Ex.: provedor contratado" /></label>
               <label>Token do provedor<input type="password" value={fiscal.api_token} onChange={(event) => setFiscal({ ...fiscal, api_token: event.target.value })} placeholder="Deixe vazio para manter o atual" /></label>
               <label>Certificado A1 (PFX/P12)<input type="file" accept=".pfx,.p12,application/x-pkcs12" onChange={(event) => setCertificate(event.target.files?.[0] || null)} /><small>{certificateMeta?.configured ? `Configurado: ${certificateMeta.name}` : 'Nenhum certificado configurado'}</small></label>
