@@ -24,8 +24,8 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 ## Sequência autorizada — 2026-09-07
 
-1. **Etapa 4 — atual:** organizar a navegação, os submenus, o dicionário de regras, os filtros e os estados visuais de Marketing, Benefícios, Fidelidade, Clientes/VIP, Afiliados e Loja de Aplicativos. Esta etapa não pode apresentar dados simulados como operacionais. A primeira entrega separa Clientes, Benefícios & VIP, Marketing e Afiliados; filtros e métricas continuam bloqueados até cada domínio publicar sua consulta tenant-scoped.
-2. **Etapa 1:** criar a fundação de pedido e pagamento — snapshot atômico, adapter, tentativa e idempotência.
+1. **Etapa 4 — fundação integrada:** navegação, submenus e estados honestos de Marketing, Benefícios/Fidelidade, Clientes/VIP, Afiliados e Apps foram entregues na PR #56. Filtros e métricas continuam bloqueados até cada domínio publicar sua consulta tenant-scoped; UI-028/UI-029 seguem para refinamentos posteriores.
+2. **Etapa 1 — atual:** criar a fundação de pedido e pagamento — snapshot atômico, adapter, tentativa e idempotência.
 3. **Etapa 2:** consolidar o motor de benefícios, cupom, Hub Coins, VIP e resgate para aplicá-los no carrinho e checkout com snapshot.
 4. **Etapa 3:** habilitar moeda por produto e restringir USD/EUR ao Stripe configurado no tenant.
 
@@ -155,8 +155,8 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | ORD-002 | P1 | Recalcular preços e promoções no servidor | CAT-002 | Cliente não controla total |
 | [ ] | ORD-003 | P1 | Reservar estoque com concorrência segura | CAT-003 | Sem overselling |
 | [ ] | ORD-004 | P1 | Criar máquina de estados do pedido | BASE-009 | Transições inválidas bloqueadas |
-| [ ] | PAY-001 | P0 | Criar PaymentGateway interface | SEC-007 | Contrato comum testado |
-| [ ] | PAY-002 | P0 | Criar payment_attempts por tenant | PAY-001, TEN-006 | Tentativas persistidas sem secrets |
+| [~] | PAY-001 | P0 | Criar PaymentGateway interface | SEC-007 | Contrato tokenizado e resultado de iniciação criados; a confirmação continua exclusiva de webhook assinado e aguarda CI |
+| [~] | PAY-002 | P0 | Criar payment_attempts por tenant | PAY-001, TEN-006 | Migration/model tenant-scoped com valor em centavos, moeda, ambiente, referências seguras e chave idempotente; ainda sem cobrança ou adapter |
 | [ ] | PAY-003 | P0 | Implementar idempotência de checkout | PAY-002 | Repetição não duplica cobrança |
 | [ ] | PAY-004 | P1 | Integrar Stripe com tokenização oficial | SEC-008, PAY-003 | Sandbox aprovado |
 | [ ] | PAY-005 | P1 | Integrar Mercado Pago com tokenização oficial | SEC-008, PAY-003 | Sandbox aprovado |
