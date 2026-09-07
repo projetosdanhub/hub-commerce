@@ -29,7 +29,7 @@ class StripeCheckoutController extends Controller
         $accessToken = PersonalAccessToken::findToken((string) $request->bearerToken());
         $customer = $accessToken?->tokenable;
 
-        if (! $customer instanceof StorefrontCustomer || !$accessToken->can('storefront.checkout')) {
+        if (!$customer instanceof StorefrontCustomer || !$accessToken->can('storefront.checkout')) {
             abort(403);
         }
 
@@ -85,7 +85,7 @@ class StripeCheckoutController extends Controller
             ->where('status', 'INSTALLED')
             ->exists();
 
-        if (! $installed) {
+        if (!$installed) {
             abort(409, 'O app Stripe precisa estar instalado nesta loja.');
         }
     }
