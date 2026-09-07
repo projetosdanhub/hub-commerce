@@ -27,6 +27,7 @@ import FavoritosLateral from './Modulos/Loja/FavoritosLateral';
 import PaginaInicial from './Modulos/Loja/PaginaInicial';
 import DetalheProduto from './Modulos/Loja/DetalheProduto';
 import PaginaCarrinho from './Modulos/Loja/PaginaCarrinho';
+import PaginaCheckout from './Modulos/Loja/PaginaCheckout';
 import PaginaPerfil from './Modulos/Loja/PaginaPerfil';
 import PainelAfiliados from './Modulos/Loja/PainelAfiliados';
 import PaginaAutenticacao from './Modulos/Loja/PaginaAutenticacao';
@@ -50,7 +51,6 @@ import AdminPixels from './Modulos/Admin/Pixels/PixelsPrincipal';
 
 // Mocks Temporários
 const PaginaCategoria = () => <div className="p-20 text-center text-2xl font-bold">Página de Categoria / Departamentos</div>;
-const PaginaCheckout = () => <div className="p-20 text-center text-2xl font-bold">Página de Checkout Oficial (Em Breve)</div>;
 
 // ============================================================================
 // O ESTRUTURADOR MESTRE: AppContent (Gerencia Layout Global e Estado)
@@ -61,7 +61,8 @@ const AppContent = () => {
     // O sistema oculta o Header/Footer se estivermos no painel administrativo ou na tela de login
     const isAdmin = location.pathname.startsWith('/admin');
     const isLoginStore = location.pathname === '/login';
-    const hideLayout = isAdmin || isLoginStore;
+    const isCheckout = location.pathname === '/checkout';
+    const hideLayout = isAdmin || isLoginStore || isCheckout;
 
     // --- 0. INICIALIZAÇÃO E RASTREAMENTO GLOBAL (PIXEL / GA4 / UTMS) ---
     useEffect(() => {
