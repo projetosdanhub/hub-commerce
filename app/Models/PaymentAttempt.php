@@ -18,6 +18,7 @@ class PaymentAttempt extends Model
         'payment_method',
         'status',
         'idempotency_key',
+        'checkout_fingerprint',
         'amount_cents',
         'currency',
         'gateway_payment_id',
