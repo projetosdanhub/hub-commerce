@@ -72,7 +72,6 @@ const ProductQuickView = ({ isOpen, produtoId, onClose, onAddCart }) => {
         if (isOpen && produtoId) {
             document.body.style.overflow = 'hidden';
             setQuantidade(1);
-            setFreteGratis(false);
             fetch('/api/storefront/products/' + produtoId)
                 .then((response) => response.ok ? response.json() : null)
                 .then((response) => setFreteGratis(response?.data?.frete_gratis === true))
