@@ -17,7 +17,7 @@ final class CheckoutFingerprint
             $id = $item['id'] ?? null;
             $quantity = $item['quantity'] ?? null;
 
-            if (! is_int($id) || $id < 1 || ! is_int($quantity) || $quantity < 1) {
+            if (is_int($id) === false || $id < 1 || is_int($quantity) === false || $quantity < 1) {
                 throw new InvalidArgumentException('Item de checkout inválido.');
             }
 
