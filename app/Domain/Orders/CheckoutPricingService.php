@@ -48,7 +48,7 @@ final class CheckoutPricingService
             /** @var Produto $product */
             $product = $products->get($productId);
 
-            if (!$product->ativo || $product->status_vitrine !== ProductStatus::ACTIVE) {
+            if (! $product->ativo || $product->status_vitrine !== ProductStatus::ACTIVE) {
                 throw new DomainException('Um ou mais produtos não estão disponíveis.');
             }
 
