@@ -47,7 +47,7 @@ import ConstrutorVitrinePrincipal from './Modulos/Admin/ConstrutorVitrine/Constr
 import ConfiguracoesPrincipal from './Modulos/Admin/Configuracoes/ConfiguracoesPrincipal';
 import AdminAvaliacoes from './Modulos/Admin/AdminAvaliacoes';
 import AdminLogin from './Modulos/Admin/AdminLogin';
-import AdminCarriers from './Modulos/Admin/AdminCarriers';
+import CarriersPage from './Modulos/Admin/Carriers/CarriersPage';
 import AdminPixels from './Modulos/Admin/Pixels/PixelsPrincipal';
 
 // Mocks Temporários
@@ -255,7 +255,7 @@ const AppContent = () => {
                         <Route path="vitrine" element={<ConstrutorVitrinePrincipal />} />
                         <Route path="configuracoes" element={<ConfiguracoesPrincipal />} />
                         <Route path="avaliacoes" element={<AdminAvaliacoes />} />
-                        <Route path="transportadoras" element={<AdminCarriers />} />
+                        <Route path="transportadoras" element={<CarriersPage />} />
                         <Route path="estoque" element={<div className="p-8 text-slate-500">Módulo de Estoque (Em construção)</div>} />
                     </Route>
                     
