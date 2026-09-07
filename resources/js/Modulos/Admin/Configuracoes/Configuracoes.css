@@ -618,3 +618,81 @@
 .hub-fiscal-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--hub-space-4);padding:var(--hub-space-5) 0}.hub-fiscal-fields label{display:grid;gap:var(--hub-space-2);color:var(--hub-text-secondary);font-size:var(--hub-text-body-sm);font-weight:var(--hub-font-weight-medium)}.hub-fiscal-fields input,.hub-fiscal-fields select{width:100%;border:1px solid var(--hub-border);border-radius:var(--hub-radius-sm);padding:.7rem .8rem;color:var(--hub-text-primary);background:var(--hub-surface-subtle)}.hub-fiscal-fields small{color:var(--hub-text-muted);font-size:.6875rem}
 .hub-fiscal-form-footer{display:flex;align-items:center;gap:var(--hub-space-3);padding-top:var(--hub-space-4);border-top:1px solid var(--hub-border)}.hub-fiscal-form-footer>svg{flex:0 0 auto;color:var(--hub-primary)}.hub-fiscal-form-footer p{flex:1;margin:0}.hub-settings-notice{padding:var(--hub-space-3);border-radius:var(--hub-radius-sm);font-size:var(--hub-text-body-sm)}.hub-settings-notice-success{color:var(--hub-success);background:var(--hub-success-soft)}.hub-settings-notice-error{color:var(--hub-danger);background:var(--hub-danger-soft)}.hub-settings-loading{display:grid;min-height:18rem;place-items:center}.hub-spin{animation:hub-spin 1s linear infinite}
 @media(max-width:42rem){.hub-settings-page{padding:var(--hub-space-4)}.hub-app-grid,.hub-fiscal-readiness ul,.hub-fiscal-fields{grid-template-columns:1fr}.hub-app-card{min-height:0}.hub-fiscal-form-footer{align-items:flex-start;flex-wrap:wrap}.hub-fiscal-form-footer .hub-button{width:100%}}
+
+/* Centro de Apps: o catálogo só expõe instalações e diagnósticos retornados pelo tenant. */
+.hub-app-card {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--hub-space-5);
+  min-height: 15rem;
+  padding: var(--hub-space-5);
+  border: 1px solid var(--hub-border);
+  border-radius: var(--hub-radius-md);
+  background: var(--hub-surface-raised);
+  transition: border-color var(--hub-motion-fast) var(--hub-ease-out), background var(--hub-motion-fast) var(--hub-ease-out), transform var(--hub-motion-fast) var(--hub-ease-out);
+}
+
+.hub-app-card:hover {
+  border-color: var(--hub-border-strong);
+  background: var(--hub-surface-hover);
+  transform: translateY(-1px);
+}
+
+.hub-app-card[data-installed="true"] {
+  border-color: color-mix(in srgb, var(--hub-primary) 35%, var(--hub-border));
+}
+
+.hub-app-card-header,
+.hub-app-card-meta,
+.hub-app-card-readiness {
+  display: flex;
+  align-items: center;
+}
+
+.hub-app-card-header {
+  justify-content: space-between;
+  gap: var(--hub-space-3);
+}
+
+.hub-app-card-meta {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--hub-space-2);
+}
+
+.hub-app-card-content {
+  display: grid;
+  align-content: start;
+  gap: var(--hub-space-4);
+  min-width: 0;
+}
+
+.hub-app-card-readiness {
+  gap: var(--hub-space-2);
+  margin: 0;
+  color: var(--hub-text-secondary);
+  font-size: var(--hub-text-body-sm);
+}
+
+.hub-app-card-readiness svg {
+  flex: 0 0 auto;
+  color: var(--hub-primary);
+}
+
+.hub-app-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--hub-space-4);
+  border-top: 1px solid var(--hub-border);
+}
+
+@media (max-width: 42rem) {
+  .hub-app-card {
+    min-height: 0;
+  }
+
+  .hub-app-card-footer,
+  .hub-app-card-footer .hub-button {
+    width: 100%;
+  }
+}
