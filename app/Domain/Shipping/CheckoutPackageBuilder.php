@@ -2,7 +2,6 @@
 
 namespace App\Domain\Shipping;
 
-use App\Models\Produto;
 use App\Models\ShippingPackage;
 use DomainException;
 use Illuminate\Support\Collection;
