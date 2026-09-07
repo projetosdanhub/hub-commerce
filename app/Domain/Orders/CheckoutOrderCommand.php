@@ -2,6 +2,7 @@
 
 namespace App\Domain\Orders;
 
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 final readonly class CheckoutOrderCommand
@@ -28,7 +29,7 @@ final readonly class CheckoutOrderCommand
             trim($this->shippingQuoteToken) === ''
             || trim($this->gateway) === ''
             || trim($this->paymentMethod) === ''
-            || preg_match('/^[A-Z0-9_-]{8,128}$/', $this->idempotencyKey) !== 1
+            || Str::isUuid($this->idempotencyKey) === false
             || in_array($this->environment, ['SANDBOX', 'PRODUCTION'], true) === false
         ) {
             throw new InvalidArgumentException('A solicitação de checkout é inválida.');
