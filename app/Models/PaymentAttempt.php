@@ -7,6 +7,17 @@ use App\Domain\Tenancy\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $order_id
+ * @property string $gateway
+ * @property string $environment
+ * @property string $payment_method
+ * @property PaymentAttemptStatus $status
+ * @property string $idempotency_key
+ * @property string $checkout_fingerprint
+ * @property int $amount_cents
+ * @property string $currency
+ */
 class PaymentAttempt extends Model
 {
     use BelongsToTenant;
