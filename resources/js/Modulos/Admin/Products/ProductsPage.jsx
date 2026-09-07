@@ -56,7 +56,7 @@ export default function ProductsPage() {
     <SectionTabs items={tabs} value={tab} onChange={setTab} ariaLabel="Seções do catálogo" />
     {tab === 'PAINEL' ? <CatalogDashboard products={products} total={pagination.total} loading={productsQuery.isLoading} onCreate={createProduct} onBrowse={() => setTab('PRODUTOS')} /> : null}
     {tab === 'PRODUTOS' ? <CatalogList products={products} categories={categories} filters={filters} pagination={pagination} loading={productsQuery.isLoading || productsQuery.isFetching} onChange={changeFilters} onClear={() => setFilters(initialFilters)} onCreate={createProduct} onEdit={openProduct} /> : null}
-    {tab === 'FRETE_GRATIS' ? <FreeShippingManager products={freeShippingProductsQuery.data?.data || []} settings={freeShippingSettingsQuery.data} loading={freeShippingProductsQuery.isLoading || freeShippingSettingsQuery.isLoading} onSave={saveFreeShipping} /> : null}
+    {tab === 'FRETE_GRATIS' && freeShippingSettingsQuery.data ? <FreeShippingManager key={JSON.stringify(freeShippingSettingsQuery.data)} products={freeShippingProductsQuery.data?.data || []} settings={freeShippingSettingsQuery.data} loading={freeShippingProductsQuery.isLoading || freeShippingSettingsQuery.isLoading} onSave={saveFreeShipping} /> : null}
     {tab === 'AUDITORIA' ? <CatalogAudit logs={Array.isArray(auditsQuery.data) ? auditsQuery.data : auditsQuery.data?.data || []} loading={auditsQuery.isLoading || auditsQuery.isFetching} error={auditsQuery.isError ? errorMessage(auditsQuery.error) : ''} onRefresh={() => auditsQuery.refetch()} /> : null}
   </div>;
 }
