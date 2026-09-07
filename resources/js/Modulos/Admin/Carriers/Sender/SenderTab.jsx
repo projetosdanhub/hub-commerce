@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CarriersIcons, FormSkeleton } from '../Shared/CarriersUI';
-import { TopActionBar, ScrollToTopButton } from '../../Compartilhado/TopActionBar';
+import { TopActionBar, ScrollToTopButton } from '../../Shared/TopActionBar';
 
 export default function SenderTab({ senderForm, setSenderForm, onSave, isSaving, isLoading }) {
     const [isFetchingCep, setIsFetchingCep] = useState(false);
