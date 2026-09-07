@@ -50,7 +50,7 @@ final readonly class StripeGateway implements PaymentGateway
 
         $paymentIntentId = $response->json('id');
 
-        if (! is_string($paymentIntentId) || str_starts_with($paymentIntentId, 'pi_') === false) {
+        if (is_string($paymentIntentId) === false || str_starts_with($paymentIntentId, 'pi_') === false) {
             throw new StripeGatewayUnavailableException('O Stripe retornou uma resposta inválida.');
         }
 
