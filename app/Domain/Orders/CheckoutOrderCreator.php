@@ -151,6 +151,7 @@ final class CheckoutOrderCreator
     private function checkoutFingerprint(CheckoutOrderCommand $command): string
     {
         return hash('sha256', implode('|', [
+            (string) $command->storefrontCustomerId,
             $this->fingerprints->cart($command->items),
             $this->fingerprints->destination($command->address),
             $command->shippingQuoteToken,
