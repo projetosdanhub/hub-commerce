@@ -1377,3 +1377,21 @@ html.hub-modal-open .hub-sidebar-scroll {
   .hub-expandable-search,
   .hub-expandable-search-field { transition: none; }
 }
+
+/* O acento laranja do tema claro mantém a ação primária legível sem alterar o tema escuro. */
+.hub-admin[data-theme="light"] .hub-button-primary,
+.hub-admin[data-theme="light"] .hub-icon-button-primary {
+  border-color: #c2410c;
+  background: var(--hub-accent-gradient);
+  color: #ffffff;
+}
+
+.hub-admin[data-theme="light"] .hub-button-primary:hover:not(:disabled),
+.hub-admin[data-theme="light"] .hub-icon-button-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%);
+}
+
+.hub-admin[data-theme="light"] .hub-button-primary:active:not(:disabled),
+.hub-admin[data-theme="light"] .hub-icon-button-primary:active:not(:disabled) {
+  background: #9a3412;
+}
