@@ -39,8 +39,10 @@ class AppCenterController extends Controller
         $installed = TenantAppInstallation::query()
             ->get()
             ->keyBy('app_key');
+        $logistics = MelhorEnvioSetting::query()->first();
+        $fiscal = $this->fiscalConfig();
 
-        return response()->json(collect(self::APPS)->map(function (array $app, string $key) use ($installed): array {
+        return response()->json(collect(self::APPS)->map(function (array $app, string $key) use ($installed, $logistics, $fiscal): array {
             $installation = $installed->get($key);
 
             return [
@@ -49,6 +51,7 @@ class AppCenterController extends Controller
                 'installed' => $installation !== null,
                 'status' => $installation !== null ? $installation->status : 'AVAILABLE',
                 'location' => $app['location'],
+                'configuration' => $this->appConfiguration($key, $logistics, $fiscal),
             ];
         })->values());
     }
@@ -229,6 +232,30 @@ class AppCenterController extends Controller
             'active_products' => $activeProducts,
             'incomplete_products' => $incompleteProducts,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $fiscal
+     * @return array{environment: string|null, credential_configured: bool}
+     */
+    private function appConfiguration(string $app, ?MelhorEnvioSetting $logistics, array $fiscal): array
+    {
+        return match ($app) {
+            'logistics' => [
+                'environment' => $logistics?->environment,
+                'credential_configured' => filled($logistics?->access_token),
+            ],
+            'fiscal' => [
+                'environment' => isset($fiscal['environment']) && is_string($fiscal['environment'])
+                    ? $fiscal['environment']
+                    : null,
+                'credential_configured' => filled($fiscal['api_token'] ?? null),
+            ],
+            default => [
+                'environment' => null,
+                'credential_configured' => false,
+            ],
+        };
     }
 
     private function fiscalConfig(): array
