@@ -3,6 +3,7 @@
 namespace Tests\Unit\Domain\Shipping;
 
 use App\Domain\Shipping\ShippingBenefitResolver;
+use App\Domain\Shipping\ShippingBenefitRuleType;
 use App\Domain\Tenancy\TenantContext;
 use App\Domain\Tenancy\TenantContextStore;
 use App\Models\Categoria;
@@ -53,8 +54,8 @@ class ShippingBenefitResolverTest extends TestCase
         $category = Categoria::query()->create(['nome' => 'Entrega', 'slug' => 'entrega', 'ativo' => true, 'status' => Categoria::STATUS_ATIVO]);
         $product = $this->product($category, false);
 
-        ShippingBenefitRule::query()->create(['type' => ShippingBenefitRule::PERCENTAGE, 'percentage' => 25, 'priority' => 20, 'is_active' => true]);
-        ShippingBenefitRule::query()->create(['type' => ShippingBenefitRule::FREE_FOR_ALL, 'priority' => 10, 'is_active' => true]);
+        ShippingBenefitRule::query()->create(['type' => ShippingBenefitRuleType::PERCENTAGE, 'percentage' => 25, 'priority' => 20, 'is_active' => true]);
+        ShippingBenefitRule::query()->create(['type' => ShippingBenefitRuleType::FREE_FOR_ALL, 'priority' => 10, 'is_active' => true]);
 
         $benefits = app(ShippingBenefitResolver::class)->benefitsFor([$this->priced($product)], 1290);
 
