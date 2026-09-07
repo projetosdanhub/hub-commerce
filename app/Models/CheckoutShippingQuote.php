@@ -5,7 +5,14 @@ namespace App\Models;
 use App\Domain\Tenancy\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
-/** @property \Carbon\CarbonInterface $expires_at */
+/**
+ * @property \Carbon\CarbonInterface $expires_at
+ * @property \Carbon\CarbonInterface|null $invalidated_at
+ * @property int $shipping_cents
+ * @property int $estimated_delivery_days
+ * @property string $token
+ * @property string $service_code
+ */
 class CheckoutShippingQuote extends Model
 {
     use BelongsToTenant;
