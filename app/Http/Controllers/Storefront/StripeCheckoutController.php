@@ -29,7 +29,7 @@ class StripeCheckoutController extends Controller
         $accessToken = PersonalAccessToken::findToken((string) $request->bearerToken());
         $customer = $accessToken?->tokenable;
 
-        if (! $customer instanceof StorefrontCustomer || ! $accessToken->can('storefront.checkout')) {
+        if (! $customer instanceof StorefrontCustomer || !$accessToken->can('storefront.checkout')) {
             abort(403);
         }
 
