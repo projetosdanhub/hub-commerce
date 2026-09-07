@@ -32,6 +32,7 @@ use App\Http\Controllers\Identity\PlatformTeamController;
 use App\Http\Controllers\Identity\PlatformTenantOwnershipController;
 use App\Http\Controllers\Identity\TenantTeamController;
 use App\Http\Controllers\Identity\UserSessionController;
+use App\Http\Controllers\Webhooks\StripeWebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,8 @@ use App\Http\Controllers\Identity\UserSessionController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::post('/webhooks/stripe/{tenant:slug}', [StripeWebhookController::class, 'handle'])->middleware('throttle:120,1');
 
 // ==========================================
 // ROTAS DE LOGIN (PÚBLICAS) E VALIDAÇÃO DE E-MAIL
