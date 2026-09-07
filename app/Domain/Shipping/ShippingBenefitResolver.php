@@ -9,7 +9,7 @@ use Carbon\CarbonImmutable;
 final class ShippingBenefitResolver
 {
     /**
-     * @param array<int, array{product: Produto, quantity: int, unit_price_cents: int, line_total_cents: int}> $pricedItems
+     * @param  array<int, array{product: Produto, quantity: int, unit_price_cents: int, line_total_cents: int}> $pricedItems
      * @return array<int, array{source: string, scope: string, amount_cents: int, reference: string}>
      */
     public function benefitsFor(array $pricedItems, int $shippingCents): array
@@ -58,7 +58,7 @@ final class ShippingBenefitResolver
     }
 
     /**
-     * @param array<int, array{product: Produto, quantity: int, unit_price_cents: int, line_total_cents}> $pricedItems
+     * @param  array<int, array{product: Produto, quantity: int, unit_price_cents: int, line_total_cents}> $pricedItems
      */
     private function allProductsHaveFreeShipping(array $pricedItems): bool
     {
@@ -72,7 +72,7 @@ final class ShippingBenefitResolver
     }
 
     /**
-     * @param array<int, array{product: Produto, quantity: int, unit_price_cents: int, line_total_cents}> $pricedItems
+     * @param  array<int, array{product: Produto, quantity: int, unit_price_cents: int, line_total_cents}> $pricedItems
      */
     private function allProductsMatchRule(array $pricedItems, int $productId): bool
     {
