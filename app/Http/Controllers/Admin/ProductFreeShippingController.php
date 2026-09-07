@@ -26,13 +26,14 @@ class ProductFreeShippingController extends Controller
         ]);
     }
 
-    public function update(Request $request): JsonResponse
+    public function update(Request $request, TenantContextStore $tenantContext): JsonResponse
     {
+        $tenantId = $tenantContext->require()->tenantId;
         $data = $request->validate([
             'product_ids' => ['present', 'array', 'max:500'],
             'product_ids.*' => [
                 'integer',
-                Rule::exists('produtos', 'id')->where(fn ($query) => $query->where('tenant_id', tenant()->id)),
+                Rule::exists('produtos', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
             ],
             'minimum_order_cents' => ['nullable', 'integer', 'min:1', 'max:999999999'],
         ]);
