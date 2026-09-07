@@ -9,11 +9,6 @@ use Illuminate\Support\Collection;
 
 final class CheckoutPackageBuilder
 {
-    /**
-     * @param Collection<int, array{product: Produto, quantity: int}> $items
-     *
-     * @return array{height: string, width: string, length: string, weight: string}
-     */
     public function build(Collection $items): array
     {
         $package = ShippingPackage::query()->where('is_default', true)->first();
