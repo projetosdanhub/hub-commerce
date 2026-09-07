@@ -12,13 +12,19 @@ final class CheckoutShippingQuoteResolver
         string $token,
         string $cartFingerprint,
         string $destinationFingerprint,
+        bool $lockForUpdate = false,
     ): CheckoutShippingQuote {
-        $quote = CheckoutShippingQuote::query()
+        $query = CheckoutShippingQuote::query()
             ->where('token', $token)
             ->where('cart_fingerprint', $cartFingerprint)
             ->where('destination_fingerprint', $destinationFingerprint)
-            ->whereNull('invalidated_at')
-            ->first();
+            ->whereNull('invalidated_at');
+
+        if ($lockForUpdate) {
+            $query->lockForUpdate();
+        }
+
+        $quote = $query->first();
 
         if ($quote === null) {
             throw new DomainException('A cotação de frete não está mais disponível.');

@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
@@ -80,6 +81,14 @@ class Order extends Model
     // 1 Pedido TEM MUITOS Itens (Carrinho)
     public function items() {
         return $this->hasMany(OrderItem::class, 'order_id');
+    }
+
+    /**
+     * @return HasMany<PaymentAttempt, $this>
+     */
+    public function paymentAttempts(): HasMany
+    {
+        return $this->hasMany(PaymentAttempt::class);
     }
 
     // 1 Pedido TEM 1 Endereço de Entrega

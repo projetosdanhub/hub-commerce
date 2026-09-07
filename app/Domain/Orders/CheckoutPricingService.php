@@ -13,7 +13,7 @@ final class CheckoutPricingService
      * @param  array<int, mixed>  $requestedItems
      * @return array{product_subtotal_cents: int, items: array<int, array{product: Produto, quantity: int, unit_price_cents: int, line_total_cents: int}>}
      */
-    public function priceItems(array $requestedItems): array
+    public function priceItems(array $requestedItems, bool $lockForUpdate = false): array
     {
         if ($requestedItems === []) {
             throw new InvalidArgumentException('O carrinho deve conter ao menos um item.');
@@ -36,9 +36,14 @@ final class CheckoutPricingService
             $quantitiesByProductId[$productId] = ($quantitiesByProductId[$productId] ?? 0) + $quantity;
         }
 
-        $products = Produto::query()
-            ->whereIn('id', array_keys($quantitiesByProductId))
-            ->get()
+        $productsQuery = Produto::query()
+            ->whereIn('id', array_keys($quantitiesByProductId));
+
+        if ($lockForUpdate) {
+            $productsQuery->lockForUpdate();
+        }
+
+        $products = $productsQuery->get()
             ->keyBy('id');
 
         if ($products->count() !== count($quantitiesByProductId)) {
