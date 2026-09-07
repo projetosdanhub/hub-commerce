@@ -35,7 +35,13 @@ final class OrderFinancialSnapshotBuilder
         $remaining = $bases;
         $normalizedBenefits = [];
 
-        usort($benefits, fn (array $left, array $right): int => $this->priority($left['source'] ?? '') <=> $this->priority($right['source'] ?? ''));
+        usort($benefits, function (mixed $left, mixed $right): int {
+            if (is_array($left) === false || is_array($right) === false) {
+                throw new InvalidArgumentException('Benefício financeiro inválido.');
+            }
+
+            return $this->priority((string) ($left['source'] ?? '')) <=> $this->priority((string) ($right['source'] ?? ''));
+        });
 
         foreach ($benefits as $benefit) {
             $source = strtoupper((string) ($benefit['source'] ?? ''));
