@@ -44,7 +44,6 @@ const CartaoProduto = ({ abrirModal, produto, produtoId = 1 }) => {
     const configLojista = {
         exibirTitulo: true,
         aspetoImagem: 'aspect-square',
-        freteGratis: true,
         estiloBotao: 'rounded-xl',
         cores: {
             hoverVerde: 'bg-emerald-500', // Cor verde suave configurável
@@ -203,10 +202,10 @@ const CartaoProduto = ({ abrirModal, produto, produtoId = 1 }) => {
                         </p>
 
                         {/* Texto de Frete Grátis com Cupom */}
-                        {configLojista.freteGratis && (
+                        {currentProduct.frete_gratis === true && (
                             <p className="text-emerald-600 font-medium text-[9px] sm:text-[11px] mt-1.5 sm:mt-2 flex items-center gap-1 sm:gap-1.5">
                                 <TruckIcon />
-                                Frete grátis <span className="text-gray-500 font-normal hidden sm:inline">com cupom</span>
+                                Frete grátis
                             </p>
                         )}
 

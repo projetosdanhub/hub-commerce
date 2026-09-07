@@ -33,6 +33,7 @@ const ProductQuickView = ({ isOpen, produtoId, onClose, onAddCart }) => {
     // --- ESTADOS ---
     const [imagemAtiva, setImagemAtiva] = useState(0);
     const [quantidade, setQuantidade] = useState(1);
+    const [freteGratis, setFreteGratis] = useState(false);
     
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [isFavorito, setIsFavorito] = useState(false);
@@ -71,6 +72,10 @@ const ProductQuickView = ({ isOpen, produtoId, onClose, onAddCart }) => {
         if (isOpen && produtoId) {
             document.body.style.overflow = 'hidden';
             setQuantidade(1);
+            fetch('/api/storefront/products/' + produtoId)
+                .then((response) => response.ok ? response.json() : null)
+                .then((response) => setFreteGratis(response?.data?.frete_gratis === true))
+                .catch(() => setFreteGratis(false));
             // Tracking Pixels
             // if (window.fbq) window.fbq('track', 'ViewContent', { content_ids: [produto.id], content_type: 'product', value: produto.precoAtual, currency: 'BRL' });
             // if (window.gtag) window.gtag('event', 'view_item', { items: [{ item_id: produto.id, item_name: produto.nome, price: produto.precoAtual }] });
@@ -183,6 +188,7 @@ const ProductQuickView = ({ isOpen, produtoId, onClose, onAddCart }) => {
                             </div>
 
                             <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 mb-3">
+                                {freteGratis && <span className="mb-2 inline-flex items-center rounded-md border border-emerald-100 bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">FRETE GRÁTIS</span>}
                                 {produto.precoAntigo > produto.precoAtual && (
                                     <span className="block text-gray-400 text-[11px] line-through font-medium mb-0.5">De R$ {produto.precoAntigo.toFixed(2)}</span>
                                 )}

@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
 use App\Http\Controllers\Storefront\CheckoutAddressController;
 use App\Http\Controllers\Storefront\CheckoutCustomerSessionController;
+use App\Http\Controllers\Storefront\FreeShippingProgressController;
 use App\Http\Controllers\Storefront\CheckoutSummaryController;
 use App\Http\Controllers\Storefront\PostalCodeLookupController;
 use App\Http\Controllers\Storefront\ShippingQuoteController;
@@ -91,6 +92,7 @@ Route::get('/storefront/products', [StorefrontController::class, 'getProducts'])
 Route::get('/storefront/products/{id}', [StorefrontController::class, 'getProduct']);
 Route::get('/storefront/postal-codes/{postalCode}', [PostalCodeLookupController::class, 'show'])->middleware('throttle:30,1');
 Route::post('/storefront/shipping-quotes', [ShippingQuoteController::class, 'store'])->middleware('throttle:10,1');
+Route::post('/storefront/free-shipping-progress', [FreeShippingProgressController::class, 'store'])->middleware('throttle:20,1');
 Route::post('/storefront/checkout/customer-session', [CheckoutCustomerSessionController::class, 'store'])->middleware('throttle:5,1');
 Route::post('/storefront/checkout/summary', [CheckoutSummaryController::class, 'store'])->middleware('throttle:10,1');
 Route::middleware('auth:sanctum')->prefix('storefront/checkout')->group(function (): void {

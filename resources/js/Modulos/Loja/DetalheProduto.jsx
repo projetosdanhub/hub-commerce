@@ -169,7 +169,7 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
                                  : ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80"],
                         avaliacoes: { media: 4.8, total: 128, contagemImagens: 24, contagemVideos: 5, contagemTexto: 99 },
                         ePersonalizavel: prodApi.is_personalizable || false,
-                        freteGratisAte: true,
+                        freteGratis: prodApi.frete_gratis === true,
                         variacoes: prodApi.variacoes && prodApi.variacoes.length > 0 ? [
                             {
                                 tipo: 'Variações',
@@ -400,7 +400,7 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
                             <div className="flex items-center gap-4 flex-wrap">
                                 <span className="text-gray-900 font-black text-4xl tracking-tight">R$ {produto.precoAtual.toFixed(2)}</span>
                                 {descontoPercentual > 0 && <span className="bg-orange-500 text-white text-[11px] font-bold px-2 py-1 rounded shadow-sm">{descontoPercentual}% OFF</span>}
-                                {produto.freteGratisAte && <span className="bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1"><TruckIcon className="w-3.5 h-3.5"/> FRETE GRÁTIS</span>}
+                                {produto.freteGratis && <span className="bg-emerald-50 border border-emerald-100 text-emerald-600 text-[11px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1"><TruckIcon className="w-3.5 h-3.5"/> FRETE GRÁTIS</span>}
                             </div>
                             
                             {configuracaoLojista.parcelamento.ativo && (

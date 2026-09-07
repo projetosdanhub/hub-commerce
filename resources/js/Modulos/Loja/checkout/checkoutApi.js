@@ -15,6 +15,12 @@ export async function lookupPostalCode(postalCode) {
     return dataFrom(response);
 }
 
+export async function requestFreeShippingProgress(items) {
+    const response = await storefrontApi.post('/storefront/free-shipping-progress', { items });
+
+    return dataFrom(response);
+}
+
 export async function requestShippingQuotes(items, address) {
     const response = await storefrontApi.post('/storefront/shipping-quotes', {
         items,
