@@ -75,7 +75,6 @@ class SaveProductRequest extends FormRequest
             'alerta_moderado' => ['nullable', 'integer', 'min:0'],
             'alerta_alto' => ['nullable', 'integer', 'min:0'],
             'pre_venda' => ['required', 'boolean'],
-            'frete_gratis' => ['required', 'boolean'],
             'ficha_tecnica' => ['nullable', 'array', 'max:100'],
             'ficha_tecnica.*.atributo' => ['required_with:ficha_tecnica', 'string', 'max:120'],
             'ficha_tecnica.*.valor' => ['required_with:ficha_tecnica', 'string', 'max:500'],
@@ -122,7 +121,7 @@ class SaveProductRequest extends FormRequest
         return $this->safe()->only([
             'categoria_id', 'nome', 'slug', 'descricao', 'preco', 'preco_promo', 'quantidade_estoque',
             'status_vitrine', 'sku_ref', 'sku_sufixo', 'controlar_estoque', 'alerta_estoque',
-            'alerta_moderado', 'alerta_alto', 'pre_venda', 'frete_gratis', 'ficha_tecnica', 'badges',
+            'alerta_moderado', 'alerta_alto', 'pre_venda', 'ficha_tecnica', 'badges',
             'categorias_secundarias', 'ncm', 'cest', 'gtin', 'origem', 'csosn', 'cst', 'cfop_dentro',
             'cfop_fora', 'unidade_medida', 'icms_perc', 'ipi_perc', 'peso', 'altura', 'largura',
             'comprimento', 'agrupavel', 'meta_title', 'meta_desc',
