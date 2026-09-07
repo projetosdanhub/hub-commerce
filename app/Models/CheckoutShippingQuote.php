@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property CarbonInterface $expires_at
- * @property \Carbon\CarbonInterface|null $invalidated_at
+ * @property CarbonInterface|null $invalidated_at
  * @property int $shipping_cents
  * @property int $estimated_delivery_days
  * @property string $token
