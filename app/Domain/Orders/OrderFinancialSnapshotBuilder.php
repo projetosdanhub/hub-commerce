@@ -10,6 +10,7 @@ final class OrderFinancialSnapshotBuilder
 
     /**
      * @param array<int, array{source: string, scope: string, amount_cents: int, reference?: string}> $benefits
+     *
      * @return array<string, mixed>
      */
     public function build(
@@ -23,7 +24,7 @@ final class OrderFinancialSnapshotBuilder
         }
 
         foreach ($benefits as $benefit) {
-            if (! is_array($benefit)) {
+            if (is_array($benefit) === false) {
                 throw new InvalidArgumentException('Benefício financeiro inválido.');
             }
         }
@@ -42,7 +43,7 @@ final class OrderFinancialSnapshotBuilder
             $scope = strtoupper((string) ($benefit['scope'] ?? ''));
             $amountCents = $benefit['amount_cents'] ?? null;
 
-            if (! in_array($source, ['COUPON', 'VIP', 'STORE'], true) || ! array_key_exists($scope, $bases) || ! is_int($amountCents) || $amountCents < 0) {
+            if (in_array($source, ['COUPON', 'VIP', 'STORE'], true) === false || array_key_exists($scope, $bases) === false || is_int($amountCents) === false || $amountCents < 0) {
                 throw new InvalidArgumentException('Benefício financeiro inválido.');
             }
 
