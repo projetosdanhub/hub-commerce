@@ -129,6 +129,36 @@ class CheckoutOrderCreatorTest extends TestCase
         ));
     }
 
+    public function test_an_idempotency_key_cannot_be_reused_by_a_different_customer(): void
+    {
+        $items = [['id' => $this->product->id, 'quantity' => 1]];
+        $address = $this->address();
+        $quote = $this->quoteFor($items, $address);
+        $command = $this->command($items, $address, $quote->token);
+
+        app(CheckoutOrderCreator::class)->create($command);
+
+        $anotherCustomer = StorefrontCustomer::query()->create([
+            'name' => 'Outro comprador',
+            'email' => 'outro@checkout.test',
+            'password' => 'senha-segura',
+            'status' => 'ACTIVE',
+        ]);
+
+        $this->expectException(DomainException::class);
+
+        app(CheckoutOrderCreator::class)->create(new CheckoutOrderCommand(
+            $anotherCustomer->id,
+            $items,
+            $address,
+            $quote->token,
+            'stripe',
+            'SANDBOX',
+            'CARD',
+            $command->idempotencyKey,
+        ));
+    }
+
     /**
      * @return array<string, string>
      */
@@ -178,7 +208,7 @@ class CheckoutOrderCreatorTest extends TestCase
             'stripe',
             'SANDBOX',
             'CARD',
-            'checkout-idempotency-key',
+            '4f79cde7-7b0a-43db-8fd5-d34c6b1c51f4',
         );
     }
 }
