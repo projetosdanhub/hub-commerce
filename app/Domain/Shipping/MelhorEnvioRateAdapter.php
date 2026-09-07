@@ -47,7 +47,7 @@ final class MelhorEnvioRateAdapter
                 ],
             ]);
 
-        if (!$response->successful() || ! is_array($response->json())) {
+        if (! $response->successful() || ! is_array($response->json())) {
             throw new DomainException('Não foi possível calcular o frete.');
         }
 
