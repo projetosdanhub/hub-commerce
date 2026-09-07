@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-07 — Etapa 1 de pagamentos em andamento; FIS-001 segue bloqueado até homologação externa  
+Atualizado em: 2026-09-07 — refatoração estrutural do Admin pronta para validação; Stripe permanece pausado  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -212,7 +212,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [~] | ADM-ARC-001 | P1 | Normalizar domínios, nomes e entry points do Admin | GOV-008, UI-001 | Cada domínio possui uma única pasta inglesa, sem cópias monolíticas ou imports para caminhos legados; build e E2E verdes |
+| [~] | ADM-ARC-001 | P1 | Normalizar domínios, nomes e entry points do Admin | GOV-008, UI-001 | Implementação concluída na branch; cada domínio possui uma única pasta inglesa, sem cópias monolíticas ou imports para caminhos legados. Aguardando build, Tests, E2E e Security verdes |
 | [ ] | ADM-ARC-002 | P1 | Fracionar Marketing em subdomínios verificáveis | ADM-ARC-001, MKT-001, BEN-001 | Campanhas, cupons, fidelidade e métricas só recebem UI após contratos tenant-scoped; mocks removidos |
 
 ## Fase 10 — UI do painel e design system
