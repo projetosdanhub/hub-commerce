@@ -11,8 +11,7 @@ final class CheckoutSummaryService
         private readonly CheckoutPricingService $pricing,
         private readonly CheckoutShippingQuoteResolver $shippingQuotes,
         private readonly OrderFinancialSnapshotBuilder $snapshots,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<int, mixed>  $items

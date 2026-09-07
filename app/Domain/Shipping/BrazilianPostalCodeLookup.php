@@ -23,12 +23,12 @@ final class BrazilianPostalCodeLookup
             ->retry(1, 100)
             ->get("https://viacep.com.br/ws/{$normalizedPostalCode}/json/");
 
-        if (! $response->successful() || $response->json('erro') === true) {
+        if (!$response->successful() || $response->json('erro') === true) {
             throw new DomainException('Não foi possível localizar esse CEP. Confira os números ou preencha o endereço.');
         }
 
         return [
-            'cep' => substr($normalizedPostalCode, 0, 5) . '-' . substr($normalizedPostalCode, 5),
+            'cep' => substr($normalizedPostalCode, 0, 5).'-'.substr($normalizedPostalCode, 5),
             'rua' => trim((string) $response->json('logradouro', '')),
             'bairro' => trim((string) $response->json('bairro', '')),
             'cidade' => trim((string) $response->json('localidade', '')),

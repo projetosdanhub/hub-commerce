@@ -40,7 +40,7 @@ class CheckoutAddressTest extends TestCase
         app(TenantContextStore::class)->clear();
 
         $token = $session->json('data.token');
-        $headers = ['Authorization' => 'Bearer ' . $token];
+        $headers = ['Authorization' => 'Bearer '.$token];
         $address = [
             'label' => 'Casa',
             'cep' => '01001-000',

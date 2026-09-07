@@ -12,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\TenantDomain;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CheckoutSummaryTest extends TestCase
@@ -126,7 +127,7 @@ class CheckoutSummaryTest extends TestCase
         $fingerprints = app(CheckoutFingerprint::class);
 
         return CheckoutShippingQuote::query()->create([
-            'token' => 'a8d42e51-4c8b-4972-b08d-3db6a2ceda0d',
+            'token' => (string) Str::uuid(),
             'cart_fingerprint' => $fingerprints->cart($items),
             'destination_fingerprint' => $fingerprints->destination($address),
             'provider' => 'melhor_envio',
