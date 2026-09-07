@@ -22,6 +22,10 @@ final class CheckoutPricingService
         $quantitiesByProductId = [];
 
         foreach ($requestedItems as $requestedItem) {
+            if (is_array($requestedItem) === false) {
+                throw new InvalidArgumentException('Item de checkout inválido.');
+            }
+
             $productId = $requestedItem['id'] ?? null;
             $quantity = $requestedItem['quantity'] ?? null;
 
@@ -45,10 +49,13 @@ final class CheckoutPricingService
         $productSubtotalCents = 0;
 
         foreach ($quantitiesByProductId as $productId => $quantity) {
-            /** @var Produto $product */
             $product = $products->get($productId);
 
-            if ($product->ativo === false || $product->status_vitrine !== ProductStatus::ACTIVE) {
+            if ($product instanceof Produto === false) {
+                throw new DomainException('Um ou mais produtos não estão disponíveis.');
+            }
+
+            if ($product->ativo !== true || $product->getRawOriginal('status_vitrine') !== ProductStatus::ACTIVE->value) {
                 throw new DomainException('Um ou mais produtos não estão disponíveis.');
             }
 
