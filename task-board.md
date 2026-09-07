@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-06 — UI-026 em andamento; FIS-001 segue bloqueado até homologação externa  
+Atualizado em: 2026-09-07 — UI-026 integrada; FIS-001 segue bloqueado até homologação externa  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -216,7 +216,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | [x] | UI-024 | P1 | Exibir documentos reais de cada operação | UI-022, UI-023 | Integrado na PR #47 (`b8b81db`): catálogo unificado com prévia/download autorizado; novos comprovantes de pagamento/entrega em storage privado tenant-scoped. Arquivos públicos legados são identificados sem URL até migração; declaração é operacional, XML/DANFE continuam UI-025 |
 | [~] | UI-025 | P1 | Preparar emissão fiscal e declaração | UI-024 | Entregues: Centro de Apps, configuração fiscal por tenant, A1/credenciais protegidos, diagnóstico do catálogo ativo e declaração segura. Emissão, XML/protocolo/DANFE só com adapter homologado; espelho provisório nunca é NF-e |
 | [!] | FIS-001 | P1 | Homologar adapter de emissão de NF-e | UI-025 | Provedor contratado, credenciais autorizadas, sandbox/homologação, assinatura, idempotência, webhook, XML/DANFE privados e autorização confirmada |
-| [~] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Em revisão: checkout claro e responsivo consome CEP editável, cotações opacas, resumo financeiro relido no servidor e criação/autenticação de conta por loja; endereço padrão pode ser salvo e selecionado. Pagamento, cupons, payment_attempt, pedido atômico e tela de conclusão continuam bloqueados até adapter homologado, idempotência e webhook; CI pendente |
+| [x] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Integrado na PR #54 (`66b58e8`): checkout claro e responsivo com CEP editável, cotações opacas, resumo financeiro relido no servidor, conta por loja e endereço padrão salvo/selecionável. Tests, E2E Tests e Security Scans verdes. Pagamento, cupons, payment_attempt, pedido atômico e tela de conclusão continuam dependentes de adapter homologado, idempotência e webhook |
 
 ## Fase 11 — Storefront, SEO e desempenho
 
