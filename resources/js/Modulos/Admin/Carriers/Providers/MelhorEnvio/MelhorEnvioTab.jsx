@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CarriersIcons, CardsSkeleton } from '../../Shared/CarriersUI';
-import { SecureInput, NeumorphicToggle } from '../../Compartilhado/UIComponents';
+import { SecureInput, NeumorphicToggle } from '../../../Compartilhado/UIComponents';
 
 export default function MelhorEnvioTab({ 
     isAuthenticatedME, 
