@@ -34,6 +34,7 @@ class PaymentAuthorizationTest extends TestCase
             0,
             'R$',
             'provider-token',
+            'SANDBOX',
         );
     }
 }
