@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Http;
 final class MelhorEnvioRateAdapter
 {
     /**
-     * @param array{height: float|int|string, width: float|int|string, length: float|int|string, weight: float|int|string} $package
-     *
+     * @param  array{height: float|int|string, width: float|int|string, length: float|int|string, weight: float|int|string} $package
      * @return array<int, array{id: string, price: string, delivery_time: int}>
      */
     public function calculate(
