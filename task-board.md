@@ -155,10 +155,10 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | ORD-002 | P1 | Recalcular preços e promoções no servidor | CAT-002 | Cliente não controla total |
 | [ ] | ORD-003 | P1 | Reservar estoque com concorrência segura | CAT-003 | Sem overselling |
 | [ ] | ORD-004 | P1 | Criar máquina de estados do pedido | BASE-009 | Transições inválidas bloqueadas |
-| [~] | PAY-001 | P0 | Criar PaymentGateway interface | SEC-007 | Contrato tokenizado e resultado de iniciação criados; a confirmação continua exclusiva de webhook assinado e aguarda CI |
-| [~] | PAY-002 | P0 | Criar payment_attempts por tenant | PAY-001, TEN-006 | Migration/model tenant-scoped com valor em centavos, moeda, ambiente, referências seguras e chave idempotente; ainda sem cobrança ou adapter |
-| [~] | PAY-003 | P0 | Implementar idempotência de checkout | PAY-002 | Caso de uso atômico criado: revalida cliente/carrinho/endereço/cotação, persiste pedido+snapshot+tentativa e devolve somente repetição idêntica; aguarda CI |
-| [ ] | PAY-004 | P1 | Integrar Stripe com tokenização oficial | SEC-008, PAY-003 | Sandbox aprovado |
+| [x] | PAY-001 | P0 | Criar PaymentGateway interface | SEC-007 | Contrato tokenizado e resultado de iniciação integrados na PR #57, com Tests, E2E Tests e Security Scans verdes |
+| [x] | PAY-002 | P0 | Criar payment_attempts por tenant | PAY-001, TEN-006 | Tentativas tenant-scoped persistidas na PR #57; valor em centavos, moeda, ambiente, referências seguras e chave idempotente; sem cobrança ou adapter |
+| [x] | PAY-003 | P0 | Implementar idempotência de checkout | PAY-002 | PR #57 integrada após CI verde: repetição idêntica não duplica pedido/tentativa e reutilização divergente é recusada |
+| [~] | PAY-004 | P1 | Integrar Stripe com tokenização oficial | SEC-008, PAY-003 | Em andamento: mapear configuração tenant-scoped, SDK/adapter e fluxo sandbox sem habilitar produção |
 | [ ] | PAY-005 | P1 | Integrar Mercado Pago com tokenização oficial | SEC-008, PAY-003 | Sandbox aprovado |
 | [ ] | PAY-006 | P1 | Integrar Pagar.me com tokenização oficial | SEC-008, PAY-003 | Sandbox aprovado |
 | [ ] | PAY-007 | P0 | Implementar webhooks assinados e idempotentes | PAY-002 | Replay e assinatura testados |
