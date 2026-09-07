@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 final class CheckoutShippingQuoteIssuer
 {
     /**
-     * @param  array<int, array{id: string, price: string, delivery_time: int}>  $rates
+     * @param  array<int, mixed>  $rates
      * @return array<int, CheckoutShippingQuote>
      */
     public function issue(
