@@ -36,10 +36,6 @@ final class OrderFinancialSnapshotBuilder
         $normalizedBenefits = [];
 
         usort($benefits, function (mixed $left, mixed $right): int {
-            if (is_array($left) === false || is_array($right) === false) {
-                throw new InvalidArgumentException('Benefício financeiro inválido.');
-            }
-
             return $this->priority((string) ($left['source'] ?? '')) <=> $this->priority((string) ($right['source'] ?? ''));
         });
 
