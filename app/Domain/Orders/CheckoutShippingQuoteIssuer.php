@@ -55,7 +55,9 @@ final class CheckoutShippingQuoteIssuer
             throw new DomainException('Valor de frete inválido.');
         }
 
-        [$whole, $fraction = ''] = explode('.', $amount, 2);
+        $parts = explode('.', $amount, 2);
+        $whole = $parts[0];
+        $fraction = $parts[1] ?? '';
 
         $fraction = str_pad($fraction, 2, '0', STR_PAD_RIGHT);
 
