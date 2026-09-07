@@ -7,7 +7,7 @@ use InvalidArgumentException;
 final class CheckoutFingerprint
 {
     /**
-     * @param array<int, array{id: int, quantity: int}> $items
+     * @param  array<int, array{id: int, quantity: int}> $items
      */
     public function cart(array $items): string
     {
@@ -30,7 +30,7 @@ final class CheckoutFingerprint
     }
 
     /**
-     * @param array{cep: string, rua: string, numero: string, bairro: string, cidade: string, uf: string, complemento?: string|null} $address
+     * @param  array{cep: string, rua: string, numero: string, bairro: string, cidade: string, uf: string, complemento?: string|null} $address
      */
     public function destination(array $address): string
     {
@@ -53,7 +53,7 @@ final class CheckoutFingerprint
     }
 
     /**
-     * @param array<array-key, mixed> $payload
+     * @param  array<array-key, mixed> $payload
      */
     private function hash(array $payload): string
     {
