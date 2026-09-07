@@ -33,7 +33,7 @@ import PainelAfiliados from './Modulos/Loja/PainelAfiliados';
 import PaginaAutenticacao from './Modulos/Loja/PaginaAutenticacao';
 
 // --- IMPORTAÇÃO DOS MÓDULOS ADMIN ---
-import AdminLayout from './Modulos/Admin/AdminLayout';
+import AdminLayout from './Modulos/Admin/AppShell/AdminLayout';
 import DashboardPage from './Modulos/Admin/Dashboard/DashboardPage';
 import OrdersPage from './Modulos/Admin/Orders/OrdersPage';
 import CategoriesPage from './Modulos/Admin/Categories/CategoriesPage';
