@@ -37,7 +37,20 @@ class ShippingQuoteController extends Controller
         ]);
 
         try {
-            $priced = $pricing->priceItems($data['items']);
+            $items = $data['items'] ?? null;
+            $address = $data['address'] ?? null;
+
+            if (is_array($items) === false || is_array($address) === false) {
+                throw new DomainException('Dados de cotação inválidos.');
+            }
+
+            $postalCode = $address['cep'] ?? null;
+
+            if (is_string($postalCode) === false) {
+                throw new DomainException('Dados de cotação inválidos.');
+            }
+
+            $priced = $pricing->priceItems($items);
             $package = $packages->build(collect($priced['items']));
             $config = MelhorEnvioSetting::query()->first();
 
@@ -47,19 +60,19 @@ class ShippingQuoteController extends Controller
 
             $rates = $adapter->calculate(
                 $config,
-                $data['address']['cep'],
+                $postalCode,
                 $package,
                 number_format($priced['product_subtotal_cents'] / 100, 2, '.', ''),
             );
             $quotes = $issuer->issue(
-                $fingerprint->cart($data['items']),
-                $fingerprint->destination($data['address']),
+                $fingerprint->cart($items),
+                $fingerprint->destination($address),
                 $rates,
                 CarbonImmutable::now()->addMinutes(15),
             );
 
             return response()->json([
-                'data' => collect($quotes)->map(fn ($quote) => [
+                'data' => collect($quotes)->map(fn (\App\Models\CheckoutShippingQuote $quote): array => [
                     'token' => $quote->token,
                     'service_code' => $quote->service_code,
                     'shipping_cents' => $quote->shipping_cents,
