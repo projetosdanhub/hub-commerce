@@ -12,6 +12,7 @@ use App\Models\Produto;
 use App\Models\TenantAppInstallation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -21,18 +22,51 @@ class AppCenterController extends Controller
 {
     private const APPS = [
         'logistics' => [
-            'name' => 'Logística & Envios',
-            'description' => 'Parceiros, Melhor Envio, remetente, embalagens, etiquetas e romaneios.',
-            'location' => '/admin/transportadoras',
-        ],
-        'fiscal' => [
-            'name' => 'Fiscal',
-            'description' => 'Emitente, certificado A1, preflight e emissão fiscal quando houver adapter homologado.',
+            'name' => 'Melhor Envio',
+            'description' => 'Cotação, etiquetas, remetente e transportadoras da loja.',
+            'category' => 'LOGISTICS',
+            'category_label' => 'Logística',
+            'auth_strategy' => 'OAUTH2',
             'location' => null,
         ],
         'stripe' => [
             'name' => 'Stripe',
-            'description' => 'Configuração de cartão tokenizado por loja, com ambientes de teste e produção separados.',
+            'description' => 'Cartão tokenizado por loja, com Sandbox e Produção separados.',
+            'category' => 'GATEWAYS',
+            'category_label' => 'Gateways',
+            'auth_strategy' => 'API_KEYS',
+            'location' => null,
+        ],
+        'mercado_pago' => [
+            'name' => 'Mercado Pago',
+            'description' => 'Gateway reservado para adapter, tokenização e webhook homologados.',
+            'category' => 'GATEWAYS',
+            'category_label' => 'Gateways',
+            'auth_strategy' => 'OAUTH2',
+            'location' => null,
+        ],
+        'pagarme' => [
+            'name' => 'Pagar.me',
+            'description' => 'Gateway reservado para adapter, tokenização e webhook homologados.',
+            'category' => 'GATEWAYS',
+            'category_label' => 'Gateways',
+            'auth_strategy' => 'API_KEYS',
+            'location' => null,
+        ],
+        'pagbank' => [
+            'name' => 'PagBank',
+            'description' => 'Gateway reservado para adapter, tokenização e webhook homologados.',
+            'category' => 'GATEWAYS',
+            'category_label' => 'Gateways',
+            'auth_strategy' => 'OAUTH2',
+            'location' => null,
+        ],
+        'fiscal' => [
+            'name' => 'Fiscal',
+            'description' => 'Emitente, certificado A1 e pré-validação antes de um adapter homologado.',
+            'category' => 'FISCAL',
+            'category_label' => 'Fiscal',
+            'auth_strategy' => 'MANUAL_SECRET',
             'location' => null,
         ],
     ];
@@ -42,47 +76,112 @@ class AppCenterController extends Controller
         private readonly StripeGatewayConfiguration $stripe,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $installed = TenantAppInstallation::query()
-            ->get()
-            ->keyBy('app_key');
+        $category = $request->query('category');
+        $installed = TenantAppInstallation::query()->get()->keyBy('app_key');
         $logistics = MelhorEnvioSetting::query()->first();
         $fiscal = $this->fiscalConfig();
         $stripe = $this->stripe->safeStatus();
 
-        return response()->json(collect(self::APPS)->map(function (array $app, string $key) use ($installed, $logistics, $fiscal, $stripe): array {
-            $installation = $installed->get($key);
+        $apps = collect(self::APPS)
+            ->map(function (array $app, string $key) use ($installed, $logistics, $fiscal, $stripe): array {
+                $installation = $installed->get($key);
+                $isInstalled = $installation?->status === 'INSTALLED';
+                $activeInCategory = $installed->first(function (TenantAppInstallation $candidate) use ($app, $key): bool {
+                    $candidateApp = self::APPS[$candidate->app_key] ?? null;
 
-            return [
-                'key' => $key,
-                ...$app,
-                'installed' => $installation !== null,
-                'status' => $installation !== null ? $installation->status : 'AVAILABLE',
-                'location' => $app['location'],
-                'configuration' => $this->appConfiguration($key, $logistics, $fiscal, $stripe),
-            ];
-        })->values());
+                    return $candidate->status === 'INSTALLED'
+                        && $candidate->app_key !== $key
+                        && $candidateApp !== null
+                        && $candidateApp['category'] === $app['category'];
+                });
+
+                return [
+                    'key' => $key,
+                    ...$app,
+                    'installed' => $isInstalled,
+                    'status' => $installation?->status ?? 'AVAILABLE',
+                    'blocked_by' => $isInstalled || $activeInCategory === null
+                        ? null
+                        : [
+                            'key' => $activeInCategory->app_key,
+                            'name' => self::APPS[$activeInCategory->app_key]['name'],
+                        ],
+                    'configuration' => $this->appConfiguration($key, $logistics, $fiscal, $stripe),
+                ];
+            });
+
+        if (is_string($category) && $category !== 'ALL') {
+            $apps = $apps->where('category', $category);
+        }
+
+        return response()->json($apps->values());
     }
 
     public function install(Request $request, string $app): JsonResponse
     {
         $this->knownApp($app);
 
-        $installation = TenantAppInstallation::query()->firstOrCreate(
-            ['app_key' => $app],
-            ['status' => 'INSTALLED', 'installed_at' => now()],
-        );
+        return DB::transaction(function () use ($app): JsonResponse {
+            $installation = TenantAppInstallation::query()
+                ->where('app_key', $app)
+                ->lockForUpdate()
+                ->firstOrNew(['app_key' => $app]);
+
+            $activeInCategory = TenantAppInstallation::query()
+                ->lockForUpdate()
+                ->get()
+                ->first(function (TenantAppInstallation $candidate) use ($app): bool {
+                    $candidateApp = self::APPS[$candidate->app_key] ?? null;
+
+                    return $candidate->status === 'INSTALLED'
+                        && $candidate->app_key !== $app
+                        && $candidateApp !== null
+                        && $candidateApp['category'] === self::APPS[$app]['category'];
+                });
+
+            if ($activeInCategory !== null) {
+                throw ValidationException::withMessages([
+                    'app' => sprintf(
+                        'Desinstale %s antes de instalar %s nesta categoria.',
+                        self::APPS[$activeInCategory->app_key]['name'],
+                        self::APPS[$app]['name'],
+                    ),
+                ]);
+            }
+
+            $installation->status = 'INSTALLED';
+            $installation->installed_at ??= now();
+            $installation->save();
+
+            return response()->json([
+                'app_key' => $installation->app_key,
+                'status' => $installation->status,
+            ]);
+        });
+    }
+
+    public function uninstall(string $app): JsonResponse
+    {
+        $this->knownApp($app);
+
+        $installation = TenantAppInstallation::query()->where('app_key', $app)->first();
+
+        if ($installation !== null) {
+            $installation->update(['status' => 'UNINSTALLED']);
+        }
 
         return response()->json([
-            'app_key' => $installation->app_key,
-            'status' => $installation->status,
+            'app_key' => $app,
+            'status' => 'UNINSTALLED',
         ]);
     }
 
-
     public function logistics(): JsonResponse
     {
+        $this->requireInstalled('logistics');
+
         $config = MelhorEnvioSetting::query()->first();
 
         return response()->json([
@@ -90,11 +189,15 @@ class AppCenterController extends Controller
             'environment' => $config?->environment,
             'credential_configured' => filled($config?->access_token),
             'sender_configured' => filled($config?->sender_info['cep'] ?? null),
+            'auth_strategy' => 'OAUTH2',
+            'oauth_ready' => false,
         ]);
     }
 
     public function saveLogistics(Request $request): JsonResponse
     {
+        $this->requireInstalled('logistics');
+
         $validated = $request->validate([
             'environment' => ['required', Rule::in(['SANDBOX', 'PRODUCTION'])],
             'access_token' => ['nullable', 'string', 'max:2000'],
@@ -112,37 +215,31 @@ class AppCenterController extends Controller
 
         $config->save();
 
-        TenantAppInstallation::query()->firstOrCreate(
-            ['app_key' => 'logistics'],
-            ['status' => 'INSTALLED', 'installed_at' => now()],
-        );
-
         return $this->logistics();
     }
 
     public function stripe(): JsonResponse
     {
+        $this->requireInstalled('stripe');
+
         return response()->json($this->stripe->safeStatus());
     }
 
     public function saveStripe(SaveStripeSettingsRequest $request): JsonResponse
     {
+        $this->requireInstalled('stripe');
         $this->stripe->save($request->validated());
-
-        TenantAppInstallation::query()->firstOrCreate(
-            ['app_key' => 'stripe'],
-            ['status' => 'INSTALLED', 'installed_at' => now()],
-        );
 
         return $this->stripe();
     }
 
     public function fiscal(): JsonResponse
     {
+        $this->requireInstalled('fiscal');
+
         $config = $this->fiscalConfig();
         $certificatePath = $config['certificate_path'] ?? null;
         $certificateReady = is_string($certificatePath) && Storage::disk('local')->exists($certificatePath);
-
         $catalog = $this->catalogFiscalPreflight();
 
         return response()->json([
@@ -173,6 +270,8 @@ class AppCenterController extends Controller
 
     public function saveFiscal(Request $request): JsonResponse
     {
+        $this->requireInstalled('fiscal');
+
         $validated = $request->validate([
             'legal_name' => ['required', 'string', 'max:255'],
             'cnpj' => ['required', 'string', 'max:30'],
@@ -212,18 +311,10 @@ class AppCenterController extends Controller
         ]);
         $setting->setSecureValue($config)->save();
 
-        TenantAppInstallation::query()->firstOrCreate(
-            ['app_key' => 'fiscal'],
-            ['status' => 'INSTALLED', 'installed_at' => now()],
-        );
-
         return $this->fiscal();
     }
 
     /**
-     * Este diagnóstico usa o catálogo real do tenant. A regra tributária final
-     * continua dependente do cenário da operação e do adapter homologado.
-     *
      * @return array{ready: bool, active_products: int, incomplete_products: int}
      */
     private function catalogFiscalPreflight(): array
@@ -292,6 +383,18 @@ class AppCenterController extends Controller
                 'credential_configured' => false,
             ],
         };
+    }
+
+    private function requireInstalled(string $app): void
+    {
+        $isInstalled = TenantAppInstallation::query()
+            ->where('app_key', $app)
+            ->where('status', 'INSTALLED')
+            ->exists();
+
+        if ($isInstalled === false) {
+            abort(409, sprintf('Instale %s antes de acessar esta configuração.', self::APPS[$app]['name']));
+        }
     }
 
     private function fiscalConfig(): array

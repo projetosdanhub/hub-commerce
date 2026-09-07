@@ -86,7 +86,7 @@ class AdminApiAuditTest extends TestCase
         $this->getJson('/api/admin/settings/apps')
             ->assertSuccessful()
             ->assertJsonPath('0.key', 'logistics')
-            ->assertJsonPath('2.key', 'stripe')
+            ->assertJsonFragment(['key' => 'stripe'])
             ->assertJsonStructure([
                 '*' => [
                     'key',
