@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import AdminLogin from './AdminLogin';
+import AdminLoginPage from './Authentication/AdminLoginPage';
 import api from '../../api';
 import { adminQueryKeys } from '../../queryClient';
-import { fetchAdminDashboard } from './AdminDashboard';
+import { fetchAdminDashboard } from './Dashboard/DashboardPage';
 import { AdminDesktopShell } from './AppShell/AdminDesktopShell';
 import { AdminMobileShell } from './AppShell/AdminMobileShell';
 import { AdminPageRefreshProvider } from './DesignSystem/patterns/GlobalPageRefresh';
@@ -72,7 +72,7 @@ const AdminLayout = () => {
 
   if (!token) {
     return (
-      <AdminLogin
+      <AdminLoginPage
         onLoginSuccess={(newToken) => {
           sessionStorage.setItem('hub_admin_token', newToken);
           setToken(newToken);
