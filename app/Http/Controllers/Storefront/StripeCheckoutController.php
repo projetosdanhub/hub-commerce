@@ -15,6 +15,7 @@ use App\Models\TenantAppInstallation;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\PersonalAccessToken;
 use InvalidArgumentException;
 
 class StripeCheckoutController extends Controller
@@ -25,9 +26,10 @@ class StripeCheckoutController extends Controller
         StripeGatewayConfiguration $configuration,
         StripePaymentIntentCreator $stripe,
     ): JsonResponse {
-        $customer = $request->user();
+        $accessToken = PersonalAccessToken::findToken((string) $request->bearerToken());
+        $customer = $accessToken?->tokenable;
 
-        if (! $customer instanceof StorefrontCustomer) {
+        if (! $customer instanceof StorefrontCustomer || ! $accessToken->can('storefront.checkout')) {
             abort(403);
         }
 
