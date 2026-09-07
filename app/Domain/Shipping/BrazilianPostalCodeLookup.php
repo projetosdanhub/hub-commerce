@@ -23,7 +23,7 @@ final class BrazilianPostalCodeLookup
             ->retry(1, 100)
             ->get("https://viacep.com.br/ws/{$normalizedPostalCode}/json/");
 
-        if (!$response->successful() || $response->json('erro') === true) {
+        if (! $response->successful() || $response->json('erro') === true) {
             throw new DomainException('Não foi possível localizar esse CEP. Confira os números ou preencha o endereço.');
         }
 
