@@ -34,19 +34,19 @@ import PaginaAutenticacao from './Modulos/Loja/PaginaAutenticacao';
 
 // --- IMPORTAÇÃO DOS MÓDULOS ADMIN ---
 import AdminLayout from './Modulos/Admin/AdminLayout';
-import AdminDashboard from './Modulos/Admin/AdminDashboard';
-import AdminOrders from './Modulos/Admin/AdminOrders';
+import DashboardPage from './Modulos/Admin/Dashboard/DashboardPage';
+import OrdersPage from './Modulos/Admin/Orders/OrdersPage';
 import CategoriasPrincipal from './Modulos/Admin/Categorias/CategoriasPrincipal';
 import MenusPrincipal from './Modulos/Admin/Menus/MenusPrincipal';
 import AdminProducts from './Modulos/Admin/Produtos/ProdutosPrincipal';
 import MarketingPage from './Modulos/Admin/Marketing/MarketingPage';
 import { BenefitsHub } from './Modulos/Admin/Growth/GrowthHub';
-import AdminCustomers from './Modulos/Admin/AdminCustomers';
-import AdminAfiliados from './Modulos/Admin/AdminAfiliados';
+import CustomersPage from './Modulos/Admin/Customers/CustomersPage';
+import AffiliatesPage from './Modulos/Admin/Affiliates/AffiliatesPage';
 import ConstrutorVitrinePrincipal from './Modulos/Admin/ConstrutorVitrine/ConstrutorVitrinePrincipal';
 import ConfiguracoesPrincipal from './Modulos/Admin/Configuracoes/ConfiguracoesPrincipal';
-import AdminAvaliacoes from './Modulos/Admin/AdminAvaliacoes';
-import AdminLogin from './Modulos/Admin/AdminLogin';
+import ReviewsPage from './Modulos/Admin/Reviews/ReviewsPage';
+import AdminLoginPage from './Modulos/Admin/Authentication/AdminLoginPage';
 import CarriersPage from './Modulos/Admin/Carriers/CarriersPage';
 import AdminPixels from './Modulos/Admin/Pixels/PixelsPrincipal';
 
@@ -242,25 +242,25 @@ const AppContent = () => {
                     {/* ROTAS DO HUB ADMIN */}
                     {/* Usando rotas aninhadas (v6) para tirar proveito total do <Outlet /> no AdminLayout */}
                     <Route path="/admin" element={<AdminLayout />}>
-                        <Route index element={<AdminDashboard />} />
-                        <Route path="pedidos" element={<AdminOrders />} />
+                        <Route index element={<DashboardPage />} />
+                        <Route path="pedidos" element={<OrdersPage />} />
                         <Route path="categorias" element={<CategoriasPrincipal />} />
                         <Route path="menus" element={<MenusPrincipal />} />
                         <Route path="produtos" element={<AdminProducts />} />
                         <Route path="marketing" element={<MarketingPage />} />
                         <Route path="beneficios" element={<BenefitsHub />} />
                         <Route path="pixels" element={<AdminPixels />} />
-                        <Route path="clientes" element={<AdminCustomers />} />
-                        <Route path="afiliados" element={<AdminAfiliados />} />
+                        <Route path="clientes" element={<CustomersPage />} />
+                        <Route path="afiliados" element={<AffiliatesPage />} />
                         <Route path="vitrine" element={<ConstrutorVitrinePrincipal />} />
                         <Route path="configuracoes" element={<ConfiguracoesPrincipal />} />
-                        <Route path="avaliacoes" element={<AdminAvaliacoes />} />
+                        <Route path="avaliacoes" element={<ReviewsPage />} />
                         <Route path="transportadoras" element={<CarriersPage />} />
                         <Route path="estoque" element={<div className="p-8 text-slate-500">Módulo de Estoque (Em construção)</div>} />
                     </Route>
                     
                     {/* Login do Admin (Fica fora do Layout) */}
-                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin/login" element={<AdminLoginPage />} />
                 </Routes>
             </main>
 
