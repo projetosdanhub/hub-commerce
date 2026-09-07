@@ -35,7 +35,6 @@ export const saveProduct = async ({ product, categoryId }) => {
   append(body, 'alerta_moderado', product.alertaModerado || 0);
   append(body, 'alerta_alto', product.alertaAlto || 0);
   append(body, 'pre_venda', product.preVenda ? '1' : '0');
-  append(body, 'frete_gratis', product.freteGratis ? '1' : '0');
   append(body, 'ficha_tecnica', JSON.stringify(product.fichaTecnica || []));
   append(body, 'badges', JSON.stringify(product.badges || []));
   append(body, 'categorias_secundarias', JSON.stringify(product.categoriasSecundarias || []));
