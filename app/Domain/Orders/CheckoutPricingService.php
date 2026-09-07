@@ -91,7 +91,9 @@ final class CheckoutPricingService
             throw new DomainException('Preço de produto inválido.');
         }
 
-        [$whole, $fraction = ''] = explode('.', $normalized, 2);
+        $parts = explode('.', $normalized, 2);
+        $whole = $parts[0];
+        $fraction = $parts[1] ?? '';
         $fraction = str_pad($fraction, 2, '0');
 
         return ((int) $whole * 100) + (int) $fraction;
