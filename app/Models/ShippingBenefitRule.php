@@ -10,11 +10,6 @@ class ShippingBenefitRule extends Model
 {
     use BelongsToTenant;
 
-    public const FREE_FOR_ALL = 'FREE_FOR_ALL';
-    public const FREE_FOR_PRODUCT = 'FREE_FOR_PRODUCT';
-    public const FREE_ABOVE_SUBTOTAL = 'FREE_ABOVE_SUBTOTAL';
-    public const PERCENTAGE = 'PERCENTAGE';
-
     protected $fillable = [
         'type',
         'product_id',
