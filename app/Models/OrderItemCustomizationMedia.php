@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItemCustomizationMedia extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = ['order_item_id', 'original_name', 'storage_path', 'mime_type', 'byte_size'];
 
