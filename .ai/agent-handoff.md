@@ -423,3 +423,11 @@ Copie este bloco para cada handoff relevante:
 - Evidências: revisão estática pendente da validação automatizada.
 - Riscos, bloqueios e itens não verificados: a interface de upload de personalização da vitrine não existe neste escopo; o contrato novo protege e exibe mídias já persistidas. Cupons/VIP de demonstração são snapshots de pedidos, não motor comercial ativo.
 - Próxima ação única: executar Tests, E2E Tests e Security Scans na PR, corrigindo somente falhas da entrega.
+
+
+### 2026-09-08 — PR #69: validação automatizada bloqueada externamente
+
+- Commit atual: `3bdfab3609450079383dd8b1aa2a84b7544f1216`; corrigido o endpoint de mídia para preservar nome de arquivo em preview e download.
+- Evidência anterior: Tests executou 97 testes aprovados; a única falha foi a expectativa do cabeçalho `Content-Disposition`, corrigida neste commit.
+- Bloqueio atual: as novas tentativas de **Tests**, **E2E Tests** e **Security Scans** encerram antes de qualquer etapa, sem logs/steps, e o GitHub Actions devolve `BlobNotFound`. Reexecuções seletivas tiveram o mesmo comportamento.
+- Decisão: PR #69 permanece draft e não será marcada pronta nem mesclada até os checks executarem e ficarem verdes.
