@@ -954,6 +954,7 @@
   background: transparent;
   color: var(--hub-text-primary);
   font: inherit;
+  padding: var(--hub-space-2) 0;
 }
 
 .hub-expandable-search-field input::placeholder {
@@ -1378,20 +1379,27 @@ html.hub-modal-open .hub-sidebar-scroll {
   .hub-expandable-search-field { transition: none; }
 }
 
-/* O acento laranja do tema claro mantém a ação primária legível sem alterar o tema escuro. */
+/* O acento no tema claro mantém a ação primária com uma cor sólida, sem degradê */
 .hub-admin[data-theme="light"] .hub-button-primary,
 .hub-admin[data-theme="light"] .hub-icon-button-primary {
-  border-color: #c2410c;
-  background: var(--hub-accent-gradient);
+  border-color: transparent;
+  background: var(--hub-primary);
   color: #ffffff;
 }
 
 .hub-admin[data-theme="light"] .hub-button-primary:hover:not(:disabled),
 .hub-admin[data-theme="light"] .hub-icon-button-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%);
+  background: var(--hub-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(59 130 246 / 0.25);
 }
 
 .hub-admin[data-theme="light"] .hub-button-primary:active:not(:disabled),
 .hub-admin[data-theme="light"] .hub-icon-button-primary:active:not(:disabled) {
-  background: #9a3412;
+  background: var(--hub-primary-active);
 }
+
+.hub-integration-card-logo-dark { display: block !important; }
+.hub-integration-card-logo-clean { display: none !important; }
+.hub-admin[data-theme="light"] .hub-integration-card-logo-clean { display: block !important; }
+.hub-admin[data-theme="light"] .hub-integration-card-logo-dark { display: none !important; }

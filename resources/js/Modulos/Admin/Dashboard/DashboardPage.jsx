@@ -15,6 +15,7 @@ import { adminQueryKeys } from '../../../queryClient';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { PageHeader } from '../DesignSystem/patterns/PageHeader';
+import { IntegrationLogo } from '../DesignSystem/patterns/IntegrationLogo';
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -109,7 +110,12 @@ const OrdersTable = ({ orders }) => {
                     <span>{order.cliente?.nome ?? 'Cliente indisponível'}</span>
                   </span>
                 </td>
-                <td>{order.pagamento_metodo || 'Não informado'}</td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <IntegrationLogo name={order.pagamento_metodo} fallbackIcon={() => null} className="hub-inline-logo" iconSize={15} />
+                    {order.pagamento_metodo || 'Não informado'}
+                  </div>
+                </td>
                 <td><Badge variant={status.variant}>{status.label}</Badge></td>
                 <td><strong>{currencyFormatter.format(Number(order.total) || 0)}</strong></td>
               </tr>

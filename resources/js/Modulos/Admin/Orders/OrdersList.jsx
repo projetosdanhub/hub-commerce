@@ -10,6 +10,7 @@ import { Button } from '../DesignSystem/primitives/Button';
 import { IconButton } from '../DesignSystem/primitives/IconButton';
 import { Skeleton } from '../DesignSystem/primitives/Skeleton';
 import { TruncatedText } from '../DesignSystem/primitives/TruncatedText';
+import { IntegrationLogo } from '../DesignSystem/patterns/IntegrationLogo';
 import { DateRangeFilter } from '../DesignSystem/patterns/DateRangeFilter';
 import { ExpandableSearch } from '../DesignSystem/patterns/ExpandableSearch';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
@@ -82,9 +83,18 @@ const DesktopTable = ({ orders, onOpen }) => (
               </td>
               <td><Customer order={order} /></td>
               <td>
-                <TruncatedText className="hub-orders-payment" label={order.pagamento_metodo || 'Não informado'}>
-                  {order.pagamento_metodo || 'Não informado'}
-                </TruncatedText>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {Boolean(order.pagamento?.gateway || order.gateway) && (
+                    <>
+                      <IntegrationLogo name={order.pagamento?.gateway || order.gateway} fallbackIcon={() => null} className="hub-inline-logo" iconSize={15} />
+                      <span style={{ width: '1px', height: '12px', background: 'var(--hub-border)' }} />
+                    </>
+                  )}
+                  <IntegrationLogo name={order.pagamento_metodo || order.pagamento?.metodo} fallbackIcon={() => null} className="hub-inline-logo" iconSize={15} />
+                  <TruncatedText className="hub-orders-payment" label={order.pagamento_metodo || order.pagamento?.metodo || 'Não informado'}>
+                    {order.pagamento_metodo || order.pagamento?.metodo || 'Não informado'}
+                  </TruncatedText>
+                </div>
               </td>
               <td><Badge variant={status.variant}>{status.label}</Badge></td>
               <td><strong>{formatCurrency(order.total)}</strong></td>

@@ -1,22 +1,8 @@
 import React from 'react';
-import stripeClean from '../../../imagesadmin/logostripe-clean.svg';
-import stripeDark from '../../../imagesadmin/logostripe-dark.svg';
-import mercadoPagoClean from '../../../imagesadmin/mercadopago-clean.webp';
-import mercadoPagoDark from '../../../imagesadmin/mercadopago-dark.webp';
-import pagarmeClean from '../../../imagesadmin/pagarme-clean.webp';
-import pagarmeDark from '../../../imagesadmin/pagarme-dark.webp';
-import pagbankClean from '../../../imagesadmin/pagbank-clean.webp';
-import pagbankDark from '../../../imagesadmin/pagbank-dark.webp';
 import { AppWindow, CheckCircle2, CreditCard, FileKey2, PackageCheck, Settings2, ShieldCheck, Store, Trash2 } from 'lucide-react';
 import { Badge } from '../primitives/Badge';
 import { Button } from '../primitives/Button';
-
-const logos = {
-  stripe: { clean: stripeClean, dark: stripeDark },
-  mercado_pago: { clean: mercadoPagoClean, dark: mercadoPagoDark },
-  pagarme: { clean: pagarmeClean, dark: pagarmeDark },
-  pagbank: { clean: pagbankClean, dark: pagbankDark },
-};
+import { IntegrationLogo } from './IntegrationLogo';
 
 const icons = {
   fiscal: FileKey2,
@@ -33,6 +19,21 @@ const authLabel = (strategy) => ({
   MANUAL_SECRET: 'Credencial segura',
 }[strategy] || 'Configuração segura');
 
+const InstallProgressCircle = ({ progress }) => {
+  const radius = 16;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
+  return (
+    <div className="hub-install-progress-circle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px' }} aria-label={`Instalando, ${progress}% concluído`} role="progressbar" aria-valuenow={progress} aria-valuemin="0" aria-valuemax="100">
+      <svg width="36" height="36" viewBox="0 0 36 36">
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="var(--hub-border)" strokeWidth="3" />
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="var(--hub-primary)" strokeWidth="3" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.3s ease', transformOrigin: 'center', transform: 'rotate(-90deg)' }} />
+      </svg>
+    </div>
+  );
+};
+
+
 export const IntegrationInstallCard = ({
   app,
   installState,
@@ -41,7 +42,6 @@ export const IntegrationInstallCard = ({
   onUninstall,
 }) => {
   const Icon = icons[app.key] || AppWindow;
-  const logo = logos[app.key];
   const configuration = app.configuration || {};
   const isInstalling = installState?.key === app.key;
   const isAnotherAppInstalling = Boolean(installState) && !isInstalling;
@@ -53,14 +53,7 @@ export const IntegrationInstallCard = ({
   return (
     <article className="hub-integration-card" data-installed={app.installed}>
       <header className="hub-integration-card-header">
-        <div className="hub-integration-card-icon">
-          {logo ? (
-            <>
-              <img className="hub-integration-card-logo hub-integration-card-logo-clean" src={logo.clean} alt="" />
-              <img className="hub-integration-card-logo hub-integration-card-logo-dark" src={logo.dark} alt="" />
-            </>
-          ) : <Icon aria-hidden="true" size={20} />}
-        </div>
+        <IntegrationLogo name={app.key} fallbackIcon={Icon} />
         <div className="hub-integration-card-meta">
           <Badge variant={app.installed ? 'success' : 'neutral'}>{statusLabel}</Badge>
           <Badge variant="info">{authLabel(app.auth_strategy)}</Badge>
@@ -87,15 +80,6 @@ export const IntegrationInstallCard = ({
         )}
       </div>
 
-      {isInstalling ? (
-        <div className="hub-install-progress" aria-live="polite" aria-label={'Instalando ' + app.name}>
-          <div className="hub-install-progress-track">
-            <progress max="100" value={progress}>{progress}%</progress>
-          </div>
-          <span>{progress}%</span>
-        </div>
-      ) : null}
-
       <footer className="hub-integration-card-actions">
         {app.installed ? (
           <>
@@ -106,11 +90,12 @@ export const IntegrationInstallCard = ({
               Configurar
             </Button>
           </>
+        ) : isInstalling ? (
+          <InstallProgressCircle progress={progress} />
         ) : (
           <Button
             size="sm"
-            icon={isInstalling ? CheckCircle2 : AppWindow}
-            loading={isInstalling}
+            icon={AppWindow}
             disabled={Boolean(blockedBy) || isAnotherAppInstalling}
             onClick={() => onInstall(app)}
           >

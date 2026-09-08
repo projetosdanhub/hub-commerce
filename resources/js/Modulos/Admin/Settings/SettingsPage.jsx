@@ -5,6 +5,7 @@ import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { Skeleton } from '../DesignSystem/primitives/Skeleton';
 import { IntegrationInstallCard } from '../DesignSystem/patterns/IntegrationInstallCard';
+import { IntegrationLogo } from '../DesignSystem/patterns/IntegrationLogo';
 import { ModalDialog } from '../DesignSystem/patterns/ModalDialog';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import './settings.css';
@@ -104,7 +105,7 @@ const FiscalReadiness = ({ preflight = {} }) => {
 const StripeConfiguration = ({ stripe, stripeStatus, saving, onChange, onSubmit }) => (
   <form className="hub-settings-form hub-surface" onSubmit={onSubmit}>
     <header>
-      <span><CreditCard aria-hidden="true" size={20} /></span>
+      <IntegrationLogo name="stripe" fallbackIcon={CreditCard} iconSize={20} />
       <div>
         <h2>Stripe</h2>
         <p>As chaves de teste e produção ficam separadas por loja. O pagamento continua pendente até a entrega autenticada do webhook.</p>
@@ -140,7 +141,7 @@ const StripeConfiguration = ({ stripe, stripeStatus, saving, onChange, onSubmit 
     </div>
     <div className="hub-settings-form-grid">
       <section className="hub-settings-form hub-surface">
-        <header><span><CreditCard aria-hidden="true" size={20} /></span><div><h2>Sandbox</h2><p>Use somente chaves <code>pk_test_</code> e <code>sk_test_</code>.</p></div></header>
+        <header><IntegrationLogo name="stripe" fallbackIcon={CreditCard} iconSize={20} /><div><h2>Sandbox</h2><p>Use somente chaves <code>pk_test_</code> e <code>sk_test_</code>.</p></div></header>
         <div className="hub-settings-fields">
           <label>Chave publicável<input type="password" value={stripe.sandbox_publishable_key} onChange={(event) => onChange({ ...stripe, sandbox_publishable_key: event.target.value })} placeholder="pk_test_..." /></label>
           <label>Chave secreta<input type="password" value={stripe.sandbox_secret_key} onChange={(event) => onChange({ ...stripe, sandbox_secret_key: event.target.value })} placeholder="sk_test_..." /></label>
@@ -148,7 +149,7 @@ const StripeConfiguration = ({ stripe, stripeStatus, saving, onChange, onSubmit 
         </div>
       </section>
       <section className="hub-settings-form hub-surface">
-        <header><span><CreditCard aria-hidden="true" size={20} /></span><div><h2>Produção</h2><p>Use somente chaves <code>pk_live_</code> e <code>sk_live_</code>.</p></div></header>
+        <header><IntegrationLogo name="stripe" fallbackIcon={CreditCard} iconSize={20} /><div><h2>Produção</h2><p>Use somente chaves <code>pk_live_</code> e <code>sk_live_</code>.</p></div></header>
         <div className="hub-settings-fields">
           <label>Chave publicável<input type="password" value={stripe.production_publishable_key} onChange={(event) => onChange({ ...stripe, production_publishable_key: event.target.value })} placeholder="pk_live_..." /></label>
           <label>Chave secreta<input type="password" value={stripe.production_secret_key} onChange={(event) => onChange({ ...stripe, production_secret_key: event.target.value })} placeholder="sk_live_..." /></label>
@@ -179,7 +180,6 @@ const SettingsPage = () => {
   const [saving, setSaving] = useState(false);
   const [installState, setInstallState] = useState(null);
   const [selectedGateway, setSelectedGateway] = useState('stripe');
-  const [uninstallTarget, setUninstallTarget] = useState(null);
   const [notice, setNotice] = useState(null);
 
   const loadApps = async () => {
@@ -264,15 +264,14 @@ const SettingsPage = () => {
       setInstallState(null);
     }
   };
-
-  const confirmUninstall = async () => {
-    if (!uninstallTarget) return;
+  const confirmUninstall = async (app) => {
+    if (!app) return;
     setSaving(true);
+    setNotice(null);
     try {
-      await api.delete('/admin/settings/apps/' + uninstallTarget.key + '/install');
+      await api.delete('/admin/settings/apps/' + app.key + '/install');
       await loadApps();
-      setNotice({ tone: 'success', text: uninstallTarget.name + ' foi desinstalado. As credenciais protegidas foram preservadas para uma futura reinstalação.' });
-      setUninstallTarget(null);
+      setNotice({ tone: 'success', text: app.name + ' foi desinstalado. As credenciais protegidas foram preservadas para uma futura reinstalação.' });
     } catch (error) {
       setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível desinstalar este aplicativo.' });
     } finally {
@@ -381,7 +380,7 @@ const SettingsPage = () => {
                   key={app.key}
                   onConfigure={configure}
                   onInstall={install}
-                  onUninstall={setUninstallTarget}
+                  onUninstall={confirmUninstall}
                 />
               ))}
             </div>
@@ -393,7 +392,7 @@ const SettingsPage = () => {
 
       {activeTab === 'LOGISTICS' ? (
         <form className="hub-settings-form hub-surface" onSubmit={saveLogistics}>
-          <header><span><PackageCheck aria-hidden="true" size={20} /></span><div><h2>Melhor Envio</h2><p>OAuth 2.0 é o destino desta integração. Enquanto o aplicativo OAuth não estiver registrado, a configuração segura por token mantém o contrato atual sem fingir uma conexão.</p></div></header>
+          <header><IntegrationLogo name="melhorenvio" fallbackIcon={PackageCheck} iconSize={20} /><div><h2>Melhor Envio</h2><p>OAuth 2.0 é o destino desta integração. Enquanto o aplicativo OAuth não estiver registrado, a configuração segura por token mantém o contrato atual sem fingir uma conexão.</p></div></header>
           <div className="hub-settings-fields">
             <label>Ambiente<select value={logistics.environment} onChange={(event) => setLogistics({ ...logistics, environment: event.target.value })}><option value="SANDBOX">Sandbox</option><option value="PRODUCTION">Produção</option></select></label>
             <label>Token do Melhor Envio<input type="password" value={logistics.access_token} onChange={(event) => setLogistics({ ...logistics, access_token: event.target.value })} placeholder="Informe o token deste ambiente" /><small>O token não é exibido depois de salvo. Ao mudar de ambiente, informe a credencial correspondente.</small></label>
@@ -425,7 +424,7 @@ const SettingsPage = () => {
         <div className="hub-settings-form-grid">
           <FiscalReadiness preflight={preflight} />
           <form className="hub-settings-form hub-surface" onSubmit={saveFiscal}>
-            <header><span><ShieldCheck aria-hidden="true" size={20} /></span><div><h2>App Fiscal</h2><p>Os segredos não retornam para o navegador após o salvamento.</p></div></header>
+            <header><IntegrationLogo name="nfe" fallbackIcon={ShieldCheck} iconSize={20} /><div><h2>App Fiscal</h2><p>Os segredos não retornam para o navegador após o salvamento.</p></div></header>
             <div className="hub-settings-fields">
               <label>Razão social<input required value={fiscal.legal_name} onChange={(event) => setFiscal({ ...fiscal, legal_name: event.target.value })} /></label>
               <label>CNPJ<input required value={fiscal.cnpj} onChange={(event) => setFiscal({ ...fiscal, cnpj: event.target.value })} /></label>
@@ -439,18 +438,6 @@ const SettingsPage = () => {
             <footer className="hub-settings-form-footer"><MapPinned aria-hidden="true" size={17} /><p>Produtos ainda precisam de dados fiscais completos. A emissão só será habilitada após homologação do adapter.</p><Button type="submit" loading={saving} icon={FileKey2}>Salvar configuração</Button></footer>
           </form>
         </div>
-      ) : null}
-
-      {uninstallTarget ? (
-        <ModalDialog labelledBy="uninstall-app-title" describedBy="uninstall-app-description" onClose={() => setUninstallTarget(null)} busy={saving}>
-          {(requestClose) => (
-            <div className="hub-settings-confirmation">
-              <h2 id="uninstall-app-title">Desinstalar {uninstallTarget.name}?</h2>
-              <p id="uninstall-app-description">O app deixará de ficar ativo nesta loja. As credenciais protegidas serão preservadas para uma reinstalação futura.</p>
-              <div><Button variant="secondary" onClick={requestClose} disabled={saving}>Cancelar</Button><Button variant="danger" loading={saving} onClick={confirmUninstall}>Desinstalar</Button></div>
-            </div>
-          )}
-        </ModalDialog>
       ) : null}
     </main>
   );

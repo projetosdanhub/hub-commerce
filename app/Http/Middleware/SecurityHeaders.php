@@ -28,11 +28,15 @@ class SecurityHeaders
             ? "'self' http://127.0.0.1:5173 http://localhost:5173"
             : "'none'";
 
+        $imgPolicy = app()->environment('local')
+            ? "'self' data: https: http://127.0.0.1:5173 http://localhost:5173"
+            : "'self' data: https:";
+
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
             "script-src {$scriptPolicy}",
             "style-src {$stylePolicy}",
-            "img-src 'self' data: https:",
+            "img-src {$imgPolicy}",
             "font-src 'self' data: https:",
             "connect-src {$connectPolicy}",
             "frame-ancestors {$frameAncestorsPolicy}",
