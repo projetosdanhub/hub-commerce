@@ -31,6 +31,12 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 
 Cada etapa abre branch e PR próprios; a próxima só começa depois de evidência verde da anterior, salvo documentação de planejamento.
 
+## Ativos de interface — 2026-09-08
+
+| Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
+|---|---|---:|---|---|---|
+| [x] | MEDIA-001 | P2 | Organizar logos WebP de gateways, meios de pagamento e transportadoras | — | Arquivos fora da raiz; variantes de gateway são exibidas nos cards por tema e os meios de pagamento/transportadoras ficam em subpastas sem duplicação |
+
 ## Fase 0 — Governança e preparação
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
