@@ -274,7 +274,7 @@ class OrderController extends Controller
                     'cep' => $order->address->cep,
                 ] : null,
 
-                'items' => $order->items->map(function ($item) {
+                'items' => $order->items->map(function ($item) use ($order) {
                     return [
                         'id' => $item->id,
                         'nome' => $item->product_name,

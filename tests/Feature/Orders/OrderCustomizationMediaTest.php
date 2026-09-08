@@ -40,8 +40,6 @@ class OrderCustomizationMediaTest extends TestCase
         OrderItemCustomizationMedia::query()->create(['order_item_id' => $item->id, 'original_name' => 'arte.png', 'storage_path' => $path, 'mime_type' => 'image/png', 'byte_size' => Storage::disk('local')->size($path)]);
         app(TenantContextStore::class)->clear();
 
-        $this->withoutExceptionHandling();
-
         $response = $this->actingAs($owner, 'sanctum')->withServerVariables(['HTTP_HOST' => 'midia.test', 'SERVER_NAME' => 'midia.test'])->getJson('http://midia.test/api/admin/orders')->assertOk()->assertJsonPath('data.0.items.0.personalizacao.Mensagem', 'Presente especial');
         $media = $response->json('data.0.items.0.personalizacao.media.0');
 
