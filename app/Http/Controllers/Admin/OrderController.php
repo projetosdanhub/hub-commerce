@@ -286,7 +286,7 @@ class OrderController extends Controller
                         'qtd' => $item->quantity, 
                         'preco' => (float) $item->price,
                         'img' => $item->product_image,
-                        'personalizacao' => $this->customizationFor($order, $item)
+                        'personalizacao' => $this->customizationFor($order, $item),
                     ];
                 })->values(),
 
