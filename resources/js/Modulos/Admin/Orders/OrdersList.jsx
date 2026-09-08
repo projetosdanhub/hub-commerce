@@ -83,15 +83,9 @@ const DesktopTable = ({ orders, onOpen }) => (
               </td>
               <td><Customer order={order} /></td>
               <td>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {Boolean(order.pagamento?.gateway || order.gateway) && (
-                    <>
-                      <IntegrationLogo name={order.pagamento?.gateway || order.gateway} fallbackIcon={() => null} className="hub-inline-logo" iconSize={15} />
-                      <span style={{ width: '1px', height: '12px', background: 'var(--hub-border)' }} />
-                    </>
-                  )}
+                <div className="hub-orders-payment">
                   <IntegrationLogo name={order.pagamento_metodo || order.pagamento?.metodo} fallbackIcon={() => null} className="hub-inline-logo" iconSize={15} />
-                  <TruncatedText className="hub-orders-payment" label={order.pagamento_metodo || order.pagamento?.metodo || 'Não informado'}>
+                  <TruncatedText label={order.pagamento_metodo || order.pagamento?.metodo || 'Não informado'}>
                     {order.pagamento_metodo || order.pagamento?.metodo || 'Não informado'}
                   </TruncatedText>
                 </div>
@@ -122,6 +116,10 @@ const MobileList = ({ orders, onOpen }) => (
               <Badge variant={status.variant}>{status.label}</Badge>
             </span>
             <Customer order={order} />
+            <span className="hub-orders-mobile-payment">
+              <IntegrationLogo name={order.pagamento_metodo || order.pagamento?.metodo} fallbackIcon={() => null} className="hub-inline-logo" iconSize={15} />
+              {order.pagamento_metodo || order.pagamento?.metodo || 'Pagamento não informado'}
+            </span>
             <span className="hub-orders-mobile-card-foot">
               <span>{formatOrderDate(order.data_raw || order.created_at)}</span>
               <strong>{formatCurrency(order.total)}</strong>

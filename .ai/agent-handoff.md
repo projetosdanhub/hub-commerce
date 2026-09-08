@@ -413,3 +413,13 @@ Copie este bloco para cada handoff relevante:
 - PR: #61 `payments/stripe-tenant-configuration`.
 - A primeira rodada de CI encontrou somente estilo PHP e uma fixture inerte do Stripe sinalizada por Gitleaks; ambos foram corrigidos sem inserir chaves reais.
 - No commit `93ec821`, Tests, Security Scans e E2E Tests passaram. Não liberar checkout, não configurar chaves reais e não marcar pagamentos como aprovados até webhook assinado e idempotente.
+
+
+### 2026-09-08 — Codex
+- Objetivo e escopo: ajustar a apresentação de pagamento em Pedidos, preparar mídia privada de personalização por item e dados locais de demonstração tenant-scoped.
+- Branch e commit: `feat/order-customization-media-demo`; implementação inicial aguarda CI.
+- Task board: ORD-005 [~] e DEV-001 [~] — lista mostra somente a forma de pagamento; detalhe separa gateway; mídia e seed local em implementação.
+- Arquivos alterados: pedidos (API, modelo, migration, rota segura e UI), seed local, task board e este handoff.
+- Evidências: revisão estática pendente da validação automatizada.
+- Riscos, bloqueios e itens não verificados: a interface de upload de personalização da vitrine não existe neste escopo; o contrato novo protege e exibe mídias já persistidas. Cupons/VIP de demonstração são snapshots de pedidos, não motor comercial ativo.
+- Próxima ação única: executar Tests, E2E Tests e Security Scans na PR, corrigindo somente falhas da entrega.
