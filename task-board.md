@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-08 — ativos da Central de Apps normalizados; confirmação de desinstalação restaurada em branch própria; conexões de provedores e billing seguem na PR #66.  
+Atualizado em: 2026-09-08 — ativos da Central de Apps normalizados; confirmação de desinstalação verificada na PR #68; conexões de provedores e billing seguem na PR #66.  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -42,7 +42,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [~] | UI-030 | P1 | Restaurar confirmação explícita para desinstalação de apps | UI-028 | Modal acessível confirma a intenção e bloqueia repetição durante a operação; aguarda CI |
+| [x] | UI-030 | P1 | Restaurar confirmação explícita para desinstalação de apps | UI-028 | Modal acessível confirma a intenção e bloqueia repetição durante a operação; Tests, E2E Tests e Security Scans verdes na PR #68 |
 
 ## Fase 0 — Governança e preparação
 
