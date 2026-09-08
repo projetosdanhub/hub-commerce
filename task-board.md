@@ -35,7 +35,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [x] | MEDIA-001 | P2 | Organizar logos WebP de gateways, meios de pagamento e transportadoras | — | Arquivos fora da raiz; variantes dos gateways ficam em `resources/js/imagesadmin`, com meios de pagamento e transportadoras em subpastas sem duplicação |
+| [x] | MEDIA-001 | P2 | Organizar logos WebP de gateways, meios de pagamento e transportadoras | — | Arquivos fora da raiz; variantes de gateway são exibidas nos cards por tema e os meios de pagamento/transportadoras ficam em subpastas sem duplicação |
 
 ## Fase 0 — Governança e preparação
 

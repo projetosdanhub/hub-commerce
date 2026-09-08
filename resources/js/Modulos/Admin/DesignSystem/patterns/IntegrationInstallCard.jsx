@@ -1,7 +1,22 @@
 import React from 'react';
+import stripeClean from '../../../imagesadmin/logostripe-clean.svg';
+import stripeDark from '../../../imagesadmin/logostripe-dark.svg';
+import mercadoPagoClean from '../../../imagesadmin/mercadopago-dark.webp';
+import mercadoPagoDark from '../../../imagesadmin/mercadopago-white.webp';
+import pagarmeClean from '../../../imagesadmin/pagarme-clean.webp';
+import pagarmeDark from '../../../imagesadmin/pagarme-dark.webp';
+import pagbankClean from '../../../imagesadmin/pagbank-clean.webp';
+import pagbankDark from '../../../imagesadmin/pagbank-dark.webp';
 import { AppWindow, CheckCircle2, CreditCard, FileKey2, PackageCheck, Settings2, ShieldCheck, Store, Trash2 } from 'lucide-react';
 import { Badge } from '../primitives/Badge';
 import { Button } from '../primitives/Button';
+
+const logos = {
+  stripe: { clean: stripeClean, dark: stripeDark },
+  mercado_pago: { clean: mercadoPagoClean, dark: mercadoPagoDark },
+  pagarme: { clean: pagarmeClean, dark: pagarmeDark },
+  pagbank: { clean: pagbankClean, dark: pagbankDark },
+};
 
 const icons = {
   fiscal: FileKey2,
@@ -26,6 +41,7 @@ export const IntegrationInstallCard = ({
   onUninstall,
 }) => {
   const Icon = icons[app.key] || AppWindow;
+  const logo = logos[app.key];
   const configuration = app.configuration || {};
   const isInstalling = installState?.key === app.key;
   const isAnotherAppInstalling = Boolean(installState) && !isInstalling;
@@ -37,7 +53,14 @@ export const IntegrationInstallCard = ({
   return (
     <article className="hub-integration-card" data-installed={app.installed}>
       <header className="hub-integration-card-header">
-        <div className="hub-integration-card-icon"><Icon aria-hidden="true" size={20} /></div>
+        <div className="hub-integration-card-icon">
+          {logo ? (
+            <>
+              <img className="hub-integration-card-logo hub-integration-card-logo-clean" src={logo.clean} alt="" />
+              <img className="hub-integration-card-logo hub-integration-card-logo-dark" src={logo.dark} alt="" />
+            </>
+          ) : <Icon aria-hidden="true" size={20} />}
+        </div>
         <div className="hub-integration-card-meta">
           <Badge variant={app.installed ? 'success' : 'neutral'}>{statusLabel}</Badge>
           <Badge variant="info">{authLabel(app.auth_strategy)}</Badge>
