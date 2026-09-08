@@ -180,6 +180,7 @@ const SettingsPage = () => {
   const [saving, setSaving] = useState(false);
   const [installState, setInstallState] = useState(null);
   const [selectedGateway, setSelectedGateway] = useState('stripe');
+  const [uninstallTarget, setUninstallTarget] = useState(null);
   const [notice, setNotice] = useState(null);
 
   const loadApps = async () => {
@@ -264,14 +265,15 @@ const SettingsPage = () => {
       setInstallState(null);
     }
   };
-  const confirmUninstall = async (app) => {
-    if (!app) return;
+  const confirmUninstall = async () => {
+    if (!uninstallTarget) return;
     setSaving(true);
     setNotice(null);
     try {
-      await api.delete('/admin/settings/apps/' + app.key + '/install');
+      await api.delete('/admin/settings/apps/' + uninstallTarget.key + '/install');
       await loadApps();
-      setNotice({ tone: 'success', text: app.name + ' foi desinstalado. As credenciais protegidas foram preservadas para uma futura reinstalação.' });
+      setNotice({ tone: 'success', text: uninstallTarget.name + ' foi desinstalado. As credenciais protegidas foram preservadas para uma futura reinstalação.' });
+      setUninstallTarget(null);
     } catch (error) {
       setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível desinstalar este aplicativo.' });
     } finally {
@@ -380,7 +382,7 @@ const SettingsPage = () => {
                   key={app.key}
                   onConfigure={configure}
                   onInstall={install}
-                  onUninstall={confirmUninstall}
+                  onUninstall={setUninstallTarget}
                 />
               ))}
             </div>
@@ -438,6 +440,20 @@ const SettingsPage = () => {
             <footer className="hub-settings-form-footer"><MapPinned aria-hidden="true" size={17} /><p>Produtos ainda precisam de dados fiscais completos. A emissão só será habilitada após homologação do adapter.</p><Button type="submit" loading={saving} icon={FileKey2}>Salvar configuração</Button></footer>
           </form>
         </div>
+      ) : null}
+      {uninstallTarget ? (
+        <ModalDialog labelledBy="uninstall-app-title" describedBy="uninstall-app-description" onClose={() => setUninstallTarget(null)} busy={saving}>
+          {(requestClose) => (
+            <div className="hub-settings-confirmation">
+              <h2 id="uninstall-app-title">Desinstalar {uninstallTarget.name}?</h2>
+              <p id="uninstall-app-description">O app deixará de ficar ativo nesta loja. As credenciais protegidas serão preservadas para uma reinstalação futura.</p>
+              <div>
+                <Button variant="secondary" onClick={requestClose} disabled={saving}>Cancelar</Button>
+                <Button variant="danger" loading={saving} onClick={confirmUninstall}>Desinstalar</Button>
+              </div>
+            </div>
+          )}
+        </ModalDialog>
       ) : null}
     </main>
   );
