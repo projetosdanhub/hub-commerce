@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-07 — configuração segura do Stripe por tenant em validação; webhooks e checkout continuam bloqueados  
+Atualizado em: 2026-09-08 — ativos da Central de Apps normalizados; conexões de provedores e billing seguem na PR #66.  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -36,6 +36,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
 | [x] | MEDIA-001 | P2 | Organizar logos WebP de gateways, meios de pagamento e transportadoras | — | Arquivos fora da raiz; variantes de gateway são exibidas nos cards por tema e os meios de pagamento/transportadoras ficam em subpastas sem duplicação |
+| [x] | MEDIA-002 | P2 | Normalizar nomes e referências de logos por tema | MEDIA-001 | Variantes `-clean` e `-dark` consistentes nos cards; sem nomes ambíguos ou grafia incorreta |
 
 ## Fase 0 — Governança e preparação
 
