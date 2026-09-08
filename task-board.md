@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-08 — ativos da Central de Apps normalizados; conexões de provedores e billing seguem na PR #66.  
+Atualizado em: 2026-09-08 — ativos da Central de Apps normalizados; confirmação de desinstalação restaurada em branch própria; conexões de provedores e billing seguem na PR #66.  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -37,6 +37,12 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 |---|---|---:|---|---|---|
 | [x] | MEDIA-001 | P2 | Organizar logos WebP de gateways, meios de pagamento e transportadoras | — | Arquivos fora da raiz; variantes de gateway são exibidas nos cards por tema e os meios de pagamento/transportadoras ficam em subpastas sem duplicação |
 | [x] | MEDIA-002 | P2 | Normalizar nomes e referências de logos por tema | MEDIA-001 | Variantes `-clean` e `-dark` consistentes nos cards; sem nomes ambíguos ou grafia incorreta |
+
+## Segurança de operação — 2026-09-08
+
+| Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
+|---|---|---:|---|---|---|
+| [~] | UI-030 | P1 | Restaurar confirmação explícita para desinstalação de apps | UI-028 | Modal acessível confirma a intenção e bloqueia repetição durante a operação; aguarda CI |
 
 ## Fase 0 — Governança e preparação
 
