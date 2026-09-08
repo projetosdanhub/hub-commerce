@@ -355,10 +355,8 @@ class OrderController extends Controller
         return Storage::disk('local')->response(
             $media->storage_path,
             $media->original_name,
-            [
-                'Content-Disposition' => $request->boolean('download') ? 'attachment' : 'inline',
-                'Content-Type' => $media->mime_type,
-            ],
+            ['Content-Type' => $media->mime_type],
+            $request->boolean('download') ? 'attachment' : 'inline',
         );
     }
 
