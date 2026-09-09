@@ -141,6 +141,7 @@ class ProviderOAuthFlowTest extends TestCase
 
         $installation = $this->installation('melhor_envio', 'SANDBOX');
         $installation->update(['status' => 'CONNECTED']);
+        $installation->refresh();
         $credential = ProviderConnectionCredential::query()->create([
             'provider_installation_id' => $installation->getKey(),
             'access_token' => 'old-sensitive-access-token',
