@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ProviderOAuthFlowTest extends TestCase
@@ -113,7 +114,7 @@ class ProviderOAuthFlowTest extends TestCase
         return ProviderInstallation::query()->create([
             'tenant_id' => Tenant::query()->create([
                 'name' => 'Loja OAuth '.str()->random(8),
-                'slug' => str()->random(12)->lower(),
+                'slug' => Str::lower(Str::random(12)),
             ])->getKey(),
             'provider' => $provider,
             'environment' => $environment,
