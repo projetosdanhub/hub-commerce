@@ -10,6 +10,7 @@ services:
       - vendor:/var/www/vendor
     environment:
       APP_ENV: local
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
