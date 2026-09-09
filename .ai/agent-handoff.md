@@ -431,3 +431,13 @@ Copie este bloco para cada handoff relevante:
 - Evidência anterior: Tests executou 97 testes aprovados; a única falha foi a expectativa do cabeçalho `Content-Disposition`, corrigida neste commit.
 - Bloqueio atual: as novas tentativas de **Tests**, **E2E Tests** e **Security Scans** encerram antes de qualquer etapa, sem logs/steps, e o GitHub Actions devolve `BlobNotFound`. Reexecuções seletivas tiveram o mesmo comportamento.
 - Decisão: PR #69 permanece draft e não será marcada pronta nem mesclada até os checks executarem e ficarem verdes.
+
+
+### 2026-09-09 — Codex
+- Objetivo e escopo: corrigir URLs HTTP de assets e CSP ao acessar o Docker local por túnel HTTPS, sem ampliar as origens permitidas da política.
+- Branch e commit: `fix/local-tunnel-csp`, commit `26406978755380d6bfeefd7c84a11b905b57e786`.
+- Task board: OPS-003 `[~]` — reconhecimento de proxy HTTPS local entregue; hardening de produção continua pendente.
+- Arquivos alterados: `bootstrap/app.php`, `.env.example`, `docs/operations/docker-local.md`, `phpunit.xml`, `tests/Feature/TrustedProxyTest.php` e `task-board.md`.
+- Evidências: teste direcionado criado para `X-Forwarded-Proto: https`; validação CI pendente de PR.
+- Riscos, bloqueios e itens não verificados: `TRUSTED_PROXIES=*` é exclusivo do Docker local controlado; staging e produção exigem IPs/CIDRs explícitos.
+- Próxima ação única: abrir PR e executar Tests e E2E antes do merge.
