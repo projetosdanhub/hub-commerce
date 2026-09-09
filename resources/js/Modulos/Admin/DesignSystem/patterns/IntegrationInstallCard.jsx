@@ -19,39 +19,73 @@ const authLabel = (strategy) => ({
   MANUAL_SECRET: 'Credencial segura',
 }[strategy] || 'Configuração segura');
 
-const InstallProgressCircle = ({ progress }) => {
-  const radius = 16;
+const operationLabel = (operation) => {
+  if (operation?.stage === 'COMPLETE') return operation.kind === 'UNINSTALL' ? 'Desinstalado' : 'Instalado';
+  if (operation?.kind === 'UNINSTALL') return 'Desinstalando';
+
+  return operation?.stage === 'PREPARING' ? 'Preparando' : 'Instalando';
+};
+
+export const AppOperationProgress = ({ operation, compact = false }) => {
+  const progress = Math.max(0, Math.min(100, Number(operation?.progress) || 0));
+  const radius = 22;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
+  const label = operationLabel(operation);
+
   return (
-    <div className="hub-install-progress-circle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px' }} aria-label={`Instalando, ${progress}% concluído`} role="progressbar" aria-valuenow={progress} aria-valuemin="0" aria-valuemax="100">
-      <svg width="36" height="36" viewBox="0 0 36 36">
-        <circle cx="18" cy="18" r={radius} fill="none" stroke="var(--hub-border)" strokeWidth="3" />
-        <circle cx="18" cy="18" r={radius} fill="none" stroke="var(--hub-primary)" strokeWidth="3" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.3s ease', transformOrigin: 'center', transform: 'rotate(-90deg)' }} />
+    <div
+      className={'hub-app-operation-progress' + (compact ? ' hub-app-operation-progress-compact' : '')}
+      aria-label={`${label}, ${progress}% concluído`}
+      role="progressbar"
+      aria-valuenow={progress}
+      aria-valuemin="0"
+      aria-valuemax="100"
+    >
+      <svg viewBox="0 0 56 56" aria-hidden="true">
+        <defs>
+          <linearGradient id="hub-operation-gradient" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--hub-primary)" />
+            <stop offset="100%" stopColor="var(--hub-info)" />
+          </linearGradient>
+        </defs>
+        <circle className="hub-app-operation-track" cx="28" cy="28" r={radius} />
+        <circle
+          className="hub-app-operation-value"
+          cx="28"
+          cy="28"
+          r={radius}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+        <path className="hub-app-operation-wave" d="M16 29c3-3 6-3 9 0s6 3 9 0 6-3 9 0" />
+        <text x="28" y="31" textAnchor="middle">{progress}%</text>
       </svg>
+      <div>
+        <strong>{label}</strong>
+        <span>{operation?.stage === 'PREPARING' ? 'Validando requisitos' : 'Aguardando confirmação segura'}</span>
+      </div>
     </div>
   );
 };
 
-
 export const IntegrationInstallCard = ({
   app,
-  installState,
+  operationState,
   onInstall,
   onConfigure,
   onUninstall,
 }) => {
   const Icon = icons[app.key] || AppWindow;
   const configuration = app.configuration || {};
-  const isInstalling = installState?.key === app.key;
-  const isAnotherAppInstalling = Boolean(installState) && !isInstalling;
-  const progress = installState?.progress || 0;
+  const operation = operationState?.key === app.key ? operationState : null;
+  const anotherOperationIsRunning = Boolean(operationState) && !operation;
   const configured = Boolean(configuration.credential_configured);
   const blockedBy = app.blocked_by;
   const statusLabel = app.installed ? 'Instalado' : 'Disponível';
 
   return (
-    <article className="hub-integration-card" data-installed={app.installed}>
+    <article className="hub-integration-card" data-installed={app.installed} data-operation={operation?.kind || undefined}>
       <header className="hub-integration-card-header">
         <IntegrationLogo name={app.key} fallbackIcon={Icon} />
         <div className="hub-integration-card-meta">
@@ -81,22 +115,22 @@ export const IntegrationInstallCard = ({
       </div>
 
       <footer className="hub-integration-card-actions">
-        {app.installed ? (
+        {operation ? (
+          <AppOperationProgress operation={operation} compact />
+        ) : app.installed ? (
           <>
-            <Button size="sm" variant="danger" icon={Trash2} onClick={() => onUninstall(app)}>
+            <Button size="sm" variant="danger" icon={Trash2} disabled={anotherOperationIsRunning} onClick={() => onUninstall(app)}>
               Desinstalar
             </Button>
-            <Button size="sm" variant="secondary" icon={Settings2} onClick={() => onConfigure(app)}>
+            <Button size="sm" variant="secondary" icon={Settings2} disabled={anotherOperationIsRunning} onClick={() => onConfigure(app)}>
               Configurar
             </Button>
           </>
-        ) : isInstalling ? (
-          <InstallProgressCircle progress={progress} />
         ) : (
           <Button
             size="sm"
             icon={AppWindow}
-            disabled={Boolean(blockedBy) || isAnotherAppInstalling}
+            disabled={Boolean(blockedBy) || anotherOperationIsRunning}
             onClick={() => onInstall(app)}
           >
             {blockedBy ? 'Troca bloqueada' : 'Instalar'}
