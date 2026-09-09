@@ -509,3 +509,14 @@ Copie este bloco para cada handoff relevante:
 - Evidências: Tests #527 mostrou que `url()->asset()` fora da renderização ainda usa `APP_URL`; o middleware passou a usar a API oficial `Vite::createAssetPathsUsing()` antes da view e o teste agora verifica a página real que contém `@vite`.
 - Riscos, bloqueios e itens não verificados: aguardando CI; o resolver é atualizado a cada request web e HMR continua desativado para o túnel.
 - Próxima ação única: acompanhar os gates da PR #78 e mesclar apenas com todos verdes.
+
+
+### 2026-09-09 — Codex — limite explícito do teste de Vite
+
+- Objetivo e escopo: remover somente a asserção incompatível com a configuração de testes.
+- Branch e commit: `fix/ngrok-https-assets`, `1044f58`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `tests/Feature/TrustedProxyTest.php` e este handoff.
+- Evidências: Tests #529 mostrou que `Tests\\TestCase` usa `withoutVite()`; a asserção de tags não exercia o bundle real. Permanece o teste do proxy HTTPS/HSTS; a verificação das tags compiladas é manual no túnel.
+- Riscos, bloqueios e itens não verificados: a URL HTTPS do asset será verificada após merge na instância Docker+ngrok. Nenhuma alteração de runtime nesta revisão.
+- Próxima ação única: aguardar CI e, após merge, recriar containers, gerar build e validar pelo navegador.
