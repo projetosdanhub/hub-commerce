@@ -316,4 +316,7 @@ Route::middleware(['signed', 'throttle:30,1', 'tenant'])->prefix('secure-downloa
         ->name('secure-download.orders.documents');
     Route::get('/orders/{order}/refund-receipts/{receiptIndex}', [OrderController::class, 'refundReceipt'])
         ->name('secure-download.orders.refund-receipts');
+    Route::get('/orders/{order}/items/{item}/customization-media/{media}', [OrderController::class, 'customizationMedia'])
+        ->middleware(['auth:sanctum', 'admin', 'tenant.permission:tenant.orders.view'])
+        ->name('secure-download.orders.customization-media');
 });
