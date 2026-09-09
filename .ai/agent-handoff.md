@@ -441,3 +441,15 @@ Copie este bloco para cada handoff relevante:
 - Evidências: teste direcionado criado para `X-Forwarded-Proto: https`; validação CI pendente de PR.
 - Riscos, bloqueios e itens não verificados: `TRUSTED_PROXIES=*` é exclusivo do Docker local controlado; staging e produção exigem IPs/CIDRs explícitos.
 - Próxima ação única: abrir PR e executar Tests e E2E antes do merge.
+
+
+### 2026-09-09 — Codex — Vite seguro para túnel HTTPS local
+
+- Objetivo e escopo: corrigir o carregamento bloqueado de assets ao acessar Docker pelo túnel HTTPS, sem ampliar a CSP com `0.0.0.0`.
+- Branch e commits: `fix/tunnel-vite-assets`; `174dda4` (origem HMR local), `f41a235` (perfil Compose), `8e9b129` (operação) e `2bb1eba` (board).
+- Task board: DEV-DOCKER-001 permanece `[~]`; os serviços ainda precisam de bootstrap e validação no ambiente local.
+- Arquivos alterados: `vite.config.js`, `docker-compose.dev.yml`, `docs/operations/docker-local.md`, `task-board.md` e este handoff.
+- Comportamento: HMR passa a ser opt-in pelo perfil `frontend-dev` e anuncia `http://localhost:5173` ao navegador; para OAuth/webhook pelo ngrok, o procedimento para o HMR, gera `public/build` e remove `public/hot`, de modo que somente assets HTTPS do Laravel sejam servidos.
+- Evidências: revisão de configuração; CI ainda não iniciada nesta branch.
+- Riscos, bloqueios e itens não verificados: o túnel depende de uma URL ngrok ativa; não foi feita homologação real do OAuth/webhook e nenhum segredo foi inserido no repositório.
+- Próxima ação única: abrir PR e aguardar Tests, E2E Tests e Security Scans antes do merge.

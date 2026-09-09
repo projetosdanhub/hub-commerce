@@ -1,20 +1,25 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react'; // 1. Importação do plugin adicionada aqui
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
     plugins: [
         laravel({
-            // 2. Extensão alterada de app.js para app.jsx
             input: ['resources/css/app.css', 'resources/js/app.jsx'],
             refresh: true,
         }),
         tailwindcss(),
-        react(), // 3. Plugin do React ativado aqui
+        react(),
     ],
     server: {
-        host: '127.0.0.1',
+        host: '0.0.0.0',
+        origin: 'http://localhost:5173',
+        hmr: {
+            host: 'localhost',
+            clientPort: 5173,
+            protocol: 'ws',
+        },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
