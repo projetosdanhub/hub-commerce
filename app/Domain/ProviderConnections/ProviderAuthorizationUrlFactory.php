@@ -43,6 +43,22 @@ final readonly class ProviderAuthorizationUrlFactory
                 ]),
                 'state' => $state,
             ],
+            'melhor_envio' => [
+                'client_id' => $this->configuration->clientId($installation),
+                'response_type' => 'code',
+                'redirect_uri' => $this->configuration->callbackUrl('melhor_envio'),
+                'scope' => implode(' ', [
+                    'shipping-calculate',
+                    'shipping-companies',
+                    'shipping-cancel',
+                    'shipping-generate',
+                    'shipping-preview',
+                    'shipping-print',
+                    'shipping-tracking',
+                    'ecommerce-shipping',
+                ]),
+                'state' => $state,
+            ],
             default => throw new LogicException('Não existe URL OAuth para este provedor.'),
         };
 
