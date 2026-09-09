@@ -520,3 +520,14 @@ Copie este bloco para cada handoff relevante:
 - Evidências: Tests #529 mostrou que `Tests\\TestCase` usa `withoutVite()`; a asserção de tags não exercia o bundle real. Permanece o teste do proxy HTTPS/HSTS; a verificação das tags compiladas é manual no túnel.
 - Riscos, bloqueios e itens não verificados: a URL HTTPS do asset será verificada após merge na instância Docker+ngrok. Nenhuma alteração de runtime nesta revisão.
 - Próxima ação única: aguardar CI e, após merge, recriar containers, gerar build e validar pelo navegador.
+
+
+### 2026-09-09 — Codex — API same-origin no túnel HTTPS
+
+- Objetivo e escopo: impedir que o bundle publicado pelo ngrok chame `localhost:8000`, reconhecer o proxy do túnel no Compose local e manter a resolução de tenant obrigatória.
+- Branch e commit: `fix/ngrok-public-api`, `1020c405fce9a93cc42ee3446f24af283c20728f`.
+- Task board: DEV-DOCKER-001 permanece `[~]` — API same-origin e default local de proxy foram adicionados; bootstrap e homologação externa ainda dependem do ambiente Docker.
+- Arquivos alterados: `.env.example`, `docker-compose.dev.yml`, `docs/operations/docker-local.md`, `resources/js/api.js`, `tests/Unit/Security/StorefrontSearchBoundaryTest.php` e `task-board.md`.
+- Evidências: `npm run test:ui` passou (3 arquivos/4 testes Vitest e 6 testes de interação); `npm run build` passou e a busca em `public/build` não encontrou `localhost:8000/api`; [Tests #532](https://github.com/projetosdanhub/hub-commerce/actions/runs/34405869011), [E2E Tests #358](https://github.com/projetosdanhub/hub-commerce/actions/runs/34405868844) e [Security Scans #360](https://github.com/projetosdanhub/hub-commerce/actions/runs/34405868879) concluíram com sucesso na PR #79.
+- Riscos, bloqueios e itens não verificados: `composer` e `docker` não estão disponíveis no ambiente de trabalho; a homologação no host real do ngrok ainda depende de recriar os containers e gerar o build. `npm run lint` continua vermelho por 51 erros preexistentes em módulos legados, sem arquivos tocados neste commit.
+- Próxima ação única: após o merge da PR #79, aplicar os comandos documentados no host do túnel e validar no navegador que HTML, assets e API usam apenas a origem HTTPS pública.
