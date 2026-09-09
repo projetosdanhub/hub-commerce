@@ -327,21 +327,6 @@ const SettingsPage = () => {
     setTab('GATEWAYS');
   };
 
-  const saveLogistics = async (event) => {
-    event.preventDefault();
-    setSaving(true);
-    setNotice(null);
-    try {
-      await api.post('/admin/settings/logistics', logistics);
-      setNotice({ tone: 'success', text: 'Ambiente logístico salvo. Conecte a conta pelo botão OAuth para autorizar a loja.' });
-      await loadApps();
-    } catch (error) {
-      setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível salvar a configuração logística.' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const saveStripe = async (event) => {
     event.preventDefault();
     setSaving(true);
