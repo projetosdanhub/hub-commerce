@@ -33,12 +33,16 @@ final class ProviderOAuthConfiguration
 
     public function clientId(ProviderInstallation $installation): string
     {
-        return $this->requiredString($installation->provider.'.client_id');
+        return $installation->provider === 'melhor_envio'
+            ? $this->requiredString('melhor_envio.'.strtolower($installation->environment).'_client_id')
+            : $this->requiredString($installation->provider.'.client_id');
     }
 
     public function clientSecret(ProviderInstallation $installation): string
     {
-        return $this->requiredString($installation->provider.'.client_secret');
+        return $installation->provider === 'melhor_envio'
+            ? $this->requiredString('melhor_envio.'.strtolower($installation->environment).'_client_secret')
+            : $this->requiredString($installation->provider.'.client_secret');
     }
 
     public function userAgent(ProviderInstallation $installation): string
