@@ -393,7 +393,9 @@ const SettingsPage = () => {
       {notice ? <div className={'hub-settings-notice hub-settings-notice-' + notice.tone} role="status">{notice.text}</div> : null}
 
       {activeTab === 'APPS' ? (
-        <section className="hub-settings-apps hub-stable-data-region">
+        <>
+          <AppGuides />
+          <section className="hub-settings-apps hub-stable-data-region">
           <header className="hub-settings-section-heading">
             <div><h2>Catálogo da operação</h2><p>Instalações ficam isoladas por loja. O progresso confirma a operação no servidor antes de liberar a configuração.</p></div>
             <div className="hub-settings-catalog-controls">
@@ -427,7 +429,8 @@ const SettingsPage = () => {
           ) : (
             <section className="hub-empty-state hub-surface"><div><h2>Nenhum aplicativo nesta categoria</h2><p>Escolha outra categoria para consultar as integrações disponíveis nesta loja.</p></div></section>
           )}
-        </section>
+          </section>
+        </>
       ) : null}
 
       {activeTab === 'LOGISTICS' ? (
