@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\CarrierController;
 use App\Http\Controllers\Admin\ShippingPackageController;
 use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
+use App\Http\Controllers\Admin\ProviderInstallationController;
 use App\Http\Controllers\Storefront\CheckoutAddressController;
 use App\Http\Controllers\Storefront\CheckoutCustomerSessionController;
 use App\Http\Controllers\Storefront\FreeShippingProgressController;
@@ -32,9 +33,11 @@ use App\Http\Controllers\Identity\InvitationAcceptanceController;
 use App\Http\Controllers\Identity\MfaController;
 use App\Http\Controllers\Identity\PlatformTeamController;
 use App\Http\Controllers\Identity\PlatformTenantOwnershipController;
+use App\Http\Controllers\Identity\PlatformVaultController;
 use App\Http\Controllers\Identity\TenantTeamController;
 use App\Http\Controllers\Identity\UserSessionController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
+use App\Http\Controllers\Webhooks\ProviderAuthorizationCallbackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +50,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/webhooks/stripe/{tenant:slug}', [StripeWebhookController::class, 'handle'])->middleware('throttle:120,1');
+Route::get('/oauth/{provider}/callback', [ProviderAuthorizationCallbackController::class, 'handle'])->middleware('throttle:10,1');
 
 // ==========================================
 // ROTAS DE LOGIN (PÚBLICAS) E VALIDAÇÃO DE E-MAIL
@@ -265,6 +269,10 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     // --- MÓDULO: CONFIGURAÇÕES GERAIS (GATEWAYS E LOGÍSTICA) ---
     Route::prefix('settings')->group(function () {
         Route::get('/apps', [AppCenterController::class, 'index'])->middleware('tenant.permission:tenant.settings.view');
+        Route::get('/provider-installations', [ProviderInstallationController::class, 'index'])->middleware('tenant.permission:tenant.settings.view');
+        Route::post('/provider-installations', [ProviderInstallationController::class, 'store'])->middleware(['tenant.permission:tenant.settings.manage', 'throttle:10,1']);
+        Route::post('/provider-installations/{installation}/authorization', [ProviderInstallationController::class, 'beginAuthorization'])->middleware(['tenant.permission:tenant.settings.manage', 'throttle:5,1']);
+        Route::delete('/provider-installations/{installation}', [ProviderInstallationController::class, 'revoke'])->middleware('tenant.permission:tenant.settings.manage');
         Route::post('/apps/{app}/install', [AppCenterController::class, 'install'])->middleware('tenant.permission:tenant.settings.manage');
         Route::delete('/apps/{app}/install', [AppCenterController::class, 'uninstall'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/stripe', [AppCenterController::class, 'stripe'])->middleware('tenant.permission:tenant.settings.view');
@@ -284,6 +292,8 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
 // Administração da plataforma: não usa tenant do host nem o painel da loja.
 Route::middleware(['auth:sanctum', 'identity'])->prefix('platform')->group(function (): void {
+    Route::get('/vault', [PlatformVaultController::class, 'index'])->middleware('platform.permission:platform.vault.view');
+    Route::post('/vault/{record}/revoke', [PlatformVaultController::class, 'revoke'])->middleware(['platform.permission:platform.vault.manage', 'throttle:5,1']);
     Route::get('/team/members', [PlatformTeamController::class, 'members'])->middleware('platform.permission:platform.team.view');
     Route::get('/roles', [PlatformTeamController::class, 'roles'])->middleware('platform.permission:platform.roles.view');
     Route::get('/permissions', [PlatformTeamController::class, 'permissions'])->middleware('platform.permission:platform.roles.view');
