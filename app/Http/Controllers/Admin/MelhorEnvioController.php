@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\ProviderConnections\ProviderRegistry;
 use App\Domain\Shipping\MelhorEnvioRateAdapter;
+use App\Domain\Tenancy\TenantContextStore;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\MelhorEnvioSetting;
+use App\Models\ProviderInstallation;
 use Illuminate\Support\Facades\Http;
 
 class MelhorEnvioController extends Controller
@@ -37,7 +40,7 @@ class MelhorEnvioController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'is_authenticated' => !empty($config->access_token),
+                'is_authenticated' => $this->credentialFor($config) !== null,
                 'carriers_ativas'  => $config->carriers_ativas,
                 'sender_info'      => $config->sender_info ?? [],
                 'environment'      => $config->environment,
@@ -45,24 +48,9 @@ class MelhorEnvioController extends Controller
         ]);
     }
 
-    public function verifyToken(Request $request)
+    public function verifyToken(): never
     {
-        $request->validate(['access_token' => 'required|string', 'environment' => 'required|in:SANDBOX,PRODUCTION']);
-        $token = $request->access_token;
-
-        $response = Http::withToken($token)
-            ->withHeaders(['Accept' => 'application/json', 'User-Agent' => 'HUB Commerce (suporte@hubcommerce.com)'])
-            ->get($this->baseUrl(new MelhorEnvioSetting(['environment' => $request->input('environment')])) . '/api/v2/me');
-
-        if ($response->successful()) {
-            $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
-            $config->access_token = $token;
-            $config->environment = $request->input('environment');
-            $config->save();
-            return response()->json(['status' => 'success', 'message' => 'Sincronizado com sucesso!']);
-        }
-
-        return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Token inválido ou expirado.'], 400);
+        abort(410, 'A conexão por token manual foi desativada. Use Conectar com Melhor Envio para autorizar a conta por OAuth.');
     }
 
     public function saveCarriers(Request $request)
@@ -85,13 +73,20 @@ class MelhorEnvioController extends Controller
 
     public function disconnect()
     {
-        $config = MelhorEnvioSetting::first();
-        if ($config) {
-            $config->access_token = null;
-            $config->sender_info = null;
-            $config->save();
+        $installation = $this->installationForEnvironment(
+            MelhorEnvioSetting::query()->first()?->environment ?? ProviderRegistry::SANDBOX,
+        );
+
+        if ($installation !== null) {
+            $installation->credential()->delete();
+            $installation->forceFill([
+                'status' => 'REVOKED',
+                'revoked_at' => now(),
+                'secret_ref' => null,
+            ])->save();
         }
-        return response()->json(['status' => 'success', 'message' => 'Desconectado.']);
+
+        return response()->json(['status' => 'success', 'message' => 'Conexão OAuth revogada.']);
     }
 
     public function calculate(Request $request, MelhorEnvioRateAdapter $adapter)
@@ -106,8 +101,9 @@ class MelhorEnvioController extends Controller
         ]);
 
         $config = MelhorEnvioSetting::first();
+        $credential = $config instanceof MelhorEnvioSetting ? $this->credentialFor($config) : null;
 
-        if ($config === null) {
+        if ($config === null || $credential === null) {
             return response()->json([
                 'status' => 'error',
                 'code' => 'REQUEST_FAILED',
@@ -126,6 +122,7 @@ class MelhorEnvioController extends Controller
                     'weight' => $validated['weight'],
                 ],
                 (string) $validated['insurance_value'],
+                $credential->access_token,
             );
         } catch (\DomainException $exception) {
             return response()->json([
@@ -136,6 +133,20 @@ class MelhorEnvioController extends Controller
         }
 
         return response()->json(['status' => 'success', 'data' => $rates]);
+    }
+    private function installationForEnvironment(string $environment): ?ProviderInstallation
+    {
+        return ProviderInstallation::query()
+            ->where('tenant_id', app(TenantContextStore::class)->require()->tenantId)
+            ->where('provider', 'melhor_envio')
+            ->where('environment', $environment)
+            ->whereNull('revoked_at')
+            ->first();
+    }
+
+    private function credentialFor(MelhorEnvioSetting $config): ?\App\Models\ProviderConnectionCredential
+    {
+        return $this->installationForEnvironment($config->environment)?->credential;
     }
 
 }
