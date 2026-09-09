@@ -8,6 +8,8 @@ import { AppOperationProgress, IntegrationInstallCard } from '../DesignSystem/pa
 import { IntegrationLogo } from '../DesignSystem/patterns/IntegrationLogo';
 import { ModalDialog } from '../DesignSystem/patterns/ModalDialog';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
+import { AppGuides } from './AppGuides/AppGuides';
+import DomainConfiguration from './DomainConfiguration';
 import './settings.css';
 
 const TABS = [
@@ -15,6 +17,7 @@ const TABS = [
   { value: 'LOGISTICS', label: 'Logística' },
   { value: 'GATEWAYS', label: 'Gateways' },
   { value: 'FISCAL', label: 'Fiscal' },
+  { value: 'DOMAINS', label: 'Domínio' },
 ];
 
 const APP_CATEGORIES = [
@@ -233,7 +236,7 @@ const SettingsPage = () => {
     });
   }, [apps, appCategory, appSearch]);
   const availableTabs = useMemo(() => TABS.filter((item) => {
-    if (item.value === 'APPS') return true;
+    if (item.value === 'APPS' || item.value === 'DOMAINS') return true;
 
     const category = item.value === 'LOGISTICS' ? 'LOGISTICS' : item.value;
     return filteredInstalledApps.some((app) => app.category === category);
@@ -391,6 +394,8 @@ const SettingsPage = () => {
 
       <SectionTabs ariaLabel="Configurações" items={availableTabs} value={activeTab} onChange={setTab} />
       {notice ? <div className={'hub-settings-notice hub-settings-notice-' + notice.tone} role="status">{notice.text}</div> : null}
+
+      {activeTab === 'DOMAINS' ? <DomainConfiguration /> : null}
 
       {activeTab === 'APPS' ? (
         <>
