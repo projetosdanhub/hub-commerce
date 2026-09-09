@@ -413,3 +413,12 @@ Copie este bloco para cada handoff relevante:
 - PR: #61 `payments/stripe-tenant-configuration`.
 - A primeira rodada de CI encontrou somente estilo PHP e uma fixture inerte do Stripe sinalizada por Gitleaks; ambos foram corrigidos sem inserir chaves reais.
 - No commit `93ec821`, Tests, Security Scans e E2E Tests passaram. Não liberar checkout, não configurar chaves reais e não marcar pagamentos como aprovados até webhook assinado e idempotente.
+
+
+### 2026-09-08 — PAY-007/PAY-008: sincronização Stripe
+
+- PR: #71 `payments/stripe-order-webhook-sync`.
+- Implementado: após validar assinatura e deduplicar o evento Stripe, `payment_intent.succeeded` atualiza a tentativa e transiciona o pedido tenant-scoped de `A_PAGAR` para `SEPARACAO`, registrando histórico auditável.
+- Segurança: falhas/cancelamentos não promovem pedido; nenhum payload/segredo do webhook entra em resposta ou histórico.
+- Testes: ampliado `StripeWebhookTest` com tentativa vinculada ao pedido; execução pendente de `QA-012` devido ao saldo esgotado de GitHub Actions.
+- Próxima ação única: quando o saldo for recomposto, reexecutar os três gates das PRs #69, #70 e #71 antes de qualquer aprovação/merge.
