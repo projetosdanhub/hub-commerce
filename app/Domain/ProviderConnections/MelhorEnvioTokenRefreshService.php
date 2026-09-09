@@ -17,12 +17,8 @@ final readonly class MelhorEnvioTokenRefreshService
         $credential = $credential->fresh(['installation']) ?? $credential;
         $installation = $credential->installation;
 
-        if (($installation instanceof ProviderInstallation) === false
-            || $installation->provider !== 'melhor_envio'
-            || $installation->status !== 'CONNECTED'
-            || $installation->revoked_at !== null
-            || blank($credential->refresh_token)) {
-            throw new ProviderOAuthTokenExchangeException('A credencial do Melhor Envio não pode ser renovada.');
+        if (($installation instanceof ProviderInstallation) === false || $installation->provider !== 'melhor_envio') {
+            throw new ProviderOAuthTokenExchangeException('A credencial não pertence ao Melhor Envio.');
         }
 
         if (! $this->configuration->isConfigured($installation)) {
