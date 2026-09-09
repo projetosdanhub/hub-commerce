@@ -57,7 +57,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 
 | Status | ID | Prioridade | Tarefa | Critério de aceite |
 |---|---|---:|---|---|
-| [~] | DEV-DOCKER-001 | P1 | Substituir XAMPP pelo Docker local | Compose e documentação criados para Laravel, PostgreSQL, Redis, MinIO, Mailpit, assets compilados para túnel, proxy HTTPS confiável com config cache e Vite/HMR opt-in; pendem bootstrap local e validação dos serviços |
+| [~] | DEV-DOCKER-001 | P1 | Substituir XAMPP pelo Docker local | Compose e documentação criados para Laravel, PostgreSQL, Redis, MinIO, Mailpit, assets compilados para túnel, proxy HTTPS confiável com config cache, API same-origin e Vite/HMR opt-in; pendem bootstrap local e validação dos serviços |
 | [ ] | DEV-DOCKER-002 | P1 | Validar bootstrap no Docker | Build, migrations, seed, fila e testes executados sem XAMPP |
 
 ## Fase 0 — Governança e preparação
