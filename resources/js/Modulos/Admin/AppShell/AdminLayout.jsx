@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import AdminLoginPage from '../Authentication/AdminLoginPage';
-import api from '../../../api';
+import api, { ADMIN_UNAUTHORIZED_EVENT } from '../../../api';
 import { adminQueryKeys } from '../../../queryClient';
 import { fetchAdminDashboard } from '../Dashboard/DashboardPage';
 import { AdminDesktopShell } from './AdminDesktopShell';
@@ -50,16 +50,26 @@ const AdminLayout = () => {
   }, [theme]);
   const [token, setToken] = useState(() => sessionStorage.getItem('hub_admin_token'));
 
+  const endSession = useCallback(() => {
+    sessionStorage.removeItem('hub_admin_token');
+    queryClient.removeQueries({ queryKey: ['admin'] });
+    setToken(null);
+    navigate('/admin/login', { replace: true });
+  }, [navigate, queryClient]);
+
+  useEffect(() => {
+    window.addEventListener(ADMIN_UNAUTHORIZED_EVENT, endSession);
+
+    return () => window.removeEventListener(ADMIN_UNAUTHORIZED_EVENT, endSession);
+  }, [endSession]);
+
   const handleLogout = useCallback(async () => {
     try {
       await api.post('/admin/logout');
     } finally {
-      sessionStorage.removeItem('hub_admin_token');
-      queryClient.removeQueries({ queryKey: ['admin'] });
-      setToken(null);
-      navigate('/admin/login', { replace: true });
+      endSession();
     }
-  }, [navigate, queryClient]);
+  }, [endSession]);
 
   const warmRoute = useCallback((path) => {
     if (path === '/admin') {
