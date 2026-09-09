@@ -54,17 +54,6 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Trusted Proxies
-    |--------------------------------------------------------------------------
-    |
-    | Keep this value in configuration so it is available after config:cache.
-    | Use "*" only for a local, controlled HTTPS tunnel.
-    |
-    */
-
-    'trusted_proxies' => env('TRUSTED_PROXIES', ''),
 
 /*
     |--------------------------------------------------------------------------
