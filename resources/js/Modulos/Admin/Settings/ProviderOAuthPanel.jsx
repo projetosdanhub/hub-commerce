@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BadgeCheck, Link2, RefreshCw, ShieldCheck } from 'lucide-react';
+import { Link2, RefreshCw, ShieldCheck } from 'lucide-react';
 import api from '../../../api';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
@@ -30,7 +30,26 @@ export const ProviderOAuthPanel = ({ provider, name, fallbackIcon, defaultEnviro
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+
+    const request = async () => {
+      try {
+        const response = await api.get('/admin/settings/provider-installations');
+        if (!cancelled) setInstallations(response.data?.installations || []);
+      } catch {
+        if (!cancelled) setNotice({ tone: 'error', text: 'Não foi possível consultar o estado da conexão.' });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    request();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const installation = useMemo(
     () => installations.find((item) => item.provider === provider && item.environment === environment),
