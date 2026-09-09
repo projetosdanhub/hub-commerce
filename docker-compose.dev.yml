@@ -10,7 +10,9 @@ services:
       - vendor:/var/www/vendor
     environment:
       APP_ENV: local
-      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+      # The published port is bound to localhost. Trust the local tunnel proxy by
+      # default, but production/staging must declare their own explicit proxies.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-*}
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
