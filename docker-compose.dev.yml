@@ -66,8 +66,10 @@ services:
         condition: service_started
 
   vite:
+    profiles:
+      - frontend-dev
     image: node:24-alpine
-    command: sh -lc "npm ci && npm run dev -- --host 0.0.0.0"
+    command: sh -lc "npm ci && npm run dev"
     working_dir: /var/www
     volumes:
       - ./:/var/www
