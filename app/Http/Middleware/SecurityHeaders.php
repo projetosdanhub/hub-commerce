@@ -11,6 +11,7 @@ class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
     {
+        URL::forceRootUrl($request->getSchemeAndHttpHost());
         URL::forceScheme($request->isSecure() ? 'https' : null);
 
         $response = $next($request);
