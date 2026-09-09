@@ -19,6 +19,9 @@ on:
       - 'vite.config.*'
       - '.github/workflows/e2e.yml'
 
+permissions:
+  contents: read
+
 concurrency:
   group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
