@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-08 — ativos da Central de Apps normalizados; mídia privada de personalização e dados locais de demonstração em implementação; conexões de provedores e billing seguem na PR #66.  
+Atualizado em: 2026-09-08 — OAuth Mercado Pago/PagBank passou a usar URLs oficiais, PKCE e credenciais cifradas por instalação; Stripe Connect e billing seguem em implementação.
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Segurança para repositório público — 2026-09-09
@@ -328,3 +328,24 @@ Os estados abaixo foram corrigidos para refletir evidência verificável. Itens 
 ## Fase 14 — Homologação e lançamento
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
+
+Atualizado em: 2026-09-08 — OAuth Mercado Pago/PagBank passou a usar URLs oficiais, PKCE e credenciais cifradas por instalação; Stripe Connect e billing seguem em implementação.
+| Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
+
+## Fase 15 — Cofre, Conexões OAuth e Billing da Plataforma
+
+| Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
+|---|---|---:|---|---|---|
+| [x] | VAULT-001 | P0 | Separar cofre local, staging e produção | OPS-001 | Guia de ambientes e cofre registrado; local usa `APP_KEY` fora do Git e produção exige Secret Manager/variáveis protegidas |
+| [~] | VAULT-002 | P0 | Criar Super Admin → Cofre e diagnóstico | VAULT-001 | API, tela, permissões catalogadas e auditoria persistida de revogação entregues; falta validação automatizada e checks verdes |
+| [ ] | APP-010 | P0 | Stripe Connect Onboarding por lojista | PAY-004, VAULT-001 | Conta conectada, webhook central e ambiente isolado; sem chaves manuais |
+| [~] | APP-011 | P0 | Mercado Pago OAuth por lojista | VAULT-001 | URL oficial com state/PKCE S256, callback, troca server-side e token cifrado entregues; faltam refresh, webhook HMAC, checkout e Sandbox real |
+| [~] | APP-012 | P0 | PagBank Connect OAuth por lojista | VAULT-001 | URL Connect oficial, callback e token cifrado entregues; faltam renovação, notificações autenticadas, checkout e Sandbox real |
+| [ ] | APP-013 | P0 | Pagar.me por chaves de API do lojista | VAULT-001 | Chaves teste/live criptografadas, tokenização e webhook confirmado |
+| [~] | APP-014 | P0 | Registry de webhooks centralizados | APP-010, APP-011, APP-012, APP-013 | Instalação opaca, URL central, state de uso único e armazenamento cifrado por instalação criados; faltam handlers assinados, fila, dedupe e reconciliação por provedor |
+| [ ] | BILL-001 | P0 | Modelar planos, assinaturas, faturas e estados de cobrança | VAULT-001 | Ledger/auditoria e tenant billing state separados de pagamentos da loja |
+| [ ] | BILL-002 | P0 | Cobrança automática da plataforma | BILL-001 | Webhooks dirigem ativação, falha, cancelamento, pausa e reativação; cron só reconcilia |
+| [ ] | BILL-003 | P0 | Cobrança manual, PIX, boleto, estorno e cancelamento | BILL-001 | Valores server-side, comprovantes e transições auditáveis; sem baixa manual silenciosa |
+| [ ] | BILL-004 | P0 | Bloqueio gradual e reativação de loja | BILL-002, BILL-003 | Tolerância, restrição, suspensão e reativação só por estado financeiro confirmado |
+| [ ] | UI-030 | P1 | Guias do Super Admin para cofre e billing | VAULT-002, BILL-001 | Livro de ajuda filtrável, dicionário, estados e passos de diagnóstico |
+| [~] | UI-031 | P1 | Guias da Central de Apps para lojista | APP-010 | Livro com busca/filtro e capítulos de gateway integrado; faltam links oficiais e validação visual/CI |
