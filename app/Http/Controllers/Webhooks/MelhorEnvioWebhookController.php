@@ -14,9 +14,12 @@ class MelhorEnvioWebhookController extends Controller
     {
         $rawBody = $request->getContent();
         $signature = $request->header('X-ME-Signature');
-        $secret = config('provider-connections.melhor_envio.client_secret');
+        $secrets = array_filter([
+            config('provider-connections.melhor_envio.sandbox_client_secret'),
+            config('provider-connections.melhor_envio.production_client_secret'),
+        ], static fn (mixed $secret): bool => is_string($secret) && $secret !== '');
 
-        if (! is_string($signature) || ! is_string($secret) || $secret === '' || ! $this->signatureIsValid($rawBody, $signature, $secret)) {
+        if (! is_string($signature) || ! $this->signatureMatchesAnySecret($rawBody, $signature, $secrets)) {
             return response()->json(['message' => 'Assinatura inválida.'], 401);
         }
 
@@ -44,8 +47,15 @@ class MelhorEnvioWebhookController extends Controller
         return response()->json(['received' => true], 202);
     }
 
-    private function signatureIsValid(string $rawBody, string $signature, string $secret): bool
+    /** @param array<int, string> $secrets */
+    private function signatureMatchesAnySecret(string $rawBody, string $signature, array $secrets): bool
     {
-        return hash_equals(base64_encode(hash_hmac('sha256', $rawBody, $secret, true)), $signature);
+        foreach ($secrets as $secret) {
+            if (hash_equals(base64_encode(hash_hmac('sha256', $rawBody, $secret, true)), $signature)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
