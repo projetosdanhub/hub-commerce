@@ -66,6 +66,21 @@ final readonly class ProviderOAuthTokenExchangeService
                 ]);
         }
 
+        if ($installation->provider === 'melhor_envio') {
+            return Http::acceptJson()
+                ->asForm()
+                ->withUserAgent($this->configuration->userAgent($installation))
+                ->connectTimeout(3)
+                ->timeout(10)
+                ->post($this->configuration->tokenUrl($installation), [
+                    'grant_type' => 'authorization_code',
+                    'client_id' => $this->configuration->clientId($installation),
+                    'client_secret' => $this->configuration->clientSecret($installation),
+                    'redirect_uri' => $this->configuration->callbackUrl('melhor_envio'),
+                    'code' => $code,
+                ]);
+        }
+
         if ($installation->provider === 'pagbank') {
             return Http::acceptJson()
                 ->asJson()
@@ -121,6 +136,7 @@ final readonly class ProviderOAuthTokenExchangeService
         $value = match ($installation->provider) {
             'mercado_pago' => $response['user_id'] ?? null,
             'pagbank' => $response['account_id'] ?? $response['seller_id'] ?? null,
+            'melhor_envio' => $response['user']['id'] ?? $response['user_id'] ?? null,
             default => null,
         };
 
