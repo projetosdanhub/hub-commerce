@@ -17,8 +17,11 @@ final class MelhorEnvioRateAdapter
         string $destinationPostalCode,
         array $package,
         string $insuranceValue,
+        ?string $accessToken = null,
     ): array {
-        if ($config->access_token === null || $config->access_token === '') {
+        $accessToken ??= $config->access_token;
+
+        if ($accessToken === null || $accessToken === '') {
             throw new DomainException('Melhor Envio não conectado.');
         }
 
@@ -34,7 +37,7 @@ final class MelhorEnvioRateAdapter
             throw new DomainException('Endereço da loja não configurado.');
         }
 
-        $response = Http::withToken($config->access_token)
+        $response = Http::withToken($accessToken)
             ->acceptJson()
             ->withUserAgent('HUB Commerce (suporte@hubcommerce.com)')
             ->post($this->baseUrl($config).'/api/v2/me/shipment/calculate', [
