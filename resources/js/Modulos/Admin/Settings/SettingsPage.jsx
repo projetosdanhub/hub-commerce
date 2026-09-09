@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BadgeCheck, Box, CreditCard, FileKey2, MapPinned, PackageCheck, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, Box, CreditCard, FileKey2, MapPinned, PackageCheck, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import api from '../../../api';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { Skeleton } from '../DesignSystem/primitives/Skeleton';
-import { IntegrationInstallCard } from '../DesignSystem/patterns/IntegrationInstallCard';
+import { AppOperationProgress, IntegrationInstallCard } from '../DesignSystem/patterns/IntegrationInstallCard';
 import { IntegrationLogo } from '../DesignSystem/patterns/IntegrationLogo';
 import { ModalDialog } from '../DesignSystem/patterns/ModalDialog';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
@@ -168,6 +168,7 @@ const StripeConfiguration = ({ stripe, stripeStatus, saving, onChange, onSubmit 
 const SettingsPage = () => {
   const [tab, setTab] = useState('APPS');
   const [appCategory, setAppCategory] = useState('ALL');
+  const [appSearch, setAppSearch] = useState('');
   const [apps, setApps] = useState([]);
   const [fiscal, setFiscal] = useState(emptyFiscal);
   const [logistics, setLogistics] = useState(emptyLogistics);
@@ -178,7 +179,7 @@ const SettingsPage = () => {
   const [certificateMeta, setCertificateMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [installState, setInstallState] = useState(null);
+  const [operationState, setOperationState] = useState(null);
   const [selectedGateway, setSelectedGateway] = useState('stripe');
   const [uninstallTarget, setUninstallTarget] = useState(null);
   const [notice, setNotice] = useState(null);
@@ -218,10 +219,19 @@ const SettingsPage = () => {
   useEffect(() => { load(); }, []);
 
   const filteredInstalledApps = useMemo(() => apps.filter((app) => app.installed), [apps]);
-  const visibleApps = useMemo(
-    () => apps.filter((app) => appCategory === 'ALL' || app.category === appCategory),
-    [apps, appCategory],
-  );
+  const visibleApps = useMemo(() => {
+    const query = appSearch.trim().toLocaleLowerCase('pt-BR');
+
+    return apps.filter((app) => {
+      const matchesCategory = appCategory === 'ALL' || app.category === appCategory;
+      const searchable = [app.name, app.description, app.category_label, app.auth_strategy]
+        .filter(Boolean)
+        .join(' ')
+        .toLocaleLowerCase('pt-BR');
+
+      return matchesCategory && (!query || searchable.includes(query));
+    });
+  }, [apps, appCategory, appSearch]);
   const availableTabs = useMemo(() => TABS.filter((item) => {
     if (item.value === 'APPS') return true;
 
@@ -239,46 +249,65 @@ const SettingsPage = () => {
     setAppCategory(event.target.value);
   };
 
-  const install = async (app) => {
+  const runAppOperation = async (app, kind) => {
     const startedAt = Date.now();
+    const isUninstall = kind === 'UNINSTALL';
     setNotice(null);
-    setInstallState({ key: app.key, progress: 0 });
-    const timer = window.setInterval(() => {
-      setInstallState((current) => (
+    setOperationState({ key: app.key, kind, stage: isUninstall ? 'REMOVING' : 'PREPARING', progress: 8 });
+    const phaseTimer = window.setTimeout(() => {
+      setOperationState((current) => (
         current?.key === app.key
-          ? { ...current, progress: Math.min(current.progress + 10, 90) }
+          ? { ...current, stage: isUninstall ? 'REMOVING' : 'INSTALLING', progress: Math.max(current.progress, 32) }
           : current
       ));
-    }, 90);
+    }, 180);
+    const timer = window.setInterval(() => {
+      setOperationState((current) => (
+        current?.key === app.key
+          ? { ...current, progress: Math.min(current.progress + 7, 90) }
+          : current
+      ));
+    }, 110);
 
     try {
-      await api.post('/admin/settings/apps/' + app.key + '/install');
+      if (isUninstall) {
+        await api.delete('/admin/settings/apps/' + app.key + '/install');
+      } else {
+        await api.post('/admin/settings/apps/' + app.key + '/install');
+      }
+
       window.clearInterval(timer);
-      setInstallState({ key: app.key, progress: 100 });
+      window.clearTimeout(phaseTimer);
+      setOperationState({ key: app.key, kind, stage: 'COMPLETE', progress: 100 });
       await wait(Math.max(0, 650 - (Date.now() - startedAt)));
       await loadApps();
-      setNotice({ tone: 'success', text: app.name + ' foi instalado. Configure o aplicativo para concluir a ativação.' });
+      setNotice({
+        tone: 'success',
+        text: isUninstall
+          ? app.name + ' foi desinstalado. As credenciais protegidas foram preservadas para uma futura reinstalação.'
+          : app.name + ' foi instalado. Configure o aplicativo para concluir a ativação.',
+      });
+
+      return true;
     } catch (error) {
-      window.clearInterval(timer);
-      setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível instalar este aplicativo.' });
+      setNotice({ tone: 'error', text: error?.response?.data?.message || `Não foi possível ${isUninstall ? 'desinstalar' : 'instalar'} este aplicativo.` });
+
+      return false;
     } finally {
-      setInstallState(null);
+      window.clearInterval(timer);
+      window.clearTimeout(phaseTimer);
+      setOperationState(null);
     }
   };
+
+  const install = (app) => runAppOperation(app, 'INSTALL');
   const confirmUninstall = async () => {
     if (!uninstallTarget) return;
+
     setSaving(true);
-    setNotice(null);
-    try {
-      await api.delete('/admin/settings/apps/' + uninstallTarget.key + '/install');
-      await loadApps();
-      setNotice({ tone: 'success', text: uninstallTarget.name + ' foi desinstalado. As credenciais protegidas foram preservadas para uma futura reinstalação.' });
-      setUninstallTarget(null);
-    } catch (error) {
-      setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível desinstalar este aplicativo.' });
-    } finally {
-      setSaving(false);
-    }
+    const completed = await runAppOperation(uninstallTarget, 'UNINSTALL');
+    if (completed) setUninstallTarget(null);
+    setSaving(false);
   };
 
   const configure = (app) => {
@@ -367,18 +396,27 @@ const SettingsPage = () => {
         <section className="hub-settings-apps hub-stable-data-region">
           <header className="hub-settings-section-heading">
             <div><h2>Catálogo da operação</h2><p>Instalações ficam isoladas por loja. O progresso confirma a operação no servidor antes de liberar a configuração.</p></div>
-            <label className="hub-settings-filter">Categoria
-              <select value={appCategory} onChange={changeAppCategory}>
-                {APP_CATEGORIES.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
-              </select>
-            </label>
+            <div className="hub-settings-catalog-controls">
+              <label className="hub-settings-search">
+                <Search aria-hidden="true" size={16} />
+                <span>Buscar aplicativo</span>
+                <input value={appSearch} onChange={(event) => setAppSearch(event.target.value)} placeholder="Nome, categoria ou conexão" />
+              </label>
+              <label className="hub-settings-filter">
+                <SlidersHorizontal aria-hidden="true" size={16} />
+                <span>Categoria</span>
+                <select value={appCategory} onChange={changeAppCategory}>
+                  {APP_CATEGORIES.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
+                </select>
+              </label>
+            </div>
           </header>
           {visibleApps.length ? (
             <div className="hub-app-grid">
               {visibleApps.map((app) => (
                 <IntegrationInstallCard
                   app={app}
-                  installState={installState}
+                  operationState={operationState}
                   key={app.key}
                   onConfigure={configure}
                   onInstall={install}
@@ -442,13 +480,14 @@ const SettingsPage = () => {
         </div>
       ) : null}
       {uninstallTarget ? (
-        <ModalDialog labelledBy="uninstall-app-title" describedBy="uninstall-app-description" onClose={() => setUninstallTarget(null)} busy={saving}>
+        <ModalDialog labelledBy="uninstall-app-title" describedBy="uninstall-app-description" onClose={() => setUninstallTarget(null)} busy={saving || Boolean(operationState)}>
           {(requestClose) => (
             <div className="hub-settings-confirmation">
               <h2 id="uninstall-app-title">Desinstalar {uninstallTarget.name}?</h2>
               <p id="uninstall-app-description">O app deixará de ficar ativo nesta loja. As credenciais protegidas serão preservadas para uma reinstalação futura.</p>
+              {operationState?.key === uninstallTarget.key ? <AppOperationProgress operation={operationState} /> : null}
               <div>
-                <Button variant="secondary" onClick={requestClose} disabled={saving}>Cancelar</Button>
+                <Button variant="secondary" onClick={requestClose} disabled={saving || Boolean(operationState)}>Cancelar</Button>
                 <Button variant="danger" loading={saving} onClick={confirmUninstall}>Desinstalar</Button>
               </div>
             </div>
