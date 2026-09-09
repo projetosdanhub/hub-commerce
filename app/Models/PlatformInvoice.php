@@ -9,8 +9,8 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property Carbon|null $due_at
- * @property \Illuminate\Support\Carbon|null $paid_at
- * @property \Illuminate\Support\Carbon|null $voided_at
+ * @property Carbon|null $paid_at
+ * @property Carbon|null $voided_at
  */
 class PlatformInvoice extends Model
 {
