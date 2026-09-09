@@ -10,6 +10,7 @@ import { ModalDialog } from '../DesignSystem/patterns/ModalDialog';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import { AppGuides } from './AppGuides/AppGuides';
 import DomainConfiguration from './DomainConfiguration';
+import { ProviderOAuthPanel } from './ProviderOAuthPanel';
 import './settings.css';
 
 const TABS = [
@@ -27,7 +28,7 @@ const APP_CATEGORIES = [
   { value: 'FISCAL', label: 'Fiscal' },
 ];
 
-const emptyLogistics = { environment: 'SANDBOX', access_token: '' };
+const emptyLogistics = { environment: 'SANDBOX' };
 const emptyStripe = {
   active_environment: 'SANDBOX',
   sandbox_publishable_key: '',
@@ -209,7 +210,7 @@ const SettingsPage = () => {
       setFiscal((current) => ({ ...current, ...issuer }));
       setPreflight(fiscalResponse.data?.preflight || {});
       setCertificateMeta(fiscalResponse.data?.certificate || null);
-      setLogistics((current) => ({ ...current, environment: logisticsResponse.data?.environment || 'SANDBOX', access_token: '' }));
+      setLogistics((current) => ({ ...current, environment: logisticsResponse.data?.environment || 'SANDBOX' }));
       setStripe((current) => ({ ...current, active_environment: stripeResponse.data?.active_environment || 'SANDBOX' }));
       setStripeStatus(stripeResponse.data || {});
     } catch {
@@ -332,8 +333,7 @@ const SettingsPage = () => {
     setNotice(null);
     try {
       await api.post('/admin/settings/logistics', logistics);
-      setLogistics((current) => ({ ...current, access_token: '' }));
-      setNotice({ tone: 'success', text: 'Configuração logística salva com segurança.' });
+      setNotice({ tone: 'success', text: 'Ambiente logístico salvo. Conecte a conta pelo botão OAuth para autorizar a loja.' });
       await loadApps();
     } catch (error) {
       setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível salvar a configuração logística.' });
@@ -439,14 +439,13 @@ const SettingsPage = () => {
       ) : null}
 
       {activeTab === 'LOGISTICS' ? (
-        <form className="hub-settings-form hub-surface" onSubmit={saveLogistics}>
-          <header><IntegrationLogo name="melhorenvio" fallbackIcon={PackageCheck} iconSize={20} /><div><h2>Melhor Envio</h2><p>OAuth 2.0 é o destino desta integração. Enquanto o aplicativo OAuth não estiver registrado, a configuração segura por token mantém o contrato atual sem fingir uma conexão.</p></div></header>
-          <div className="hub-settings-fields">
-            <label>Ambiente<select value={logistics.environment} onChange={(event) => setLogistics({ ...logistics, environment: event.target.value })}><option value="SANDBOX">Sandbox</option><option value="PRODUCTION">Produção</option></select></label>
-            <label>Token do Melhor Envio<input type="password" value={logistics.access_token} onChange={(event) => setLogistics({ ...logistics, access_token: event.target.value })} placeholder="Informe o token deste ambiente" /><small>O token não é exibido depois de salvo. Ao mudar de ambiente, informe a credencial correspondente.</small></label>
-          </div>
-          <footer className="hub-settings-form-footer"><MapPinned aria-hidden="true" size={17} /><p>Remetente, embalagens e etiquetas continuam na Central de Logística & Envios.</p><Button type="submit" loading={saving} icon={ShieldCheck}>Salvar configuração</Button></footer>
-        </form>
+        <ProviderOAuthPanel
+          provider="melhor_envio"
+          name="Melhor Envio"
+          fallbackIcon={PackageCheck}
+          defaultEnvironment={logistics.environment}
+          description="Conecte a conta da loja por OAuth 2.0 para cotar, comprar e rastrear fretes sem copiar token manual."
+        />
       ) : null}
 
       {activeTab === 'GATEWAYS' ? (
