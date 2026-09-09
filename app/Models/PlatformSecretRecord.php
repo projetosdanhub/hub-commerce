@@ -11,8 +11,8 @@ use Illuminate\Support\Carbon;
  * @property string $purpose
  * @property string $environment
  * @property string $status
- * @property \Illuminate\Support\Carbon|null $rotated_at
- * @property \Illuminate\Support\Carbon|null $revoked_at
+ * @property Carbon|null $rotated_at
+ * @property Carbon|null $revoked_at
  */
 class PlatformSecretRecord extends Model
 {
