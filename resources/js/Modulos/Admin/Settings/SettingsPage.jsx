@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { BadgeCheck, Box, CreditCard, FileKey2, MapPinned, PackageCheck, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import api from '../../../api';
 import { Badge } from '../DesignSystem/primitives/Badge';
@@ -8,6 +8,7 @@ import { AppOperationProgress, IntegrationInstallCard } from '../DesignSystem/pa
 import { IntegrationLogo } from '../DesignSystem/patterns/IntegrationLogo';
 import { ModalDialog } from '../DesignSystem/patterns/ModalDialog';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
+import { useRegisterAdminPageRefresh } from '../DesignSystem/patterns/GlobalPageRefresh';
 import { AppGuides } from './AppGuides/AppGuides';
 import DomainConfiguration from './DomainConfiguration';
 import { ProviderOAuthPanel } from './ProviderOAuthPanel';
@@ -20,6 +21,29 @@ const TABS = [
   { value: 'FISCAL', label: 'Fiscal' },
   { value: 'DOMAINS', label: 'Domínio' },
 ];
+
+const TAB_CONTENT = {
+  APPS: {
+    title: 'Central de Apps',
+    description: 'Instale capacidades por loja e configure cada integração com segurança.',
+  },
+  LOGISTICS: {
+    title: 'Logística',
+    description: 'Conecte os serviços de envio autorizados para esta loja.',
+  },
+  GATEWAYS: {
+    title: 'Gateways de pagamento',
+    description: 'Configure somente integrações instaladas e protegidas por loja.',
+  },
+  FISCAL: {
+    title: 'Configuração fiscal',
+    description: 'Revise os dados necessários antes da emissão fiscal ser liberada.',
+  },
+  DOMAINS: {
+    title: 'Domínio da loja',
+    description: 'Conecte e acompanhe somente os domínios próprios da sua loja.',
+  },
+};
 
 const APP_CATEGORIES = [
   { value: 'ALL', label: 'Todos os apps' },
@@ -188,15 +212,15 @@ const SettingsPage = () => {
   const [uninstallTarget, setUninstallTarget] = useState(null);
   const [notice, setNotice] = useState(null);
 
-  const loadApps = async () => {
+  const loadApps = useCallback(async () => {
     const response = await api.get('/admin/settings/apps');
     const nextApps = Array.isArray(response.data) ? response.data : [];
     setApps(nextApps);
 
     return nextApps;
-  };
+  }, []);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const nextApps = await loadApps();
@@ -218,9 +242,10 @@ const SettingsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadApps]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { void load(); }, [load]);
+  useRegisterAdminPageRefresh(load);
 
   const filteredInstalledApps = useMemo(() => apps.filter((app) => app.installed), [apps]);
   const visibleApps = useMemo(() => {
@@ -243,6 +268,7 @@ const SettingsPage = () => {
     return filteredInstalledApps.some((app) => app.category === category);
   }), [filteredInstalledApps]);
   const activeTab = availableTabs.some((item) => item.value === tab) ? tab : 'APPS';
+  const activeTabContent = TAB_CONTENT[activeTab];
   const activeGateway = useMemo(
     () => apps.find((app) => app.key === selectedGateway && app.installed)
       || apps.find((app) => app.category === 'GATEWAYS' && app.installed),
@@ -372,8 +398,8 @@ const SettingsPage = () => {
       <header className="hub-settings-heading">
         <div>
           <p>Configurações</p>
-          <h1>Central de Apps</h1>
-          <span>Instale capacidades por loja e configure cada integração com segurança. O catálogo e os formulários preservam a altura do painel durante cada estado.</span>
+          <h1>{activeTabContent.title}</h1>
+          <span>{activeTabContent.description}</span>
         </div>
       </header>
 

@@ -24,11 +24,12 @@ class TenantDomainController extends Controller
         return response()->json([
             'domains' => TenantDomain::query()
                 ->where('tenant_id', $tenant->getKey())
-                ->where('kind', '!=', 'SYSTEM')
+                ->where('kind', 'CUSTOM')
                 ->whereNull('disconnected_at')
                 ->orderByDesc('is_primary')
                 ->orderBy('domain')
                 ->get()
+                ->reject(fn (TenantDomain $domain) => TenantDomain::isInternalDevelopmentHost($domain->domain))
                 ->map(fn (TenantDomain $domain) => $this->present($domain)),
             'platform_domain' => $this->present($platformDomain),
             'instructions' => [
@@ -47,6 +48,12 @@ class TenantDomainController extends Controller
             $domain = TenantDomain::normalizeHost($request->string('domain')->toString());
         } catch (InvalidArgumentException $exception) {
             throw ValidationException::withMessages(['domain' => $exception->getMessage()]);
+        }
+
+        if (TenantDomain::isInternalDevelopmentHost($domain)) {
+            throw ValidationException::withMessages([
+                'domain' => 'Use um domínio público da sua marca. Endereços locais, de teste e túneis são exclusivos do ambiente técnico.',
+            ]);
         }
 
         $baseDomain = strtolower((string) config('tenancy.storefront_base_domain'));

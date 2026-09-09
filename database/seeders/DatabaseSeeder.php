@@ -33,22 +33,17 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'loja-inicial'],
             ['name' => 'Loja inicial migrada', 'timezone' => 'America/Sao_Paulo', 'currency' => 'BRL']
         );
-        $domain = TenantDomain::query()->firstOrCreate(
-            ['domain' => 'demo.hubcommerce.test'],
-            ['tenant_id' => $tenant->getKey(), 'is_primary' => true, 'verified_at' => now(), 'kind' => 'SYSTEM']
+        $platformDomain = 'store-'.substr(hash('sha256', $tenant->uuid), 0, 16).'.'.config('tenancy.storefront_base_domain');
+        $domain = TenantDomain::query()->updateOrCreate(
+            ['tenant_id' => $tenant->getKey(), 'kind' => 'PLATFORM'],
+            ['domain' => $platformDomain, 'status' => 'VERIFIED', 'is_primary' => true, 'verified_at' => now(), 'disconnected_at' => null]
         );
-        TenantDomain::query()->firstOrCreate(
-            ['domain' => 'localhost'],
-            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now(), 'kind' => 'SYSTEM']
-        );
-        TenantDomain::query()->firstOrCreate(
-            ['domain' => '127.0.0.1'],
-            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now(), 'kind' => 'SYSTEM']
-        );
-        TenantDomain::query()->firstOrCreate(
-            ['domain' => 'average-applied-subfloor.ngrok-free.dev'],
-            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now(), 'kind' => 'SYSTEM']
-        );
+        foreach (['localhost', '127.0.0.1'] as $internalHost) {
+            TenantDomain::query()->updateOrCreate(
+                ['domain' => $internalHost],
+                ['tenant_id' => $tenant->getKey(), 'kind' => 'INTERNAL', 'status' => 'INTERNAL', 'is_primary' => false, 'verified_at' => now(), 'disconnected_at' => null]
+            );
+        }
         app(TenantContextStore::class)->set(TenantContext::fromTenant($tenant, $domain->domain));
         // ==========================================
         // 1. CRIAR USUÁRIO ADMIN (GESTOR)

@@ -27,7 +27,7 @@ class AdminApiAuditTest extends TestCase
         // 1. Get the seeded tenant and domain
         $tenant = Tenant::where('slug', 'loja-inicial')->firstOrFail();
         $domain = TenantDomain::where('tenant_id', $tenant->id)
-            ->where('domain', 'demo.hubcommerce.test')
+            ->where('kind', 'PLATFORM')
             ->firstOrFail();
 
         // 2. Setup host so Tenant Middleware resolves it properly
@@ -77,7 +77,7 @@ class AdminApiAuditTest extends TestCase
     {
         $tenant = Tenant::where('slug', 'loja-inicial')->firstOrFail();
         $domain = TenantDomain::where('tenant_id', $tenant->id)
-            ->where('domain', 'demo.hubcommerce.test')
+            ->where('kind', 'PLATFORM')
             ->firstOrFail();
 
         $this->withServerVariables(['HTTP_HOST' => $domain->domain]);

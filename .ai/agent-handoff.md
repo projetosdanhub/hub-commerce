@@ -10,6 +10,15 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 - **Tarefas afetadas:** UI-008, UI-007 e UI-009 concluídas; UI-004/UI-006/UI-011/UI-013 seguem em andamento pela migração incremental. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
 - **Próxima ação:** validar a padronização de Produtos; depois aplicar o mesmo catálogo canônico a Pedidos e Clientes/CRM.
 
+### 2026-09-09 — Codex — privacidade e padronização de Domínios
+- Objetivo e escopo: impedir que hosts técnicos locais/teste/túnel apareçam ou sejam cadastrados como domínio próprio; padronizar Configurações e Domínios nos tokens do painel, com composição desktop/mobile e temas existentes.
+- Branch e commit: `fix/settings-domain-privacy`, código em `36db505` (reconciliado sobre a `main` atual).
+- Task board: UI-028 `[~]` — Domínio e a estrutura visual de Configurações foram avançados; validação visual completa do Centro de Apps e dos demais menus continua pendente.
+- Arquivos alterados: `TenantDomain`, controller/middleware de domínio, seed local, migration de quarentena, testes de domínio/seed/auditoria, `SettingsPage`, `DomainConfiguration` e estilos de Settings/Domínios.
+- Evidências: `git diff --check` passou. Testes Laravel não executados: este ambiente não possui `php`/`composer`. Build e testes de UI não executados: o clone não contém `node_modules` e a instalação de dependências requer rede não autorizada neste ambiente.
+- Riscos, bloqueios e itens não verificados: validar `php artisan test --filter=TenantDomainPrivacyTest`, os testes de seed/auditoria e `npm run build`/`npm run test:ui` no CI; fazer inspeção visual em 320px, 768px, 1024px e nos temas claro/escuro antes do merge.
+- Próxima ação única: revisar o diff e executar os checks obrigatórios na PR antes de solicitar merge.
+
 ## Modelo obrigatório
 
 Copie este bloco para cada handoff relevante:
