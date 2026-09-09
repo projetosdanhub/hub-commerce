@@ -13,16 +13,26 @@ class TenantDomain extends Model
     protected $fillable = [
         'tenant_id',
         'domain',
+        'kind',
+        'status',
         'is_primary',
         'verification_token_hash',
+        'verification_token',
+        'verification_token_created_at',
         'verified_at',
+        'dns_checked_at',
+        'disconnected_at',
     ];
 
     protected function casts(): array
     {
         return [
             'is_primary' => 'boolean',
+            'verification_token_created_at' => 'datetime',
             'verified_at' => 'datetime',
+            'dns_checked_at' => 'datetime',
+            'disconnected_at' => 'datetime',
+            'verification_token' => 'encrypted',
         ];
     }
 
