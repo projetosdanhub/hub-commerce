@@ -23,6 +23,7 @@ use App\Domain\Tenancy\TenantContext;
 
 class DatabaseSeeder extends Seeder
 {
+    // Todos os valores abaixo são sintéticos e destinados exclusivamente ao ambiente local/teste.
     public function run(): void
     {
         if (! app()->environment(['local', 'testing'])) {
@@ -49,9 +50,9 @@ class DatabaseSeeder extends Seeder
         // 1. CRIAR USUÁRIO ADMIN (GESTOR)
         // ==========================================
         $admin = User::create([
-            'name' => 'Gestor Admin',
-            'email' => 'admin@hubcommerce.com',
-            'password' => Hash::make('senha123'),
+            'name' => 'Admin de Teste',
+            'email' => 'admin@example.invalid',
+            'password' => Hash::make('local-only-test-password'),
             'role' => 'admin',
         ]);
 
@@ -71,17 +72,17 @@ class DatabaseSeeder extends Seeder
         // 2. CRIAR CLIENTE COMPLETO (TESTE DE UI)
         // ==========================================
         $cliente = User::create([
-            'name' => 'Gemini Inteligência Artificial',
-            'email' => 'gemini@hubcommerce.com',
-            'password' => Hash::make('senha123'),
+            'name' => 'Cliente de Teste',
+            'email' => 'cliente@example.invalid',
+            'password' => Hash::make('local-only-test-password'),
             'role' => 'cliente',
-            'cpf' => '999.888.777-66',
-            'telefone' => '5511999999999',
-            'nascimento' => '1999-12-31',
+            'cpf' => '000.000.000-00',
+            'telefone' => '5500000000000',
+            'nascimento' => '2000-01-01',
             'sexo' => 'Não Binário',
             'origem' => 'Busca Orgânica',
             'tags' => ['Tech Lover', 'VIP Diamante', 'Early Adopter', 'Reviewer'],
-            'avatar' => 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=200&q=80',
+            'avatar' => 'https://example.invalid/avatar-test.svg',
             'coins' => 12500,
             'cashback' => 345.50
         ]);
@@ -91,14 +92,14 @@ class DatabaseSeeder extends Seeder
         // ==========================================
         Address::create([
             'user_id' => $cliente->id,
-            'titulo' => 'Meu Servidor Principal',
-            'cep' => '01310-100',
-            'rua' => 'Avenida Paulista',
-            'num' => '1000',
-            'complemento' => 'Data Center, Rack 42',
-            'referencia' => 'Prédio espelhado ao lado do parque',
-            'bairro' => 'Bela Vista',
-            'cidade' => 'São Paulo',
+            'titulo' => 'Endereço de Teste',
+            'cep' => '00000-000',
+            'rua' => 'Rua de Teste',
+            'num' => '1',
+            'complemento' => 'Complemento de teste',
+            'referencia' => 'Ponto de teste',
+            'bairro' => 'Centro de Teste',
+            'cidade' => 'Cidade de Teste',
             'uf' => 'SP',
             'padrao' => true
         ]);
@@ -138,7 +139,7 @@ class DatabaseSeeder extends Seeder
             'price' => 350.00,
             'product_image' => 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=200&q=80',
             'customization' => [
-                'Nome ou Nickname' => '<Gemini_AI />', 
+                'Nome ou Nickname' => '<Cliente_Teste />', 
                 'Logo da Empresa' => 'https://images.unsplash.com/photo-1618557161833-21b98a3b56f8?auto=format&fit=crop&w=500&q=80' 
             ]
         ]);
@@ -198,14 +199,14 @@ class DatabaseSeeder extends Seeder
         // Endereço Pedido 1
         OrderAddress::create([
             'order_id' => $pedido1->id,
-            'rua' => 'Avenida Paulista',
-            'num' => '1000',
-            'complemento' => 'Data Center, Rack 42',
-            'referencia' => 'Prédio espelhado ao lado do parque',
-            'bairro' => 'Bela Vista',
-            'cidade' => 'São Paulo',
+            'rua' => 'Rua de Teste',
+            'num' => '1',
+            'complemento' => 'Complemento de teste',
+            'referencia' => 'Ponto de teste',
+            'bairro' => 'Centro de Teste',
+            'cidade' => 'Cidade de Teste',
             'uf' => 'SP',
-            'cep' => '01310-100'
+            'cep' => '00000-000'
         ]);
 
         // Timeline Pedido 1
@@ -256,14 +257,14 @@ class DatabaseSeeder extends Seeder
 
         OrderAddress::create([
             'order_id' => $pedido2->id,
-            'rua' => 'Avenida Paulista',
-            'num' => '1000',
-            'complemento' => 'Apto 45',
-            'referencia' => 'Em frente ao MASP',
-            'bairro' => 'Bela Vista',
-            'cidade' => 'São Paulo',
+            'rua' => 'Rua de Teste',
+            'num' => '1',
+            'complemento' => 'Unidade de teste',
+            'referencia' => 'Ponto de teste',
+            'bairro' => 'Centro de Teste',
+            'cidade' => 'Cidade de Teste',
             'uf' => 'SP',
-            'cep' => '01310-100'
+            'cep' => '00000-000'
         ]);
 
         OrderHistory::create([
@@ -308,12 +309,12 @@ class DatabaseSeeder extends Seeder
 
         OrderAddress::create([
             'order_id' => $pedido3->id,
-            'rua' => 'Avenida Paulista',
-            'num' => '1000',
-            'bairro' => 'Bela Vista',
-            'cidade' => 'São Paulo',
+            'rua' => 'Rua de Teste',
+            'num' => '1',
+            'bairro' => 'Centro de Teste',
+            'cidade' => 'Cidade de Teste',
             'uf' => 'SP',
-            'cep' => '01310-100'
+            'cep' => '00000-000'
         ]);
 
         OrderHistory::create([

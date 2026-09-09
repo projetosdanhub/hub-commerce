@@ -3,6 +3,15 @@
 Atualizado em: 2026-09-08 — ativos da Central de Apps normalizados; mídia privada de personalização e dados locais de demonstração em implementação; conexões de provedores e billing seguem na PR #66.  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
+## Segurança para repositório público — 2026-09-09
+
+| Status | ID | Prioridade | Tarefa | Critério de aceite |
+|---|---|---:|---|---|
+| [x] | SEC-009 | P0 | Auditar e preparar o repositório para visibilidade pública | Sem arquivos sensíveis versionados; workflows somente em `pull_request`; permissões mínimas; fixtures de seeder sintéticas |
+| [x] | CI-014 | P1 | Reexecutar Actions das PRs após mudança para público | PRs #69–#72 com checks verdes; sem bloqueio de cota |
+
+Relatório detalhado: `docs/security/public-repository-readiness.md`.
+
 ## Legenda
 
 - [ ] Pendente
