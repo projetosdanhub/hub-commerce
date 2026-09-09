@@ -14,8 +14,8 @@ final readonly class MelhorEnvioTokenRefreshService
 
     public function refresh(ProviderConnectionCredential $credential): ProviderConnectionCredential
     {
-        $credential = $credential->fresh(['installation']) ?? $credential;
-        $installation = $credential->installation;
+        $credential = $credential->fresh() ?? $credential;
+        $installation = ProviderInstallation::query()->find($credential->provider_installation_id);
 
         if (($installation instanceof ProviderInstallation) === false || $installation->provider !== 'melhor_envio') {
             throw new ProviderOAuthTokenExchangeException('A credencial não pertence ao Melhor Envio.');
