@@ -5,14 +5,20 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Symfony\Component\HttpFoundation\Response;
 
 class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
     {
-        URL::forceRootUrl($request->getSchemeAndHttpHost());
+        $requestOrigin = $request->getSchemeAndHttpHost();
+
+        URL::forceRootUrl($requestOrigin);
         URL::forceScheme($request->isSecure() ? 'https' : null);
+        Vite::createAssetPathsUsing(
+            static fn (string $path, ?bool $secure = null): string => rtrim($requestOrigin, '/').'/'.ltrim($path, '/'),
+        );
 
         $response = $next($request);
 
