@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\CarrierController;
 use App\Http\Controllers\Admin\ShippingPackageController;
 use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
+use App\Http\Controllers\Admin\TenantDomainController;
 use App\Http\Controllers\Admin\ProviderInstallationController;
 use App\Http\Controllers\Storefront\CheckoutAddressController;
 use App\Http\Controllers\Storefront\CheckoutCustomerSessionController;
@@ -279,6 +280,10 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/stripe', [AppCenterController::class, 'saveStripe'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/logistics', [AppCenterController::class, 'logistics'])->middleware('tenant.permission:tenant.settings.view');
         Route::post('/logistics', [AppCenterController::class, 'saveLogistics'])->middleware('tenant.permission:tenant.settings.manage');
+        Route::get('/domains', [TenantDomainController::class, 'index'])->middleware('tenant.permission:tenant.settings.view');
+        Route::post('/domains', [TenantDomainController::class, 'store'])->middleware(['tenant.permission:tenant.settings.manage', 'throttle:5,1']);
+        Route::post('/domains/{domain}/verify', [TenantDomainController::class, 'verify'])->middleware(['tenant.permission:tenant.settings.manage', 'throttle:10,1']);
+        Route::delete('/domains/{domain}', [TenantDomainController::class, 'destroy'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/fiscal', [AppCenterController::class, 'fiscal'])->middleware('tenant.permission:tenant.settings.view');
         Route::post('/fiscal', [AppCenterController::class, 'saveFiscal'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/{group}', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'getGroup'])->middleware('tenant.permission:tenant.settings.view');
