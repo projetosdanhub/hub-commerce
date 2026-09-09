@@ -118,13 +118,6 @@ final readonly class ProviderOAuthTokenExchangeService
             ],
         );
 
-        if ($installation->provider === 'melhor_envio') {
-            \App\Models\MelhorEnvioSetting::withoutGlobalScopes()->updateOrCreate(
-                ['tenant_id' => $installation->tenant_id],
-                ['environment' => $installation->environment],
-            );
-        }
-
         $installation->forceFill([
             'status' => 'CONNECTED',
             'connected_at' => now(),
