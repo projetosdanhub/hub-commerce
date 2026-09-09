@@ -68,6 +68,67 @@ class ProviderOAuthFlowTest extends TestCase
         $this->assertSame($started['state'], $query['state']);
     }
 
+    public function test_melhor_envio_uses_oauth_callback_and_shipping_scopes(): void
+    {
+        config([
+            'provider-connections.redirect_base_url' => 'https://app.hubcommerce.test',
+            'provider-connections.melhor_envio.client_id' => 'melhor-envio-client-id',
+            'provider-connections.melhor_envio.client_secret' => 'melhor-envio-client-secret',
+            'provider-connections.melhor_envio.user_agent' => 'Hub Commerce (suporte@hubcommerce.test)',
+        ]);
+
+        $started = app(ProviderAuthorizationService::class)->begin(
+            $this->installation('melhor_envio', 'SANDBOX'),
+            $this->user(),
+        );
+
+        $url = app(ProviderAuthorizationUrlFactory::class)->make($started['authorization'], $started['state']);
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+        $this->assertSame('https://sandbox.melhorenvio.com.br/oauth/authorize', strtok($url, '?'));
+        $this->assertSame('melhor-envio-client-id', $query['client_id']);
+        $this->assertSame('code', $query['response_type']);
+        $this->assertSame($started['state'], $query['state']);
+        $this->assertSame('https://app.hubcommerce.test/api/oauth/melhor_envio/callback', $query['redirect_uri']);
+        $this->assertStringContainsString('shipping-calculate', $query['scope']);
+        $this->assertStringContainsString('ecommerce-shipping', $query['scope']);
+    }
+
+    public function test_melhor_envio_token_exchange_is_encrypted_and_sends_required_user_agent(): void
+    {
+        config([
+            'provider-connections.redirect_base_url' => 'https://app.hubcommerce.test',
+            'provider-connections.melhor_envio.client_id' => 'melhor-envio-client-id',
+            'provider-connections.melhor_envio.client_secret' => 'melhor-envio-client-secret',
+            'provider-connections.melhor_envio.user_agent' => 'Hub Commerce (suporte@hubcommerce.test)',
+        ]);
+
+        $installation = $this->installation('melhor_envio', 'SANDBOX');
+        $started = app(ProviderAuthorizationService::class)->begin($installation, $this->user());
+
+        Http::fake([
+            'https://sandbox.melhorenvio.com.br/oauth/token' => Http::response([
+                'access_token' => 'sensitive-melhor-envio-token',
+                'refresh_token' => 'sensitive-melhor-envio-refresh-token',
+                'expires_in' => 2592000,
+            ]),
+        ]);
+
+        app(ProviderOAuthTokenExchangeService::class)->exchange($started['authorization'], 'provider-code');
+
+        $this->assertSame('CONNECTED', $installation->fresh()->status);
+        $this->assertNotSame(
+            'sensitive-melhor-envio-token',
+            DB::table('provider_connection_credentials')->value('access_token'),
+        );
+
+        Http::assertSent(function (Request $request): bool {
+            return $request->url() === 'https://sandbox.melhorenvio.com.br/oauth/token'
+                && $request->hasHeader('User-Agent', 'Hub Commerce (suporte@hubcommerce.test)')
+                && str_contains($request->body(), 'grant_type');
+        });
+    }
+
     public function test_mercado_pago_token_is_encrypted_and_never_returned_by_the_installation(): void
     {
         config([
