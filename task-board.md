@@ -192,6 +192,13 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [~] | PAY-011 | P1 | Separar credenciais test/live por tenant | SEC-012, TEN-009 | Configuração Stripe mantém Sandbox/Produção separadas, criptografadas e validadas por prefixo; falta validação externa das chaves e bloqueio de deploy por ambiente |
 | [ ] | PAY-012 | P1 | Revisar conformidade PCI e LGPD | PAY-004, PAY-005, PAY-006 | Nenhum dado bruto de cartão no HUB |
 
+## Webhooks do Melhor Envio — 2026-09-09
+
+| Status | ID | Prioridade | Tarefa | Critério de aceite |
+|---|---|---:|---|---|
+| [~] | APP-015 | P1 | Receber atualizações de etiquetas do Melhor Envio | Contrato oficial confirmado: endpoint é configurado no aplicativo, assinatura `X-ME-Signature` (HMAC-SHA256 sobre raw body), eventos `order.*`, retentativas do provedor. Pendente: endpoint público, persistência/deduplicação, fila e testes Sandbox |
+| [ ] | SHIP-008 | P1 | Homologar webhook Melhor Envio | Aplicativo Sandbox criado, URL pública cadastrada e eventos de etiqueta validados sem expor secrets |
+
 ## Fase 8 — Frete e logística
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
