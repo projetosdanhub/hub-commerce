@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+export const ADMIN_UNAUTHORIZED_EVENT = 'hub:admin-unauthorized';
 
 const api = axios.create({
     baseURL: apiBaseUrl,
@@ -29,9 +30,14 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
     response => response,
     error => {
-        if (error.response?.status === 401) {
+        const isProtectedAdminRequest = error.config?.url?.startsWith('/admin/')
+            && error.config.url !== '/admin/login';
+
+        if (error.response?.status === 401 && isProtectedAdminRequest) {
             sessionStorage.removeItem('hub_admin_token');
+            window.dispatchEvent(new Event(ADMIN_UNAUTHORIZED_EVENT));
         }
+
         return Promise.reject(error);
     }
 );
