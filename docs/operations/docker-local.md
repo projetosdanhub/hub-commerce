@@ -7,7 +7,7 @@ Este Compose substitui XAMPP no desenvolvimento local. Ele **não** é configura
 | Serviço | Endereço local |
 |---|---|
 | Hub Commerce | http://localhost:8000 |
-| Vite | http://localhost:5173 |
+| Vite (perfil `frontend-dev`) | http://localhost:5173 |
 | PostgreSQL | 127.0.0.1:5432 |
 | Redis | 127.0.0.1:6379 |
 | MinIO Console | http://localhost:9001 |
@@ -20,6 +20,7 @@ As portas são vinculadas a `127.0.0.1`; não ficam acessíveis pela rede local.
 ```bash
 cp .env.example .env
 docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml run --rm vite npm run build
 docker compose -f docker-compose.dev.yml exec app php artisan key:generate
 docker compose -f docker-compose.dev.yml exec app php artisan migrate --seed
 ```
@@ -30,8 +31,16 @@ Nunca substitua um `.env` já preenchido sem antes fazer backup local.
 
 ```bash
 docker compose -f docker-compose.dev.yml up -d
-docker compose -f docker-compose.dev.yml logs -f app queue vite
+docker compose -f docker-compose.dev.yml logs -f app queue
 ```
+
+O Compose padrão usa os assets compilados em `public/build`, compatíveis com o túnel HTTPS. Para desenvolvimento com recarga em tempo real somente no navegador local, inicie o perfil opcional:
+
+```bash
+docker compose -f docker-compose.dev.yml --profile frontend-dev up -d vite
+```
+
+O Vite expõe `http://localhost:5173` ao navegador e o container continua escutando internamente em `0.0.0.0`. Não use HMR ao testar a URL pública do túnel.
 
 Para parar sem apagar dados:
 
@@ -51,6 +60,16 @@ Os volumes locais só são removidos com `docker compose -f docker-compose.dev.y
 ## Túnel HTTPS local
 
 Para OAuth e webhooks de provedores, exponha temporariamente o Laravel com um túnel HTTPS, por exemplo `ngrok http 8000`. No `.env`, informe o domínio público em `PROVIDER_CONNECTION_REDIRECT_BASE_URL` e `HUB_WEBHOOK_BASE_URL`, e use `TRUSTED_PROXIES=*` somente neste ambiente local controlado. Não use esse valor em staging ou produção; nesses ambientes, informe apenas os IPs/CIDRs dos proxies reversos confiáveis.
+
+Antes de abrir a URL pública, pare o HMR, gere os assets e remova o marcador de desenvolvimento:
+
+```bash
+docker compose -f docker-compose.dev.yml --profile frontend-dev stop vite
+docker compose -f docker-compose.dev.yml run --rm vite npm run build
+docker compose -f docker-compose.dev.yml exec app sh -lc 'rm -f public/hot && php artisan optimize:clear'
+```
+
+Em seguida faça um recarregamento forçado no navegador. O túnel deve servir apenas os arquivos HTTPS de `/build/assets`; não libere `0.0.0.0` na CSP.
 
 ## Webhook Melhor Envio
 
