@@ -118,6 +118,12 @@ final readonly class ProviderOAuthTokenExchangeService
             ],
         );
 
+        if ($installation->provider === 'melhor_envio') {
+            \App\Models\MelhorEnvioSetting::query()->updateOrCreate([], [
+                'environment' => $installation->environment,
+            ]);
+        }
+
         $installation->forceFill([
             'status' => 'CONNECTED',
             'connected_at' => now(),
