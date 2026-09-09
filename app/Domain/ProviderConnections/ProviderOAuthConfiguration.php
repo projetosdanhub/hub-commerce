@@ -12,6 +12,9 @@ final class ProviderOAuthConfiguration
         return match ($installation->provider) {
             'mercado_pago', 'pagbank' => filled($this->clientId($installation))
                 && filled($this->clientSecret($installation)),
+            'melhor_envio' => filled($this->clientId($installation))
+                && filled($this->clientSecret($installation))
+                && filled(config('provider-connections.melhor_envio.user_agent')),
             'stripe' => filled(config('provider-connections.stripe.secret_key')),
             default => false,
         };
@@ -38,6 +41,15 @@ final class ProviderOAuthConfiguration
         return $this->requiredString($installation->provider.'.client_secret');
     }
 
+    public function userAgent(ProviderInstallation $installation): string
+    {
+        if ($installation->provider !== 'melhor_envio') {
+            throw new LogicException('Este provedor não exige User-Agent OAuth dedicado.');
+        }
+
+        return $this->requiredString('melhor_envio.user_agent');
+    }
+
     public function authorizationUrl(ProviderInstallation $installation): string
     {
         $environment = strtolower($installation->environment);
@@ -45,6 +57,7 @@ final class ProviderOAuthConfiguration
         return match ($installation->provider) {
             'mercado_pago' => $this->requiredString('mercado_pago.authorization_url'),
             'pagbank' => $this->requiredString('pagbank.'.$environment.'_authorization_url'),
+            'melhor_envio' => $this->requiredString('melhor_envio.'.$environment.'_authorization_url'),
             default => throw new LogicException('Este provedor não usa OAuth por redirecionamento.'),
         };
     }
@@ -56,6 +69,7 @@ final class ProviderOAuthConfiguration
         return match ($installation->provider) {
             'mercado_pago' => $this->requiredString('mercado_pago.token_url'),
             'pagbank' => $this->requiredString('pagbank.'.$environment.'_token_url'),
+            'melhor_envio' => $this->requiredString('melhor_envio.'.$environment.'_token_url'),
             default => throw new LogicException('Este provedor não usa troca OAuth por código.'),
         };
     }
