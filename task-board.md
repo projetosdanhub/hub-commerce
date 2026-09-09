@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-08 — OAuth Mercado Pago/PagBank passou a usar URLs oficiais, PKCE e credenciais cifradas por instalação; Stripe Connect e billing seguem em implementação.
+Atualizado em: 2026-09-09 — Melhor Envio foi migrado da entrada manual de token para OAuth por instalação; Cofre mostra prontidão não secreta por ambiente.
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Segurança para repositório público — 2026-09-09
@@ -230,7 +230,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | BEN-005 | P0 | Aplicar benefícios no carrinho e checkout | BEN-002, BEN-003, BEN-004, UI-027 | Cupom antes de VIP, bases separadas, endereço obrigatório para frete e snapshot imutável |
 | [ ] | BEN-006 | P1 | Criar Loja de Cupons e resgate seguro | BEN-003, BEN-002 | Resgate debita Hub Coins e emite/reserva benefício em uma única transação |
 | [ ] | BEN-007 | P1 | Migrar afiliados para regras e comissões auditáveis | MKT-002, PAY-008 | Atribuição confiável, comissão por pedido pago e reversão idempotente |
-| [~] | APP-001 | P1 | Transformar Centro de Apps em catálogo operacional | UI-028, TEN-009 | Catálogo já expõe instalação, ambiente e configuração segura de Logística/Fiscal por tenant; faltam adapters homologados para os gateways e validação visual/CI |
+| [~] | APP-001 | P1 | Transformar Centro de Apps em catálogo operacional | UI-028, TEN-009 | Catálogo expõe instalação, ambiente e conexão OAuth do Melhor Envio; faltam adapters homologados para os gateways, Stripe Connect dedicado e validação visual/CI |
 
 ## Fase 10.1 — Estrutura do frontend administrativo
 
@@ -337,12 +337,13 @@ Atualizado em: 2026-09-08 — OAuth Mercado Pago/PagBank passou a usar URLs ofic
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
 | [x] | VAULT-001 | P0 | Separar cofre local, staging e produção | OPS-001 | Guia de ambientes e cofre registrado; local usa `APP_KEY` fora do Git e produção exige Secret Manager/variáveis protegidas |
-| [~] | VAULT-002 | P0 | Criar Super Admin → Cofre e diagnóstico | VAULT-001 | API, tela, permissões catalogadas e auditoria persistida de revogação entregues; falta validação automatizada e checks verdes |
+| [~] | VAULT-002 | P0 | Criar Super Admin → Cofre e diagnóstico | VAULT-001 | API/tela agora exibem prontidão não secreta por provedor/ambiente e instrução de `.env` local vs. Secret Manager; faltam validação automatizada, rotação integrada e checks verdes |
 | [ ] | APP-010 | P0 | Stripe Connect Onboarding por lojista | PAY-004, VAULT-001 | Conta conectada, webhook central e ambiente isolado; sem chaves manuais |
 | [~] | APP-011 | P0 | Mercado Pago OAuth por lojista | VAULT-001 | URL oficial com state/PKCE S256, callback, troca server-side e token cifrado entregues; faltam refresh, webhook HMAC, checkout e Sandbox real |
 | [~] | APP-012 | P0 | PagBank Connect OAuth por lojista | VAULT-001 | URL Connect oficial, callback e token cifrado entregues; faltam renovação, notificações autenticadas, checkout e Sandbox real |
 | [ ] | APP-013 | P0 | Pagar.me por chaves de API do lojista | VAULT-001 | Chaves teste/live criptografadas, tokenização e webhook confirmado |
-| [~] | APP-014 | P0 | Registry de webhooks centralizados | APP-010, APP-011, APP-012, APP-013 | Instalação opaca, URL central, state de uso único e armazenamento cifrado por instalação criados; faltam handlers assinados, fila, dedupe e reconciliação por provedor |
+| [~] | APP-015 | P0 | Melhor Envio OAuth por lojista | VAULT-001, SHIP-004 | Authorization Code, state único, callback fixo, token cifrado e renovação horária antes do vencimento entregues; faltam validação de webhook, Sandbox real e homologação de etiquetas |
+| [~] | APP-014 | P0 | Registry de webhooks centralizados | APP-010, APP-011, APP-012, APP-013 | Instalação opaca, URL central, state de uso único e armazenamento cifrado por instalação criados; Melhor Envio agora usa o mesmo registry OAuth; faltam handlers assinados, fila, dedupe e reconciliação por provedor |
 | [ ] | BILL-001 | P0 | Modelar planos, assinaturas, faturas e estados de cobrança | VAULT-001 | Ledger/auditoria e tenant billing state separados de pagamentos da loja |
 | [ ] | BILL-002 | P0 | Cobrança automática da plataforma | BILL-001 | Webhooks dirigem ativação, falha, cancelamento, pausa e reativação; cron só reconcilia |
 | [ ] | BILL-003 | P0 | Cobrança manual, PIX, boleto, estorno e cancelamento | BILL-001 | Valores server-side, comprovantes e transições auditáveis; sem baixa manual silenciosa |

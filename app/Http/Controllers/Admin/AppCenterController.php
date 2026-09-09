@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Domain\Payments\StripeGatewayConfiguration;
+use App\Domain\Tenancy\TenantContextStore;
 use App\Domain\Tenancy\TenantStorage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveStripeSettingsRequest;
 use App\Models\GlobalSetting;
 use App\Models\MelhorEnvioSetting;
 use App\Models\Produto;
+use App\Models\ProviderInstallation;
 use App\Models\TenantAppInstallation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,7 +38,7 @@ class AppCenterController extends Controller
             'description' => 'Cartão tokenizado por loja, com Sandbox e Produção separados.',
             'category' => 'GATEWAYS',
             'category_label' => 'Gateways',
-            'auth_strategy' => 'API_KEYS',
+            'auth_strategy' => 'CONNECT',
             'location' => null,
         ],
         'mercado_pago' => [
@@ -75,6 +77,7 @@ class AppCenterController extends Controller
 
     public function __construct(
         private readonly TenantStorage $tenantStorage,
+        private readonly TenantContextStore $tenantContext,
         private readonly StripeGatewayConfiguration $stripe,
     ) {}
 
@@ -191,10 +194,10 @@ class AppCenterController extends Controller
         return response()->json([
             'provider' => 'melhor_envio',
             'environment' => $config?->environment,
-            'credential_configured' => filled($config?->access_token),
+            'credential_configured' => $this->melhorEnvioInstallation($config?->environment ?? 'SANDBOX')?->credential()->exists() === true,
             'sender_configured' => filled($config?->sender_info['cep'] ?? null),
             'auth_strategy' => 'OAUTH2',
-            'oauth_ready' => false,
+            'oauth_ready' => true,
         ]);
     }
 
@@ -204,19 +207,10 @@ class AppCenterController extends Controller
 
         $validated = $request->validate([
             'environment' => ['required', Rule::in(['SANDBOX', 'PRODUCTION'])],
-            'access_token' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $config = MelhorEnvioSetting::query()->firstOrCreate([], ['environment' => 'SANDBOX']);
-        $previousEnvironment = $config->environment;
         $config->environment = $validated['environment'];
-
-        if (filled($validated['access_token'] ?? null)) {
-            $config->access_token = $validated['access_token'];
-        } elseif ($config->environment !== $previousEnvironment) {
-            $config->access_token = null;
-        }
-
         $config->save();
 
         return $this->logistics();
@@ -365,7 +359,7 @@ class AppCenterController extends Controller
         return match ($app) {
             'logistics' => [
                 'environment' => $logistics?->environment,
-                'credential_configured' => filled($logistics?->access_token),
+                'credential_configured' => $this->melhorEnvioInstallation($logistics?->environment ?? 'SANDBOX')?->credential()->exists() === true,
             ],
             'fiscal' => [
                 'environment' => isset($fiscal['environment']) && is_string($fiscal['environment'])
@@ -387,6 +381,16 @@ class AppCenterController extends Controller
                 'credential_configured' => false,
             ],
         };
+    }
+
+    private function melhorEnvioInstallation(string $environment): ?ProviderInstallation
+    {
+        return ProviderInstallation::query()
+            ->where('tenant_id', $this->tenantContext->require()->tenantId)
+            ->where('provider', 'melhor_envio')
+            ->where('environment', $environment)
+            ->whereNull('revoked_at')
+            ->first();
     }
 
     private function requireInstalled(string $app): void

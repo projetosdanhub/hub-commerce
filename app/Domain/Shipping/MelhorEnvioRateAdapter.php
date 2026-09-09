@@ -17,8 +17,12 @@ final class MelhorEnvioRateAdapter
         string $destinationPostalCode,
         array $package,
         string $insuranceValue,
+        ?string $accessToken = null,
+        ?string $environment = null,
     ): array {
-        if ($config->access_token === null || $config->access_token === '') {
+        $accessToken ??= $config->access_token;
+
+        if ($accessToken === null || $accessToken === '') {
             throw new DomainException('Melhor Envio não conectado.');
         }
 
@@ -34,10 +38,10 @@ final class MelhorEnvioRateAdapter
             throw new DomainException('Endereço da loja não configurado.');
         }
 
-        $response = Http::withToken($config->access_token)
+        $response = Http::withToken($accessToken)
             ->acceptJson()
             ->withUserAgent('HUB Commerce (suporte@hubcommerce.com)')
-            ->post($this->baseUrl($config).'/api/v2/me/shipment/calculate', [
+            ->post($this->baseUrl($config, $environment).'/api/v2/me/shipment/calculate', [
                 'from' => ['postal_code' => $this->postalCode($senderPostalCode)],
                 'to' => ['postal_code' => $this->postalCode($destinationPostalCode)],
                 'package' => [
@@ -80,9 +84,9 @@ final class MelhorEnvioRateAdapter
             ->all();
     }
 
-    private function baseUrl(MelhorEnvioSetting $config): string
+    private function baseUrl(MelhorEnvioSetting $config, ?string $environment = null): string
     {
-        return $config->environment === 'PRODUCTION'
+        return ($environment ?? $config->environment) === 'PRODUCTION'
             ? 'https://www.melhorenvio.com.br'
             : 'https://sandbox.melhorenvio.com.br';
     }

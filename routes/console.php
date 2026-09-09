@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\ProviderConnections\MelhorEnvioTokenRefreshService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -11,5 +12,11 @@ Artisan::command('inspire', function () {
 
 Schedule::command('billing:reconcile-tenants')
     ->everyFifteenMinutes()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::call(fn (): int => app(MelhorEnvioTokenRefreshService::class)->refreshDue())
+    ->name('oauth:refresh-melhor-envio')
+    ->hourly()
     ->withoutOverlapping()
     ->onOneServer();
