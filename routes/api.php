@@ -15,13 +15,13 @@ use App\Http\Controllers\Admin\CarrierController;
 use App\Http\Controllers\Admin\ShippingPackageController;
 use App\Http\Controllers\Admin\MelhorEnvioController;
 use App\Http\Controllers\Admin\StorefrontController;
+use App\Http\Controllers\Admin\TenantDomainController;
 use App\Http\Controllers\Storefront\CheckoutAddressController;
 use App\Http\Controllers\Storefront\CheckoutCustomerSessionController;
 use App\Http\Controllers\Storefront\FreeShippingProgressController;
 use App\Http\Controllers\Storefront\CheckoutSummaryController;
 use App\Http\Controllers\Storefront\PostalCodeLookupController;
 use App\Http\Controllers\Storefront\ShippingQuoteController;
-use App\Http\Controllers\Storefront\StripeCheckoutController;
 use App\Http\Controllers\Admin\TrackingController;
 use App\Http\Controllers\Admin\NavigationMenuController;
 use App\Http\Controllers\Identity\AuthorizationAuditController;
@@ -102,7 +102,6 @@ Route::post('/storefront/checkout/summary', [CheckoutSummaryController::class, '
 Route::middleware('auth:sanctum')->prefix('storefront/checkout')->group(function (): void {
     Route::get('/addresses', [CheckoutAddressController::class, 'index'])->middleware('throttle:30,1');
     Route::post('/addresses', [CheckoutAddressController::class, 'store'])->middleware('throttle:10,1');
-    Route::post('/stripe/payment-intent', [StripeCheckoutController::class, 'store'])->middleware('throttle:5,1');
 });
 Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middleware('throttle:60,1');
 
@@ -270,6 +269,10 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/stripe', [AppCenterController::class, 'saveStripe'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/logistics', [AppCenterController::class, 'logistics'])->middleware('tenant.permission:tenant.settings.view');
         Route::post('/logistics', [AppCenterController::class, 'saveLogistics'])->middleware('tenant.permission:tenant.settings.manage');
+        Route::get('/domains', [TenantDomainController::class, 'index'])->middleware('tenant.permission:tenant.settings.view');
+        Route::post('/domains', [TenantDomainController::class, 'store'])->middleware(['tenant.permission:tenant.settings.manage', 'throttle:5,1']);
+        Route::post('/domains/{domain}/verify', [TenantDomainController::class, 'verify'])->middleware(['tenant.permission:tenant.settings.manage', 'throttle:10,1']);
+        Route::delete('/domains/{domain}', [TenantDomainController::class, 'destroy'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/fiscal', [AppCenterController::class, 'fiscal'])->middleware('tenant.permission:tenant.settings.view');
         Route::post('/fiscal', [AppCenterController::class, 'saveFiscal'])->middleware('tenant.permission:tenant.settings.manage');
         Route::get('/{group}', [\App\Http\Controllers\Admin\GlobalSettingsController::class, 'getGroup'])->middleware('tenant.permission:tenant.settings.view');
@@ -315,7 +318,4 @@ Route::middleware(['signed', 'throttle:30,1', 'tenant'])->prefix('secure-downloa
         ->name('secure-download.orders.documents');
     Route::get('/orders/{order}/refund-receipts/{receiptIndex}', [OrderController::class, 'refundReceipt'])
         ->name('secure-download.orders.refund-receipts');
-    Route::get('/orders/{order}/items/{item}/customization-media/{media}', [OrderController::class, 'customizationMedia'])
-        ->middleware(['auth:sanctum', 'admin', 'tenant.permission:tenant.orders.view'])
-        ->name('secure-download.orders.customization-media');
 });
