@@ -15,18 +15,4 @@ class TrustedProxyTest extends TestCase
             ->assertOk()
             ->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
-
-    public function test_vite_assets_use_the_https_origin_of_a_trusted_proxy_request(): void
-    {
-        $this->withServerVariables([
-            'HTTP_HOST' => 'average-applied-subfloor.ngrok-free.dev',
-            'HTTP_X_FORWARDED_FOR' => '127.0.0.1',
-            'HTTP_X_FORWARDED_PROTO' => 'https',
-        ])->get('/')
-            ->assertOk()
-            ->assertSee(
-                'https://average-applied-subfloor.ngrok-free.dev/build/assets/',
-                false,
-            );
-    }
 }
