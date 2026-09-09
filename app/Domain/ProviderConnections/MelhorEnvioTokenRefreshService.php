@@ -14,7 +14,7 @@ final readonly class MelhorEnvioTokenRefreshService
 
     public function refresh(ProviderConnectionCredential $credential): ProviderConnectionCredential
     {
-        $installation = $credential->installation;
+        $installation = $credential->loadMissing('installation')->installation;
 
         if (($installation instanceof ProviderInstallation) === false
             || $installation->provider !== 'melhor_envio'
