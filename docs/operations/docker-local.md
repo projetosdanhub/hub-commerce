@@ -69,7 +69,17 @@ docker compose -f docker-compose.dev.yml run --rm vite npm run build
 docker compose -f docker-compose.dev.yml exec app sh -lc 'rm -f public/hot && php artisan optimize:clear'
 ```
 
-Recrie os containers `app` e `queue` depois de atualizar o código. O Compose repassa `TRUSTED_PROXIES` do seu `.env` ao processo do PHP, inclusive quando houver cache de configuração. Mantenha `APP_URL=http://localhost:8000`; durante uma requisição web, o Laravel usa o host e o protocolo HTTPS reconhecidos pelos cabeçalhos confiáveis do ngrok para gerar os assets. Em seguida faça um recarregamento forçado no navegador. O túnel deve servir apenas os arquivos HTTPS de `/build/assets`; não libere `0.0.0.0` nem uma origem HTTP do ngrok na CSP.
+Recrie os containers `app` e `queue` depois de atualizar o código. O Compose local passa a confiar no proxy do túnel por padrão; `TRUSTED_PROXIES=*` continua restrito a esse ambiente, pois staging e produção devem informar IPs/CIDRs explícitos. Mantenha `APP_URL=http://localhost:8000`; durante uma requisição web, o Laravel usa o host e o protocolo HTTPS reconhecidos pelos cabeçalhos confiáveis do ngrok para gerar os assets. O cliente também usa `/api` na mesma origem do navegador, portanto não defina `VITE_API_URL=http://localhost:8000/api` ao publicar o túnel. Em seguida faça um recarregamento forçado no navegador. O túnel deve servir apenas os arquivos HTTPS de `/build/assets`; não libere `0.0.0.0` nem uma origem HTTP do ngrok na CSP.
+
+Depois desta alteração, aplique a atualização em execução com:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d --build --force-recreate app queue
+docker compose -f docker-compose.dev.yml run --rm vite npm run build
+docker compose -f docker-compose.dev.yml exec app sh -lc 'rm -f public/hot && php artisan optimize:clear'
+```
+
+As rotas administrativas continuam resolvendo o tenant pelo host verificado. Para testar o painel por túnel, use um domínio ngrok estável que esteja registrado e verificado para o tenant; um hostname temporário não deve receber bypass de isolamento.
 
 ## Webhook Melhor Envio
 
