@@ -476,3 +476,14 @@ Copie este bloco para cada handoff relevante:
 - Evidências: E2E #346 falhou em `php artisan key:generate` porque `config()` não está disponível durante `withMiddleware`; a correção volta a usar `env()` nessa fase e faz o Compose injetar `TRUSTED_PROXIES` no processo PHP, inclusive quando houver cache.
 - Riscos, bloqueios e itens não verificados: os checks da nova revisão ainda não concluíram; não houve alteração de CSP, segredo ou produção.
 - Próxima ação única: acompanhar Tests, E2E Tests e Security Scans da PR #78.
+
+
+### 2026-09-09 — Codex — ajuste do teste de proxy
+
+- Objetivo e escopo: corrigir somente o teste auxiliar que era capturado pelo fallback SPA.
+- Branch e commit: `fix/ngrok-https-assets`, `b148830`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `tests/Feature/TrustedProxyTest.php` e este handoff.
+- Evidências: Tests #523 alcançou 107 testes aprovados e falhou apenas porque a rota auxiliar não era atendida; o teste agora valida `url()->asset()` após o request HTTPS já ter atravessado o middleware confiável.
+- Riscos, bloqueios e itens não verificados: novo commit ainda aguarda CI; nenhuma alteração de runtime ou CSP nesta correção.
+- Próxima ação única: acompanhar a nova execução dos gates da PR #78.
