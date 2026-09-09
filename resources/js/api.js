@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// Same-origin keeps the client on the public HTTPS host (including temporary tunnels).
+// Set VITE_API_URL only when the API is intentionally served from another origin.
+const apiBaseUrl = import.meta.env.VITE_API_URL || '/api';
 export const ADMIN_UNAUTHORIZED_EVENT = 'hub:admin-unauthorized';
 
 const api = axios.create({
