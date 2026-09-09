@@ -196,7 +196,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 
 | Status | ID | Prioridade | Tarefa | Critério de aceite |
 |---|---|---:|---|---|
-| [~] | APP-015 | P1 | Receber atualizações de etiquetas do Melhor Envio | Contrato oficial confirmado: endpoint é configurado no aplicativo, assinatura `X-ME-Signature` (HMAC-SHA256 sobre raw body), eventos `order.*`, retentativas do provedor. Pendente: endpoint público, persistência/deduplicação, fila e testes Sandbox |
+| [~] | APP-015 | P1 | Receber atualizações de etiquetas do Melhor Envio | Contrato oficial confirmado: endpoint é configurado no aplicativo, assinatura `X-ME-Signature` (HMAC-SHA256 sobre raw body), eventos `order.*`, retentativas do provedor. Endpoint público, validação HMAC, persistência/deduplicação e fila entregues; pendem testes automatizados, vínculo idempotente etiqueta→pedido e homologação Sandbox |
 | [ ] | SHIP-008 | P1 | Homologar webhook Melhor Envio | Aplicativo Sandbox criado, URL pública cadastrada e eventos de etiqueta validados sem expor secrets |
 
 ## Fase 8 — Frete e logística
