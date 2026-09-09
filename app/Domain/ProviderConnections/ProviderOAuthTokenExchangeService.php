@@ -119,9 +119,10 @@ final readonly class ProviderOAuthTokenExchangeService
         );
 
         if ($installation->provider === 'melhor_envio') {
-            \App\Models\MelhorEnvioSetting::query()->updateOrCreate([], [
-                'environment' => $installation->environment,
-            ]);
+            \App\Models\MelhorEnvioSetting::withoutGlobalScopes()->updateOrCreate(
+                ['tenant_id' => $installation->tenant_id],
+                ['environment' => $installation->environment],
+            );
         }
 
         $installation->forceFill([
