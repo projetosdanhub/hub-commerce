@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { BookOpen, KeyRound, Search, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, KeyRound, ShieldCheck, ChevronRight } from 'lucide-react';
 import { Badge } from '../../DesignSystem/primitives/Badge';
+import { Button } from '../../DesignSystem/primitives/Button';
+import { ModalDialog } from '../../DesignSystem/patterns/ModalDialog';
 
 const chapters = [
   { provider: 'Stripe', topic: 'Connect', body: 'Clique em Conectar, conclua o onboarding Stripe Connect e aguarde o estado Autenticado. Não copie chaves.', tags: ['oauth', 'connect', 'sandbox'] },
@@ -12,16 +14,79 @@ const chapters = [
 ];
 
 export const AppGuides = () => {
-  const [query, setQuery] = useState('');
-  const [provider, setProvider] = useState('Todos');
-  const visible = useMemo(() => chapters.filter((chapter) => (
-    (provider === 'Todos' || chapter.provider === provider)
-    && [chapter.provider, chapter.topic, chapter.body, ...chapter.tags].join(' ').toLowerCase().includes(query.toLowerCase())
-  )), [provider, query]);
+  const [activeChapter, setActiveChapter] = useState(chapters[0]);
+  const [isOpen, setIsOpen] = useState(false);
 
-  return <section className="hub-app-guides hub-surface">
-    <header><span><BookOpen size={21} aria-hidden="true" /></span><div><h2>Guia de conexões</h2><p>Pesquise termos, escolha um gateway e siga somente os passos do seu ambiente.</p></div></header>
-    <div className="hub-app-guides-controls"><label><Search size={16} aria-hidden="true" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar OAuth, PIX, webhook…" /></label><select value={provider} onChange={(event) => setProvider(event.target.value)}>{['Todos', 'Stripe', 'Mercado Pago', 'PagBank', 'Pagar.me', 'Melhor Envio'].map((item) => <option key={item}>{item}</option>)}</select></div>
-    <div className="hub-app-guides-book">{visible.map((chapter) => <article key={chapter.provider + chapter.topic}><div><KeyRound size={17} aria-hidden="true" /><strong>{chapter.provider} · {chapter.topic}</strong></div><p>{chapter.body}</p><footer>{chapter.tags.map((tag) => <Badge key={tag} variant="neutral">{tag}</Badge>)}<Badge variant="success"><ShieldCheck size={14} aria-hidden="true" /> Seguro</Badge></footer></article>)}</div>
-  </section>;
+  return (
+    <>
+      <Button 
+        variant="ghost" 
+        icon={BookOpen} 
+        onClick={() => setIsOpen(true)}
+        aria-label="Guia de conexões"
+        title="Guia de conexões"
+      />
+
+      {isOpen && (
+        <ModalDialog 
+          labelledBy="app-guides-title" 
+          onClose={() => setIsOpen(false)}
+          className="hub-app-guides-modal"
+        >
+          {(requestClose) => (
+            <section className="hub-app-guides hub-surface">
+              <header>
+                <span><BookOpen size={21} aria-hidden="true" /></span>
+                <div>
+                  <h2 id="app-guides-title">Guia de conexões</h2>
+                  <p>Consulte as instruções de integração para o seu gateway ou serviço.</p>
+                </div>
+              </header>
+              
+              <div className="hub-app-guides-container">
+                <div className="hub-app-guides-sidebar">
+                  {chapters.map((chapter) => (
+                    <button
+                      key={`${chapter.provider}-${chapter.topic}`}
+                      type="button"
+                      className={`hub-app-guides-item ${activeChapter === chapter ? 'is-active' : ''}`}
+                      onClick={() => setActiveChapter(chapter)}
+                    >
+                      <div className="hub-app-guides-item-content">
+                        <strong>{chapter.provider}</strong>
+                        <span>{chapter.topic}</span>
+                      </div>
+                      <ChevronRight size={16} aria-hidden="true" className="hub-app-guides-chevron" />
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="hub-app-guides-detail">
+                  <article>
+                    <header className="hub-app-guides-detail-header">
+                      <div className="hub-app-guides-detail-title">
+                        <KeyRound size={20} aria-hidden="true" className="hub-app-guides-detail-icon" />
+                        <h3>{activeChapter.provider} · {activeChapter.topic}</h3>
+                      </div>
+                      <div className="hub-app-guides-tags">
+                        {activeChapter.tags.map((tag) => (
+                          <Badge key={tag} variant="neutral">{tag}</Badge>
+                        ))}
+                        <Badge variant="success">
+                          <ShieldCheck size={14} aria-hidden="true" /> Seguro
+                        </Badge>
+                      </div>
+                    </header>
+                    <div className="hub-app-guides-detail-body">
+                      <p>{activeChapter.body}</p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </section>
+          )}
+        </ModalDialog>
+      )}
+    </>
+  );
 };

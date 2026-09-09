@@ -35,15 +35,19 @@ class DatabaseSeeder extends Seeder
         );
         $domain = TenantDomain::query()->firstOrCreate(
             ['domain' => 'demo.hubcommerce.test'],
-            ['tenant_id' => $tenant->getKey(), 'is_primary' => true, 'verified_at' => now()]
+            ['tenant_id' => $tenant->getKey(), 'is_primary' => true, 'verified_at' => now(), 'kind' => 'SYSTEM']
         );
         TenantDomain::query()->firstOrCreate(
             ['domain' => 'localhost'],
-            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now()]
+            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now(), 'kind' => 'SYSTEM']
         );
         TenantDomain::query()->firstOrCreate(
             ['domain' => '127.0.0.1'],
-            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now()]
+            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now(), 'kind' => 'SYSTEM']
+        );
+        TenantDomain::query()->firstOrCreate(
+            ['domain' => 'average-applied-subfloor.ngrok-free.dev'],
+            ['tenant_id' => $tenant->getKey(), 'is_primary' => false, 'verified_at' => now(), 'kind' => 'SYSTEM']
         );
         app(TenantContextStore::class)->set(TenantContext::fromTenant($tenant, $domain->domain));
         // ==========================================

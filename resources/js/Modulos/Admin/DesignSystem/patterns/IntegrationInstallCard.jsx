@@ -59,7 +59,7 @@ export const AppOperationProgress = ({ operation, compact = false }) => {
           strokeDashoffset={offset}
         />
         <path className="hub-app-operation-wave" d="M16 29c3-3 6-3 9 0s6 3 9 0 6-3 9 0" />
-        <text x="28" y="31" textAnchor="middle">{progress}%</text>
+        <text x="28" y="28" textAnchor="middle" dominantBaseline="middle">{progress}%</text>
       </svg>
       <div>
         <strong>{label}</strong>

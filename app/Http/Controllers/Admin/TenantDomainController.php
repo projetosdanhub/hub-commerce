@@ -24,6 +24,7 @@ class TenantDomainController extends Controller
         return response()->json([
             'domains' => TenantDomain::query()
                 ->where('tenant_id', $tenant->getKey())
+                ->where('kind', '!=', 'SYSTEM')
                 ->whereNull('disconnected_at')
                 ->orderByDesc('is_primary')
                 ->orderBy('domain')
@@ -130,7 +131,7 @@ class TenantDomainController extends Controller
             $this->ensurePlatformDomain($this->tenant())->forceFill(['is_primary' => true])->save();
         });
 
-        return response()->json(['message' => 'Domínio desautenticado. A loja voltou ao endereço protegido da plataforma.']);
+        return response()->json(['message' => 'Domínio desvinculado. A loja voltou ao endereço protegido da plataforma.']);
     }
 
     private function tenant(): Tenant
@@ -198,7 +199,7 @@ class TenantDomainController extends Controller
 
     private function present(TenantDomain $domain): array
     {
-        return [
+        $data = [
             'id' => $domain->getKey(),
             'domain' => $domain->domain,
             'kind' => $domain->kind,
@@ -207,5 +208,11 @@ class TenantDomainController extends Controller
             'verified_at' => optional($domain->verified_at)->toISOString(),
             'dns_checked_at' => optional($domain->dns_checked_at)->toISOString(),
         ];
+
+        if ($domain->status === 'PENDING_DNS' && $domain->verification_token) {
+            $data['verification'] = $this->verificationInstructions($domain, $domain->verification_token);
+        }
+
+        return $data;
     }
 }

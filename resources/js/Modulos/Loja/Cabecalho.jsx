@@ -53,7 +53,7 @@ const Header = ({
     // --- CONFIGURAÇÕES DA LOJA ---
     const configLojista = {
         logo: { 
-            url: "https://via.placeholder.com/180x50?text=HUB+Commerce", 
+            url: "https://placehold.co/180x50?text=HUB+Commerce", 
             alt: "HUB Commerce - Página Inicial",
             alturaClasse: "h-9 sm:h-11 w-auto object-contain" 
         },
@@ -186,7 +186,7 @@ const Header = ({
                                 onClick={() => { navigate(`/produto/${prod.id}`); setIsPesquisando(false); setTermoPesquisa(""); }}
                                 className="flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors"
                             >
-                                <img src={prod.img || 'https://via.placeholder.com/40'} alt="" className="w-10 h-10 object-cover rounded-lg mix-blend-multiply border border-slate-100" />
+                                <img src={prod.img || 'https://placehold.co/40'} alt="" className="w-10 h-10 object-cover rounded-lg mix-blend-multiply border border-slate-100" />
                                 <div className="flex flex-col min-w-0 flex-1">
                                     <span className="text-xs font-semibold text-slate-800 truncate">{prod.nome}</span>
                                     <span className="text-xs text-sky-600 font-bold">R$ {parseFloat(prod.preco_promo || prod.preco).toFixed(2)}</span>
@@ -372,7 +372,7 @@ const Header = ({
                                 ) : resultadosPesquisa.length > 0 ? (
                                     resultadosPesquisa.map((prod) => (
                                         <div key={prod.id} onClick={() => { navigate(`/produto/${prod.id}`); setIsMobileSearchOpen(false); setTermoPesquisa(""); }} className="flex items-center gap-3 p-3 border-b border-slate-100 active:bg-slate-50 cursor-pointer">
-                                            <img src={prod.img || 'https://via.placeholder.com/40'} alt="" className="w-12 h-12 object-cover rounded-xl mix-blend-multiply border border-slate-100" />
+                                            <img src={prod.img || 'https://placehold.co/40'} alt="" className="w-12 h-12 object-cover rounded-xl mix-blend-multiply border border-slate-100" />
                                             <div className="flex flex-col min-w-0 flex-1">
                                                 <span className="text-xs font-bold text-slate-800 truncate">{prod.nome}</span>
                                                 <span className="text-xs text-sky-600 font-black mt-0.5">R$ {parseFloat(prod.preco_promo || prod.preco).toFixed(2)}</span>

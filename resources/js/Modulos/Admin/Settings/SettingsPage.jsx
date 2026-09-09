@@ -384,11 +384,11 @@ const SettingsPage = () => {
 
       {activeTab === 'APPS' ? (
         <>
-          <AppGuides />
           <section className="hub-settings-apps hub-stable-data-region">
           <header className="hub-settings-section-heading">
             <div><h2>Catálogo da operação</h2><p>Instalações ficam isoladas por loja. O progresso confirma a operação no servidor antes de liberar a configuração.</p></div>
             <div className="hub-settings-catalog-controls">
+              <AppGuides />
               <label className="hub-settings-search">
                 <Search aria-hidden="true" size={16} />
                 <span>Buscar aplicativo</span>

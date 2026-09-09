@@ -42,6 +42,7 @@ const DomainConfiguration = () => {
   }, []);
 
   const customDomains = useMemo(() => (data?.domains || []).filter((item) => item.kind === 'CUSTOM'), [data]);
+  const pendingDomains = useMemo(() => customDomains.filter((item) => item.status === 'PENDING_DNS'), [customDomains]);
 
   const connect = async (event) => {
     event.preventDefault();
@@ -87,7 +88,7 @@ const DomainConfiguration = () => {
       await load();
       setNotice({ tone: 'success', text: response.data.message });
     } catch {
-      setNotice({ tone: 'error', text: 'Não foi possível desautenticar este domínio.' });
+      setNotice({ tone: 'error', text: 'Não foi possível desvincular este domínio.' });
     } finally {
       setBusy(null);
     }
@@ -95,57 +96,107 @@ const DomainConfiguration = () => {
 
   if (!data) return <section className="hub-domain-panel hub-surface" aria-busy="true"><LoaderCircle className="hub-domain-spin" /> Carregando domínios…</section>;
 
-  const instruction = challenge || null;
+  const instruction = challenge || pendingDomains[0]?.verification || {
+    isExample: true,
+    txt: { host: `_hub-verify.loja.suamarca.com.br`, value: 'hub-commerce-verification=a1b2c3d4e5f6...' },
+    routing: { type: 'CNAME', host: 'loja.suamarca.com.br', value: data.instructions?.cname_target || 'storefront.hubcommerce.com.br' }
+  };
 
   return (
     <section className="hub-domain-panel hub-surface">
       <header className="hub-domain-hero">
-        <div className="hub-domain-icon"><Globe2 size={22} aria-hidden="true" /></div>
-        <div><h2>Domínio da loja</h2><p>Use a sua marca em toda a vitrine, links, checkout e pixels. A confirmação só ocorre depois da prova de propriedade e do apontamento para a hospedagem.</p></div>
-        <Badge variant="success"><ShieldCheck size={15} aria-hidden="true" /> Protegido</Badge>
+        <div className="hub-domain-icon"><Globe2 size={24} aria-hidden="true" /></div>
+        <div>
+          <h2>Domínio da loja</h2>
+          <p>Use a sua marca em toda a vitrine, links, checkout e pixels. A confirmação só ocorre depois da prova de propriedade e do apontamento para a hospedagem.</p>
+        </div>
       </header>
 
       {notice ? <div className={'hub-settings-notice hub-settings-notice-' + notice.tone} role="status">{notice.text}</div> : null}
 
-      <article className="hub-domain-platform">
-        <div><small>Endereço protegido da plataforma</small><strong>{data.platform_domain.domain}</strong><span>Disponível enquanto você configura seu domínio próprio.</span></div>
-        <Badge variant="success"><BadgeCheck size={15} aria-hidden="true" /> Ativo</Badge>
-      </article>
+      <div className="hub-domain-layout">
+        <div className="hub-domain-main">
+          <section className="hub-domain-list" aria-label="Endereço protegido">
+            <header>
+              <h3>Domínio base da plataforma</h3>
+              <p>Disponível enquanto você configura seu domínio próprio.</p>
+            </header>
+            <article className="hub-domain-platform">
+              <div className="hub-domain-status is-verified"><BadgeCheck size={18} aria-hidden="true" /></div>
+              <div>
+                <strong>{data.platform_domain.domain}</strong>
+                <small>Protegido e ativo.</small>
+              </div>
+              <Badge variant="success">Ativo</Badge>
+            </article>
+          </section>
 
-      <form className="hub-domain-connect" onSubmit={connect}>
-        <label>Conectar domínio próprio
-          <input value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="loja.suamarca.com.br" inputMode="url" />
-          <small>Informe apenas o domínio, sem https://, caminhos ou portas.</small>
-        </label>
-        <Button type="submit" loading={busy === 'connect'} icon={Link2}>Iniciar conexão</Button>
-      </form>
+          <section className="hub-domain-list" aria-label="Domínios personalizados">
+            <header>
+              <h3>Domínios conectados</h3>
+              <p>Somente o domínio autenticado vira o principal. Webhooks de pagamento continuam no domínio seguro da plataforma.</p>
+            </header>
+            <form className="hub-domain-connect" onSubmit={connect}>
+              <div className="hub-domain-connect-fields">
+                <label htmlFor="domain-input">Conectar novo domínio</label>
+                <div className="hub-domain-connect-row">
+                  <input id="domain-input" value={domain} onChange={(event) => setDomain(event.target.value)} placeholder="loja.suamarca.com.br" inputMode="url" />
+                  <Button type="submit" loading={busy === 'connect'} icon={Link2}>Adicionar</Button>
+                </div>
+                <small>Apenas o domínio, sem https:// ou barras.</small>
+              </div>
+            </form>
 
-      {instruction ? <section className="hub-domain-tutorial">
-        <header><div><span>1</span><h3>Comprove a propriedade</h3></div><p>No painel DNS do seu domínio, crie este registro TXT. Ele só autoriza a sua loja.</p></header>
-        <DomainRecord type="TXT" host={instruction.txt.host} value={instruction.txt.value} />
-        <header><div><span>2</span><h3>Envie o tráfego para a hospedagem</h3></div><p>Crie o CNAME abaixo. Para domínio raiz, use ALIAS/ANAME do seu provedor ou configure o IP da hospedagem informado pelo suporte.</p></header>
-        <DomainRecord type={instruction.routing.type} host={instruction.routing.host} value={instruction.routing.value} />
-        <footer><RefreshCw className="hub-domain-spin" size={17} aria-hidden="true" /><span>Após salvar, a propagação pode levar alguns minutos. Clique em verificar quando terminar.</span></footer>
-      </section> : null}
+            {customDomains.length ? customDomains.map((item) => (
+              <article className="hub-domain-row" key={item.id}>
+                <div className={'hub-domain-status ' + (item.status === 'VERIFIED' ? 'is-verified' : 'is-pending')}><BadgeCheck size={18} aria-hidden="true" /></div>
+                <div>
+                  <strong>{item.domain}</strong>
+                  <small>{item.status === 'VERIFIED' ? 'Autenticado e ativo para loja, checkout e pixels.' : 'Aguardando registros DNS e verificação.'}</small>
+                </div>
+                <Badge variant={item.status === 'VERIFIED' ? 'success' : 'warning'}>{item.status === 'VERIFIED' ? 'Autenticado' : 'Pendente'}</Badge>
+                <div className="hub-domain-actions">
+                  {item.status !== 'VERIFIED' ? <Button variant="secondary" onClick={() => verify(item)} loading={busy === 'verify:' + item.id} icon={RefreshCw}>Verificar</Button> : null}
+                  <Button variant="ghost" onClick={() => setDisconnecting(item)} icon={Unplug}>Desvincular</Button>
+                </div>
+              </article>
+            )) : <div className="hub-domain-empty">Nenhum domínio personalizado conectado.</div>}
+          </section>
+        </div>
 
-      <section className="hub-domain-list" aria-label="Domínios personalizados">
-        <header><h3>Domínios conectados</h3><p>Somente o domínio autenticado vira o principal. Webhooks de pagamento continuam no domínio seguro da plataforma.</p></header>
-        {customDomains.length ? customDomains.map((item) => (
-          <article className="hub-domain-row" key={item.id}>
-            <div className={'hub-domain-status ' + (item.status === 'VERIFIED' ? 'is-verified' : 'is-pending')}><BadgeCheck size={18} aria-hidden="true" /></div>
-            <div><strong>{item.domain}</strong><small>{item.status === 'VERIFIED' ? 'Autenticado e ativo para loja, checkout e pixels.' : 'Aguardando registros DNS e verificação.'}</small></div>
-            <Badge variant={item.status === 'VERIFIED' ? 'success' : 'warning'}>{item.status === 'VERIFIED' ? 'Autenticado' : 'Verificação pendente'}</Badge>
-            <div className="hub-domain-actions">
-              {item.status !== 'VERIFIED' ? <Button variant="secondary" onClick={() => verify(item)} loading={busy === 'verify:' + item.id} icon={RefreshCw}>Verificar</Button> : null}
-              <Button variant="ghost" onClick={() => setDisconnecting(item)} icon={Unplug}>Desautenticar</Button>
+        <div className="hub-domain-sidebar">
+          {instruction ? (
+            <section className="hub-domain-tutorial">
+              <header>
+                <div><span>1</span><h3>Comprove a propriedade</h3></div>
+                <p>No painel DNS do seu domínio, crie este registro TXT para autorizar a loja.</p>
+              </header>
+              <DomainRecord type="TXT" host={instruction.txt.host} value={instruction.txt.value} />
+              
+              <header>
+                <div><span>2</span><h3>Aponte o tráfego</h3></div>
+                <p>Crie o CNAME abaixo para direcionar os acessos para a hospedagem.</p>
+              </header>
+              <DomainRecord type={instruction.routing.type} host={instruction.routing.host} value={instruction.routing.value} />
+              
+              <footer>
+                <RefreshCw className={instruction.isExample ? '' : 'hub-domain-spin'} size={16} aria-hidden="true" />
+                <span>{instruction.isExample ? 'Adicione seu domínio na lista ao lado para obter os registros reais.' : 'Após salvar, aguarde a propagação (pode levar minutos) e clique em Verificar.'}</span>
+              </footer>
+            </section>
+          ) : null}
+
+          <aside className="hub-domain-webhook">
+            <ShieldCheck size={20} aria-hidden="true" />
+            <div>
+              <strong>Segurança de Webhooks</strong>
+              <p>Os gateways sempre utilizarão o endereço protegido da plataforma para eventos financeiros invisíveis ao cliente.</p>
             </div>
-          </article>
-        )) : <div className="hub-domain-empty">Nenhum domínio personalizado conectado. O endereço protegido acima já está disponível.</div>}
-      </section>
+          </aside>
+        </div>
+      </div>
 
-      <aside className="hub-domain-webhook"><ShieldCheck size={19} aria-hidden="true" /><div><strong>Webhooks em domínio seguro do Hub Commerce</strong><p>Gateways usam um endpoint central, assinado e isolado por loja. O domínio da loja não recebe eventos financeiros.</p></div></aside>
-
-      {disconnecting ? <ModalDialog labelledBy="disconnect-domain-title" describedBy="disconnect-domain-description" onClose={() => setDisconnecting(null)} busy={busy === 'disconnect:' + disconnecting.id}>{(close) => <div className="hub-settings-confirmation"><h2 id="disconnect-domain-title">Desautenticar {disconnecting.domain}?</h2><p id="disconnect-domain-description">A loja voltará ao endereço protegido da plataforma. O domínio deixará de atender vitrine, checkout e pixels.</p><div><Button variant="secondary" onClick={close}>Cancelar</Button><Button variant="danger" loading={busy === 'disconnect:' + disconnecting.id} onClick={disconnect}>Desautenticar</Button></div></div>}</ModalDialog> : null}
+      {disconnecting ? <ModalDialog labelledBy="disconnect-domain-title" describedBy="disconnect-domain-description" onClose={() => setDisconnecting(null)} busy={busy === 'disconnect:' + disconnecting.id}>{(close) => <div className="hub-settings-confirmation"><h2 id="disconnect-domain-title">Desvincular {disconnecting.domain}?</h2><p id="disconnect-domain-description">A loja voltará ao endereço protegido da plataforma. O domínio deixará de atender vitrine, checkout e pixels.</p><div><Button variant="secondary" onClick={close}>Cancelar</Button><Button variant="danger" loading={busy === 'disconnect:' + disconnecting.id} onClick={disconnect}>Desvincular</Button></div></div>}</ModalDialog> : null}
     </section>
   );
 };

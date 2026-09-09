@@ -30,6 +30,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
+        $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request): ?string {
+            // Rotas API nunca redirecionam; o Authenticate middleware lança
+            // AuthenticationException, que o handler JSON trata como 401.
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return null;
+            }
+
+            return '/';
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
