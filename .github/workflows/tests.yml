@@ -21,6 +21,9 @@ on:
       - 'vite.config.*'
       - '.github/workflows/tests.yml'
 
+permissions:
+  contents: read
+
 concurrency:
   group: pr-${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
