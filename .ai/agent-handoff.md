@@ -465,3 +465,14 @@ Copie este bloco para cada handoff relevante:
 - Evidências: teste de feature cobre asset HTTPS para o domínio ngrok via `X-Forwarded-Proto`; CI ainda pendente.
 - Riscos, bloqueios e itens não verificados: `TRUSTED_PROXIES=*` segue permitido somente no túnel local controlado; produção deve usar IPs/CIDRs explícitos. A homologação real do OAuth/webhook Melhor Envio continua pendente.
 - Próxima ação única: abrir PR e aguardar Tests, E2E Tests e Security Scans antes do merge.
+
+
+### 2026-09-09 — Codex — correção de bootstrap do proxy
+
+- Objetivo e escopo: corrigir a falha de inicialização detectada no E2E da PR #78.
+- Branch e commit: `fix/ngrok-https-assets`, correção até `e759617`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `config/app.php`, `bootstrap/app.php`, `docker-compose.dev.yml`, `docs/operations/docker-local.md` e este handoff.
+- Evidências: E2E #346 falhou em `php artisan key:generate` porque `config()` não está disponível durante `withMiddleware`; a correção volta a usar `env()` nessa fase e faz o Compose injetar `TRUSTED_PROXIES` no processo PHP, inclusive quando houver cache.
+- Riscos, bloqueios e itens não verificados: os checks da nova revisão ainda não concluíram; não houve alteração de CSP, segredo ou produção.
+- Próxima ação única: acompanhar Tests, E2E Tests e Security Scans da PR #78.
