@@ -53,6 +53,13 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 |---|---|---:|---|---|---|
 | [x] | UI-030 | P1 | Restaurar confirmação explícita para desinstalação de apps | UI-028 | Modal acessível confirma a intenção e bloqueia repetição durante a operação; Tests, E2E Tests e Security Scans verdes na PR #68 |
 
+## Ambiente de desenvolvimento — 2026-09-09
+
+| Status | ID | Prioridade | Tarefa | Critério de aceite |
+|---|---|---:|---|---|
+| [~] | DEV-DOCKER-001 | P1 | Substituir XAMPP pelo Docker local | Compose e documentação criados para Laravel, PostgreSQL, Redis, MinIO, Mailpit e Vite; pendem bootstrap local e validação dos serviços |
+| [ ] | DEV-DOCKER-002 | P1 | Validar bootstrap no Docker | Build, migrations, seed, fila e testes executados sem XAMPP |
+
 ## Fase 0 — Governança e preparação
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
