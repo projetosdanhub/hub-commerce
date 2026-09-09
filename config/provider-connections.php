@@ -33,8 +33,8 @@ return [
     | Client ID, Secret e User-Agent ficam exclusivamente na infraestrutura.
     */
     'melhor_envio' => [
-        'sandbox_client_id' => env('MELHOR_ENVIO_SANDBOX_CLIENT_ID', env('MELHOR_ENVIO_PLATFORM_CLIENT_ID')),
-        'sandbox_client_secret' => env('MELHOR_ENVIO_SANDBOX_CLIENT_SECRET', env('MELHOR_ENVIO_PLATFORM_CLIENT_SECRET')),
+        'sandbox_client_id' => env('MELHOR_ENVIO_SANDBOX_CLIENT_ID'),
+        'sandbox_client_secret' => env('MELHOR_ENVIO_SANDBOX_CLIENT_SECRET'),
         'production_client_id' => env('MELHOR_ENVIO_PRODUCTION_CLIENT_ID'),
         'production_client_secret' => env('MELHOR_ENVIO_PRODUCTION_CLIENT_SECRET'),
         'user_agent' => env('MELHOR_ENVIO_PLATFORM_USER_AGENT'),
