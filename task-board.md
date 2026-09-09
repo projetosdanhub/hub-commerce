@@ -8,7 +8,7 @@ Documento vivo: atualizar o status neste arquivo no mesmo commit da implementaç
 | Status | ID | Prioridade | Tarefa | Critério de aceite |
 |---|---|---:|---|---|
 | [x] | SEC-009 | P0 | Auditar e preparar o repositório para visibilidade pública | Sem arquivos sensíveis versionados; workflows somente em `pull_request`; permissões mínimas; fixtures de seeder sintéticas |
-| [~] | CI-014 | P1 | Reexecutar Actions das PRs após mudança para público | PRs #69–#72 com checks verdes; sem bloqueio de cota |
+| [x] | CI-014 | P1 | Reexecutar Actions das PRs após mudança para público | PRs #69–#72 com checks verdes; sem bloqueio de cota |
 
 Relatório detalhado: `docs/security/public-repository-readiness.md`.
 
