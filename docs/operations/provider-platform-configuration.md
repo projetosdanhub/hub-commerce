@@ -32,6 +32,22 @@ Variáveis privadas:
 
 O aplicativo PagBank deve registrar a URL de callback fixa. O Hub Commerce solicita somente os escopos operacionais de pagamento, conta e checkout, troca o código no backend e cifra as credenciais dinâmicas por instalação.
 
+## Melhor Envio OAuth
+
+Crie um aplicativo do Hub Commerce na Área Dev. do Melhor Envio, uma configuração para Sandbox e outra para Produção. Registre o callback fixo:
+
+```
+https://app.seu-dominio.com/api/oauth/melhor_envio/callback
+```
+
+Variáveis privadas:
+
+- `MELHOR_ENVIO_PLATFORM_CLIENT_ID`
+- `MELHOR_ENVIO_PLATFORM_CLIENT_SECRET`
+- `MELHOR_ENVIO_PLATFORM_USER_AGENT` — nome da aplicação e e-mail real de suporte
+
+A loja clica em **Conectar com Melhor Envio**, autoriza as permissões mínimas de cotação, etiquetas e rastreio e retorna ao Hub Commerce. O access token e refresh token são cifrados por instalação/ambiente; o navegador nunca recebe esses valores. O token expira em 30 dias, portanto a renovação automática permanece uma etapa obrigatória antes de ativar Produção.
+
 ## Stripe Connect
 
 Variável privada:
