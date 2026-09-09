@@ -1,20 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BadgeCheck, Box, CreditCard, FileKey2, MapPinned, PackageCheck, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { BadgeCheck, Box, CreditCard, FileKey2, MapPinned, PackageCheck, ShieldCheck } from 'lucide-react';
 import api from '../../../api';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
 import { Skeleton } from '../DesignSystem/primitives/Skeleton';
-import { AppOperationProgress, IntegrationInstallCard } from '../DesignSystem/patterns/IntegrationInstallCard';
-import { IntegrationLogo } from '../DesignSystem/patterns/IntegrationLogo';
+import { IntegrationInstallCard } from '../DesignSystem/patterns/IntegrationInstallCard';
 import { ModalDialog } from '../DesignSystem/patterns/ModalDialog';
 import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import './settings.css';
+import DomainConfiguration from './DomainConfiguration';
 
 const TABS = [
   { value: 'APPS', label: 'Apps' },
   { value: 'LOGISTICS', label: 'Logística' },
   { value: 'GATEWAYS', label: 'Gateways' },
   { value: 'FISCAL', label: 'Fiscal' },
+  { value: 'DOMAINS', label: 'Domínio' },
 ];
 
 const APP_CATEGORIES = [
@@ -105,7 +106,7 @@ const FiscalReadiness = ({ preflight = {} }) => {
 const StripeConfiguration = ({ stripe, stripeStatus, saving, onChange, onSubmit }) => (
   <form className="hub-settings-form hub-surface" onSubmit={onSubmit}>
     <header>
-      <IntegrationLogo name="stripe" fallbackIcon={CreditCard} iconSize={20} />
+      <span><CreditCard aria-hidden="true" size={20} /></span>
       <div>
         <h2>Stripe</h2>
         <p>As chaves de teste e produção ficam separadas por loja. O pagamento continua pendente até a entrega autenticada do webhook.</p>
@@ -141,7 +142,7 @@ const StripeConfiguration = ({ stripe, stripeStatus, saving, onChange, onSubmit 
     </div>
     <div className="hub-settings-form-grid">
       <section className="hub-settings-form hub-surface">
-        <header><IntegrationLogo name="stripe" fallbackIcon={CreditCard} iconSize={20} /><div><h2>Sandbox</h2><p>Use somente chaves <code>pk_test_</code> e <code>sk_test_</code>.</p></div></header>
+        <header><span><CreditCard aria-hidden="true" size={20} /></span><div><h2>Sandbox</h2><p>Use somente chaves <code>pk_test_</code> e <code>sk_test_</code>.</p></div></header>
         <div className="hub-settings-fields">
           <label>Chave publicável<input type="password" value={stripe.sandbox_publishable_key} onChange={(event) => onChange({ ...stripe, sandbox_publishable_key: event.target.value })} placeholder="pk_test_..." /></label>
           <label>Chave secreta<input type="password" value={stripe.sandbox_secret_key} onChange={(event) => onChange({ ...stripe, sandbox_secret_key: event.target.value })} placeholder="sk_test_..." /></label>
@@ -149,7 +150,7 @@ const StripeConfiguration = ({ stripe, stripeStatus, saving, onChange, onSubmit 
         </div>
       </section>
       <section className="hub-settings-form hub-surface">
-        <header><IntegrationLogo name="stripe" fallbackIcon={CreditCard} iconSize={20} /><div><h2>Produção</h2><p>Use somente chaves <code>pk_live_</code> e <code>sk_live_</code>.</p></div></header>
+        <header><span><CreditCard aria-hidden="true" size={20} /></span><div><h2>Produção</h2><p>Use somente chaves <code>pk_live_</code> e <code>sk_live_</code>.</p></div></header>
         <div className="hub-settings-fields">
           <label>Chave publicável<input type="password" value={stripe.production_publishable_key} onChange={(event) => onChange({ ...stripe, production_publishable_key: event.target.value })} placeholder="pk_live_..." /></label>
           <label>Chave secreta<input type="password" value={stripe.production_secret_key} onChange={(event) => onChange({ ...stripe, production_secret_key: event.target.value })} placeholder="sk_live_..." /></label>
@@ -168,7 +169,6 @@ const StripeConfiguration = ({ stripe, stripeStatus, saving, onChange, onSubmit 
 const SettingsPage = () => {
   const [tab, setTab] = useState('APPS');
   const [appCategory, setAppCategory] = useState('ALL');
-  const [appSearch, setAppSearch] = useState('');
   const [apps, setApps] = useState([]);
   const [fiscal, setFiscal] = useState(emptyFiscal);
   const [logistics, setLogistics] = useState(emptyLogistics);
@@ -179,7 +179,7 @@ const SettingsPage = () => {
   const [certificateMeta, setCertificateMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [operationState, setOperationState] = useState(null);
+  const [installState, setInstallState] = useState(null);
   const [selectedGateway, setSelectedGateway] = useState('stripe');
   const [uninstallTarget, setUninstallTarget] = useState(null);
   const [notice, setNotice] = useState(null);
@@ -219,21 +219,12 @@ const SettingsPage = () => {
   useEffect(() => { load(); }, []);
 
   const filteredInstalledApps = useMemo(() => apps.filter((app) => app.installed), [apps]);
-  const visibleApps = useMemo(() => {
-    const query = appSearch.trim().toLocaleLowerCase('pt-BR');
-
-    return apps.filter((app) => {
-      const matchesCategory = appCategory === 'ALL' || app.category === appCategory;
-      const searchable = [app.name, app.description, app.category_label, app.auth_strategy]
-        .filter(Boolean)
-        .join(' ')
-        .toLocaleLowerCase('pt-BR');
-
-      return matchesCategory && (!query || searchable.includes(query));
-    });
-  }, [apps, appCategory, appSearch]);
+  const visibleApps = useMemo(
+    () => apps.filter((app) => appCategory === 'ALL' || app.category === appCategory),
+    [apps, appCategory],
+  );
   const availableTabs = useMemo(() => TABS.filter((item) => {
-    if (item.value === 'APPS') return true;
+    if (item.value === 'APPS' || item.value === 'DOMAINS') return true;
 
     const category = item.value === 'LOGISTICS' ? 'LOGISTICS' : item.value;
     return filteredInstalledApps.some((app) => app.category === category);
@@ -249,65 +240,46 @@ const SettingsPage = () => {
     setAppCategory(event.target.value);
   };
 
-  const runAppOperation = async (app, kind) => {
+  const install = async (app) => {
     const startedAt = Date.now();
-    const isUninstall = kind === 'UNINSTALL';
     setNotice(null);
-    setOperationState({ key: app.key, kind, stage: isUninstall ? 'REMOVING' : 'PREPARING', progress: 8 });
-    const phaseTimer = window.setTimeout(() => {
-      setOperationState((current) => (
-        current?.key === app.key
-          ? { ...current, stage: isUninstall ? 'REMOVING' : 'INSTALLING', progress: Math.max(current.progress, 32) }
-          : current
-      ));
-    }, 180);
+    setInstallState({ key: app.key, progress: 0 });
     const timer = window.setInterval(() => {
-      setOperationState((current) => (
+      setInstallState((current) => (
         current?.key === app.key
-          ? { ...current, progress: Math.min(current.progress + 7, 90) }
+          ? { ...current, progress: Math.min(current.progress + 10, 90) }
           : current
       ));
-    }, 110);
+    }, 90);
 
     try {
-      if (isUninstall) {
-        await api.delete('/admin/settings/apps/' + app.key + '/install');
-      } else {
-        await api.post('/admin/settings/apps/' + app.key + '/install');
-      }
-
+      await api.post('/admin/settings/apps/' + app.key + '/install');
       window.clearInterval(timer);
-      window.clearTimeout(phaseTimer);
-      setOperationState({ key: app.key, kind, stage: 'COMPLETE', progress: 100 });
+      setInstallState({ key: app.key, progress: 100 });
       await wait(Math.max(0, 650 - (Date.now() - startedAt)));
       await loadApps();
-      setNotice({
-        tone: 'success',
-        text: isUninstall
-          ? app.name + ' foi desinstalado. As credenciais protegidas foram preservadas para uma futura reinstalação.'
-          : app.name + ' foi instalado. Configure o aplicativo para concluir a ativação.',
-      });
-
-      return true;
+      setNotice({ tone: 'success', text: app.name + ' foi instalado. Configure o aplicativo para concluir a ativação.' });
     } catch (error) {
-      setNotice({ tone: 'error', text: error?.response?.data?.message || `Não foi possível ${isUninstall ? 'desinstalar' : 'instalar'} este aplicativo.` });
-
-      return false;
-    } finally {
       window.clearInterval(timer);
-      window.clearTimeout(phaseTimer);
-      setOperationState(null);
+      setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível instalar este aplicativo.' });
+    } finally {
+      setInstallState(null);
     }
   };
 
-  const install = (app) => runAppOperation(app, 'INSTALL');
   const confirmUninstall = async () => {
     if (!uninstallTarget) return;
-
     setSaving(true);
-    const completed = await runAppOperation(uninstallTarget, 'UNINSTALL');
-    if (completed) setUninstallTarget(null);
-    setSaving(false);
+    try {
+      await api.delete('/admin/settings/apps/' + uninstallTarget.key + '/install');
+      await loadApps();
+      setNotice({ tone: 'success', text: uninstallTarget.name + ' foi desinstalado. As credenciais protegidas foram preservadas para uma futura reinstalação.' });
+      setUninstallTarget(null);
+    } catch (error) {
+      setNotice({ tone: 'error', text: error?.response?.data?.message || 'Não foi possível desinstalar este aplicativo.' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const configure = (app) => {
@@ -392,31 +364,24 @@ const SettingsPage = () => {
       <SectionTabs ariaLabel="Configurações" items={availableTabs} value={activeTab} onChange={setTab} />
       {notice ? <div className={'hub-settings-notice hub-settings-notice-' + notice.tone} role="status">{notice.text}</div> : null}
 
+      {activeTab === 'DOMAINS' ? <DomainConfiguration /> : null}
+
       {activeTab === 'APPS' ? (
         <section className="hub-settings-apps hub-stable-data-region">
           <header className="hub-settings-section-heading">
             <div><h2>Catálogo da operação</h2><p>Instalações ficam isoladas por loja. O progresso confirma a operação no servidor antes de liberar a configuração.</p></div>
-            <div className="hub-settings-catalog-controls">
-              <label className="hub-settings-search">
-                <Search aria-hidden="true" size={16} />
-                <span>Buscar aplicativo</span>
-                <input value={appSearch} onChange={(event) => setAppSearch(event.target.value)} placeholder="Nome, categoria ou conexão" />
-              </label>
-              <label className="hub-settings-filter">
-                <SlidersHorizontal aria-hidden="true" size={16} />
-                <span>Categoria</span>
-                <select value={appCategory} onChange={changeAppCategory}>
-                  {APP_CATEGORIES.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
-                </select>
-              </label>
-            </div>
+            <label className="hub-settings-filter">Categoria
+              <select value={appCategory} onChange={changeAppCategory}>
+                {APP_CATEGORIES.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
+              </select>
+            </label>
           </header>
           {visibleApps.length ? (
             <div className="hub-app-grid">
               {visibleApps.map((app) => (
                 <IntegrationInstallCard
                   app={app}
-                  operationState={operationState}
+                  installState={installState}
                   key={app.key}
                   onConfigure={configure}
                   onInstall={install}
@@ -432,7 +397,7 @@ const SettingsPage = () => {
 
       {activeTab === 'LOGISTICS' ? (
         <form className="hub-settings-form hub-surface" onSubmit={saveLogistics}>
-          <header><IntegrationLogo name="melhorenvio" fallbackIcon={PackageCheck} iconSize={20} /><div><h2>Melhor Envio</h2><p>OAuth 2.0 é o destino desta integração. Enquanto o aplicativo OAuth não estiver registrado, a configuração segura por token mantém o contrato atual sem fingir uma conexão.</p></div></header>
+          <header><span><PackageCheck aria-hidden="true" size={20} /></span><div><h2>Melhor Envio</h2><p>OAuth 2.0 é o destino desta integração. Enquanto o aplicativo OAuth não estiver registrado, a configuração segura por token mantém o contrato atual sem fingir uma conexão.</p></div></header>
           <div className="hub-settings-fields">
             <label>Ambiente<select value={logistics.environment} onChange={(event) => setLogistics({ ...logistics, environment: event.target.value })}><option value="SANDBOX">Sandbox</option><option value="PRODUCTION">Produção</option></select></label>
             <label>Token do Melhor Envio<input type="password" value={logistics.access_token} onChange={(event) => setLogistics({ ...logistics, access_token: event.target.value })} placeholder="Informe o token deste ambiente" /><small>O token não é exibido depois de salvo. Ao mudar de ambiente, informe a credencial correspondente.</small></label>
@@ -464,7 +429,7 @@ const SettingsPage = () => {
         <div className="hub-settings-form-grid">
           <FiscalReadiness preflight={preflight} />
           <form className="hub-settings-form hub-surface" onSubmit={saveFiscal}>
-            <header><IntegrationLogo name="nfe" fallbackIcon={ShieldCheck} iconSize={20} /><div><h2>App Fiscal</h2><p>Os segredos não retornam para o navegador após o salvamento.</p></div></header>
+            <header><span><ShieldCheck aria-hidden="true" size={20} /></span><div><h2>App Fiscal</h2><p>Os segredos não retornam para o navegador após o salvamento.</p></div></header>
             <div className="hub-settings-fields">
               <label>Razão social<input required value={fiscal.legal_name} onChange={(event) => setFiscal({ ...fiscal, legal_name: event.target.value })} /></label>
               <label>CNPJ<input required value={fiscal.cnpj} onChange={(event) => setFiscal({ ...fiscal, cnpj: event.target.value })} /></label>
@@ -479,17 +444,14 @@ const SettingsPage = () => {
           </form>
         </div>
       ) : null}
+
       {uninstallTarget ? (
-        <ModalDialog labelledBy="uninstall-app-title" describedBy="uninstall-app-description" onClose={() => setUninstallTarget(null)} busy={saving || Boolean(operationState)}>
+        <ModalDialog labelledBy="uninstall-app-title" describedBy="uninstall-app-description" onClose={() => setUninstallTarget(null)} busy={saving}>
           {(requestClose) => (
             <div className="hub-settings-confirmation">
               <h2 id="uninstall-app-title">Desinstalar {uninstallTarget.name}?</h2>
               <p id="uninstall-app-description">O app deixará de ficar ativo nesta loja. As credenciais protegidas serão preservadas para uma reinstalação futura.</p>
-              {operationState?.key === uninstallTarget.key ? <AppOperationProgress operation={operationState} /> : null}
-              <div>
-                <Button variant="secondary" onClick={requestClose} disabled={saving || Boolean(operationState)}>Cancelar</Button>
-                <Button variant="danger" loading={saving} onClick={confirmUninstall}>Desinstalar</Button>
-              </div>
+              <div><Button variant="secondary" onClick={requestClose} disabled={saving}>Cancelar</Button><Button variant="danger" loading={saving} onClick={confirmUninstall}>Desinstalar</Button></div>
             </div>
           )}
         </ModalDialog>
