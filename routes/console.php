@@ -16,6 +16,7 @@ Schedule::command('billing:reconcile-tenants')
     ->onOneServer();
 
 Schedule::call(fn (): int => app(MelhorEnvioTokenRefreshService::class)->refreshDue())
+    ->name('oauth:refresh-melhor-envio')
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer();
