@@ -101,9 +101,10 @@ class MelhorEnvioController extends Controller
         ]);
 
         $config = MelhorEnvioSetting::first();
-        $credential = $config instanceof MelhorEnvioSetting ? $this->credentialFor($config) : null;
+        $installation = $config instanceof MelhorEnvioSetting ? $this->connectionFor($config) : null;
+        $credential = $installation?->credential;
 
-        if ($config === null || $credential === null) {
+        if ($config === null || $credential === null || $installation === null) {
             return response()->json([
                 'status' => 'error',
                 'code' => 'REQUEST_FAILED',
@@ -123,6 +124,7 @@ class MelhorEnvioController extends Controller
                 ],
                 (string) $validated['insurance_value'],
                 $credential->access_token,
+                $installation->environment,
             );
         } catch (\DomainException $exception) {
             return response()->json([
@@ -140,13 +142,26 @@ class MelhorEnvioController extends Controller
             ->where('tenant_id', app(TenantContextStore::class)->require()->tenantId)
             ->where('provider', 'melhor_envio')
             ->where('environment', $environment)
+            ->where('status', 'CONNECTED')
             ->whereNull('revoked_at')
             ->first();
     }
 
+    private function connectionFor(MelhorEnvioSetting $config): ?ProviderInstallation
+    {
+        return $this->installationForEnvironment($config->environment)
+            ?? ProviderInstallation::query()
+                ->where('tenant_id', app(TenantContextStore::class)->require()->tenantId)
+                ->where('provider', 'melhor_envio')
+                ->where('status', 'CONNECTED')
+                ->whereNull('revoked_at')
+                ->latest('connected_at')
+                ->first();
+    }
+
     private function credentialFor(MelhorEnvioSetting $config): ?\App\Models\ProviderConnectionCredential
     {
-        return $this->installationForEnvironment($config->environment)?->credential;
+        return $this->connectionFor($config)?->credential;
     }
 
 }
