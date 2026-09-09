@@ -9,8 +9,8 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $provider_installation_id
- * @property \Illuminate\Support\Carbon $expires_at
- * @property \Illuminate\Support\Carbon|null $consumed_at
+ * @property Carbon $expires_at
+ * @property Carbon|null $consumed_at
  * @property string|null $pkce_verifier
  * @property-read ProviderInstallation|null $installation
  */
