@@ -73,8 +73,8 @@ class ProviderOAuthFlowTest extends TestCase
     {
         config([
             'provider-connections.redirect_base_url' => 'https://app.hubcommerce.test',
-            'provider-connections.melhor_envio.client_id' => 'melhor-envio-client-id',
-            'provider-connections.melhor_envio.client_secret' => 'melhor-envio-client-secret',
+            'provider-connections.melhor_envio.sandbox_client_id' => 'melhor-envio-client-id',
+            'provider-connections.melhor_envio.sandbox_client_secret' => 'melhor-envio-client-secret',
             'provider-connections.melhor_envio.user_agent' => 'Hub Commerce (suporte@hubcommerce.test)',
         ]);
 
@@ -99,8 +99,8 @@ class ProviderOAuthFlowTest extends TestCase
     {
         config([
             'provider-connections.redirect_base_url' => 'https://app.hubcommerce.test',
-            'provider-connections.melhor_envio.client_id' => 'melhor-envio-client-id',
-            'provider-connections.melhor_envio.client_secret' => 'melhor-envio-client-secret',
+            'provider-connections.melhor_envio.sandbox_client_id' => 'melhor-envio-client-id',
+            'provider-connections.melhor_envio.sandbox_client_secret' => 'melhor-envio-client-secret',
             'provider-connections.melhor_envio.user_agent' => 'Hub Commerce (suporte@hubcommerce.test)',
         ]);
 
@@ -134,8 +134,8 @@ class ProviderOAuthFlowTest extends TestCase
     {
         config([
             'provider-connections.redirect_base_url' => 'https://app.hubcommerce.test',
-            'provider-connections.melhor_envio.client_id' => 'melhor-envio-client-id',
-            'provider-connections.melhor_envio.client_secret' => 'melhor-envio-client-secret',
+            'provider-connections.melhor_envio.sandbox_client_id' => 'melhor-envio-client-id',
+            'provider-connections.melhor_envio.sandbox_client_secret' => 'melhor-envio-client-secret',
             'provider-connections.melhor_envio.user_agent' => 'Hub Commerce (suporte@hubcommerce.test)',
         ]);
 

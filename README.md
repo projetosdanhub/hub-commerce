@@ -8,7 +8,18 @@ Plataforma de comércio eletrônico multitenant construída com Laravel, React e
 - Node.js 24 LTS e npm (a versão canônica está em .nvmrc)
 - SQLite (padrão para desenvolvimento e testes)
 
-## Inicialização local
+## Ambiente local com Docker
+
+O ambiente padrão substitui XAMPP por Docker (PostgreSQL, Redis, MinIO, Mailpit, Laravel e Vite). Consulte [docs/operations/docker-local.md](docs/operations/docker-local.md).
+
+```bash
+cp .env.example .env
+docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml exec app php artisan key:generate
+docker compose -f docker-compose.dev.yml exec app php artisan migrate --seed
+```
+
+## Inicialização local sem Docker
 
 Em uma cópia nova do repositório:
 

@@ -120,6 +120,10 @@ Route::post('/tracking/collect', [TrackingCollectorController::class, 'collect']
 // ==========================================
 // ROTAS DO HUB COMMERCE: ADMIN (PROTEGIDAS)
 // ==========================================
+Route::post('/webhooks/melhor-envio', \App\Http\Controllers\Webhooks\MelhorEnvioWebhookController::class)
+    ->middleware('throttle:60,1')
+    ->name('webhooks.melhor-envio');
+
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 

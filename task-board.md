@@ -53,6 +53,13 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 |---|---|---:|---|---|---|
 | [x] | UI-030 | P1 | Restaurar confirmação explícita para desinstalação de apps | UI-028 | Modal acessível confirma a intenção e bloqueia repetição durante a operação; Tests, E2E Tests e Security Scans verdes na PR #68 |
 
+## Ambiente de desenvolvimento — 2026-09-09
+
+| Status | ID | Prioridade | Tarefa | Critério de aceite |
+|---|---|---:|---|---|
+| [~] | DEV-DOCKER-001 | P1 | Substituir XAMPP pelo Docker local | Compose e documentação criados para Laravel, PostgreSQL, Redis, MinIO, Mailpit e Vite; pendem bootstrap local e validação dos serviços |
+| [ ] | DEV-DOCKER-002 | P1 | Validar bootstrap no Docker | Build, migrations, seed, fila e testes executados sem XAMPP |
+
 ## Fase 0 — Governança e preparação
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
@@ -191,6 +198,13 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | PAY-010 | P1 | Criar reconciliação financeira | PAY-008 | Divergências identificadas |
 | [~] | PAY-011 | P1 | Separar credenciais test/live por tenant | SEC-012, TEN-009 | Configuração Stripe mantém Sandbox/Produção separadas, criptografadas e validadas por prefixo; falta validação externa das chaves e bloqueio de deploy por ambiente |
 | [ ] | PAY-012 | P1 | Revisar conformidade PCI e LGPD | PAY-004, PAY-005, PAY-006 | Nenhum dado bruto de cartão no HUB |
+
+## Webhooks do Melhor Envio — 2026-09-09
+
+| Status | ID | Prioridade | Tarefa | Critério de aceite |
+|---|---|---:|---|---|
+| [~] | APP-015 | P1 | Receber atualizações de etiquetas do Melhor Envio | Contrato oficial confirmado: endpoint é configurado no aplicativo, assinatura `X-ME-Signature` (HMAC-SHA256 sobre raw body), eventos `order.*`, retentativas do provedor. Endpoint público, validação HMAC, persistência/deduplicação e fila entregues; pendem testes automatizados, vínculo idempotente etiqueta→pedido e homologação Sandbox |
+| [ ] | SHIP-008 | P1 | Homologar webhook Melhor Envio | Aplicativo Sandbox criado, URL pública cadastrada e eventos de etiqueta validados sem expor secrets |
 
 ## Fase 8 — Frete e logística
 
