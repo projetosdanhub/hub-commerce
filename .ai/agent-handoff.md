@@ -453,3 +453,15 @@ Copie este bloco para cada handoff relevante:
 - Evidências: revisão de configuração; CI ainda não iniciada nesta branch.
 - Riscos, bloqueios e itens não verificados: o túnel depende de uma URL ngrok ativa; não foi feita homologação real do OAuth/webhook e nenhum segredo foi inserido no repositório.
 - Próxima ação única: abrir PR e aguardar Tests, E2E Tests e Security Scans antes do merge.
+
+
+### 2026-09-09 — Codex — assets HTTPS gerados por trás do ngrok
+
+- Objetivo e escopo: corrigir os URLs HTTP de `/build/assets` emitidos ao acessar o Docker pelo túnel HTTPS, sem permitir HTTP do ngrok na CSP.
+- Branch e commits: `fix/ngrok-https-assets`; código até `fbaea21`, documentação/board até `49d18f2`.
+- Task board: DEV-DOCKER-001 permanece `[~]`; bootstrap e homologação externa ainda dependem do ambiente local.
+- Arquivos alterados: `config/app.php`, `bootstrap/app.php`, `app/Http/Middleware/SecurityHeaders.php`, `docker-compose.dev.yml`, `tests/Feature/TrustedProxyTest.php`, `docs/operations/docker-local.md`, `task-board.md` e este handoff.
+- Implementado: proxies confiáveis vêm de `config/app.php` e continuam disponíveis com `config:cache`; requests HTTPS forçam URLs de assets HTTPS antes da view; Compose não sobrescreve mais `APP_URL`.
+- Evidências: teste de feature cobre asset HTTPS para o domínio ngrok via `X-Forwarded-Proto`; CI ainda pendente.
+- Riscos, bloqueios e itens não verificados: `TRUSTED_PROXIES=*` segue permitido somente no túnel local controlado; produção deve usar IPs/CIDRs explícitos. A homologação real do OAuth/webhook Melhor Envio continua pendente.
+- Próxima ação única: abrir PR e aguardar Tests, E2E Tests e Security Scans antes do merge.
