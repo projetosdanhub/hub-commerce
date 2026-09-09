@@ -328,7 +328,7 @@ Os estados abaixo foram corrigidos para refletir evidência verificável. Itens 
 |---|---|---:|---|---|---|
 | [ ] | OPS-001 | P0 | Documentar ambientes local/staging/produção | BASE-014 | Variáveis e serviços definidos |
 | [ ] | OPS-002 | P0 | Preparar servidor com DocumentRoot public | OPS-001 | Raiz/vendor/.env inacessíveis |
-| [ ] | OPS-003 | P0 | Configurar HTTPS e cookies seguros | SEC-015, OPS-002 | Teste externo aprovado |
+| [~] | OPS-003 | P0 | Configurar HTTPS e cookies seguros | SEC-015, OPS-002 | Proxy HTTPS confiável reconhecido no Docker local; produção, cookies Secure e teste externo permanecem pendentes |
 | [ ] | OPS-004 | P1 | Configurar workers e scheduler | OPS-001 | Supervisor/systemd e cron ativos |
 | [ ] | OPS-005 | P1 | Configurar Redis/cache sem fallback inseguro | TEN-010 | Cache distribuído saudável |
 | [ ] | OPS-006 | P0 | Configurar backups e teste de restauração | OPS-001 | Restore ensaiado |

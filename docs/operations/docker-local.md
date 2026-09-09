@@ -48,6 +48,10 @@ Os volumes locais só são removidos com `docker compose -f docker-compose.dev.y
 - Tokens OAuth de lojistas são gravados criptografados pelo backend; nunca cole tokens de loja no frontend.
 - O arquivo `.env.example` continua sem valores secretos.
 
+## Túnel HTTPS local
+
+Para OAuth e webhooks de provedores, exponha temporariamente o Laravel com um túnel HTTPS, por exemplo `ngrok http 8000`. No `.env`, informe o domínio público em `PROVIDER_CONNECTION_REDIRECT_BASE_URL` e `HUB_WEBHOOK_BASE_URL`, e use `TRUSTED_PROXIES=*` somente neste ambiente local controlado. Não use esse valor em staging ou produção; nesses ambientes, informe apenas os IPs/CIDRs dos proxies reversos confiáveis.
+
 ## Webhook Melhor Envio
 
 Os testes automatizados executam inteiramente no Docker. O callback real do Sandbox exige uma URL HTTPS pública temporária; essa etapa só ocorre após os testes locais verdes.
