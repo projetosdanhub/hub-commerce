@@ -16,9 +16,7 @@ class ProcessMelhorEnvioWebhook implements ShouldQueue
 
     public int $tries = 5;
 
-    public function __construct(public readonly int $eventId)
-    {
-    }
+    public function __construct(public readonly int $eventId) {}
 
     public function handle(): void
     {
