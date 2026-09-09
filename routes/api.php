@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TrackingCollectorController; // 🟢 IMPORTAÇÃO ATUALIZADA
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AdminProductController;
+use App\Http\Controllers\Admin\ProductFreeShippingController;
 use App\Http\Controllers\Admin\AppCenterController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CarrierController; 
