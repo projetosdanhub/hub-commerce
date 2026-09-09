@@ -18,7 +18,25 @@ export const PlatformVaultPage = () => {
     try { const response = await api.get('/platform/vault'); setRecords(response.data.records || []); } finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+
+    const request = async () => {
+      try {
+        const response = await api.get('/platform/vault');
+
+        if (!cancelled) setRecords(response.data.records || []);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    request();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const revoke = async (record) => {
     if (!window.confirm('Revogar esta credencial? A reconexão será necessária.')) return;
     setRevoking(record.id);
