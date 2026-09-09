@@ -18,6 +18,7 @@ final class ProviderRegistry
             'mercado_pago' => ['name' => 'Mercado Pago', 'strategy' => 'OAUTH', 'methods' => ['CARD', 'PIX', 'BOLETO']],
             'pagbank' => ['name' => 'PagBank', 'strategy' => 'OAUTH', 'methods' => ['CARD', 'PIX', 'BOLETO']],
             'pagarme' => ['name' => 'Pagar.me', 'strategy' => 'API_KEYS', 'methods' => ['CARD', 'PIX', 'BOLETO']],
+            'melhor_envio' => ['name' => 'Melhor Envio', 'strategy' => 'OAUTH', 'methods' => ['SHIPPING_CALCULATE', 'SHIPPING_LABELS', 'SHIPPING_TRACKING']],
         ];
     }
 
