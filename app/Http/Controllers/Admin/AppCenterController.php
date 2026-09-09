@@ -28,6 +28,8 @@ class AppCenterController extends Controller
             'category_label' => 'Logística',
             'auth_strategy' => 'OAUTH2',
             'location' => null,
+            'logo_light' => 'imagesadmin/melhorenvio-clean.webp',
+            'logo_dark' => 'imagesadmin/melhorenvio-dark.webp',
         ],
         'stripe' => [
             'name' => 'Stripe',
@@ -100,6 +102,8 @@ class AppCenterController extends Controller
                 return [
                     'key' => $key,
                     ...$app,
+                    'logo_light' => 'imagesadmin/'.str_replace('_', '', $key).'-clean.webp',
+                    'logo_dark' => 'imagesadmin/'.str_replace('_', '', $key).'-dark.webp',
                     'installed' => $isInstalled,
                     'status' => $installation?->status ?? 'AVAILABLE',
                     'blocked_by' => $isInstalled || $activeInCategory === null
