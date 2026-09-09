@@ -453,3 +453,70 @@ Copie este bloco para cada handoff relevante:
 - Evidências: revisão de configuração; CI ainda não iniciada nesta branch.
 - Riscos, bloqueios e itens não verificados: o túnel depende de uma URL ngrok ativa; não foi feita homologação real do OAuth/webhook e nenhum segredo foi inserido no repositório.
 - Próxima ação única: abrir PR e aguardar Tests, E2E Tests e Security Scans antes do merge.
+
+
+### 2026-09-09 — Codex — assets HTTPS gerados por trás do ngrok
+
+- Objetivo e escopo: corrigir os URLs HTTP de `/build/assets` emitidos ao acessar o Docker pelo túnel HTTPS, sem permitir HTTP do ngrok na CSP.
+- Branch e commits: `fix/ngrok-https-assets`; código até `fbaea21`, documentação/board até `49d18f2`.
+- Task board: DEV-DOCKER-001 permanece `[~]`; bootstrap e homologação externa ainda dependem do ambiente local.
+- Arquivos alterados: `config/app.php`, `bootstrap/app.php`, `app/Http/Middleware/SecurityHeaders.php`, `docker-compose.dev.yml`, `tests/Feature/TrustedProxyTest.php`, `docs/operations/docker-local.md`, `task-board.md` e este handoff.
+- Implementado: proxies confiáveis vêm de `config/app.php` e continuam disponíveis com `config:cache`; requests HTTPS forçam URLs de assets HTTPS antes da view; Compose não sobrescreve mais `APP_URL`.
+- Evidências: teste de feature cobre asset HTTPS para o domínio ngrok via `X-Forwarded-Proto`; CI ainda pendente.
+- Riscos, bloqueios e itens não verificados: `TRUSTED_PROXIES=*` segue permitido somente no túnel local controlado; produção deve usar IPs/CIDRs explícitos. A homologação real do OAuth/webhook Melhor Envio continua pendente.
+- Próxima ação única: abrir PR e aguardar Tests, E2E Tests e Security Scans antes do merge.
+
+
+### 2026-09-09 — Codex — correção de bootstrap do proxy
+
+- Objetivo e escopo: corrigir a falha de inicialização detectada no E2E da PR #78.
+- Branch e commit: `fix/ngrok-https-assets`, correção até `e759617`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `config/app.php`, `bootstrap/app.php`, `docker-compose.dev.yml`, `docs/operations/docker-local.md` e este handoff.
+- Evidências: E2E #346 falhou em `php artisan key:generate` porque `config()` não está disponível durante `withMiddleware`; a correção volta a usar `env()` nessa fase e faz o Compose injetar `TRUSTED_PROXIES` no processo PHP, inclusive quando houver cache.
+- Riscos, bloqueios e itens não verificados: os checks da nova revisão ainda não concluíram; não houve alteração de CSP, segredo ou produção.
+- Próxima ação única: acompanhar Tests, E2E Tests e Security Scans da PR #78.
+
+
+### 2026-09-09 — Codex — ajuste do teste de proxy
+
+- Objetivo e escopo: corrigir somente o teste auxiliar que era capturado pelo fallback SPA.
+- Branch e commit: `fix/ngrok-https-assets`, `b148830`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `tests/Feature/TrustedProxyTest.php` e este handoff.
+- Evidências: Tests #523 alcançou 107 testes aprovados e falhou apenas porque a rota auxiliar não era atendida; o teste agora valida `url()->asset()` após o request HTTPS já ter atravessado o middleware confiável.
+- Riscos, bloqueios e itens não verificados: novo commit ainda aguarda CI; nenhuma alteração de runtime ou CSP nesta correção.
+- Próxima ação única: acompanhar a nova execução dos gates da PR #78.
+
+
+### 2026-09-09 — Codex — origem dinâmica de assets do túnel
+
+- Objetivo e escopo: corrigir o host `localhost` ainda usado em URLs de assets após o esquema HTTPS estar correto.
+- Branch e commit: `fix/ngrok-https-assets`, `3c2af3d`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `app/Http/Middleware/SecurityHeaders.php`, `docs/operations/docker-local.md` e este handoff.
+- Evidências: Tests #525 confirmou HTTPS, mas revelou raiz `https://localhost:8000`; antes da view o middleware agora fixa a raiz em `$request->getSchemeAndHttpHost()`, que vem do host/protocolo confiáveis.
+- Riscos, bloqueios e itens não verificados: o novo commit ainda aguarda CI. A origem só é aplicada por request web e não altera URLs de console; produção continua exigindo proxies explícitos.
+- Próxima ação única: acompanhar os gates da PR #78 e mesclar apenas se todos ficarem verdes.
+
+
+### 2026-09-09 — Codex — resolução oficial do Vite por origem confiável
+
+- Objetivo e escopo: gerar as tags `@vite` com a origem HTTPS atual do ngrok.
+- Branch e commit: `fix/ngrok-https-assets`, `bf1b7df`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `app/Http/Middleware/SecurityHeaders.php`, `tests/Feature/TrustedProxyTest.php` e este handoff.
+- Evidências: Tests #527 mostrou que `url()->asset()` fora da renderização ainda usa `APP_URL`; o middleware passou a usar a API oficial `Vite::createAssetPathsUsing()` antes da view e o teste agora verifica a página real que contém `@vite`.
+- Riscos, bloqueios e itens não verificados: aguardando CI; o resolver é atualizado a cada request web e HMR continua desativado para o túnel.
+- Próxima ação única: acompanhar os gates da PR #78 e mesclar apenas com todos verdes.
+
+
+### 2026-09-09 — Codex — limite explícito do teste de Vite
+
+- Objetivo e escopo: remover somente a asserção incompatível com a configuração de testes.
+- Branch e commit: `fix/ngrok-https-assets`, `1044f58`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `tests/Feature/TrustedProxyTest.php` e este handoff.
+- Evidências: Tests #529 mostrou que `Tests\\TestCase` usa `withoutVite()`; a asserção de tags não exercia o bundle real. Permanece o teste do proxy HTTPS/HSTS; a verificação das tags compiladas é manual no túnel.
+- Riscos, bloqueios e itens não verificados: a URL HTTPS do asset será verificada após merge na instância Docker+ngrok. Nenhuma alteração de runtime nesta revisão.
+- Próxima ação única: aguardar CI e, após merge, recriar containers, gerar build e validar pelo navegador.

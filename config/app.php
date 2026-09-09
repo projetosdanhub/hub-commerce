@@ -9,7 +9,7 @@ return [
     |
     | This value is the name of your application, which will be used when the
     | framework needs to place the application's name in a notification or
-    | other UI elements where an application name needs to be displayed.
+    | other UI elements where the application's name needs to be displayed.
     |
     */
 
@@ -54,6 +54,7 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+
 /*
     |--------------------------------------------------------------------------
     | Application Timezone
@@ -78,9 +79,9 @@ return [
     | Encryption Key
     |--------------------------------------------------------------------------
     |
-    | This key is utilized by Laravel's encryption services and should be set
+    | This key is used by the Illuminate encrypter service and should be set
     | to a random, 32 character string to ensure that all encrypted values
-    | are secure. You should do this prior to deploying the application.
+    | are secure. You should do this before deploying the application.
     |
     */
 
@@ -103,7 +104,7 @@ return [
     | manage Laravel's "maintenance mode" status. The "cache" driver will
     | allow maintenance mode to be controlled across multiple machines.
     |
-    | Supported drivers: "file", "cache"
+    | Supported: "file", "cache"
     |
     */
 

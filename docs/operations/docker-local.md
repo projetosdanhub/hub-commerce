@@ -69,7 +69,7 @@ docker compose -f docker-compose.dev.yml run --rm vite npm run build
 docker compose -f docker-compose.dev.yml exec app sh -lc 'rm -f public/hot && php artisan optimize:clear'
 ```
 
-Em seguida faça um recarregamento forçado no navegador. O túnel deve servir apenas os arquivos HTTPS de `/build/assets`; não libere `0.0.0.0` na CSP.
+Recrie os containers `app` e `queue` depois de atualizar o código. O Compose repassa `TRUSTED_PROXIES` do seu `.env` ao processo do PHP, inclusive quando houver cache de configuração. Mantenha `APP_URL=http://localhost:8000`; durante uma requisição web, o Laravel usa o host e o protocolo HTTPS reconhecidos pelos cabeçalhos confiáveis do ngrok para gerar os assets. Em seguida faça um recarregamento forçado no navegador. O túnel deve servir apenas os arquivos HTTPS de `/build/assets`; não libere `0.0.0.0` nem uma origem HTTP do ngrok na CSP.
 
 ## Webhook Melhor Envio
 
