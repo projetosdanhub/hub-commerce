@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ProviderConnections;
 
+use App\Domain\ProviderConnections\MelhorEnvioTokenRefreshService;
 use App\Domain\ProviderConnections\ProviderAuthorizationService;
 use App\Domain\ProviderConnections\ProviderAuthorizationUrlFactory;
 use App\Domain\ProviderConnections\ProviderOAuthTokenExchangeService;
@@ -127,6 +128,43 @@ class ProviderOAuthFlowTest extends TestCase
                 && $request->hasHeader('User-Agent', 'Hub Commerce (suporte@hubcommerce.test)')
                 && str_contains($request->body(), 'grant_type');
         });
+    }
+
+    public function test_melhor_envio_refresh_replaces_encrypted_credentials_without_exposing_them(): void
+    {
+        config([
+            'provider-connections.redirect_base_url' => 'https://app.hubcommerce.test',
+            'provider-connections.melhor_envio.client_id' => 'melhor-envio-client-id',
+            'provider-connections.melhor_envio.client_secret' => 'melhor-envio-client-secret',
+            'provider-connections.melhor_envio.user_agent' => 'Hub Commerce (suporte@hubcommerce.test)',
+        ]);
+
+        $installation = $this->installation('melhor_envio', 'SANDBOX');
+        $installation->update(['status' => 'CONNECTED']);
+        $credential = ProviderConnectionCredential::query()->create([
+            'provider_installation_id' => $installation->getKey(),
+            'access_token' => 'old-sensitive-access-token',
+            'refresh_token' => 'old-sensitive-refresh-token',
+            'expires_at' => now()->addHour(),
+        ]);
+
+        Http::fake([
+            'https://sandbox.melhorenvio.com.br/oauth/token' => Http::response([
+                'access_token' => 'new-sensitive-access-token',
+                'refresh_token' => 'new-sensitive-refresh-token',
+                'expires_in' => 2592000,
+            ]),
+        ]);
+
+        $refreshed = app(MelhorEnvioTokenRefreshService::class)->refresh($credential);
+
+        $this->assertSame('new-sensitive-access-token', $refreshed->access_token);
+        $this->assertSame('new-sensitive-refresh-token', $refreshed->refresh_token);
+        $this->assertNotSame(
+            'new-sensitive-access-token',
+            DB::table('provider_connection_credentials')->value('access_token'),
+        );
+        $this->assertTrue($refreshed->expires_at->isFuture());
     }
 
     public function test_mercado_pago_token_is_encrypted_and_never_returned_by_the_installation(): void
