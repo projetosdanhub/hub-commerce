@@ -16,8 +16,8 @@ use Illuminate\Support\Str;
  * @property string $environment
  * @property string $connection_strategy
  * @property string $status
- * @property \Illuminate\Support\Carbon|null $connected_at
- * @property \Illuminate\Support\Carbon|null $revoked_at
+ * @property Carbon|null $connected_at
+ * @property Carbon|null $revoked_at
  */
 class ProviderInstallation extends Model
 {
