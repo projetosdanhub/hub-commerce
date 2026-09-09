@@ -174,8 +174,8 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [~] | PAY-004 | P1 | Integrar Stripe com tokenização oficial | SEC-008, PAY-003 | Adapter Stripe, credenciais criptografadas Sandbox/Produção e testes HTTP simulados entregues; falta homologação externa, endpoint público, tokenização no navegador e webhook assinado |
 | [ ] | PAY-005 | P1 | Integrar Mercado Pago com tokenização oficial | SEC-008, PAY-003 | Sandbox aprovado |
 | [ ] | PAY-006 | P1 | Integrar Pagar.me com tokenização oficial | SEC-008, PAY-003 | Sandbox aprovado |
-| [ ] | PAY-007 | P0 | Implementar webhooks assinados e idempotentes | PAY-002 | Replay e assinatura testados |
-| [ ] | PAY-008 | P1 | Sincronizar estados payment/order | PAY-007, ORD-004 | Webhook é fonte autoritativa |
+| [~] | PAY-007 | P0 | Implementar webhooks assinados e idempotentes | PAY-002 | Stripe valida assinatura, rejeita replay por evento único e possui teste de Feature; reexecutar gates após saldo de Actions |
+| [~] | PAY-008 | P1 | Sincronizar estados payment/order | PAY-007, ORD-004 | Stripe encaminha pedido de A_PAGAR para SEPARACAO apenas após evento assinado payment_intent.succeeded; aguarda gates após saldo de Actions |
 | [ ] | PAY-009 | P1 | Implementar refund seguro | PAY-008, IAM-003 | Permissão, idempotência e auditoria |
 | [ ] | PAY-010 | P1 | Criar reconciliação financeira | PAY-008 | Divergências identificadas |
 | [~] | PAY-011 | P1 | Separar credenciais test/live por tenant | SEC-012, TEN-009 | Configuração Stripe mantém Sandbox/Produção separadas, criptografadas e validadas por prefixo; falta validação externa das chaves e bloqueio de deploy por ambiente |
