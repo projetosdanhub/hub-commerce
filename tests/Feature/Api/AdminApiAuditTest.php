@@ -34,7 +34,7 @@ class AdminApiAuditTest extends TestCase
         $this->withServerVariables(['HTTP_HOST' => $domain->domain]);
 
         // 3. Authenticate as the seeded admin
-        $admin = User::where('email', 'admin@hubcommerce.com')->firstOrFail();
+        $admin = User::where('email', 'admin@example.invalid')->firstOrFail();
         $this->actingAs($admin, 'sanctum');
 
         // 4. List of endpoints to verify
@@ -81,7 +81,7 @@ class AdminApiAuditTest extends TestCase
             ->firstOrFail();
 
         $this->withServerVariables(['HTTP_HOST' => $domain->domain]);
-        $this->actingAs(User::where('email', 'admin@hubcommerce.com')->firstOrFail(), 'sanctum');
+        $this->actingAs(User::where('email', 'admin@example.invalid')->firstOrFail(), 'sanctum');
 
         $this->getJson('/api/admin/settings/apps')
             ->assertSuccessful()
