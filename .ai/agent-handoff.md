@@ -498,3 +498,14 @@ Copie este bloco para cada handoff relevante:
 - Evidências: Tests #525 confirmou HTTPS, mas revelou raiz `https://localhost:8000`; antes da view o middleware agora fixa a raiz em `$request->getSchemeAndHttpHost()`, que vem do host/protocolo confiáveis.
 - Riscos, bloqueios e itens não verificados: o novo commit ainda aguarda CI. A origem só é aplicada por request web e não altera URLs de console; produção continua exigindo proxies explícitos.
 - Próxima ação única: acompanhar os gates da PR #78 e mesclar apenas se todos ficarem verdes.
+
+
+### 2026-09-09 — Codex — resolução oficial do Vite por origem confiável
+
+- Objetivo e escopo: gerar as tags `@vite` com a origem HTTPS atual do ngrok.
+- Branch e commit: `fix/ngrok-https-assets`, `bf1b7df`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `app/Http/Middleware/SecurityHeaders.php`, `tests/Feature/TrustedProxyTest.php` e este handoff.
+- Evidências: Tests #527 mostrou que `url()->asset()` fora da renderização ainda usa `APP_URL`; o middleware passou a usar a API oficial `Vite::createAssetPathsUsing()` antes da view e o teste agora verifica a página real que contém `@vite`.
+- Riscos, bloqueios e itens não verificados: aguardando CI; o resolver é atualizado a cada request web e HMR continua desativado para o túnel.
+- Próxima ação única: acompanhar os gates da PR #78 e mesclar apenas com todos verdes.
