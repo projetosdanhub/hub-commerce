@@ -2,9 +2,11 @@
 
 namespace App\Domain\Payments;
 
+use App\Enums\OrderStatus;
 use App\Models\PaymentAttempt;
 use App\Models\StripeWebhookEvent;
 use Illuminate\Database\QueryException;
+use App\Services\OrderStatusTransitionService;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -12,6 +14,7 @@ final readonly class StripeWebhookProcessor
 {
     public function __construct(
         private StripeGatewayConfiguration $configuration,
+        private OrderStatusTransitionService $orderTransitions,
     ) {}
 
     public function process(string $payload, ?string $signature): bool
@@ -60,6 +63,18 @@ final readonly class StripeWebhookProcessor
                         'failure_code' => $status === PaymentAttemptStatus::FAILED ? ($paymentIntent['last_payment_error']['code'] ?? 'stripe_payment_failed') : null,
                         'processed_at' => now(),
                     ]);
+
+                    if (
+                        $status === PaymentAttemptStatus::SUCCEEDED
+                        && $attempt->order !== null
+                        && $attempt->order->status === OrderStatus::AWAITING_PAYMENT
+                    ) {
+                        $this->orderTransitions->transition(
+                            $attempt->order,
+                            OrderStatus::PICKING,
+                            'Pagamento confirmado pelo webhook Stripe.',
+                        );
+                    }
                 }
             }
 
