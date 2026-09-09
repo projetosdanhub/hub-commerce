@@ -487,3 +487,14 @@ Copie este bloco para cada handoff relevante:
 - Evidências: Tests #523 alcançou 107 testes aprovados e falhou apenas porque a rota auxiliar não era atendida; o teste agora valida `url()->asset()` após o request HTTPS já ter atravessado o middleware confiável.
 - Riscos, bloqueios e itens não verificados: novo commit ainda aguarda CI; nenhuma alteração de runtime ou CSP nesta correção.
 - Próxima ação única: acompanhar a nova execução dos gates da PR #78.
+
+
+### 2026-09-09 — Codex — origem dinâmica de assets do túnel
+
+- Objetivo e escopo: corrigir o host `localhost` ainda usado em URLs de assets após o esquema HTTPS estar correto.
+- Branch e commit: `fix/ngrok-https-assets`, `3c2af3d`.
+- Task board: DEV-DOCKER-001 permanece `[~]`.
+- Arquivos alterados: `app/Http/Middleware/SecurityHeaders.php`, `docs/operations/docker-local.md` e este handoff.
+- Evidências: Tests #525 confirmou HTTPS, mas revelou raiz `https://localhost:8000`; antes da view o middleware agora fixa a raiz em `$request->getSchemeAndHttpHost()`, que vem do host/protocolo confiáveis.
+- Riscos, bloqueios e itens não verificados: o novo commit ainda aguarda CI. A origem só é aplicada por request web e não altera URLs de console; produção continua exigindo proxies explícitos.
+- Próxima ação única: acompanhar os gates da PR #78 e mesclar apenas se todos ficarem verdes.
