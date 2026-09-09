@@ -21,15 +21,17 @@ class ProcessMelhorEnvioWebhook implements ShouldQueue
 
     public function handle(): void
     {
-        $event = ProviderWebhookEvent::query()->lockForUpdate()->find($this->eventId);
+        DB::transaction(function (): void {
+            $event = ProviderWebhookEvent::query()->lockForUpdate()->find($this->eventId);
 
-        if ($event === null || $event->processed_at !== null) {
-            return;
-        }
+            if ($event === null || $event->processed_at !== null) {
+                return;
+            }
 
-        // A vinculação da etiqueta ao pedido será adicionada junto ao fluxo
-        // idempotente de geração de etiquetas. Nunca atualize pedidos por dados
-        // não vinculados ao tenant.
-        $event->forceFill(['processed_at' => now()])->save();
+            // A vinculação da etiqueta ao pedido será adicionada junto ao fluxo
+            // idempotente de geração de etiquetas. Nunca atualize pedidos por dados
+            // não vinculados ao tenant.
+            $event->forceFill(['processed_at' => now()])->save();
+        });
     }
 }
