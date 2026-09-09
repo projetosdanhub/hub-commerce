@@ -48,20 +48,32 @@ const paymentPresentation = (payment = {}) => {
   return { label: method || 'Pagamento não informado', Icon: WalletCards };
 };
 
-const PaymentMethod = ({ payment }) => {
+const PaymentDetails = ({ payment }) => {
   const { label, Icon } = paymentPresentation(payment);
+  const gateway = String(payment?.gateway || payment?.payment_gateway || '').trim();
 
   return (
-    <span className="hub-order-payment-method" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-      {Boolean(payment?.gateway) && (
-        <>
-          <IntegrationLogo name={payment.gateway} fallbackIcon={() => null} className="hub-inline-logo" iconSize={15} />
-          <span style={{ width: '1px', height: '12px', background: 'var(--hub-border)' }} />
-        </>
-      )}
-      <IntegrationLogo name={payment?.metodo || label} fallbackIcon={Icon} className="hub-inline-logo" iconSize={15} />
-      {label}
-    </span>
+    <Section title="Pagamento" icon={WalletCards}>
+      <div className="hub-order-detail-fields">
+        <DetailField label="Forma de pagamento">
+          <span className="hub-order-payment-value">
+            <IntegrationLogo name={payment?.metodo || label} fallbackIcon={Icon} className="hub-inline-logo" iconSize={15} />
+            {label}
+          </span>
+        </DetailField>
+        {gateway ? (
+          <DetailField label="Gateway">
+            <span className="hub-order-payment-value">
+              <IntegrationLogo name={gateway} fallbackIcon={() => null} className="hub-inline-logo" iconSize={15} />
+              {gateway}
+            </span>
+          </DetailField>
+        ) : null}
+        {Number(payment?.parcelas) > 1 ? (
+          <DetailField label="Parcelamento">{payment.parcelas}x de {formatCurrency(payment.valor_parcela)}</DetailField>
+        ) : null}
+      </div>
+    </Section>
   );
 };
 
@@ -417,7 +429,7 @@ export const OrderDetail = ({
           <div>
             <p>Pedido</p>
             <h1>HUB-{order.id} <Badge variant={status.variant}>{status.label}</Badge></h1>
-            <div className="hub-order-detail-meta"><span>{formatOrderDate(order.data_raw || order.created_at)}</span><PaymentMethod payment={order.pagamento} /></div>
+            <div className="hub-order-detail-meta"><span>{formatOrderDate(order.data_raw || order.created_at)}</span></div>
           </div>
         </div>
         <div className="hub-order-detail-actions">
@@ -467,13 +479,15 @@ export const OrderDetail = ({
             </div>
           </Section>
 
+          <PaymentDetails payment={order.pagamento} />
+
           <Section title="Entrega" icon={MapPin}>
             <div className="hub-order-detail-fields">
               <DetailField label="Endereço">{address.line}</DetailField>
               <DetailField label="Cidade">{address.city}</DetailField>
               <DetailField label="CEP">{address.postalCode}</DetailField>
               <DetailField label="Transportadora">
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="hub-order-inline-integration">
                   <IntegrationLogo name={order.carrier} fallbackIcon={() => null} className="hub-inline-logo" iconSize={15} />
                   {order.carrier || 'Aguardando expedição'}
                 </span>

@@ -1,6 +1,6 @@
 # HUB Commerce — Task Board
 
-Atualizado em: 2026-09-08 — ativos da Central de Apps normalizados; confirmação de desinstalação verificada na PR #68; conexões de provedores e billing seguem na PR #66.  
+Atualizado em: 2026-09-08 — ativos da Central de Apps normalizados; mídia privada de personalização e dados locais de demonstração em implementação; conexões de provedores e billing seguem na PR #66.  
 Documento vivo: atualizar o status neste arquivo no mesmo commit da implementação.
 
 ## Legenda
@@ -168,6 +168,8 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | ORD-002 | P1 | Recalcular preços e promoções no servidor | CAT-002 | Cliente não controla total |
 | [ ] | ORD-003 | P1 | Reservar estoque com concorrência segura | CAT-003 | Sem overselling |
 | [ ] | ORD-004 | P1 | Criar máquina de estados do pedido | BASE-009 | Transições inválidas bloqueadas |
+| [~] | ORD-005 | P1 | Exibir pagamento e mídia privada de personalização no pedido | SEC-009, TEN-006 | Implementado na PR #69: lista exibe somente a forma; detalhe separa gateway; mídia por item usa URL temporária autorizada e isolada por tenant. Validação CI bloqueada por jobs GitHub sem etapas/`BlobNotFound` em 2026-09-08 |
+| [~] | DEV-001 | P2 | Criar dados locais de demonstração tenant-scoped | CAT-002, ORD-005 | Implementado na PR #69: catálogo tenant-scoped com e sem variações/personalização e pedidos com desconto/cupom; sem seed em produção. Validação CI bloqueada por jobs GitHub sem etapas/`BlobNotFound` em 2026-09-08 |
 | [~] | PAY-001 | P0 | Criar PaymentGateway interface | SEC-007 | Contrato tokenizado e resultado de iniciação criados; a confirmação continua exclusiva de webhook assinado e aguarda CI |
 | [~] | PAY-002 | P0 | Criar payment_attempts por tenant | PAY-001, TEN-006 | Migration/model tenant-scoped com valor em centavos, moeda, ambiente, referências seguras e chave idempotente; ainda sem cobrança ou adapter |
 | [~] | PAY-003 | P0 | Implementar idempotência de checkout | PAY-002 | Caso de uso atômico criado: revalida cliente/carrinho/endereço/cotação, persiste pedido+snapshot+tentativa e devolve somente repetição idêntica; aguarda CI |

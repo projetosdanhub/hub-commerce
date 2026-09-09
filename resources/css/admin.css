@@ -3312,3 +3312,29 @@
 .hub-order-receipt-card[data-pending] small {
   color: var(--hub-text-muted);
 }
+
+
+.hub-orders-payment,
+.hub-orders-mobile-payment,
+.hub-order-payment-value,
+.hub-order-inline-integration {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hub-space-2);
+  min-width: 0;
+}
+
+.hub-orders-payment {
+  color: var(--hub-text-secondary);
+  font-size: var(--hub-text-body-sm);
+}
+
+.hub-orders-mobile-payment {
+  color: var(--hub-text-muted);
+  font-size: var(--hub-text-body-sm);
+}
+
+.hub-order-payment-value {
+  color: var(--hub-text-secondary);
+  font-weight: var(--hub-font-weight-medium);
+}

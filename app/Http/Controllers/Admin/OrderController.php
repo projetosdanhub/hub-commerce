@@ -7,6 +7,8 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AdminMetricPreference;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\OrderItemCustomizationMedia;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use App\Models\VipLevel;
@@ -95,7 +97,7 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'items', 'address', 'carrier', 'history' => function($q) {
+        $query = Order::with(['user', 'items.customizationMedia', 'address', 'carrier', 'history' => function($q) {
             $q->orderBy('created_at', 'desc');
         }]);
 
@@ -230,14 +232,14 @@ class OrderController extends Controller
                 'pode_cancelar_reembolso' => $this->canCancelRefundRequest($order),
                 'coupons' => is_string($order->applied_coupons) ? json_decode($order->applied_coupons, true) : ($order->applied_coupons ?? []),
                 
-                'pagamento_metodo' => $order->payment_method ?? 'A Vista',
+                'pagamento_metodo' => $order->payment_method,
                 'pagamento_parcelas' => (int) $order->payment_installments,
                 'juros' => (float) $order->gateway_fee > 0, 
                 
                 'pagamento' => [
-                    'gateway' => $order->payment_gateway ?? 'N/A',
+                    'gateway' => $order->payment_gateway,
                     'payment_gateway' => $order->payment_gateway,
-                    'metodo' => $order->payment_method ?? 'A Vista',
+                    'metodo' => $order->payment_method,
                     'parcelas' => (int) $order->payment_installments,
                     'valor_parcela' => (float) $order->installment_value,
                     'juros' => (float) $order->gateway_fee,
@@ -272,7 +274,7 @@ class OrderController extends Controller
                     'cep' => $order->address->cep,
                 ] : null,
 
-                'items' => $order->items->map(function ($item) {
+                'items' => $order->items->map(function ($item) use ($order) {
                     return [
                         'id' => $item->id,
                         'nome' => $item->product_name,
@@ -284,7 +286,7 @@ class OrderController extends Controller
                         'qtd' => $item->quantity, 
                         'preco' => (float) $item->price,
                         'img' => $item->product_image,
-                        'personalizacao' => $item->customization
+                        'personalizacao' => $this->customizationFor($order, $item),
                     ];
                 })->values(),
 
@@ -302,6 +304,60 @@ class OrderController extends Controller
         $paginator->setCollection($formatted);
 
         return response()->json($paginator);
+    }
+
+    private function customizationFor(Order $order, OrderItem $item): ?array
+    {
+        $customization = is_array($item->customization) ? $item->customization : [];
+        unset($customization['media']);
+
+        $media = $item->customizationMedia
+            ->map(fn (OrderItemCustomizationMedia $media): array => [
+                'id' => $media->getKey(),
+                'name' => $media->original_name,
+                'preview_url' => $this->customizationMediaUrl($order, $item, $media),
+                'download_url' => $this->customizationMediaUrl($order, $item, $media, true),
+            ])
+            ->values()
+            ->all();
+
+        if ($media !== []) {
+            $customization['media'] = $media;
+        }
+
+        return $customization === [] ? null : $customization;
+    }
+
+    private function customizationMediaUrl(Order $order, OrderItem $item, OrderItemCustomizationMedia $media, bool $download = false): string
+    {
+        return URL::temporarySignedRoute(
+            'secure-download.orders.customization-media',
+            now()->addMinutes(10),
+            [
+                'order' => $order->getKey(),
+                'item' => $item->getKey(),
+                'media' => $media->getKey(),
+                'download' => $download ? 1 : null,
+            ],
+        );
+    }
+
+    public function customizationMedia(Request $request, Order $order, OrderItem $item, OrderItemCustomizationMedia $media)
+    {
+        abort_unless(
+            $item->order_id === $order->getKey()
+            && $media->order_item_id === $item->getKey(),
+            404,
+        );
+
+        abort_unless(Storage::disk('local')->exists($media->storage_path), 404);
+
+        return Storage::disk('local')->response(
+            $media->storage_path,
+            $media->original_name,
+            ['Content-Type' => $media->mime_type],
+            $request->boolean('download') ? 'attachment' : 'inline',
+        );
     }
 
     public function document(Request $request, $id, string $type)

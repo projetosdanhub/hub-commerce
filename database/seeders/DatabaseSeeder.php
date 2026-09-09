@@ -6,10 +6,15 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderItemCustomizationMedia;
+use App\Models\Categoria;
+use App\Models\Produto;
+use App\Models\ProdutoVariacao;
 use App\Models\OrderAddress;
 use App\Models\OrderHistory;
 use App\Models\Address;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\Tenant;
 use App\Models\TenantDomain;
@@ -20,6 +25,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            return;
+        }
         $tenant = Tenant::query()->firstOrCreate(
             ['slug' => 'loja-inicial'],
             ['name' => 'Loja inicial migrada', 'timezone' => 'America/Sao_Paulo', 'currency' => 'BRL']
@@ -119,7 +127,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Item 1: Com Variação + Imagem e Texto Personalizado
-        OrderItem::create([
+        $moletomPersonalizado = OrderItem::create([
             'order_id' => $pedido1->id,
             'sku' => 'MOLETOM-DEV',
             'variation_sku' => 'MOLETOM-DEV-PRETO-GG',
@@ -135,8 +143,18 @@ class DatabaseSeeder extends Seeder
             ]
         ]);
 
+        $moletomMediaPath = 'tenants/'.$tenant->uuid.'/private/orders/'.$pedido1->id.'/customizations/moletom-logo-demo.png';
+        Storage::disk('local')->put($moletomMediaPath, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADElEQVR42mP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC'));
+        OrderItemCustomizationMedia::query()->create([
+            'order_item_id' => $moletomPersonalizado->id,
+            'original_name' => 'logo-personalizado-demo.png',
+            'storage_path' => $moletomMediaPath,
+            'mime_type' => 'image/png',
+            'byte_size' => Storage::disk('local')->size($moletomMediaPath),
+        ]);
+
         // Item 2: Sem Variação + Apenas Imagem Personalizada
-        OrderItem::create([
+        $quadroPersonalizado = OrderItem::create([
             'order_id' => $pedido1->id,
             'sku' => 'QUADRO-CANVAS',
             'variation_sku' => null,
@@ -149,6 +167,16 @@ class DatabaseSeeder extends Seeder
             'customization' => [
                 'Arte Enviada' => 'https://images.unsplash.com/photo-1579762715118-a6f1d4b934f1?auto=format&fit=crop&w=500&q=80' 
             ]
+        ]);
+
+        $quadroMediaPath = 'tenants/'.$tenant->uuid.'/private/orders/'.$pedido1->id.'/customizations/quadro-arte-demo.png';
+        Storage::disk('local')->put($quadroMediaPath, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADElEQVR42mP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC'));
+        OrderItemCustomizationMedia::query()->create([
+            'order_item_id' => $quadroPersonalizado->id,
+            'original_name' => 'arte-personalizada-demo.png',
+            'storage_path' => $quadroMediaPath,
+            'mime_type' => 'image/png',
+            'byte_size' => Storage::disk('local')->size($quadroMediaPath),
         ]);
 
         // Item 3: Com Variação + Apenas Texto Personalizado
@@ -293,5 +321,31 @@ class DatabaseSeeder extends Seeder
             'event' => 'Pedido cancelado pelo sistema. Motivo: Vencimento do Boleto Bancário.',
             'created_at' => Carbon::now()->subDays(2)
         ]);
+        // Catálogo exclusivamente local/teste: todos os produtos recebem tenant_id pelo contexto.
+        $categoria = Categoria::query()->firstOrCreate(
+            ['slug' => 'demonstracao'],
+            ['nome' => 'Demonstração', 'descricao' => 'Produtos locais para validar catálogo, variações e personalização.', 'ativo' => true, 'status' => Categoria::STATUS_ATIVO],
+        );
+        Produto::query()->firstOrCreate(
+            ['slug' => 'camiseta-basica-demo'],
+            ['categoria_id' => $categoria->id, 'nome' => 'Camiseta Básica', 'descricao' => 'Produto sem variação e sem personalização.', 'preco' => '79.90', 'quantidade_estoque' => 12, 'ativo' => true, 'status_vitrine' => 'ATIVO', 'sku_ref' => 'CAM-BASICA', 'sku_sufixo' => 'UN'],
+        );
+        $camisetaVariacoes = Produto::query()->firstOrCreate(
+            ['slug' => 'camiseta-com-variacoes-demo'],
+            ['categoria_id' => $categoria->id, 'nome' => 'Camiseta com Variações', 'descricao' => 'Produto com tamanho e cor.', 'preco' => '99.90', 'quantidade_estoque' => 18, 'ativo' => true, 'status_vitrine' => 'ATIVO', 'sku_ref' => 'CAM-VAR', 'sku_sufixo' => 'BASE'],
+        );
+        ProdutoVariacao::query()->firstOrCreate(['sku' => 'CAM-VAR-AZUL-M'], ['produto_id' => $camisetaVariacoes->id, 'tipo' => 'Cor/Tamanho', 'nome' => 'Azul · M', 'estoque' => 8]);
+        ProdutoVariacao::query()->firstOrCreate(['sku' => 'CAM-VAR-PRETA-G'], ['produto_id' => $camisetaVariacoes->id, 'tipo' => 'Cor/Tamanho', 'nome' => 'Preta · G', 'estoque' => 10]);
+        Produto::query()->firstOrCreate(
+            ['slug' => 'quadro-personalizavel-demo'],
+            ['categoria_id' => $categoria->id, 'nome' => 'Quadro Personalizável', 'descricao' => 'Produto personalizado sem variação.', 'preco' => '149.90', 'quantidade_estoque' => 6, 'ativo' => true, 'status_vitrine' => 'ATIVO', 'personalizado' => true, 'custom_tipo' => 'IMAGEM', 'sku_ref' => 'QUADRO-PERS', 'sku_sufixo' => 'UN'],
+        );
+        $moletomPersonalizavel = Produto::query()->firstOrCreate(
+            ['slug' => 'moletom-personalizavel-demo'],
+            ['categoria_id' => $categoria->id, 'nome' => 'Moletom Personalizável', 'descricao' => 'Produto com variação e personalização.', 'preco' => '189.90', 'preco_promo' => '169.90', 'quantidade_estoque' => 9, 'ativo' => true, 'status_vitrine' => 'ATIVO', 'personalizado' => true, 'custom_tipo' => 'AMBOS', 'frete_gratis' => true, 'sku_ref' => 'MOLETOM-PERS', 'sku_sufixo' => 'BASE'],
+        );
+        ProdutoVariacao::query()->firstOrCreate(['sku' => 'MOLETOM-PERS-PRETO-M'], ['produto_id' => $moletomPersonalizavel->id, 'tipo' => 'Cor/Tamanho', 'nome' => 'Preto · M', 'estoque' => 4]);
+        ProdutoVariacao::query()->firstOrCreate(['sku' => 'MOLETOM-PERS-PRETO-G'], ['produto_id' => $moletomPersonalizavel->id, 'tipo' => 'Cor/Tamanho', 'nome' => 'Preto · G', 'estoque' => 5]);
+
     }
 }

@@ -413,3 +413,21 @@ Copie este bloco para cada handoff relevante:
 - PR: #61 `payments/stripe-tenant-configuration`.
 - A primeira rodada de CI encontrou somente estilo PHP e uma fixture inerte do Stripe sinalizada por Gitleaks; ambos foram corrigidos sem inserir chaves reais.
 - No commit `93ec821`, Tests, Security Scans e E2E Tests passaram. Não liberar checkout, não configurar chaves reais e não marcar pagamentos como aprovados até webhook assinado e idempotente.
+
+
+### 2026-09-08 — Codex
+- Objetivo e escopo: ajustar a apresentação de pagamento em Pedidos, preparar mídia privada de personalização por item e dados locais de demonstração tenant-scoped.
+- Branch e commit: `feat/order-customization-media-demo`; implementação inicial aguarda CI.
+- Task board: ORD-005 [~] e DEV-001 [~] — lista mostra somente a forma de pagamento; detalhe separa gateway; mídia e seed local em implementação.
+- Arquivos alterados: pedidos (API, modelo, migration, rota segura e UI), seed local, task board e este handoff.
+- Evidências: revisão estática pendente da validação automatizada.
+- Riscos, bloqueios e itens não verificados: a interface de upload de personalização da vitrine não existe neste escopo; o contrato novo protege e exibe mídias já persistidas. Cupons/VIP de demonstração são snapshots de pedidos, não motor comercial ativo.
+- Próxima ação única: executar Tests, E2E Tests e Security Scans na PR, corrigindo somente falhas da entrega.
+
+
+### 2026-09-08 — PR #69: validação automatizada bloqueada externamente
+
+- Commit atual: `3bdfab3609450079383dd8b1aa2a84b7544f1216`; corrigido o endpoint de mídia para preservar nome de arquivo em preview e download.
+- Evidência anterior: Tests executou 97 testes aprovados; a única falha foi a expectativa do cabeçalho `Content-Disposition`, corrigida neste commit.
+- Bloqueio atual: as novas tentativas de **Tests**, **E2E Tests** e **Security Scans** encerram antes de qualquer etapa, sem logs/steps, e o GitHub Actions devolve `BlobNotFound`. Reexecuções seletivas tiveram o mesmo comportamento.
+- Decisão: PR #69 permanece draft e não será marcada pronta nem mesclada até os checks executarem e ficarem verdes.

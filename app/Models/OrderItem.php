@@ -6,6 +6,7 @@ use App\Domain\Tenancy\Concerns\BelongsToTenant;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrderItem extends Model
 {
@@ -31,6 +32,14 @@ class OrderItem extends Model
             'price'         => 'decimal:2',
             'customization' => 'array', // Converte JSON para Objeto no React
         ];
+    }
+
+    /**
+     * @return HasMany<OrderItemCustomizationMedia, $this>
+     */
+    public function customizationMedia(): HasMany
+    {
+        return $this->hasMany(OrderItemCustomizationMedia::class, 'order_item_id');
     }
 
     // Este Item PERTENCE a 1 Pedido
