@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState } from 'react';
-import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, SmartphoneKey } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, KeyRound, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../api';
 import { Button } from '../DesignSystem/primitives/Button';
@@ -163,7 +163,7 @@ export default function AdminLoginPage({ onLoginSuccess }) {
               <label className="hub-admin-auth-field" htmlFor={mfaId}>
                 <span>Código de verificação</span>
                 <span className="hub-admin-auth-input-wrap">
-                  <SmartphoneKey aria-hidden="true" size={18} />
+                  <KeyRound aria-hidden="true" size={18} />
                   <input
                     id={mfaId}
                     type="text"
