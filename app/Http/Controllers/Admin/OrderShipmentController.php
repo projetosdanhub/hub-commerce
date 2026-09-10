@@ -26,8 +26,19 @@ final class OrderShipmentController extends Controller
     public function store(Request $request, int $id): JsonResponse
     {
         $order = Order::query()->findOrFail($id);
+        $input = $request->validate([
+            'me_carrier_id' => ['required', 'integer', 'min:1'],
+            'vol_altura' => ['required', 'numeric', 'gt:0', 'max:300'],
+            'vol_largura' => ['required', 'numeric', 'gt:0', 'max:300'],
+            'vol_comprimento' => ['required', 'numeric', 'gt:0', 'max:300'],
+            'vol_peso' => ['required', 'numeric', 'gt:0', 'max:1000'],
+            'doc_tipo' => ['required', 'in:DECLARACAO,NFE'],
+            'invoice_key' => ['required_if:doc_tipo,NFE', 'nullable', 'regex:/^\d{44}$/'],
+            'recipient_document' => ['required', 'string', 'max:18'],
+            'recipient_phone' => ['required', 'string', 'max:20'],
+        ]);
         try {
-            $shipment = $this->shipments->create($order, $request->all());
+            $shipment = $this->shipments->create($order, $input);
 
             return response()->json(['data' => $this->present($shipment), 'message' => 'Envio preparado. Compre e gere a etiqueta antes da postagem.']);
         } catch (DomainException $exception) {

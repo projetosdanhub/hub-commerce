@@ -102,7 +102,7 @@ class MelhorEnvioShipmentTest extends TestCase
             $this->assertSame('RECONCILIATION_REQUIRED', $shipment->failure_code);
         }
         $service->create($this->order, $this->input());
-        Http::assertSentCount(1); // A conexão que falhou não é registrada como requisição concluída.
+        Http::assertSentCount(2); // Cotação e criação inicial; a repetição não chama o provedor novamente.
         $reference = (string) Str::uuid();
         Http::fake([
             '*/api/v2/me/cart' => Http::response([['id' => $reference, 'tags' => [['tag' => $shipment->public_id]]]]),
