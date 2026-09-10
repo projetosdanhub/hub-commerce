@@ -14,11 +14,11 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 - Objetivo e escopo: encerrar PRs abertas já substituídas e modernizar somente o login administrativo, em pt-BR, com composição desktop/mobile, tema escuro, acessibilidade e contrato MFA existente.
 - Branch e commit: `ui/admin-login-experience`, commit `0fe5753`.
 - Task board: UI-032 `[~]` — tela e testes E2E de rota/viewport implementados; conclusão depende de Tests, E2E Tests e Security Scans verdes.
-- Arquivos alterados: `AdminLoginPage`, novo `admin-login.css`, tokens, E2E do painel e task board.
+- Arquivos alterados: `AdminLoginPage`, novo `admin-login.css`, tokens, E2E do painel, configuração do Playwright e task board.
 - Contratos preservados: `POST /api/admin/login` continua com throttle, token somente em `sessionStorage`, permissões backend e MFA. A rota direta `/admin/login` agora persiste a sessão e navega para `/admin`; o `AdminLayout` preserva seu callback de sessão. Nenhuma recuperação de senha, cadastro ou endpoint fictício foi criado.
-- Evidências: `git diff --check` passou; `node --test tests/ui/admin-interactions.node.mjs` passou (6/6). E2E e build não foram executados localmente porque o clone não contém `node_modules`; testes Laravel não são aplicáveis à alteração de interface e o ambiente não possui `vendor`.
+- Evidências: `git diff --check` passou; `node --test tests/ui/admin-interactions.node.mjs` passou (6/6); `npm run build` passou após instalar as dependências. E2E não executou localmente porque este ambiente não possui `php`; a primeira execução de CI revelou que o comando antigo do Playwright servia os assets como HTML e foi corrigido para `php artisan serve`.
 - PRs encerradas: #18 fechada como substituída porque reabria auditorias já tratadas; #44 fechada como substituída pelas entregas posteriores de UI-021 a UI-026. Ambas tinham conflito e não sofreram merge regressivo.
-- Riscos, bloqueios e itens não verificados: validar visualmente em 320px, 768px e desktop, com teclado, zoom 200% e reduced motion; confirmar build/lint e os fluxos E2E no CI antes do merge.
+- Riscos, bloqueios e itens não verificados: validar visualmente em 320px, 768px e desktop, com teclado, zoom 200% e reduced motion; confirmar E2E no CI antes do merge. `npm run lint` completo ainda falha em 53 erros legados fora deste escopo; o ESLint direcionado aos arquivos novos passou no workflow Tests.
 - Próxima ação única: revisar o diff, criar a PR de UI-032 e acompanhar os checks obrigatórios.
 
 ### 2026-09-09 — Codex — privacidade e padronização de Domínios
