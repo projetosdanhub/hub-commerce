@@ -28,6 +28,7 @@ import PaginaInicial from './Modulos/Loja/PaginaInicial';
 import DetalheProduto from './Modulos/Loja/DetalheProduto';
 import PaginaCarrinho from './Modulos/Loja/PaginaCarrinho';
 import PaginaCheckout from './Modulos/Loja/PaginaCheckout';
+import CheckoutPaymentReturnPage from './Modulos/Loja/checkout/CheckoutPaymentReturnPage';
 import PaginaPerfil from './Modulos/Loja/PaginaPerfil';
 import PainelAfiliados from './Modulos/Loja/PainelAfiliados';
 import PaginaAutenticacao from './Modulos/Loja/PaginaAutenticacao';
@@ -62,8 +63,9 @@ const AppContent = () => {
     // O sistema oculta o Header/Footer se estivermos no painel administrativo ou na tela de login
     const isAdmin = location.pathname.startsWith('/admin');
     const isLoginStore = location.pathname === '/login';
-    const isCheckout = location.pathname === '/checkout';
+    const isCheckout = location.pathname.startsWith('/checkout');
     const hideLayout = isAdmin || isLoginStore || isCheckout;
+    const trackingAllowed = !isAdmin && !isCheckout;
 
     // --- 0. INICIALIZAÇÃO E RASTREAMENTO GLOBAL (PIXEL / GA4 / UTMS) ---
     useEffect(() => {
@@ -79,25 +81,25 @@ const AppContent = () => {
         };
         
         // Só inicializa o rastreamento se o usuário estiver na loja pública
-        if (!isAdmin) {
+        if (trackingAllowed) {
             setupTracking();
         }
-    }, [isAdmin]);
+    }, [trackingAllowed]);
 
     // Ouvinte de Mudança de Página (Dispara PageView dinâmico do React)
     useEffect(() => {
-        if (!isAdmin) {
+        if (trackingAllowed) {
             // Pequeno delay para garantir que o React montou o DOM (melhora a precisão do GA4)
             const timeoutId = setTimeout(() => {
                 trackPageView();
             }, 300);
             return () => clearTimeout(timeoutId);
         }
-    }, [location.pathname, location.search, isAdmin]);
+    }, [location.pathname, location.search, trackingAllowed]);
 
     // Ouvinte Global do Motor de Eventos Desacoplado
     useEffect(() => {
-        if (isAdmin) return;
+        if (!trackingAllowed) return;
 
         const handleTrackingEvent = (e) => {
             const { event, data } = e.detail;
@@ -122,7 +124,7 @@ const AppContent = () => {
 
         window.addEventListener('tracker:event', handleTrackingEvent);
         return () => window.removeEventListener('tracker:event', handleTrackingEvent);
-    }, [isAdmin]);
+    }, [trackingAllowed]);
 
     // --- 1. ESTADO GLOBAL DO CARRINHO (MEMÓRIA LOCALSTORAGE) ---
     const [cartItems, setCartItems] = useState(() => {
@@ -236,6 +238,7 @@ const AppContent = () => {
                     <Route path="/perfil" element={<PaginaPerfil cartCount={totalItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
                     <Route path="/afiliados" element={<PainelAfiliados cartCount={totalItems} onOpenCart={() => setIsCartOpen(true)} favoritesCount={favoritos.length} onOpenFavorites={() => setIsFavoritesOpen(true)} />} />
                     <Route path="/checkout" element={<PaginaCheckout cartItems={cartItems} />} />
+                    <Route path="/checkout/retorno" element={<CheckoutPaymentReturnPage />} />
                     <Route path="/categoria/:slug" element={<PaginaCategoria />} />
                     <Route path="/login" element={<PaginaAutenticacao />} />
 

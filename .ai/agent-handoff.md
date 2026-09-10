@@ -562,6 +562,26 @@ Copie este bloco para cada handoff relevante:
 - Riscos, bloqueios e itens não verificados: `composer` e `docker` não estão disponíveis no ambiente de trabalho; a homologação no host real do ngrok ainda depende de recriar os containers e gerar o build. `npm run lint` continua vermelho por 51 erros preexistentes em módulos legados, sem arquivos tocados neste commit.
 - Próxima ação única: após o merge da PR #79, aplicar os comandos documentados no host do túnel e validar no navegador que HTML, assets e API usam apenas a origem HTTPS pública.
 
+### 2026-09-10 — Auditoria de integrações e correções verificáveis
+
+- Objetivo: revisar main/PRs e preparar gateways e Melhor Envio para testes e produção. A revisão encontrou lacunas de implementação além de homologação; a conclusão global permanece pendente.
+- Branch/base: `integrations/release-readiness`, criada de `75ca497`.
+- Board: INT-READY-001 `[~]`; PAY e SHIP não recebem conclusão antecipada.
+- Alterações: validação/idempotência de Stripe, cotação OAuth estrita por tenant/ambiente, catálogo real e formulário OAuth de logística, validação de remetente, inbox Melhor Envio com pendências explícitas e URLs reais de webhook.
+- Evidências: build e imports locais aprovados; 4 testes Vitest + 6 de interação aprovados. ESLint dos componentes alterados aprovado após correções. Testes PHP de regressão adicionados; execução depende do CI, pois PHP/Composer/Docker não estão disponíveis na sessão.
+- Limitações: nenhuma homologação ou implantação real. Expedição legada, gateways adicionais, Connect, refund/reconciliação e requisitos OPS ainda estão abertos. Detalhes em `docs/reviews/integration-readiness-2026-09-10.md`.
+- Próxima ação: executar e acompanhar os gates da PR; mudanças financeiras exigem revisão humana antes de merge conforme regra 10.
+
+### 2026-09-10 — Codex — correções de CI e retorno seguro da PR #84
+
+- Objetivo e escopo: corrigir os gates da PR #84, manter a expedição Melhor Envio idempotente e completar o retorno do Stripe sem expor parâmetros de checkout a analytics.
+- Branch e commit: `integrations/release-readiness`, revisão até `d33bdeff7c49ccba7168315cf461b4b3f1810b07`.
+- Task board: INT-READY-001, PAY-004, PAY-007, PAY-008, APP-015, SHIP-003 e SHIP-005 permanecem `[~]`; nenhum gateway ou operação foi marcado como homologado.
+- Arquivos alterados: contratos tipados de pedido/credencial, ciclo tenant-scoped de etiqueta, controller de expedição, testes de segurança/idempotência, resolver de sessão curta do comprador, consulta de status de pagamento, retorno de checkout, rotas, bloqueio de analytics `/checkout/*`, relatório e board.
+- Contratos preservados: o comprador só lê o estado mínimo do próprio pedido no tenant atual; token curto não vai para URL, logs ou analytics e é removido em estados terminais. Pedido não avança por resposta do navegador. Etiquetas exigem pedido, instalação e credencial do tenant atual, e timeout exige reconciliação antes de repetir.
+- Evidências: `git diff --check` passou. Em `d8e4adf`, Larastan, ESLint/Vitest, E2E e Security Scans passaram; PHPUnit falhou apenas no fake de reconciliação da etiqueta, corrigido na revisão `3f044e2`. A revisão `3f044e2` parou no Pint por um import totalmente qualificado no novo teste de status, corrigido em `697065a`; a rodada seguinte chegou ao ESLint e revelou atualização síncrona no efeito do retorno, corrigida em `d33bdef`. A revisão de código `9d9901e` passou em [Tests #551](https://github.com/projetosdanhub/hub-commerce/actions/runs/34504275323), [E2E Tests #377](https://github.com/projetosdanhub/hub-commerce/actions/runs/34504275322) e [Security Scans #379](https://github.com/projetosdanhub/hub-commerce/actions/runs/34504275328). Não há PHP/Composer nem `node_modules` na sessão local.
+- Riscos, bloqueios e itens não verificados: falta homologação real de Stripe e Melhor Envio, cofre/credenciais, workers/scheduler, refund, reconciliação e revisão humana financeira. Mercado Pago, PagBank e Pagar.me permanecem indisponíveis para cobrança.
+- Próxima ação única: solicitar revisão humana financeira da PR #84; não fazer merge antes da aprovação explícita.
 ### 2026-09-10 — Codex — Transportadoras e configuração logística
 
 - Objetivo e escopo: modernizar o menu de Transportadoras e separar a configuração do Melhor Envio no fluxo de Configurações → Logística, preservando somente contratos existentes por tenant.

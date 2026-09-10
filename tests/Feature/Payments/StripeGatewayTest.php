@@ -134,6 +134,39 @@ class StripeGatewayTest extends TestCase
         }
     }
 
+    public function test_retry_retrieves_the_existing_intent_instead_of_creating_a_new_charge(): void
+    {
+        $this->configureStripe('sandbox', ['secret_key' => 'sk_test_123', 'publishable_key' => 'pk_test_123']);
+        $attempt = new \App\Models\PaymentAttempt([
+            'gateway_payment_id' => 'pi_existing', 'environment' => 'SANDBOX',
+            'amount_cents' => 1200, 'currency' => 'BRL', 'idempotency_key' => 'attempt-fixture',
+            'initiated_at' => now()->subDays(2),
+        ]);
+        Http::fake(['*' => Http::response([
+            'id' => 'pi_existing', 'client_secret' => 'client-fixture', 'amount' => 1200, 'currency' => 'brl', 'livemode' => false,
+        ])]);
+        $result = app(\App\Domain\Payments\StripePaymentIntentCreator::class)->create($attempt);
+        $this->assertSame('pi_existing', $result['id']);
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'GET' && str_ends_with($request->url(), '/pi_existing'));
+        Http::assertSentCount(1);
+    }
+
+    public function test_stale_unresolved_attempt_is_not_reposted_after_provider_idempotency_expires(): void
+    {
+        $this->configureStripe('sandbox', ['secret_key' => 'sk_test_123', 'publishable_key' => 'pk_test_123']);
+        $attempt = new \App\Models\PaymentAttempt([
+            'environment' => 'SANDBOX', 'amount_cents' => 1200, 'currency' => 'BRL',
+            'idempotency_key' => 'attempt-fixture', 'initiated_at' => now()->subDays(2),
+        ]);
+        Http::fake();
+        $this->expectException(StripeGatewayUnavailableException::class);
+        try {
+            app(\App\Domain\Payments\StripePaymentIntentCreator::class)->create($attempt);
+        } finally {
+            Http::assertNothingSent();
+        }
+    }
+
     /**
      * @param  array<string, string>  $credentials
      */

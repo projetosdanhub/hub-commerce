@@ -30,4 +30,34 @@ class MelhorEnvioSetting extends Model
             'sender_info'     => 'array',
         ];
     }
+
+    public function oauthConnection(): ?ProviderInstallation
+    {
+        $installation = ProviderInstallation::query()
+            ->where('tenant_id', app(\App\Domain\Tenancy\TenantContextStore::class)->require()->tenantId)
+            ->where('provider', 'melhor_envio')
+            ->where('environment', $this->environment)
+            ->where('status', 'CONNECTED')
+            ->whereNull('revoked_at')
+            ->with('credential')
+            ->first();
+        $credential = $installation?->credential;
+
+        if ($credential === null || $credential->revoked_at !== null
+            || $credential->expires_at?->isPast() || blank($credential->access_token)) {
+            return null;
+        }
+
+        return $installation;
+    }
+
+    public function oauthAccessToken(): string
+    {
+        $token = $this->oauthConnection()?->credential?->access_token;
+        if (! is_string($token) || blank($token)) {
+            throw new \DomainException('Conecte o Melhor Envio no ambiente selecionado.');
+        }
+
+        return $token;
+    }
 }

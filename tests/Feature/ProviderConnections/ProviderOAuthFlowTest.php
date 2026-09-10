@@ -209,6 +209,69 @@ class ProviderOAuthFlowTest extends TestCase
         });
     }
 
+    public function test_shipping_uses_only_the_active_tenant_environment_and_unexpired_oauth_token(): void
+    {
+        $installation = $this->installation('melhor_envio', 'PRODUCTION');
+        $installation->update(['status' => 'CONNECTED']);
+        $credential = ProviderConnectionCredential::query()->create([
+            'provider_installation_id' => $installation->getKey(),
+            'access_token' => 'oauth-fixture',
+            'expires_at' => now()->addHour(),
+        ]);
+        $tenant = $installation->tenant;
+        app(\App\Domain\Tenancy\TenantContextStore::class)->run(\App\Domain\Tenancy\TenantContext::fromTenant($tenant), function () use ($credential): void {
+            $settings = new \App\Models\MelhorEnvioSetting(['environment' => 'SANDBOX', 'access_token' => 'legacy-must-not-be-used']);
+            $this->assertNull($settings->oauthConnection());
+            $settings->environment = 'PRODUCTION';
+            $this->assertSame('oauth-fixture', $settings->oauthAccessToken());
+            $credential->update(['expires_at' => now()->subMinute()]);
+            $this->assertNull($settings->oauthConnection());
+            $credential->update(['expires_at' => now()->addHour(), 'revoked_at' => now()]);
+            $this->assertNull($settings->oauthConnection());
+        });
+        $another = Tenant::query()->create(['name' => 'Outra loja', 'slug' => 'outra-loja']);
+        app(\App\Domain\Tenancy\TenantContextStore::class)->run(\App\Domain\Tenancy\TenantContext::fromTenant($another), function (): void {
+            $this->assertNull((new \App\Models\MelhorEnvioSetting(['environment' => 'PRODUCTION']))->oauthConnection());
+        });
+    }
+
+    public function test_provider_registry_does_not_advertise_unimplemented_webhook_routes(): void
+    {
+        $this->assertSame('/api/webhooks/melhor-envio', $this->installation('melhor_envio', 'SANDBOX')->webhookPath());
+        foreach (['stripe', 'mercado_pago', 'pagarme', 'pagbank'] as $provider) {
+            $this->assertNull($this->installation($provider, 'SANDBOX')->webhookPath());
+        }
+    }
+
+    public function test_shipping_inbox_requeues_unprocessed_retries_and_minimizes_payload(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+        $secret = hash('sha256', 'me-signature-fixture');
+        config(['provider-connections.melhor_envio.sandbox_client_secret' => $secret]);
+        $payload = json_encode([
+            'event' => 'order.posted',
+            'data' => ['id' => 'label-fixture', 'status' => 'posted', 'tracking' => 'AA123', 'email' => 'private@example.test', 'tags' => [['url' => 'private']]],
+        ], JSON_THROW_ON_ERROR);
+        $signature = base64_encode(hash_hmac('sha256', $payload, $secret, true));
+        for ($i = 0; $i < 2; $i++) {
+            $this->call('POST', '/api/webhooks/melhor-envio', [], [], [], ['HTTP_X_ME_SIGNATURE' => $signature], $payload)->assertStatus(202);
+        }
+        $this->assertDatabaseCount('provider_webhook_events', 1);
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\ProcessMelhorEnvioWebhook::class, 2);
+        $event = \App\Models\ProviderWebhookEvent::query()->firstOrFail();
+        $this->assertSame('SANDBOX', $event->payload['environment']);
+        $this->assertArrayNotHasKey('email', $event->payload['data']);
+        $this->assertArrayNotHasKey('tags', $event->payload['data']);
+        try {
+            (new \App\Jobs\ProcessMelhorEnvioWebhook($event->id))->handle();
+            $this->fail('Evento sem vínculo não pode ser processado.');
+        } catch (\RuntimeException) {
+            // O worker deve tentar novamente se o webhook antecedeu a resposta do carrinho.
+        }
+        $this->assertNull($event->fresh()->processed_at);
+        $this->assertNotNull($event->fresh()->failed_at);
+    }
+
     private function installation(string $provider, string $environment): ProviderInstallation
     {
         return ProviderInstallation::query()->create([

@@ -20,28 +20,26 @@ class MelhorEnvioController extends Controller
             : 'https://sandbox.melhorenvio.com.br';
     }
 
-    public function getSettings()
+    public function getSettings(MelhorEnvioRateAdapter $adapter)
     {
         $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
         
-        // Se for o primeiro acesso, define os serviços padrão
-        if (empty($config->carriers_ativas)) {
-            $config->carriers_ativas = [
-                ['id' => '1', 'nome' => 'Correios PAC', 'ativo' => false],
-                ['id' => '2', 'nome' => 'Correios SEDEX', 'ativo' => false],
-                ['id' => '3', 'nome' => 'Jadlog', 'ativo' => false],
-                ['id' => '4', 'nome' => 'Loggi', 'ativo' => false],
-                ['id' => '5', 'nome' => 'Azul Cargo', 'ativo' => false],
-                ['id' => '6', 'nome' => 'LATAM Cargo', 'ativo' => false]
-            ];
-            $config->save();
+        $services = [];
+        $servicesError = null;
+        if ($config->oauthConnection() !== null) {
+            try {
+                $services = $adapter->services($config);
+            } catch (\DomainException) {
+                $servicesError = 'Não foi possível carregar os serviços. Tente atualizar novamente.';
+            }
         }
 
         return response()->json([
             'status' => 'success',
             'data' => [
                 'is_authenticated' => $this->credentialFor($config) !== null,
-                'carriers_ativas'  => $config->carriers_ativas,
+                'carriers_ativas'  => $services,
+                'services_error' => $servicesError,
                 'sender_info'      => $config->sender_info ?? [],
                 'environment'      => $config->environment,
             ]
@@ -53,11 +51,29 @@ class MelhorEnvioController extends Controller
         abort(410, 'A conexão por token manual foi desativada. Use Conectar com Melhor Envio para autorizar a conta por OAuth.');
     }
 
-    public function saveCarriers(Request $request)
+    public function saveCarriers(Request $request, MelhorEnvioRateAdapter $adapter)
     {
-        $request->validate(['carriers_ativas' => 'required|array']);
+        $validated = $request->validate([
+            'carriers_ativas' => 'required|array|max:100',
+            'carriers_ativas.*' => 'array:id,nome,ativo',
+            'carriers_ativas.*.id' => 'required|integer|min:1|distinct',
+            'carriers_ativas.*.nome' => 'required|string|max:120',
+            'carriers_ativas.*.ativo' => 'required|boolean',
+        ]);
         $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
-        $config->carriers_ativas = $request->carriers_ativas;
+        try {
+            $catalog = collect($adapter->services($config))->keyBy('id');
+        } catch (\DomainException) {
+            return response()->json(['message' => 'Não foi possível validar os serviços de frete.'], 422);
+        }
+        foreach ($validated['carriers_ativas'] as $service) {
+            abort_unless($catalog->has((string) $service['id']), 422, 'Serviço de frete indisponível.');
+        }
+        $config->carriers_ativas = collect($validated['carriers_ativas'])->map(fn ($service) => [
+            'id' => (string) $service['id'],
+            'nome' => $catalog->get((string) $service['id'])['nome'],
+            'ativo' => (bool) $service['ativo'],
+        ])->all();
         $config->save();
         
         return response()->json(['status' => 'success']);
@@ -66,23 +82,40 @@ class MelhorEnvioController extends Controller
     public function saveSender(Request $request)
     {
         $validated = $request->validate([
-            'nome' => ['required', 'string', 'max:255'],
-            'documento' => ['required', 'string', 'max:32'],
-            'email' => ['required', 'email:rfc,dns', 'max:255'],
-            'telefone' => ['required', 'string', 'max:32'],
-            'cep' => ['required', 'regex:/^\d{8}$/'],
-            'rua' => ['required', 'string', 'max:255'],
-            'numero' => ['required', 'string', 'max:32'],
-            'complemento' => ['nullable', 'string', 'max:255'],
-            'bairro' => ['required', 'string', 'max:255'],
-            'cidade' => ['required', 'string', 'max:255'],
-            'uf' => ['required', 'string', 'size:2'],
+            'inscricao_estadual' => 'nullable|string|max:30',
+            'cnae' => 'nullable|string|max:10',
+            'nome' => 'required|string|max:120',
+            'telefone' => ['required', 'string', 'regex:/^[0-9()+ \-]{10,20}$/'],
+            'email' => 'required|email|max:254',
+            'documento' => ['required', 'string', 'regex:/^[0-9.\/\-]{11,18}$/'],
+            'cep' => ['required', 'string', 'regex:/^\d{5}-?\d{3}$/'],
+            'rua' => 'required|string|max:255',
+            'numero' => 'required|string|max:32',
+            'complemento' => 'nullable|string|max:120',
+            'bairro' => 'required|string|max:120',
+            'cidade' => 'required|string|max:120',
+            'uf' => ['required', 'string', 'regex:/^[A-Z]{2}$/'],
         ]);
-
         $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
+        abort_if($config->oauthConnection() === null, 422, 'Conecte o Melhor Envio no ambiente ativo antes de salvar o remetente.');
         $config->sender_info = $validated;
         $config->save();
         return response()->json(['status' => 'success', 'message' => 'Remetente salvo!']);
+    }
+
+    public function saveEnvironment(Request $request)
+    {
+        $validated = $request->validate(['environment' => 'required|in:SANDBOX,PRODUCTION']);
+        abort_if(app()->environment('production') && $validated['environment'] !== 'PRODUCTION', 422, 'Sandbox não está disponível nesta implantação.');
+        $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
+        if ($config->environment !== $validated['environment']) {
+            $config->environment = $validated['environment'];
+            $config->access_token = null;
+            $config->save();
+            \App\Models\CheckoutShippingQuote::query()->whereNull('invalidated_at')->update(['invalidated_at' => now()]);
+        }
+
+        return response()->json(['status' => 'success', 'environment' => $config->environment]);
     }
 
     public function disconnect()
@@ -163,14 +196,7 @@ class MelhorEnvioController extends Controller
 
     private function connectionFor(MelhorEnvioSetting $config): ?ProviderInstallation
     {
-        return $this->installationForEnvironment($config->environment)
-            ?? ProviderInstallation::query()
-                ->where('tenant_id', app(TenantContextStore::class)->require()->tenantId)
-                ->where('provider', 'melhor_envio')
-                ->where('status', 'CONNECTED')
-                ->whereNull('revoked_at')
-                ->latest('connected_at')
-                ->first();
+        return $config->oauthConnection();
     }
 
     private function credentialFor(MelhorEnvioSetting $config): ?\App\Models\ProviderConnectionCredential

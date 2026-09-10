@@ -9,6 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property OrderStatus $status
+ * @property-read User|null $user
+ * @property-read StorefrontCustomer|null $storefrontCustomer
+ * @property-read OrderAddress|null $address
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, OrderItem> $items
+ */
 class Order extends Model
 {
     use HasFactory, BelongsToTenant;

@@ -4,19 +4,18 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Domain\Orders\CheckoutOrderCommand;
 use App\Domain\Orders\CheckoutOrderCreator;
+use App\Domain\Orders\StorefrontCheckoutCustomerResolver;
 use App\Domain\Payments\StripeGatewayConfiguration;
 use App\Domain\Payments\StripeGatewayUnavailableException;
 use App\Domain\Payments\StripePaymentIntentCreator;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Storefront\CreateStripePaymentIntentRequest;
 use App\Models\PaymentAttempt;
-use App\Models\StorefrontCustomer;
 use App\Models\TenantAppInstallation;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class StripeCheckoutController extends Controller
 {
@@ -25,18 +24,21 @@ class StripeCheckoutController extends Controller
         CheckoutOrderCreator $orders,
         StripeGatewayConfiguration $configuration,
         StripePaymentIntentCreator $stripe,
+        StorefrontCheckoutCustomerResolver $customers,
     ): JsonResponse {
-        $accessToken = PersonalAccessToken::findToken((string) $request->bearerToken());
-        $customer = $accessToken?->tokenable;
-
-        if (! ($customer instanceof StorefrontCustomer) || ! $accessToken->can('storefront.checkout')) {
-            abort(403);
-        }
+        $customer = $customers->resolve($request);
 
         $this->assertStripeInstalled();
 
         try {
             $environment = $configuration->safeStatus()['active_environment'];
+            $credentials = $configuration->credentialsFor($environment);
+            if (blank($credentials['publishable_key']) || blank($credentials['webhook_secret'])) {
+                throw new StripeGatewayUnavailableException('A configuração de checkout está incompleta.');
+            }
+            if (app()->environment('production') && $environment !== StripeGatewayConfiguration::PRODUCTION) {
+                throw new StripeGatewayUnavailableException('Sandbox não está disponível nesta implantação.');
+            }
             $result = $orders->create(new CheckoutOrderCommand(
                 $customer->getKey(),
                 $request->validated('items'),

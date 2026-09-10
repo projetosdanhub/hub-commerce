@@ -127,7 +127,7 @@ class ProviderInstallationController extends Controller
             'strategy' => $installation->connection_strategy,
             'status' => $installation->status,
             'methods' => $this->providers->require($installation->provider)['methods'],
-            'webhook_url' => rtrim((string) config('tenancy.webhook_base_url'), '/').$installation->webhookPath(),
+            'webhook_url' => $installation->webhookPath() === null ? null : rtrim((string) config('tenancy.webhook_base_url'), '/').$installation->webhookPath(),
             'connected_at' => optional($installation->connected_at)->toISOString(),
         ];
     }

@@ -24,16 +24,21 @@ final readonly class StripePaymentIntentCreator
         }
 
         try {
-            $response = Http::acceptJson()
+            if ($attempt->gateway_payment_id === null && $attempt->initiated_at?->lt(now()->subHours(23))) {
+                throw new StripeGatewayUnavailableException('A tentativa exige reconciliação antes de uma nova cobrança.');
+            }
+            $client = Http::acceptJson()
                 ->asForm()
                 ->withBasicAuth($credentials['secret_key'], '')
                 ->withHeaders(['Idempotency-Key' => $attempt->idempotency_key])
                 ->connectTimeout(3)
-                ->timeout(10)
-                ->post('https://api.stripe.com/v1/payment_intents', [
+                ->timeout(10);
+            $response = $attempt->gateway_payment_id !== null
+                ? $client->get('https://api.stripe.com/v1/payment_intents/'.rawurlencode($attempt->gateway_payment_id))
+                : $client->post('https://api.stripe.com/v1/payment_intents', [
                     'amount' => $attempt->amount_cents,
                     'currency' => strtolower($attempt->currency),
-                    'automatic_payment_methods' => ['enabled' => true],
+                    'payment_method_types' => ['card'],
                     'metadata' => [
                         'hub_payment_attempt_reference' => $attempt->idempotency_key,
                         'hub_order_id' => $attempt->order_id,
@@ -53,6 +58,10 @@ final readonly class StripePaymentIntentCreator
             || ! str_starts_with($id, 'pi_')
             || ! is_string($clientSecret)
             || blank($clientSecret)
+            || $response->json('amount') !== $attempt->amount_cents
+            || $response->json('currency') !== strtolower($attempt->currency)
+            || $response->json('livemode') !== ($attempt->environment === StripeGatewayConfiguration::PRODUCTION)
+            || ($attempt->gateway_payment_id !== null && $id !== $attempt->gateway_payment_id)
         ) {
             throw new StripeGatewayUnavailableException('Não foi possível iniciar o pagamento pelo Stripe.');
         }

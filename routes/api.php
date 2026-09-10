@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\TenantDomainController;
 use App\Http\Controllers\Admin\ProviderInstallationController;
 use App\Http\Controllers\Storefront\CheckoutAddressController;
 use App\Http\Controllers\Storefront\CheckoutCustomerSessionController;
+use App\Http\Controllers\Storefront\CheckoutPaymentStatusController;
 use App\Http\Controllers\Storefront\FreeShippingProgressController;
 use App\Http\Controllers\Storefront\CheckoutSummaryController;
 use App\Http\Controllers\Storefront\PostalCodeLookupController;
@@ -109,6 +110,7 @@ Route::middleware('auth:sanctum')->prefix('storefront/checkout')->group(function
     Route::get('/addresses', [CheckoutAddressController::class, 'index'])->middleware('throttle:30,1');
     Route::post('/addresses', [CheckoutAddressController::class, 'store'])->middleware('throttle:10,1');
     Route::post('/stripe/payment-intent', [StripeCheckoutController::class, 'store'])->middleware('throttle:5,1');
+    Route::get('/orders/{id}/payment-status', [CheckoutPaymentStatusController::class, 'show'])->middleware('throttle:30,1');
 });
 Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middleware('throttle:60,1');
 
@@ -209,6 +211,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     // --- MÓDULO: PEDIDOS ---
     Route::prefix('orders')->group(function () {
+        Route::get('/{id}/shipment', [\App\Http\Controllers\Admin\OrderShipmentController::class, 'show'])->middleware('tenant.permission:tenant.orders.view');
+        Route::post('/{id}/shipment', [\App\Http\Controllers\Admin\OrderShipmentController::class, 'store'])->middleware('tenant.permission:tenant.orders.manage');
+        Route::post('/{id}/shipment/actions', [\App\Http\Controllers\Admin\OrderShipmentController::class, 'action'])->middleware('tenant.permission:tenant.orders.manage');
         Route::get('/', [OrderController::class, 'index'])->middleware('tenant.permission:tenant.orders.view');
         Route::get('/metrics', [OrderController::class, 'metrics'])->middleware('tenant.permission:tenant.orders.view');
         Route::get('/metric-preferences', [OrderController::class, 'metricPreferences'])->middleware('tenant.permission:tenant.orders.view');
@@ -254,6 +259,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::get('/settings', [MelhorEnvioController::class, 'getSettings'])->middleware('tenant.permission:tenant.shipping.view');
         Route::post('/verify-token', [MelhorEnvioController::class, 'verifyToken'])->middleware('tenant.permission:tenant.shipping.manage');
         Route::post('/carriers', [MelhorEnvioController::class, 'saveCarriers'])->middleware('tenant.permission:tenant.shipping.manage');
+        Route::post('/environment', [MelhorEnvioController::class, 'saveEnvironment'])->middleware('tenant.permission:tenant.shipping.manage');
         Route::post('/sender', [MelhorEnvioController::class, 'saveSender'])->middleware('tenant.permission:tenant.shipping.manage');
         Route::post('/disconnect', [MelhorEnvioController::class, 'disconnect'])->middleware('tenant.permission:tenant.shipping.manage');
         Route::post('/calculate', [MelhorEnvioController::class, 'calculate'])->middleware('tenant.permission:tenant.shipping.manage'); 

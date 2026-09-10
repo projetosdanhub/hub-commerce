@@ -676,6 +676,7 @@ class OrderController extends Controller
 
             // 🟢 FLUXO EXPEDIÇÃO: Gera a Etiqueta e passa para DESPACHADO
             case 'DESPACHAR':
+                $request->validate(['dispatch_type' => 'required|in:MANUAL,MELHORENVIO']);
                 $dispatchType = $request->input('dispatch_type');
                 $trackingCode = $request->input('tracking_code');
 
@@ -687,112 +688,8 @@ class OrderController extends Controller
                     $tipoEnvio = "Parceria Própria";
 
                 } elseif ($dispatchType === 'MELHORENVIO') {
-                    $request->validate(['me_carrier_id' => 'required'], [
-                        'me_carrier_id.required' => 'Selecione o serviço do Melhor Envio.'
-                    ]);
+                    return app(OrderShipmentController::class)->store($request, (int) $id);
 
-                    $meConfig = \App\Models\MelhorEnvioSetting::first();
-                    if (!$meConfig || !$meConfig->access_token || empty($meConfig->sender_info)) {
-                        return response()->json(['status' => 'error', 'code' => 'REQUEST_FAILED', 'message' => 'Melhor Envio não autenticado ou Remetente não configurado.'], 400);
-                    }
-
-                    $remetente = $meConfig->sender_info;
-                    $destinatario = $order->address;
-                    
-                    $produtosApi = $order->items->map(function($item) {
-                        return [
-                            'name' => $item->product_name,
-                            'quantity' => $item->quantity,
-                            'unitary_value' => (float) $item->price
-                        ];
-                    })->toArray();
-
-                    $options = [
-                        'insurance_value' => (float) $request->input('me_insurance_value', $order->total),
-                        'receipt' => false,
-                        'own_hand' => false,
-                    ];
-
-                    if ($docTipo === 'DECLARACAO') {
-                        $options['non_commercial'] = true;
-                    } else {
-                        $options['non_commercial'] = false;
-                    }
-
-                    $payloadEnvio = [
-                        'service' => (int) $request->input('me_carrier_id'),
-                        'agency' => null,
-                        'from' => [
-                            'name' => $remetente['nome'],
-                            'phone' => preg_replace('/\D/', '', $remetente['telefone'] ?? ''),
-                            'email' => $remetente['email'],
-                            'document' => preg_replace('/\D/', '', $remetente['documento']),
-                            'address' => $remetente['rua'],
-                            'complement' => $remetente['complemento'] ?? '',
-                            'number' => $remetente['numero'],
-                            'district' => $remetente['bairro'],
-                            'city' => $remetente['cidade'],
-                            'state_abbr' => $remetente['uf'],
-                            'postal_code' => preg_replace('/\D/', '', $remetente['cep'])
-                        ],
-                        'to' => [
-                            'name' => $order->user ? $order->user->name : 'Cliente',
-                            'phone' => preg_replace('/\D/', '', $order->user->telefone ?? '11999999999'),
-                            'email' => $order->user ? $order->user->email : 'cliente@email.com',
-                            'document' => preg_replace('/\D/', '', $order->user->cpf ?? '00000000000'),
-                            'address' => $destinatario->rua,
-                            'complement' => $destinatario->complemento ?? '',
-                            'number' => $destinatario->num,
-                            'district' => $destinatario->bairro,
-                            'city' => $destinatario->cidade,
-                            'state_abbr' => $destinatario->uf,
-                            'postal_code' => preg_replace('/\D/', '', $destinatario->cep)
-                        ],
-                        'products' => $produtosApi,
-                        'volumes' => [
-                            [
-                                'height' => (float) $request->input('vol_altura'),
-                                'width' => (float) $request->input('vol_largura'),
-                                'length' => (float) $request->input('vol_comprimento'),
-                                'weight' => (float) $request->input('vol_peso')
-                            ]
-                        ],
-                        'options' => $options
-                    ];
-
-                    // SANDBOX ATIVO (Para adicionar ao carrinho de testes)
-                    $isSandbox = true; 
-                    $baseUrl = $isSandbox ? 'https://sandbox.melhorenvio.com.br' : 'https://www.melhorenvio.com.br';
-
-                    $response = Http::withToken($meConfig->access_token)
-                        ->withHeaders(['Accept' => 'application/json', 'User-Agent' => 'HUB Commerce (suporte@hubcommerce.com)'])
-                        ->post($baseUrl . '/api/v2/me/cart', $payloadEnvio);
-
-                    if (! $response->successful()) {
-                        $isClientError = $response->clientError();
-
-                        Log::warning('Melhor Envio recusou a geração de etiqueta.', [
-                            'tenant_id' => $order->tenant_id,
-                            'order_id' => $order->getKey(),
-                            'provider_status' => $response->status(),
-                        ]);
-
-                        return response()->json([
-                            'status' => 'error',
-                            'code' => $isClientError
-                                ? 'SHIPPING_PROVIDER_REJECTED'
-                                : 'SHIPPING_PROVIDER_UNAVAILABLE',
-                            'message' => $isClientError
-                                ? 'Não foi possível gerar a etiqueta com os dados informados. Revise o envio e tente novamente.'
-                                : 'Não foi possível gerar a etiqueta no momento. Tente novamente mais tarde.',
-                        ], $isClientError ? 422 : 502);
-                    }
-
-                    $respostaApi = $response->json();
-                    
-                    $order->carrier_id = null; 
-                    $trackingCode = $respostaApi['id'] ?? 'Aguardando Geração';
-                    $tipoEnvio = "Melhor Envio (Serviço: " . $request->input('me_carrier_id') . ")";
                 }
 
                 $order->tracking_code = $trackingCode;
@@ -1082,35 +979,8 @@ class OrderController extends Controller
     }
 
     // 🟢 CANCELAR ETIQUETA NO CARRINHO DO MELHOR ENVIO
-    public function cancelMelhorEnvioCart($id) 
+    public function cancelMelhorEnvioCart(Request $request, int $id)
     {
-        $order = Order::findOrFail($id);
-        $this->statusTransitions->assertCanTransition($order, OrderStatus::READY_TO_SHIP);
-        
-        // Verifica se é um UUID de carrinho (tamanho maior que 20)
-        if (strlen($order->tracking_code) > 20) {
-            $meConfig = \App\Models\MelhorEnvioSetting::first();
-            
-            if ($meConfig && $meConfig->access_token) {
-                $isSandbox = true; // Mude para false quando for para Produção
-                $baseUrl = $isSandbox ? 'https://sandbox.melhorenvio.com.br' : 'https://www.melhorenvio.com.br';
-                
-                // Envia requisição DELETE para a API do Melhor Envio
-                \Illuminate\Support\Facades\Http::withToken($meConfig->access_token)
-                    ->delete($baseUrl . '/api/v2/me/cart/' . $order->tracking_code);
-            }
-        }
-        
-        // Limpa os dados de logística do pedido para permitir nova configuração
-        $order->tracking_code = null;
-        $order->carrier_id = null;
-
-        $this->statusTransitions->transition(
-            $order,
-            OrderStatus::READY_TO_SHIP,
-            'Etiqueta removida do carrinho do Melhor Envio. Transporte reaberto para nova configuração.',
-        );
-        
-        return response()->json(['status' => 'success', 'message' => 'Etiqueta removida do carrinho com sucesso.']);
+        return app(OrderShipmentController::class)->cancel($request, $id);
     }
 }

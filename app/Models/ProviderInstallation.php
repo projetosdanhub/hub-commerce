@@ -68,8 +68,8 @@ class ProviderInstallation extends Model
         return $this->hasOne(ProviderConnectionCredential::class);
     }
 
-    public function webhookPath(): string
+    public function webhookPath(): ?string
     {
-        return '/v1/payments/'.$this->provider.'/'.$this->public_id;
+        return $this->provider === 'melhor_envio' ? '/api/webhooks/melhor-envio' : null;
     }
 }
