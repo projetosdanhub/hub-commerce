@@ -64,4 +64,20 @@ class TenantDomain extends Model
 
         return $host;
     }
+
+    /**
+     * Endereços usados apenas para desenvolvimento não representam domínios
+     * próprios de uma loja e jamais podem entrar no fluxo comercial de DNS.
+     */
+    public static function isInternalDevelopmentHost(string $host): bool
+    {
+        $host = strtolower(rtrim(trim($host), '.'));
+
+        return $host === 'localhost'
+            || $host === '127.0.0.1'
+            || str_ends_with($host, '.test')
+            || str_ends_with($host, '.ngrok-free.dev')
+            || str_ends_with($host, '.ngrok-free.app')
+            || str_ends_with($host, '.ngrok.io');
+    }
 }

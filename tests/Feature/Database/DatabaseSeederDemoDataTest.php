@@ -6,6 +6,7 @@ use App\Domain\Tenancy\TenantContext;
 use App\Domain\Tenancy\TenantContextStore;
 use App\Models\Produto;
 use App\Models\Tenant;
+use App\Models\TenantDomain;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -24,7 +25,8 @@ class DatabaseSeederDemoDataTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
         $tenant = Tenant::query()->where('slug', 'loja-inicial')->firstOrFail();
-        app(TenantContextStore::class)->set(TenantContext::fromTenant($tenant, 'demo.hubcommerce.test'));
+        $domain = TenantDomain::query()->where('tenant_id', $tenant->id)->where('kind', 'PLATFORM')->firstOrFail();
+        app(TenantContextStore::class)->set(TenantContext::fromTenant($tenant, $domain->domain));
 
         $this->assertDatabaseCount('produtos', 4);
         $this->assertDatabaseHas('produtos', ['tenant_id' => $tenant->id, 'slug' => 'camiseta-basica-demo', 'personalizado' => false]);
@@ -32,6 +34,6 @@ class DatabaseSeederDemoDataTest extends TestCase
         $this->assertSame(2, Produto::query()->where('slug', 'moletom-personalizavel-demo')->firstOrFail()->variacoes()->count());
         app(TenantContextStore::class)->clear();
 
-        $this->withServerVariables(['HTTP_HOST' => 'demo.hubcommerce.test', 'SERVER_NAME' => 'demo.hubcommerce.test'])->getJson('http://demo.hubcommerce.test/api/storefront/products')->assertOk()->assertJsonFragment(['slug' => 'camiseta-basica-demo'])->assertJsonFragment(['slug' => 'moletom-personalizavel-demo']);
+        $this->withServerVariables(['HTTP_HOST' => $domain->domain, 'SERVER_NAME' => $domain->domain])->getJson('https://'.$domain->domain.'/api/storefront/products')->assertOk()->assertJsonFragment(['slug' => 'camiseta-basica-demo'])->assertJsonFragment(['slug' => 'moletom-personalizavel-demo']);
     }
 }

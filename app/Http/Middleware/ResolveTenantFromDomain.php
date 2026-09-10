@@ -18,9 +18,14 @@ class ResolveTenantFromDomain
             abort(404, 'Loja não encontrada.');
         }
 
+        if (TenantDomain::isInternalDevelopmentHost($domain) && ! app()->environment(['local', 'testing'])) {
+            abort(404, 'Loja não encontrada.');
+        }
+
         $tenantDomain = TenantDomain::query()
             ->with('tenant')
             ->where('domain', $domain)
+            ->whereNull('disconnected_at')
             ->whereNotNull('verified_at')
             ->first();
 
