@@ -65,8 +65,22 @@ class MelhorEnvioController extends Controller
 
     public function saveSender(Request $request)
     {
+        $validated = $request->validate([
+            'nome' => ['required', 'string', 'max:255'],
+            'documento' => ['required', 'string', 'max:32'],
+            'email' => ['required', 'email:rfc,dns', 'max:255'],
+            'telefone' => ['required', 'string', 'max:32'],
+            'cep' => ['required', 'regex:/^\d{8}$/'],
+            'rua' => ['required', 'string', 'max:255'],
+            'numero' => ['required', 'string', 'max:32'],
+            'complemento' => ['nullable', 'string', 'max:255'],
+            'bairro' => ['required', 'string', 'max:255'],
+            'cidade' => ['required', 'string', 'max:255'],
+            'uf' => ['required', 'string', 'size:2'],
+        ]);
+
         $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
-        $config->sender_info = $request->all();
+        $config->sender_info = $validated;
         $config->save();
         return response()->json(['status' => 'success', 'message' => 'Remetente salvo!']);
     }

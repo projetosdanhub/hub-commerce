@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { BadgeCheck, Box, CreditCard, FileKey2, MapPinned, PackageCheck, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { BadgeCheck, Box, CreditCard, FileKey2, MapPinned, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import api from '../../../api';
 import { Badge } from '../DesignSystem/primitives/Badge';
 import { Button } from '../DesignSystem/primitives/Button';
@@ -11,7 +11,7 @@ import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
 import { useRegisterAdminPageRefresh } from '../DesignSystem/patterns/GlobalPageRefresh';
 import { AppGuides } from './AppGuides/AppGuides';
 import DomainConfiguration from './DomainConfiguration';
-import { ProviderOAuthPanel } from './ProviderOAuthPanel';
+import { LogisticsConfiguration } from './LogisticsConfiguration';
 import './settings.css';
 
 const TABS = [
@@ -449,15 +449,7 @@ const SettingsPage = () => {
         </>
       ) : null}
 
-      {activeTab === 'LOGISTICS' ? (
-        <ProviderOAuthPanel
-          provider="melhor_envio"
-          name="Melhor Envio"
-          fallbackIcon={PackageCheck}
-          defaultEnvironment={logistics.environment}
-          description="Conecte a conta da loja por OAuth 2.0 para cotar, comprar e rastrear fretes sem copiar token manual."
-        />
-      ) : null}
+      {activeTab === 'LOGISTICS' ? <LogisticsConfiguration defaultEnvironment={logistics.environment} /> : null}
 
       {activeTab === 'GATEWAYS' ? (
         <section className="hub-settings-gateways hub-stable-data-region">

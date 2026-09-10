@@ -551,3 +551,14 @@ Copie este bloco para cada handoff relevante:
 - Evidências: `npm run test:ui` passou (3 arquivos/4 testes Vitest e 6 testes de interação); `npm run build` passou e a busca em `public/build` não encontrou `localhost:8000/api`; [Tests #532](https://github.com/projetosdanhub/hub-commerce/actions/runs/34405869011), [E2E Tests #358](https://github.com/projetosdanhub/hub-commerce/actions/runs/34405868844) e [Security Scans #360](https://github.com/projetosdanhub/hub-commerce/actions/runs/34405868879) concluíram com sucesso na PR #79.
 - Riscos, bloqueios e itens não verificados: `composer` e `docker` não estão disponíveis no ambiente de trabalho; a homologação no host real do ngrok ainda depende de recriar os containers e gerar o build. `npm run lint` continua vermelho por 51 erros preexistentes em módulos legados, sem arquivos tocados neste commit.
 - Próxima ação única: após o merge da PR #79, aplicar os comandos documentados no host do túnel e validar no navegador que HTML, assets e API usam apenas a origem HTTPS pública.
+
+### 2026-09-10 — Codex — Transportadoras e configuração logística
+
+- Objetivo e escopo: modernizar o menu de Transportadoras e separar a configuração do Melhor Envio no fluxo de Configurações → Logística, preservando somente contratos existentes por tenant.
+- Branch: `ui/carriers-modernization`.
+- Task board: UI-028 permanece `[~]`; a validação visual em desktop/mobile, claro/escuro, teclado e zoom ainda é necessária antes da conclusão.
+- Implementado: Transportadoras agora contém Parceiros próprios, Embalagens e Auditoria, com `SectionTabs`, ações acessíveis, diálogos com foco, regiões estáveis e variante mobile em cartões. Removidas a entrada manual de token, a lista estática de serviços e o remetente desse menu. Configurações → Logística concentra OAuth e, somente após conexão confirmada, o formulário real de remetente/endereço de despacho. O backend valida e persiste apenas os campos permitidos do remetente.
+- Contratos preservados: `/admin/carriers`, `/admin/shipping-packages`, `/admin/carriers/audits`, `/admin/melhorenvio/settings` e `/admin/melhorenvio/sender`; nenhum token, refresh token ou segredo é devolvido ao navegador. A lista estática não foi substituída por dados fictícios.
+- Evidências locais: `node scripts/verify-local-imports.mjs`, `vite build`, ESLint direcionado para os arquivos novos/modificados de Transportadoras e Logística, e `npm run test:ui` passaram.
+- Riscos, bloqueios e itens não verificados: PHP/Composer não estão disponíveis neste ambiente, portanto a validação do request do remetente e os testes de feature dependem do workflow Tests. A sincronização de serviços/etiquetas do Melhor Envio continua dependente de APP-015, SHIP-004 e SHIP-008; a UI não simula esses dados.
+- Próxima ação única: abrir PR, aguardar Tests, E2E Tests e Security Scans e só então integrar após a revisão visual.
