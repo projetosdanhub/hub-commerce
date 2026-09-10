@@ -11,7 +11,7 @@ const labels = {
   REVOKED: ['danger', 'Revogado'],
 };
 
-export const ProviderOAuthPanel = ({ provider, name, fallbackIcon, defaultEnvironment = 'SANDBOX', description }) => {
+export const ProviderOAuthPanel = ({ provider, name, fallbackIcon, defaultEnvironment = 'SANDBOX', description, onStatusChange }) => {
   const [environment, setEnvironment] = useState(defaultEnvironment);
   const [installations, setInstallations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +22,9 @@ export const ProviderOAuthPanel = ({ provider, name, fallbackIcon, defaultEnviro
     setLoading(true);
     try {
       const response = await api.get('/admin/settings/provider-installations');
-      setInstallations(response.data?.installations || []);
+      const nextInstallations = response.data?.installations || [];
+      setInstallations(nextInstallations);
+      onStatusChange?.(nextInstallations.find((item) => item.provider === provider && item.environment === environment) || null);
     } catch {
       setNotice({ tone: 'error', text: 'Não foi possível consultar o estado da conexão.' });
     } finally {
@@ -36,7 +38,11 @@ export const ProviderOAuthPanel = ({ provider, name, fallbackIcon, defaultEnviro
     const request = async () => {
       try {
         const response = await api.get('/admin/settings/provider-installations');
-        if (!cancelled) setInstallations(response.data?.installations || []);
+        if (!cancelled) {
+          const nextInstallations = response.data?.installations || [];
+          setInstallations(nextInstallations);
+          onStatusChange?.(nextInstallations.find((item) => item.provider === provider && item.environment === environment) || null);
+        }
       } catch {
         if (!cancelled) setNotice({ tone: 'error', text: 'Não foi possível consultar o estado da conexão.' });
       } finally {
@@ -49,7 +55,7 @@ export const ProviderOAuthPanel = ({ provider, name, fallbackIcon, defaultEnviro
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [environment, onStatusChange, provider]);
 
   const installation = useMemo(
     () => installations.find((item) => item.provider === provider && item.environment === environment),

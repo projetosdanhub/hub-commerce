@@ -81,8 +81,7 @@ class MelhorEnvioController extends Controller
 
     public function saveSender(Request $request)
     {
-        $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
-        $config->sender_info = $request->validate([
+        $validated = $request->validate([
             'inscricao_estadual' => 'nullable|string|max:30',
             'cnae' => 'nullable|string|max:10',
             'nome' => 'required|string|max:120',
@@ -97,6 +96,9 @@ class MelhorEnvioController extends Controller
             'cidade' => 'required|string|max:120',
             'uf' => ['required', 'string', 'regex:/^[A-Z]{2}$/'],
         ]);
+        $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
+        abort_if($config->oauthConnection() === null, 422, 'Conecte o Melhor Envio no ambiente ativo antes de salvar o remetente.');
+        $config->sender_info = $validated;
         $config->save();
         return response()->json(['status' => 'success', 'message' => 'Remetente salvo!']);
     }

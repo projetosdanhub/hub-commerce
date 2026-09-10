@@ -167,7 +167,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 
 | Status | ID | Prioridade | Tarefa | Dependência | Critério de aceite |
 |---|---|---:|---|---|---|
-| [ ] | CRM-001 | P1 | Isolar cadastro de cliente por tenant | TEN-008 | Mesmo e-mail permitido em lojas distintas |
+| [~] | CRM-001 | P1 | Isolar cadastro de cliente por tenant | TEN-008 | Auditoria da UI de Clientes identificou consulta global de `User`, pedidos, endereços, métricas, VIP e configurações; a interface foi colocada em estado indisponível seguro na PR #91 (`5b66f27`), com Tests, E2E Tests e Security Scans verdes. Modelar vínculo por tenant antes de liberar qualquer aba |
 | [ ] | CRM-002 | P1 | Normalizar perfil e endereços | CRM-001 | Dados reais substituem mocks |
 | [~] | CRM-003 | P1 | Corrigir carteira, Hub Coins e cashback | BASE-009 | Fundação de domínio iniciada: ledger tenant-scoped, idempotência, auditoria e projeção de saldo; implementação depende de BEN-003 |
 | [ ] | CRM-004 | P1 | Proteger alterações de CPF/e-mail/telefone | SEC-009, IAM-003 | Reautorização e comprovante privado |
@@ -231,7 +231,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | TRK-007 | P2 | Criar deduplicação browser/server | TRK-006 | event_id consistente |
 | [~] | MKT-001 | P2 | Remover campanhas e métricas simuladas | BASE-011 | Auditoria identificou dados hardcoded no menu legado; a nova UI só expõe contratos reais ou estado indisponível |
 | [~] | MKT-002 | P2 | Projetar afiliados multitenant | TEN-006 | Auditoria identificou modelo legado sem tenant; migrar vínculo, atribuição, comissão e repasse com auditoria antes de nova UI operacional |
-| [ ] | MKT-003 | P2 | Projetar avaliações e moderação | CRM-001 | Autoria e status verificáveis |
+| [~] | MKT-003 | P2 | Projetar avaliações e moderação | CRM-001 | A interface administrativa permanece indisponível desde a PR #89 (`42d6678`): o contrato legado não vincula avaliações ao tenant nem oferece autoria, produto e status auditáveis. Tests, E2E Tests e Security Scans verdes; modelar isolamento, autorização e auditoria antes de liberar consulta ou moderação |
 
 ## Fase 9.1 — Benefícios, fidelidade e afiliados
 
@@ -273,7 +273,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [ ] | UI-014 | P2 | Criar documentação visual dos componentes | UI-005 | Estados e uso demonstrados |
 | [!] | UI-015 | P1 | Criar centro de notificações tenant-scoped | BASE-011, TEN-010 | Contrato real de leitura, não lidas e destinos autorizado; sem sino ou contador simulado |
 | [x] | UI-016 | P1 | Aplicar padrão canônico ao módulo Pedidos | UI-005, UI-006, UI-008 | Lista, métricas, detalhe e diálogos usam primitives, dados reais e versões desktop/mobile; validação de CI pendente |
-| [x] | UI-017 | P1 | Aplicar padrão canônico ao módulo Clientes/CRM | UI-005, UI-006, UI-007, UI-009 | Painel, diretório, perfil, VIP e configurações usam primitives, contratos reais e experiências desktop/mobile; validação de CI pendente |
+| [~] | UI-017 | P1 | Aplicar padrão canônico ao módulo Clientes/CRM | UI-005, UI-006, UI-007, UI-009 | A PR #91 (`5b66f27`) preserva as abas em composição tokenizada, acessível, clara/escura e mobile, com Tests, E2E Tests e Security Scans verdes, mas não exibe métricas, diretório, perfil, VIP ou configurações enquanto CRM-001 não isolar os contratos por tenant |
 | [x] | UI-018 | P1 | Aplicar padrão canônico ao módulo Pixel | UI-005, UI-006, UI-007, UI-009 | Painel, integrações, acionadores e diálogos usam primitives, contratos reais e experiências desktop/mobile; checks aprovados e PR #39 integrada |
 | [x] | UI-019 | P1 | Padronizar interações globais do painel | UI-005, UI-006, UI-013 | Refresh único no shell, tooltip sem clipping, período canônico, textos longos legíveis e sidebar recolhida consistente; PR #41 integrada com Tests, E2E Tests e Security Scans verdes |
 | [~] | UI-020 | P1 | Padronizar interações operacionais de dados | UI-005, UI-006, UI-013 | PR #42 integrada; revisão visual encontrou caixas de tooltip indevidas. Pendências separadas nos blocos UI-021 a UI-026; não considerar homologação visual concluída |
@@ -285,7 +285,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [!] | FIS-001 | P1 | Homologar adapter de emissão de NF-e | UI-025 | Provedor contratado, credenciais autorizadas, sandbox/homologação, assinatura, idempotência, webhook, XML/DANFE privados e autorização confirmada |
 | [x] | UI-026 | P1 | Detalhar valores e progresso operacional | UI-021 | Integrado na PR #54 (`66b58e8`): checkout claro e responsivo com CEP editável, cotações opacas, resumo financeiro relido no servidor, conta por loja e endereço padrão salvo/selecionável. Tests, E2E Tests e Security Scans verdes. Pagamento, cupons, payment_attempt, pedido atômico e tela de conclusão continuam dependentes de adapter homologado, idempotência e webhook |
 | [x] | UI-027 | P1 | Tornar frete e total do carrinho verificáveis | UI-026 | Integrado na PR #55 (`ea6ab85`): carrinho usa CEP editável, cotações opacas e resumo financeiro reconstruído pelo servidor; o rascunho é revalidado no checkout. Tests, E2E Tests e Security Scans verdes |
-| [~] | UI-028 | P1 | Reorganizar navegação, submenus e espaçamento operacional | UI-006, BEN-001 | Navegação já separa Clientes, Benefícios & VIP, Marketing e Afiliados; Configurações agora usa título por aba, estados estáveis, tokens e composição de domínio desktop/mobile. O endpoint de domínios próprios exclui hosts técnicos. Faltam validar a Central de Apps em desktop/mobile, claro/escuro e teclado e consolidar a densidade dos demais menus |
+| [~] | UI-028 | P1 | Reorganizar navegação, submenus e espaçamento operacional | UI-006, BEN-001 | Navegação já separa Clientes, Benefícios & VIP, Marketing e Afiliados; Configurações agora usa título por aba, estados estáveis, tokens e composição de domínio desktop/mobile. Transportadoras foi separada em parceiros próprios, embalagens e auditoria; OAuth e remetente do Melhor Envio foram centralizados em Configurações → Logística na PR #85, integrada com Tests, E2E Tests e Security Scans verdes. Categorias foi modernizada na PR #87, integrada com Tests, E2E Tests e Security Scans verdes; lista, editor, estados e composição mobile não criam hierarquia ou filtros sem contrato. Avaliações recebeu um estado indisponível seguro, com composição claro/escuro e mobile, na PR #89 (`42d6678`) com Tests, E2E Tests e Security Scans verdes. Clientes e suas abas seguem o mesmo estado seguro desde a PR #91 (`5b66f27`), também validada pelos três checks, enquanto CRM-001 não publica contratos tenant-scoped. Faltam validar visualmente desktop/mobile, claro/escuro e teclado, além de consolidar a densidade dos demais menus |
 | [ ] | UI-029 | P1 | Consolidar tokens de densidade e tema nos menus | UI-028, UI-001 | Espaçamentos internos, superfícies, estados de interação e padrões mobile documentados e aplicados sem valores arbitrários |
 
 ## Fase 11 — Storefront, SEO e desempenho

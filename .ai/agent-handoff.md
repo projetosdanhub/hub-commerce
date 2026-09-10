@@ -5,10 +5,20 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 ## Estado atual
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
-- **Última integração:** PR #81, squash commit `26a3a6ffdeb18465271eba761f6285c87ec9d7b7` na `main`.
-- **Branch de trabalho:** `docs/record-login-validation`, registro da evidência de UI-032.
-- **Tarefas afetadas:** UI-032 concluída; UI-028/UI-029 seguem pendentes de consolidação dos demais menus. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** revisar visualmente a autenticação em 320px, 768px e desktop antes da próxima modernização de módulo.
+- **Última integração:** PR #87, squash commit `04e67ffd3bf4d63372a7f16e1da279cf5abf93a0` na `main`.
+- **Branch de trabalho:** `ui/reviews-modernization`, modernização do menu Avaliações ainda não iniciada.
+- **Tarefas afetadas:** UI-032 concluída; UI-028 permanece em andamento com Categorias integrada. CAT-001 continua pendente de hierarquia e consolidação de modelo; MKT-003 segue bloqueada até haver contrato administrativo tenant-scoped de avaliações e moderação.
+- **Próxima ação:** mapear Avaliações e só criar uma interface conectada se o contrato real atender isolamento, autoria e moderação.
+
+### 2026-09-10 — Codex — modernização administrativa de Categorias
+- Objetivo e escopo: substituir o layout legado de Categorias pela composição canônica do painel, preservando os endpoints existentes de listar/criar/editar/excluir e sem inventar hierarquia, filtros, imagens ou métricas sem contrato.
+- Branch e commit: `ui/categories-modernization`, integrada na PR #87 pelo squash commit `04e67ffd3bf4d63372a7f16e1da279cf5abf93a0`.
+- Task board: UI-028 `[~]` — Categorias integrada com evidência de CI; CAT-001 permanece `[ ]` porque a entrega não cria hierarquia nem altera o modelo.
+- Arquivos alterados: `CategoriesPage`, novos `CategoryForm` e `CategoryList`, `categories.css` e `task-board.md`.
+- Contratos preservados: `GET/POST/PUT/DELETE /api/admin/categories`, permissões `tenant.catalog.view/manage`, query key vinculada ao host do tenant, invalidação após mutação e bloqueio de exclusão no backend quando houver produtos vinculados.
+- Evidências: `git diff --check` passou; ESLint direcionado aos três componentes novos passou; `npm run build` passou; `npm run test:ui` passou (Vitest 4/4 e interações 6/6); `node scripts/verify-local-imports.mjs` passou (139 arquivos). [Tests #543](https://github.com/projetosdanhub/hub-commerce/actions/runs/34472573944), [E2E Tests #369](https://github.com/projetosdanhub/hub-commerce/actions/runs/34472573918) e [Security Scans #371](https://github.com/projetosdanhub/hub-commerce/actions/runs/34472573870) passaram.
+- Riscos, bloqueios e itens não verificados: validar visualmente 320px, 768px e desktop, temas claro/escuro, teclado, zoom de 200% e reduced motion; o aviso de chunk Vite acima de 500 kB é legado e não foi ampliado intencionalmente.
+- Próxima ação única: mapear Avaliações; sem contrato administrativo tenant-scoped de autoria e moderação, manter o recurso indisponível e o MKT-003 aberto.
 
 ### 2026-09-10 — Codex — encerramento de PRs históricas e UI-032
 - Objetivo e escopo: encerrar PRs abertas já substituídas e modernizar somente o login administrativo, em pt-BR, com composição desktop/mobile, tema escuro, acessibilidade e contrato MFA existente.
@@ -561,3 +571,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: build e imports locais aprovados; 4 testes Vitest + 6 de interação aprovados. ESLint dos componentes alterados aprovado após correções. Testes PHP de regressão adicionados; execução depende do CI, pois PHP/Composer/Docker não estão disponíveis na sessão.
 - Limitações: nenhuma homologação ou implantação real. Expedição legada, gateways adicionais, Connect, refund/reconciliação e requisitos OPS ainda estão abertos. Detalhes em `docs/reviews/integration-readiness-2026-09-10.md`.
 - Próxima ação: executar e acompanhar os gates da PR; mudanças financeiras exigem revisão humana antes de merge conforme regra 10.
+### 2026-09-10 — Codex — Transportadoras e configuração logística
+
+- Objetivo e escopo: modernizar o menu de Transportadoras e separar a configuração do Melhor Envio no fluxo de Configurações → Logística, preservando somente contratos existentes por tenant.
+- Branch: `ui/carriers-modernization`.
+- Task board: UI-028 permanece `[~]`; a validação visual em desktop/mobile, claro/escuro, teclado e zoom ainda é necessária antes da conclusão.
+- Implementado: Transportadoras agora contém Parceiros próprios, Embalagens e Auditoria, com `SectionTabs`, ações acessíveis, diálogos com foco, regiões estáveis e variante mobile em cartões. Removidas a entrada manual de token, a lista estática de serviços e o remetente desse menu. Configurações → Logística concentra OAuth e, somente após conexão confirmada, o formulário real de remetente/endereço de despacho. O backend valida e persiste apenas os campos permitidos do remetente.
+- Contratos preservados: `/admin/carriers`, `/admin/shipping-packages`, `/admin/carriers/audits`, `/admin/melhorenvio/settings` e `/admin/melhorenvio/sender`; nenhum token, refresh token ou segredo é devolvido ao navegador. A lista estática não foi substituída por dados fictícios.
+- Evidências: [PR #85](https://github.com/projetosdanhub/hub-commerce/pull/85) integrada no squash `23e411ff895c4d95ac889996c1f7f08d8d7dfe09`; [Tests #542](https://github.com/projetosdanhub/hub-commerce/actions/runs/34442114851), [E2E Tests #368](https://github.com/projetosdanhub/hub-commerce/actions/runs/34442114779) e [Security Scans #370](https://github.com/projetosdanhub/hub-commerce/actions/runs/34442114825) concluíram com sucesso. As validações locais de imports, build, ESLint direcionado e `npm run test:ui` também passaram.
+- Riscos, bloqueios e itens não verificados: a homologação visual em navegador ainda requer 320/768/1024 px, zoom 200%, teclado e ambos os temas. A sincronização de serviços/etiquetas do Melhor Envio continua dependente de APP-015, SHIP-004 e SHIP-008; a UI não simula esses dados.
+- Próxima ação única: homologar visualmente Transportadoras e Configurações → Logística nos dois temas e nos shells desktop/mobile.
