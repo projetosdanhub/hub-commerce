@@ -5,21 +5,21 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 ## Estado atual
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
-- **Última integração:** PR #80, squash commit `0ac701348be880884c0b32768ee3574d47cfa660` na `main`.
-- **Branch de trabalho:** `ui/admin-login-experience`, modernização do acesso administrativo em validação.
-- **Tarefas afetadas:** UI-032 criada e em andamento; UI-028/UI-029 seguem pendentes de consolidação dos demais menus. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** validar a nova tela de login em CI e revisar os temas/formatos visualmente antes do merge.
+- **Última integração:** PR #81, squash commit `26a3a6ffdeb18465271eba761f6285c87ec9d7b7` na `main`.
+- **Branch de trabalho:** `docs/record-login-validation`, registro da evidência de UI-032.
+- **Tarefas afetadas:** UI-032 concluída; UI-028/UI-029 seguem pendentes de consolidação dos demais menus. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
+- **Próxima ação:** revisar visualmente a autenticação em 320px, 768px e desktop antes da próxima modernização de módulo.
 
 ### 2026-09-10 — Codex — encerramento de PRs históricas e UI-032
 - Objetivo e escopo: encerrar PRs abertas já substituídas e modernizar somente o login administrativo, em pt-BR, com composição desktop/mobile, tema escuro, acessibilidade e contrato MFA existente.
-- Branch e commit: `ui/admin-login-experience`, commit `0fe5753`.
-- Task board: UI-032 `[~]` — tela e testes E2E de rota/viewport implementados; conclusão depende de Tests, E2E Tests e Security Scans verdes.
+- Branch e commit: `ui/admin-login-experience`, integrada pela PR #81 no squash commit `26a3a6ffdeb18465271eba761f6285c87ec9d7b7`.
+- Task board: UI-032 `[x]` — tela e testes E2E de rota/viewport concluídos e validados.
 - Arquivos alterados: `AdminLoginPage`, novo `admin-login.css`, tokens, E2E do painel, configuração do Playwright e task board.
 - Contratos preservados: `POST /api/admin/login` continua com throttle, token somente em `sessionStorage`, permissões backend e MFA. A rota direta `/admin/login` agora persiste a sessão e navega para `/admin`; o `AdminLayout` preserva seu callback de sessão. Nenhuma recuperação de senha, cadastro ou endpoint fictício foi criado.
-- Evidências: `git diff --check` passou; `node --test tests/ui/admin-interactions.node.mjs` passou (6/6); `npm run build` passou após instalar as dependências. E2E não executou localmente porque este ambiente não possui `php`; a primeira execução de CI revelou que o comando antigo do Playwright servia os assets como HTML e foi corrigido para `php artisan serve`.
+- Evidências: `git diff --check` passou; `npm run build` e `npm run test:ui` passaram localmente (Vitest 4/4 e interações 6/6). [Tests #539](https://github.com/projetosdanhub/hub-commerce/actions/runs/34421636736), [E2E Tests #365](https://github.com/projetosdanhub/hub-commerce/actions/runs/34421636597) e [Security Scans #367](https://github.com/projetosdanhub/hub-commerce/actions/runs/34421636579) passaram. O E2E passou a usar `php artisan serve`, que entrega assets compilados corretamente.
 - PRs encerradas: #18 fechada como substituída porque reabria auditorias já tratadas; #44 fechada como substituída pelas entregas posteriores de UI-021 a UI-026. Ambas tinham conflito e não sofreram merge regressivo.
-- Riscos, bloqueios e itens não verificados: validar visualmente em 320px, 768px e desktop, com teclado, zoom 200% e reduced motion; confirmar E2E no CI antes do merge. `npm run lint` completo ainda falha em 53 erros legados fora deste escopo; o ESLint direcionado aos arquivos novos passou no workflow Tests.
-- Próxima ação única: revisar o diff, criar a PR de UI-032 e acompanhar os checks obrigatórios.
+- Riscos, bloqueios e itens não verificados: a homologação visual manual em 320px, 768px e desktop, com teclado, zoom 200% e reduced motion, ainda é recomendada. `npm run lint` completo continua com 53 erros legados fora deste escopo; o ESLint direcionado aos arquivos novos passou no workflow Tests.
+- Próxima ação única: iniciar o próximo bloco visual prioritário a partir do task board.
 
 ### 2026-09-09 — Codex — privacidade e padronização de Domínios
 - Objetivo e escopo: impedir que hosts técnicos locais/teste/túnel apareçam ou sejam cadastrados como domínio próprio; padronizar Configurações e Domínios nos tokens do painel, com composição desktop/mobile e temas existentes.
