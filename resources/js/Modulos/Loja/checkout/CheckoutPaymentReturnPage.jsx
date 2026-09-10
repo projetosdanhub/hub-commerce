@@ -11,16 +11,17 @@ import { requestCheckoutPaymentStatus, responseMessage } from './checkoutApi';
 const pendingStatuses = new Set(['PENDING', 'PROCESSING']);
 
 export default function CheckoutPaymentReturnPage() {
-  const [state, setState] = useState({ kind: 'loading', message: 'Confirmando o pagamento com segurança…' });
+  const [payment] = useState(readCheckoutPaymentSession);
+  const [state, setState] = useState(() => payment
+    ? { kind: 'loading', message: 'Confirmando o pagamento com segurança…' }
+    : { kind: 'unavailable', message: 'Não foi possível retomar esta confirmação de pagamento.' },
+  );
 
   useEffect(() => {
-    const payment = readCheckoutPaymentSession();
     let cancelled = false;
     let timer;
 
     if (!payment) {
-      setState({ kind: 'unavailable', message: 'Não foi possível retomar esta confirmação de pagamento.' });
-
       return undefined;
     }
 
