@@ -1,0 +1,134 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    command: sh -lc "composer install --no-interaction && php artisan serve --host=0.0.0.0 --port=8000"
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - vendor:/var/www/vendor
+    environment:
+      APP_ENV: local
+      # The published port is bound to localhost. Trust the local tunnel proxy by
+      # default, but production/staging must declare their own explicit proxies.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-*}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: hub_commerce
+      DB_USERNAME: hub
+      DB_PASSWORD: hub_local_only
+      CACHE_STORE: redis
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: database
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      FILESYSTEM_DISK: s3
+      AWS_ENDPOINT: http://minio:9000
+      AWS_USE_PATH_STYLE_ENDPOINT: "true"
+      AWS_BUCKET: hub-commerce-local
+      AWS_ACCESS_KEY_ID: hub-local
+      AWS_SECRET_ACCESS_KEY: hub_local_only
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mailpit:
+        condition: service_started
+
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    command: sh -lc "composer install --no-interaction && php artisan queue:work --tries=5 --backoff=30"
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - vendor:/var/www/vendor
+    environment:
+      APP_ENV: local
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: hub_commerce
+      DB_USERNAME: hub
+      DB_PASSWORD: hub_local_only
+      CACHE_STORE: redis
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: database
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  vite:
+    profiles:
+      - frontend-dev
+    image: node:24-alpine
+    command: sh -lc "npm ci && npm run dev"
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - node_modules:/var/www/node_modules
+    ports:
+      - "127.0.0.1:5173:5173"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: hub_commerce
+      POSTGRES_USER: hub
+      POSTGRES_PASSWORD: hub_local_only
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hub -d hub_commerce"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: hub-local
+      MINIO_ROOT_PASSWORD: hub_local_only
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    command: sh -lc "until mc alias set local http://minio:9000 hub-local hub_local_only; do sleep 2; done; mc mb --ignore-existing local/hub-commerce-local"
+    depends_on:
+      - minio
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+
+volumes:
+  vendor:
+  node_modules:
+  postgres_data:
+  redis_data:
+  minio_data:

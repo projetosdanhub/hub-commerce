@@ -189,11 +189,11 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 | [~] | PAY-001 | P0 | Criar PaymentGateway interface | SEC-007 | Contrato tokenizado e resultado de iniciação criados; a confirmação continua exclusiva de webhook assinado e aguarda CI |
 | [~] | PAY-002 | P0 | Criar payment_attempts por tenant | PAY-001, TEN-006 | Migration/model tenant-scoped com valor em centavos, moeda, ambiente, referências seguras e chave idempotente; ainda sem cobrança ou adapter |
 | [~] | PAY-003 | P0 | Implementar idempotência de checkout | PAY-002 | Caso de uso atômico criado: revalida cliente/carrinho/endereço/cotação, persiste pedido+snapshot+tentativa e devolve somente repetição idêntica; aguarda CI |
-| [~] | PAY-004 | P1 | Integrar Stripe com tokenização oficial | SEC-008, PAY-003 | Adapter, Hosted Fields, retorno sem segredo na URL e consulta de status restrita ao comprador/tenant foram implementados; confirmação permanece exclusiva do webhook assinado. Aguardam CI final, homologação externa, refund, reconciliação e Connect |
+| [~] | PAY-004 | P1 | Integrar Stripe com tokenização oficial | SEC-008, PAY-003 | Adapter Stripe, credenciais criptografadas Sandbox/Produção e testes HTTP simulados entregues; falta homologação externa, endpoint público, tokenização no navegador e webhook assinado |
 | [ ] | PAY-005 | P1 | Integrar Mercado Pago com tokenização oficial | SEC-008, PAY-003 | Sandbox aprovado |
 | [ ] | PAY-006 | P1 | Integrar Pagar.me com tokenização oficial | SEC-008, PAY-003 | Sandbox aprovado |
-| [~] | PAY-007 | P0 | Implementar webhooks assinados e idempotentes | PAY-002 | Stripe valida assinatura, timestamp, ambiente, valor/moeda, replay e eventos fora de ordem; outros gateways continuam sem adapter e sem webhook implementado |
-| [~] | PAY-008 | P1 | Sincronizar estados payment/order | PAY-007, ORD-004 | Webhook Stripe atualiza tentativa e pedido em transação; checkout apenas consulta o estado persistido. Faltam reconciliação e os outros gateways |
+| [ ] | PAY-007 | P0 | Implementar webhooks assinados e idempotentes | PAY-002 | Replay e assinatura testados |
+| [ ] | PAY-008 | P1 | Sincronizar estados payment/order | PAY-007, ORD-004 | Webhook é fonte autoritativa |
 | [ ] | PAY-009 | P1 | Implementar refund seguro | PAY-008, IAM-003 | Permissão, idempotência e auditoria |
 | [ ] | PAY-010 | P1 | Criar reconciliação financeira | PAY-008 | Divergências identificadas |
 | [~] | PAY-011 | P1 | Separar credenciais test/live por tenant | SEC-012, TEN-009 | Configuração Stripe mantém Sandbox/Produção separadas, criptografadas e validadas por prefixo; falta validação externa das chaves e bloqueio de deploy por ambiente |
@@ -203,7 +203,7 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 
 | Status | ID | Prioridade | Tarefa | Critério de aceite |
 |---|---|---:|---|---|
-| [~] | APP-015 | P1 | Receber atualizações de etiquetas do Melhor Envio | Endpoint público, validação HMAC, payload minimizado, deduplicação, fila e vínculo etiqueta→pedido/tenant foram implementados. Aguardam CI final, Sandbox real e homologação externa |
+| [~] | APP-015 | P1 | Receber atualizações de etiquetas do Melhor Envio | Contrato oficial confirmado: endpoint é configurado no aplicativo, assinatura `X-ME-Signature` (HMAC-SHA256 sobre raw body), eventos `order.*`, retentativas do provedor. Endpoint público, validação HMAC, persistência/deduplicação e fila entregues; pendem testes automatizados, vínculo idempotente etiqueta→pedido e homologação Sandbox |
 | [ ] | SHIP-008 | P1 | Homologar webhook Melhor Envio | Aplicativo Sandbox criado, URL pública cadastrada e eventos de etiqueta validados sem expor secrets |
 
 ## Fase 8 — Frete e logística
@@ -212,9 +212,9 @@ Cada etapa abre branch e PR próprios; a próxima só começa depois de evidênc
 |---|---|---:|---|---|---|
 | [~] | SHIP-001 | P1 | Isolar remetente e Melhor Envio por tenant | TEN-009 | Em andamento: configuração deixou de usar id global; validar migração e cobertura tenant antes de concluir |
 | [~] | SHIP-002 | P1 | Mover sandbox/produção para configuração | SHIP-001 | Em andamento: ambiente é persistido por tenant; validar migration e UI de configuração |
-| [~] | SHIP-003 | P1 | Validar cotação e dimensões | CAT-002 | CEP, dimensões, peso, valor declarado e serviços ativos são validados no adapter; o pedido relê o valor declarado a partir dos itens |
+| [ ] | SHIP-003 | P1 | Validar cotação e dimensões | CAT-002 | Limites e erros normalizados |
 | [~] | SHIP-004 | P1 | Criar adapter do Melhor Envio | SHIP-002 | Em andamento: cálculo foi extraído para adapter e possui teste unitário; falta integração pública e validação de CI |
-| [~] | SHIP-005 | P1 | Implementar etiqueta e rastreio idempotentes | SHIP-004 | Ciclo preparar→comprar→gerar→imprimir/cancelar, referência opaca, reconciliação após timeout, transições monotônicas e webhook vinculam etiqueta, pedido e tenant; aguarda CI final e Sandbox real |
+| [ ] | SHIP-005 | P1 | Implementar etiqueta e rastreio idempotentes | SHIP-004 | Repetição não duplica envio |
 | [ ] | SHIP-006 | P1 | Proteger romaneios e comprovantes | SEC-009 | Arquivos privados |
 | [ ] | SHIP-007 | P2 | Consolidar transportadoras próprias | TEN-006 | Documentos e pedidos isolados |
 
@@ -369,4 +369,4 @@ Atualizado em: 2026-09-08 — OAuth Mercado Pago/PagBank passou a usar URLs ofic
 ## Auditoria de integrações — 2026-09-10
 
 - [~] INT-READY-001 — Revisar gateways, logística e prontidão test/live a partir de `75ca497`; corrigir riscos verificáveis, executar gates e registrar limitações antes de liberar produção.
-- Evidência/escopo de INT-READY-001: `docs/reviews/integration-readiness-2026-09-10.md`. Stripe/OAuth/cotação/UI/inbox, ciclo de etiquetas e retorno seguro do checkout foram corrigidos na PR #84; a revisão de código `9d9901e` passou em Tests #551, E2E Tests #377 e Security Scans #379. Gate financeiro de revisão humana, gateways adicionais, refund/reconciliação e produção continuam abertos.
+- Evidência/escopo de INT-READY-001: `docs/reviews/integration-readiness-2026-09-10.md`. Correções Stripe/OAuth/cotação/UI/inbox preparadas; gateways adicionais, ciclo de etiquetas, refund/reconciliação e produção ainda não concluídos. Aguardar Tests, E2E Tests e Security Scans.

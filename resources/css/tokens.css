@@ -1,0 +1,205 @@
+:root {
+  /* Marca */
+  --hub-brand-primary: #3b82f6;
+  --hub-brand-primary-hover: #60a5fa;
+  --hub-brand-primary-active: #2563eb;
+  --hub-brand-secondary: #38bdf8;
+  --hub-brand-sky: #7dd3fc;
+
+  /* Superfícies globais: a vitrine permanece clara por padrão. */
+  --hub-bg-body: #f6f8fc;
+  --hub-surface: #ffffff;
+  --hub-surface-raised: #ffffff;
+  --hub-surface-subtle: #f1f5f9;
+  --hub-surface-hover: #eef3fa;
+  --hub-surface-active: #e2e8f0;
+  --hub-surface-accent: #eff6ff;
+
+  /* Texto e bordas globais */
+  --hub-text: #0f172a;
+  --hub-text-primary: var(--hub-text);
+  --hub-text-secondary: #334155;
+  --hub-text-muted: #64748b;
+  --hub-text-inverse: #ffffff;
+  --hub-text-on-color: #ffffff;
+  --hub-border: #dce5f2;
+  --hub-border-subtle: var(--hub-border);
+  --hub-border-strong: #cbd5e1;
+
+  /* Semântica */
+  --hub-primary: var(--hub-brand-primary);
+  --hub-primary-hover: var(--hub-brand-primary-hover);
+  --hub-primary-pressed: var(--hub-brand-primary-active);
+  --hub-primary-soft: #dbeafe;
+  --hub-info: #0369a1;
+  --hub-info-soft: #e0f2fe;
+  --hub-success: #15803d;
+  --hub-success-soft: #dcfce7;
+  --hub-warning: #b45309;
+  --hub-warning-soft: #fef3c7;
+  --hub-danger: #dc2626;
+  --hub-danger-soft: #fee2e2;
+  --hub-special: #7c3aed;
+  --hub-special-soft: #ede9fe;
+
+  /* Tipografia */
+  --hub-font-sans: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --hub-text-display: 2rem;
+  --hub-text-h1: 1.5rem;
+  --hub-text-h2: 1.25rem;
+  --hub-text-h3: 1.125rem;
+  --hub-text-body-lg: 1rem;
+  --hub-text-body: 0.875rem;
+  --hub-text-body-sm: 0.75rem;
+  --hub-text-caption: 0.6875rem;
+  --hub-font-weight-regular: 400;
+  --hub-font-weight-medium: 500;
+  --hub-font-weight-semibold: 600;
+  --hub-font-weight-bold: 700;
+  --hub-line-height-tight: 1.2;
+  --hub-line-height-normal: 1.5;
+
+  /* Escala espacial */
+  --hub-space-1: 0.25rem;
+  --hub-space-2: 0.5rem;
+  --hub-space-3: 0.75rem;
+  --hub-space-4: 1rem;
+  --hub-space-5: 1.25rem;
+  --hub-space-6: 1.5rem;
+  --hub-space-8: 2rem;
+  --hub-space-10: 2.5rem;
+  --hub-space-12: 3rem;
+  --hub-space-16: 4rem;
+
+  /* Controles e movimento reutilizáveis */
+  --hub-control-height-sm: 2.25rem;
+  --hub-control-height-md: 2.75rem;
+  --hub-control-height-lg: 3rem;
+  --hub-search-expanded-width: 21rem;
+  --hub-data-region-min-height: 30rem;
+  --hub-dialog-wide: 56rem;
+  --hub-dialog-detail-min-height: 20rem;
+  --hub-overlay-tint: rgb(15 23 42 / 0.18);
+  --hub-overlay-blur: blur(6px);
+
+  /* Forma, elevação, movimento */
+  --hub-radius-sm: 0.375rem;
+  --hub-radius-md: 0.625rem;
+  --hub-radius-lg: 0.875rem;
+  --hub-radius-xl: 1.125rem;
+  --hub-radius-pill: 9999px;
+  --hub-shadow-low: 0 1px 2px rgb(15 23 42 / 0.06);
+  --hub-shadow-medium: 0 10px 24px rgb(15 23 42 / 0.1);
+  --hub-shadow-high: 0 20px 48px rgb(15 23 42 / 0.16);
+  --hub-focus-ring: 0 0 0 3px rgb(125 211 252 / 0.45);
+  --hub-motion-fast: 120ms;
+  --hub-motion-normal: 200ms;
+  --hub-motion-slow: 320ms;
+  --hub-motion-spinner: 720ms;
+  --hub-motion-shimmer: 1.4s;
+  --hub-motion-auth-orbit: 8s;
+  --hub-ease-in: ease-in;
+  --hub-ease-out: ease-out;
+  --hub-ease-in-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --hub-z-base: 1;
+  --hub-z-sticky: 100;
+  --hub-z-dropdown: 200;
+  --hub-z-overlay: 300;
+  --hub-z-modal: 400;
+  --hub-z-toast: 500;
+  --hub-z-tooltip: 600;
+
+  /* Autenticação administrativa */
+  --hub-auth-shell-max-width: 72rem;
+  --hub-auth-shell-min-height: 38rem;
+  --hub-auth-form-min-width: 28rem;
+  --hub-auth-form-max-width: 34rem;
+  --hub-auth-copy-width: 26rem;
+  --hub-auth-mark-size: 2.75rem;
+  --hub-auth-orb-size: 30rem;
+  --hub-auth-orb-size-mobile: 18rem;
+}
+
+/* O painel é intencionalmente escuro; a vitrine pública não herda este tema. */
+.hub-admin {
+  color-scheme: dark;
+  --hub-bg-body: #0b1120;
+  --hub-surface: #111a2b;
+  --hub-surface-raised: rgb(20 31 51 / 0.92);
+  --hub-surface-subtle: #162238;
+  --hub-surface-hover: #1b2b46;
+  --hub-surface-active: #243756;
+  --hub-surface-accent: rgb(59 130 246 / 0.14);
+  --hub-glass-bg: rgb(17 26 43 / 0.76);
+  --hub-glass-blur: blur(18px);
+  --hub-glass-modal-bg: rgb(17 26 43 / 0.94);
+  --hub-glass-modal-blur: blur(22px);
+  --hub-text: #f8fafc;
+  --hub-text-primary: var(--hub-text);
+  --hub-text-secondary: #cbd5e1;
+  --hub-text-muted: #94a3b8;
+  --hub-border: rgb(148 163 184 / 0.18);
+  --hub-border-subtle: var(--hub-border);
+  --hub-border-strong: rgb(148 163 184 / 0.32);
+  --hub-primary: #60a5fa;
+  --hub-primary-hover: #93c5fd;
+  --hub-primary-pressed: #3b82f6;
+  --hub-primary-soft: rgb(96 165 250 / 0.16);
+  --hub-info: #7dd3fc;
+  --hub-info-soft: rgb(125 211 252 / 0.14);
+  --hub-success: #86efac;
+  --hub-success-soft: rgb(134 239 172 / 0.13);
+  --hub-warning: #fcd34d;
+  --hub-warning-soft: rgb(252 211 77 / 0.14);
+  --hub-danger: #fda4af;
+  --hub-danger-soft: rgb(253 164 175 / 0.14);
+  --hub-special: #c4b5fd;
+  --hub-special-soft: rgb(196 181 253 / 0.14);
+  --hub-shadow-low: 0 1px 2px rgb(0 0 0 / 0.2);
+  --hub-shadow-medium: 0 12px 32px rgb(0 0 0 / 0.24);
+  --hub-shadow-high: 0 24px 64px rgb(0 0 0 / 0.34);
+  --hub-focus-ring: 0 0 0 3px rgb(96 165 250 / 0.42);
+}
+
+/* Tema claro do painel; não altera o tema da vitrine. */
+.hub-admin[data-theme="light"] {
+  color-scheme: light;
+  --hub-brand-primary: #1e3a8a;
+  --hub-brand-primary-hover: #1e40af;
+  --hub-brand-primary-active: #172554;
+  --hub-brand-secondary: #3b82f6;
+  --hub-brand-sky: #bfdbfe;
+  --hub-accent-gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 52%, #2563eb 100%);
+  --hub-bg-body: #f8fafc;
+  --hub-surface: #ffffff;
+  --hub-surface-raised: rgb(255 255 255 / 0.92);
+  --hub-surface-subtle: #f1f5f9;
+  --hub-surface-hover: #e2e8f0;
+  --hub-surface-active: #cbd5e1;
+  --hub-surface-accent: #eff6ff;
+  --hub-glass-bg: rgb(248 250 252 / 0.82);
+  --hub-glass-modal-bg: rgb(248 250 252 / 0.94);
+  --hub-text: #0f172a;
+  --hub-text-secondary: #1e293b;
+  --hub-text-muted: #475569;
+  --hub-border: #e2e8f0;
+  --hub-border-strong: #cbd5e1;
+  --hub-primary: #1e3a8a;
+  --hub-primary-hover: #1e40af;
+  --hub-primary-pressed: #172554;
+  --hub-primary-soft: #eff6ff;
+  --hub-info: #2563eb;
+  --hub-info-soft: #eff6ff;
+  --hub-success: #166534;
+  --hub-success-soft: #dcfce7;
+  --hub-warning: #92400e;
+  --hub-warning-soft: #fef3c7;
+  --hub-danger: #9f1239;
+  --hub-danger-soft: #ffe4e6;
+  --hub-special: #4f46e5;
+  --hub-special-soft: #e0e7ff;
+  --hub-shadow-low: 0 1px 2px rgb(15 23 42 / 0.06);
+  --hub-shadow-medium: 0 12px 32px rgb(15 23 42 / 0.12);
+  --hub-shadow-high: 0 24px 64px rgb(15 23 42 / 0.16);
+  --hub-focus-ring: 0 0 0 3px rgb(59 130 246 / 0.38);
+}

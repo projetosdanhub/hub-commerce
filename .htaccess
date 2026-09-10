@@ -1,0 +1,24 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. BLOQUEIO DE DIRETÓRIOS (Segurança contra Directory Traversal)
+    # Impede que invasores vejam a lista de arquivos das suas pastas
+    Options -Indexes
+
+    # 2. PROTEÇÃO DO ARQUIVO .ENV E ARQUIVOS SENSÍVEIS
+    # Bloqueia qualquer tentativa de acessar suas senhas e chaves de segurança
+    <FilesMatch "^\.env|composer\.json|package\.json|vite\.config\.js">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # 3. FORÇAR HTTPS (Descomente as duas linhas abaixo quando for para o cPanel)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # 4. REDIRECIONAMENTO INTELIGENTE (Para SEO e React)
+    # Pega todo o tráfego que chega na raiz e manda para a pasta pública,
+    # garantindo que o index.php do Laravel gerencie as URLs amigáveis.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
