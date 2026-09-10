@@ -1,97 +1,195 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import api from '../../../api'; // Ajuste o caminho se necessário
+import React, { useEffect, useId, useState } from 'react';
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, SmartphoneKey } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../../api';
+import { Button } from '../DesignSystem/primitives/Button';
+import { IconButton } from '../DesignSystem/primitives/IconButton';
+import './admin-login.css';
+
+const defaultErrorMessage = 'Não foi possível validar o acesso. Revise os dados e tente novamente.';
 
 export default function AdminLoginPage({ onLoginSuccess }) {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const emailId = useId();
+  const passwordId = useId();
+  const mfaId = useId();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+  useEffect(() => {
+    if (!onLoginSuccess && sessionStorage.getItem('hub_admin_token')) {
+      navigate('/admin', { replace: true });
+    }
+  }, [navigate, onLoginSuccess]);
 
-        try {
-            // Chama a nova rota de login do Laravel
-            const response = await api.post('/admin/login', { email, password });
-            
-            // Pega o token que o Laravel devolveu
-            const token = response.data.token;
-            
-            // O componente "pai" cuidará de salvar o token e abrir o painel
-            onLoginSuccess(token);
-        } catch (err) {
-            setError(err.response?.data?.message || 'Erro de conexão com o servidor.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const completeLogin = (token) => {
+    if (onLoginSuccess) {
+      onLoginSuccess(token);
+      return;
+    }
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans">
-            {/* Decorações de Fundo SaaS Premium */}
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500/20 rounded-full blur-3xl mix-blend-multiply"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl mix-blend-multiply"></div>
+    sessionStorage.setItem('hub_admin_token', token);
+    navigate('/admin', { replace: true });
+  };
 
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="bg-white p-10 rounded-[2rem] shadow-2xl w-full max-w-md relative z-10 border border-slate-100"
-            >
-                <div className="text-center mb-10">
-                    <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/30">
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    </div>
-                    <h2 className="text-3xl font-black text-slate-800 tracking-tight">HUB Commerce</h2>
-                    <p className="text-sm text-slate-500 font-medium mt-2">Acesso restrito ao Workspace de Gestão</p>
-                </div>
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError('');
 
-                {error && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-rose-50 text-rose-600 p-4 rounded-xl text-sm font-bold mb-6 text-center border border-rose-100">
-                        {error}
-                    </motion.div>
-                )}
+    try {
+      const response = await api.post('/admin/login', {
+        email,
+        password,
+        ...(mfaRequired ? { mfa_code: mfaCode.trim() } : {}),
+      });
+      const token = response.data?.token;
 
-                <form onSubmit={handleLogin} className="space-y-6">
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">E-mail Corporativo</label>
-                        <input 
-                            type="email" 
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="admin@hub.com"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-800 shadow-sm"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Senha de Acesso</label>
-                        <input 
-                            type="password" 
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-800 shadow-sm"
-                        />
-                    </div>
+      if (!token) {
+        setError(defaultErrorMessage);
+        return;
+      }
 
-                    <button 
-                        type="submit" 
-                        disabled={loading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all disabled:opacity-70 flex items-center justify-center gap-2 mt-4"
-                    >
-                        {loading ? (
-                            <><svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Autenticando...</>
-                        ) : (
-                            'Acessar Workspace'
-                        )}
-                    </button>
-                </form>
-            </motion.div>
+      completeLogin(token);
+    } catch (requestError) {
+      const response = requestError.response;
+      const status = response?.data?.status;
+
+      if (status === 'mfa_required') {
+        setMfaRequired(true);
+        setError('Informe o código do seu aplicativo autenticador para continuar.');
+      } else if (status === 'mfa_enrollment_required') {
+        setError('A autenticação multifator precisa ser configurada antes de acessar o painel. Procure a administração da loja.');
+      } else if (response?.status === 429) {
+        setError('Muitas tentativas em pouco tempo. Aguarde alguns minutos antes de tentar novamente.');
+      } else if (response?.status === 422) {
+        setError('Informe um e-mail válido e a sua senha para continuar.');
+      } else {
+        setError(defaultErrorMessage);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="hub-admin hub-admin-auth" aria-labelledby="admin-login-title">
+      <div className="hub-admin-auth-orb hub-admin-auth-orb-primary" aria-hidden="true" />
+      <div className="hub-admin-auth-orb hub-admin-auth-orb-secondary" aria-hidden="true" />
+
+      <section className="hub-admin-auth-shell">
+        <aside className="hub-admin-auth-intro" aria-label="Apresentação do acesso administrativo">
+          <div className="hub-admin-auth-brand">
+            <span className="hub-admin-auth-brand-mark" aria-hidden="true">HC</span>
+            <span>
+              <strong>HUB Commerce</strong>
+              <small>OPERAÇÃO DA LOJA</small>
+            </span>
+          </div>
+
+          <div className="hub-admin-auth-intro-copy">
+            <span className="hub-admin-auth-kicker"><ShieldCheck aria-hidden="true" size={16} /> Ambiente protegido</span>
+            <h1>Gestão segura para a sua operação.</h1>
+            <p>Entre para acompanhar pedidos, catálogo, clientes e integrações em um único painel.</p>
+          </div>
+
+          <div className="hub-admin-auth-security-note">
+            <ShieldCheck aria-hidden="true" size={20} />
+            <span>O acesso é validado por perfil, permissões e sessão temporária.</span>
+          </div>
+        </aside>
+
+        <div className="hub-admin-auth-card">
+          <header className="hub-admin-auth-card-header">
+            <span className="hub-admin-auth-mobile-mark" aria-hidden="true">HC</span>
+            <p className="hub-page-eyebrow">Acesso administrativo</p>
+            <h2 id="admin-login-title">Bem-vindo de volta</h2>
+            <p>Use suas credenciais para continuar no painel da loja.</p>
+          </header>
+
+          {error ? (
+            <div className="hub-admin-auth-feedback" role="alert">
+              <ShieldCheck aria-hidden="true" size={18} />
+              <span>{error}</span>
+            </div>
+          ) : null}
+
+          <form className="hub-admin-auth-form" onSubmit={handleLogin} noValidate>
+            <label className="hub-admin-auth-field" htmlFor={emailId}>
+              <span>E-mail</span>
+              <span className="hub-admin-auth-input-wrap">
+                <Mail aria-hidden="true" size={18} />
+                <input
+                  id={emailId}
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  required
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="voce@empresa.com.br"
+                />
+              </span>
+            </label>
+
+            <div className="hub-admin-auth-field">
+              <label htmlFor={passwordId}>Senha</label>
+              <span className="hub-admin-auth-input-wrap">
+                <LockKeyhole aria-hidden="true" size={18} />
+                <input
+                  id={passwordId}
+                  type={isPasswordVisible ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Digite sua senha"
+                />
+                <IconButton
+                  icon={isPasswordVisible ? EyeOff : Eye}
+                  label={isPasswordVisible ? 'Ocultar senha' : 'Mostrar senha'}
+                  className="hub-admin-auth-password-toggle"
+                  onClick={() => setIsPasswordVisible((current) => !current)}
+                />
+              </span>
+            </div>
+
+            {mfaRequired ? (
+              <label className="hub-admin-auth-field" htmlFor={mfaId}>
+                <span>Código de verificação</span>
+                <span className="hub-admin-auth-input-wrap">
+                  <SmartphoneKey aria-hidden="true" size={18} />
+                  <input
+                    id={mfaId}
+                    type="text"
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    required
+                    value={mfaCode}
+                    onChange={(event) => setMfaCode(event.target.value)}
+                    placeholder="Código do autenticador"
+                  />
+                </span>
+              </label>
+            ) : null}
+
+            <Button type="submit" loading={loading} icon={ArrowRight} className="hub-admin-auth-submit">
+              {mfaRequired ? 'Verificar e acessar' : 'Acessar painel'}
+            </Button>
+          </form>
+
+          <footer className="hub-admin-auth-card-footer">
+            <LockKeyhole aria-hidden="true" size={16} />
+            <span>Não compartilhe suas credenciais de acesso.</span>
+          </footer>
         </div>
-    );
+      </section>
+    </main>
+  );
 }
