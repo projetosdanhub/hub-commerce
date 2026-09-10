@@ -262,7 +262,12 @@ class ProviderOAuthFlowTest extends TestCase
         $this->assertSame('SANDBOX', $event->payload['environment']);
         $this->assertArrayNotHasKey('email', $event->payload['data']);
         $this->assertArrayNotHasKey('tags', $event->payload['data']);
-        (new \App\Jobs\ProcessMelhorEnvioWebhook($event->id))->handle();
+        try {
+            (new \App\Jobs\ProcessMelhorEnvioWebhook($event->id))->handle();
+            $this->fail('Evento sem vínculo não pode ser processado.');
+        } catch (\RuntimeException) {
+            // O worker deve tentar novamente se o webhook antecedeu a resposta do carrinho.
+        }
         $this->assertNull($event->fresh()->processed_at);
         $this->assertNotNull($event->fresh()->failed_at);
     }

@@ -209,6 +209,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     // --- MÓDULO: PEDIDOS ---
     Route::prefix('orders')->group(function () {
+        Route::get('/{id}/shipment', [\App\Http\Controllers\Admin\OrderShipmentController::class, 'show'])->middleware('tenant.permission:tenant.orders.view');
+        Route::post('/{id}/shipment', [\App\Http\Controllers\Admin\OrderShipmentController::class, 'store'])->middleware('tenant.permission:tenant.orders.manage');
+        Route::post('/{id}/shipment/actions', [\App\Http\Controllers\Admin\OrderShipmentController::class, 'action'])->middleware('tenant.permission:tenant.orders.manage');
         Route::get('/', [OrderController::class, 'index'])->middleware('tenant.permission:tenant.orders.view');
         Route::get('/metrics', [OrderController::class, 'metrics'])->middleware('tenant.permission:tenant.orders.view');
         Route::get('/metric-preferences', [OrderController::class, 'metricPreferences'])->middleware('tenant.permission:tenant.orders.view');

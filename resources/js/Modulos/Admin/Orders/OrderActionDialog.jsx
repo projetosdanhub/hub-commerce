@@ -31,7 +31,7 @@ const ACTION_COPY = {
   },
   DESPACHAR: {
     title: 'Configurar expedição',
-    description: 'Escolha a modalidade, complete a volumetria e gere o despacho do pedido.',
+    description: 'Escolha a modalidade e informe os dados reais do pacote e do destinatário.',
     icon: Truck,
     confirm: 'Gerar expedição',
   },
@@ -99,7 +99,9 @@ const buildInitialState = (order, shipping) => {
     doc_tipo: 'DECLARACAO',
     carrier_id: '',
     me_carrier_id: '',
-    me_pagar_carteira: false,
+    recipient_document: '',
+    recipient_phone: '',
+    invoice_key: '',
     me_insurance_value: String(order?.total || ''),
     package_id: defaultPackage?.id ? String(defaultPackage.id) : '',
     vol_altura: defaultPackage?.altura ? String(defaultPackage.altura) : '',
@@ -309,10 +311,14 @@ const ShippingFields = ({ order, form, onChange, shipping, rates, calculating, o
                   </select>
                 </Field>
               )}
-              <label className="hub-order-checkbox">
-                <input type="checkbox" checked={form.me_pagar_carteira} onChange={(event) => onChange({ me_pagar_carteira: event.target.checked })} />
-                Pagar etiqueta com a carteira do Melhor Envio
-              </label>
+              <Field label="CPF/CNPJ do destinatário" required>
+                <input autoComplete="off" value={form.recipient_document} maxLength={18} onChange={(event) => onChange({ recipient_document: event.target.value })} />
+              </Field>
+              <Field label="Telefone do destinatário" required>
+                <input type="tel" value={form.recipient_phone} maxLength={20} onChange={(event) => onChange({ recipient_phone: event.target.value })} />
+              </Field>
+              {form.doc_tipo === 'NFE' ? <Field label="Chave de acesso da NF-e" required><input inputMode="numeric" maxLength={44} value={form.invoice_key} onChange={(event) => onChange({ invoice_key: event.target.value })} /></Field> : null}
+              <p className="hub-orders-form-hint">Após preparar o envio, compre e gere a etiqueta nos detalhes do pedido. O valor declarado será calculado com os itens do pedido.</p>
             </>
           )}
         </section>

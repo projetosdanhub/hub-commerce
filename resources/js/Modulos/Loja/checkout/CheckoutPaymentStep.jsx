@@ -30,12 +30,14 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
     const [intent, setIntent] = useState(null);
     const [stripeState, setStripeState] = useState(null);
     const [error, setError] = useState(null);
+    const [notice, setNotice] = useState(null);
     const [isPreparing, setIsPreparing] = useState(true);
     const [isConfirming, setIsConfirming] = useState(false);
     const idempotencyKey = useRef(window.crypto?.randomUUID?.() || null);
 
     useEffect(() => {
         let cancelled = false;
+        let paymentElement = null;
 
         const prepare = async () => {
             try {
@@ -60,7 +62,7 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
                         variables: { colorPrimary: '#c2410c', borderRadius: '12px' },
                     },
                 });
-                const paymentElement = elements.create('payment');
+                paymentElement = elements.create('payment');
                 paymentElement.mount(mountRef.current);
                 setIntent(paymentIntent);
                 setStripeState({ stripe, elements });
@@ -77,6 +79,7 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
 
         return () => {
             cancelled = true;
+            paymentElement?.destroy();
         };
     }, [address, checkoutToken, items, shippingQuoteToken]);
 
@@ -100,7 +103,9 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
                 return;
             }
 
-            setError('Pagamento enviado para confirmação. O pedido será atualizado somente após o webhook seguro.');
+            setNotice('Pagamento enviado. Estamos aguardando a confirmação para atualizar seu pedido.');
+        } catch {
+            setError('Não foi possível confirmar o pagamento. Tente novamente.');
         } finally {
             setIsConfirming(false);
         }
@@ -115,7 +120,7 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
                         Pagamento
                     </span>
                     <h1 id="checkout-payment-title" className="text-2xl font-bold tracking-tight text-slate-950">Pagamento protegido</h1>
-                    <p className="text-sm leading-6 text-slate-600">O total foi reconstruído no servidor e os dados do cartão seguem direto para o Stripe.</p>
+                    <p className="text-sm leading-6 text-slate-600">Confira os dados e conclua seu pagamento com segurança.</p>
                 </div>
                 <button type="button" onClick={onBack} className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600">
                     <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -125,7 +130,7 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
 
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
                 <ShieldCheck className="mr-2 inline h-4 w-4" aria-hidden="true" />
-                O pedido só é aprovado após a confirmação assinada do webhook.
+                Seus dados de cartão são processados com segurança pelo Stripe.
             </div>
 
             {error ? (
@@ -135,16 +140,17 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
                 </div>
             ) : null}
 
+            {notice ? <p role="status" className="text-sm text-emerald-950">{notice}</p> : null}
+
             {isPreparing ? (
                 <div className="flex min-h-36 items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 text-sm font-semibold text-slate-700">
                     <Loader2 className="h-5 w-5 animate-spin text-orange-700" aria-hidden="true" />
                     Preparando o pagamento seguro…
                 </div>
-            ) : (
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div ref={mountRef} aria-label="Formulário seguro de pagamento Stripe" />
-                </div>
-            )}
+            ) : null}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" hidden={isPreparing || !intent}>
+                <div ref={mountRef} aria-label="Formulário seguro de pagamento Stripe" />
+            </div>
 
             <button type="button" disabled={!intent || !stripeState || isConfirming} onClick={confirm} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-700 px-5 font-bold text-white transition hover:bg-orange-800 disabled:cursor-not-allowed disabled:bg-slate-300">
                 {isConfirming ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <CreditCard className="h-5 w-5" aria-hidden="true" />}

@@ -1,3 +1,4 @@
+import OrderShipmentPanel from './OrderShipmentPanel';
 import React, { useState } from 'react';
 import {
   ArrowLeft,
@@ -361,7 +362,7 @@ const SecondaryActions = ({ order, onAction, onPreviewDocument }) => {
   const canRequestRefund = !isTerminal && !canCancel && !refundPending;
   const canCancelRefund = refundPending && order.pode_cancelar_reembolso;
   const canUpdateTracking = ['DESPACHADO', 'ENTREGUE'].includes(order.status);
-  const canCancelMeCart = String(order.tracking_code || '').length > 20;
+  const canCancelMeCart = false;
 
   return (
     <div className="hub-order-more-actions">
@@ -480,6 +481,10 @@ export const OrderDetail = ({
           </Section>
 
           <PaymentDetails payment={order.pagamento} />
+
+          <Section title="Etiqueta Melhor Envio" icon={Truck}>
+            <OrderShipmentPanel key={order.id} orderId={order.id} />
+          </Section>
 
           <Section title="Entrega" icon={MapPin}>
             <div className="hub-order-detail-fields">

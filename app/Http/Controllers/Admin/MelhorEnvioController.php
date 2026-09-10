@@ -83,6 +83,8 @@ class MelhorEnvioController extends Controller
     {
         $config = MelhorEnvioSetting::firstOrCreate([], ['environment' => 'SANDBOX']);
         $config->sender_info = $request->validate([
+            'inscricao_estadual' => 'nullable|string|max:30',
+            'cnae' => 'nullable|string|max:10',
             'nome' => 'required|string|max:120',
             'telefone' => ['required', 'string', 'regex:/^[0-9()+ \-]{10,20}$/'],
             'email' => 'required|email|max:254',
