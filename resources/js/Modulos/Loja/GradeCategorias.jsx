@@ -123,7 +123,7 @@ const GradeCategorias = ({ titulo = "Explore por Categorias", estilo = 'card', m
                     // Gap gerido no elemento filho para controlo matemático preciso das colunas
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
-                    <style dangerouslySetContent={{__html: `::-webkit-scrollbar { display: none; }`}}></style>
+                    <style dangerouslySetInnerHTML={{__html: `::-webkit-scrollbar { display: none; }`}}></style>
                     
                     {categorias.map((cat) => {
                         
