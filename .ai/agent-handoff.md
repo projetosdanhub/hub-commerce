@@ -5,10 +5,20 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 ## Estado atual
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
-- **Última integração:** PR #81, squash commit `26a3a6ffdeb18465271eba761f6285c87ec9d7b7` na `main`.
-- **Branch de trabalho:** `docs/record-login-validation`, registro da evidência de UI-032.
-- **Tarefas afetadas:** UI-032 concluída; UI-028/UI-029 seguem pendentes de consolidação dos demais menus. CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** revisar visualmente a autenticação em 320px, 768px e desktop antes da próxima modernização de módulo.
+- **Última integração:** PR #86, squash commit `9b2db05d283c9d813bf882c86509c1eaad44271a` na `main`.
+- **Branch de trabalho:** `ui/categories-modernization`, modernização do menu Categorias em validação.
+- **Tarefas afetadas:** UI-032 concluída; UI-028 permanece em andamento com Categorias entregue para validação. CAT-001 continua pendente de hierarquia e consolidação de modelo; CAT-002 e MKT-001 a MKT-003 continuam pendentes.
+- **Próxima ação:** publicar a PR de Categorias, aguardar os checks obrigatórios e só então iniciar o bloco independente de Menus.
+
+### 2026-09-10 — Codex — modernização administrativa de Categorias
+- Objetivo e escopo: substituir o layout legado de Categorias pela composição canônica do painel, preservando os endpoints existentes de listar/criar/editar/excluir e sem inventar hierarquia, filtros, imagens ou métricas sem contrato.
+- Branch e commit: `ui/categories-modernization`, `61e5e628a1bcbbcff3a3f74627ffd840a57c4dd7`.
+- Task board: UI-028 `[~]` — Categorias foi registrada como modernizada e aguarda validação da PR; CAT-001 permanece `[ ]` porque a entrega não cria hierarquia nem altera o modelo.
+- Arquivos alterados: `CategoriesPage`, novos `CategoryForm` e `CategoryList`, `categories.css` e `task-board.md`.
+- Contratos preservados: `GET/POST/PUT/DELETE /api/admin/categories`, permissões `tenant.catalog.view/manage`, query key vinculada ao host do tenant, invalidação após mutação e bloqueio de exclusão no backend quando houver produtos vinculados.
+- Evidências: `git diff --check` passou; ESLint direcionado aos três componentes novos passou; `npm run build` passou; `npm run test:ui` passou (Vitest 4/4 e interações 6/6); `node scripts/verify-local-imports.mjs` passou (139 arquivos). PHP/Composer não estão instalados neste ambiente, portanto os testes Laravel seguem pendentes de CI.
+- Riscos, bloqueios e itens não verificados: validar visualmente 320px, 768px e desktop, temas claro/escuro, teclado, zoom de 200% e reduced motion; o aviso de chunk Vite acima de 500 kB é legado e não foi ampliado intencionalmente. A cobertura tenant/contrato da API existente será reexecutada pelo workflow Tests.
+- Próxima ação única: abrir a PR, acompanhar Tests, E2E Tests e Security Scans e integrar somente após os checks verdes.
 
 ### 2026-09-10 — Codex — encerramento de PRs históricas e UI-032
 - Objetivo e escopo: encerrar PRs abertas já substituídas e modernizar somente o login administrativo, em pt-BR, com composição desktop/mobile, tema escuro, acessibilidade e contrato MFA existente.
