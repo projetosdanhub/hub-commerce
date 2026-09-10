@@ -1,189 +1,144 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus, Tags } from 'lucide-react';
 import api from '../../../api';
+import { Button } from '../DesignSystem/primitives/Button';
+import { ModalDialog } from '../DesignSystem/patterns/ModalDialog';
+import { useRegisterAdminPageRefresh } from '../DesignSystem/patterns/GlobalPageRefresh';
+import { CategoryForm } from './CategoryForm';
+import { CategoryList } from './CategoryList';
 import './categories.css';
 
-const localQueryClient = new QueryClient();
+const categoryQueryKey = ['adminCategories', window.location.host];
+const emptyCategory = { id: null, nome: '', descricao: '', status: 'ATIVO' };
+const queryCategories = async () => (await api.get('/admin/categories')).data;
+const getRequestError = (error, fallback) => error?.response?.data?.message || fallback;
 
-const Icons = {
-    Plus: () => <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>,
-    Edit: () => <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
-    Trash: () => <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
-    Check: () => <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>,
-    Close: () => <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>,
-    Layers: () => <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>,
+const CategoryQueryError = ({ error, onRetry }) => {
+  const forbidden = error?.response?.status === 403;
+
+  return (
+    <section className="hub-categories-empty" role="alert">
+      <div>
+        <Tags aria-hidden="true" size={28} />
+        <h2>{forbidden ? 'Acesso não autorizado' : 'Não foi possível carregar as categorias'}</h2>
+        <p>{forbidden ? 'Sua conta não possui a permissão necessária para consultar o catálogo desta loja.' : 'Verifique a conexão e tente novamente. Nenhuma categoria foi alterada.'}</p>
+        {!forbidden ? <Button variant="secondary" onClick={onRetry}>Tentar novamente</Button> : null}
+      </div>
+    </section>
+  );
 };
 
-const CategoriasContent = () => {
-    const queryClient = useQueryClient();
-    const categoryQueryKey = ['adminCategories', window.location.host];
-    const [modal, setModal] = useState({ isOpen: false, data: { id: null, nome: '', status: 'ATIVO' }, erro: null });
+export default function CategoriesPage() {
+  const queryClient = useQueryClient();
+  const [editorCategory, setEditorCategory] = useState(null);
+  const [editorError, setEditorError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
+  const [notice, setNotice] = useState(null);
+  const categoriesQuery = useQuery({ queryKey: categoryQueryKey, queryFn: queryCategories });
+  const refresh = useCallback(async () => {
+    await queryClient.refetchQueries({ queryKey: categoryQueryKey });
+  }, [queryClient]);
 
-    const { data: categorias = [], isLoading } = useQuery({
-        queryKey: categoryQueryKey,
-        queryFn: async () => {
-            const res = await api.get('/admin/categories');
-            return res.data.data || [];
-        }
-    });
+  useRegisterAdminPageRefresh(refresh);
 
-    const mutacaoSalvarCat = useMutation({
-        mutationFn: async (dados) => {
-            if (dados.id) return await api.put(`/admin/categories/${dados.id}`, dados);
-            return await api.post('/admin/categories', dados);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: categoryQueryKey });
-            setModal({ isOpen: false, data: { id: null, nome: '', status: 'ATIVO' }, erro: null });
-        },
-        onError: (error) => {
-            setModal(previous => ({
-                ...previous,
-                erro: error?.response?.data?.message || 'Não foi possível salvar a categoria.',
-            }));
-        }
-    });
+  const categories = useMemo(
+    () => (Array.isArray(categoriesQuery.data?.data) ? categoriesQuery.data.data : []),
+    [categoriesQuery.data],
+  );
 
-    const mutacaoExcluirCat = useMutation({
-        mutationFn: async (id) => await api.delete(`/admin/categories/${id}`),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: categoryQueryKey });
-        }
-    });
+  const saveCategory = useMutation({
+    mutationFn: ({ id, payload }) => (id ? api.put('/admin/categories/' + id, payload) : api.post('/admin/categories', payload)),
+    onSuccess: async (_, variables) => {
+      await queryClient.invalidateQueries({ queryKey: categoryQueryKey });
+      setEditorCategory(null);
+      setEditorError('');
+      setNotice({ tone: 'success', text: variables.id ? 'Categoria atualizada com sucesso.' : 'Categoria criada com sucesso.' });
+    },
+    onError: (error) => setEditorError(getRequestError(error, 'Não foi possível salvar a categoria.')),
+  });
 
-    const handleSalvar = () => {
-        if (!modal.data.nome.trim()) {
-            setModal(prev => ({ ...prev, erro: 'O nome da categoria é obrigatório.' }));
-            return;
-        }
-        mutacaoSalvarCat.mutate(modal.data);
-    };
+  const deleteCategory = useMutation({
+    mutationFn: (id) => api.delete('/admin/categories/' + id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: categoryQueryKey });
+      setDeleteTarget(null);
+      setDeleteError('');
+      setNotice({ tone: 'success', text: 'Categoria excluída com sucesso.' });
+    },
+    onError: (error) => setDeleteError(getRequestError(error, 'Não foi possível excluir a categoria.')),
+  });
 
-    const handleExcluir = (id) => {
-        if (confirm('Tem certeza que deseja excluir esta categoria? Produtos sem categoria podem apresentar erros.')) {
-            mutacaoExcluirCat.mutate(id);
-        }
-    };
+  const startNewCategory = () => {
+    setEditorError('');
+    setEditorCategory(emptyCategory);
+  };
 
-    return (
-        <div className="categorias-container">
-            <Helmet><title>Categorias | HUB ADMIN</title></Helmet>
-            
-            <div className="categorias-header">
-                <h1 className="categorias-title">Categorias</h1>
-                <p className="categorias-subtitle">Controle as categorias de produtos da sua loja virtual.</p>
-            </div>
+  const openEditor = (category) => {
+    setEditorError('');
+    setEditorCategory(category);
+  };
 
-            <div className="categorias-metrics">
-                <div className="categorias-metric-card">
-                    <h3 className="categorias-metric-title"><Icons.Layers /> Total</h3>
-                    <p className="categorias-metric-value primary">{categorias.length}</p>
-                </div>
-                <div className="categorias-metric-card">
-                    <h3 className="categorias-metric-title"><Icons.Check /> Ativas</h3>
-                    <p className="categorias-metric-value success">{categorias.filter(c => c.status === 'ATIVO').length}</p>
-                </div>
-                <div className="categorias-metric-card">
-                    <h3 className="categorias-metric-title"><Icons.Close /> Inativas</h3>
-                    <p className="categorias-metric-value danger">{categorias.filter(c => c.status !== 'ATIVO').length}</p>
-                </div>
-            </div>
+  const openDeleteDialog = (category) => {
+    setDeleteError('');
+    setDeleteTarget(category);
+  };
 
-            <div className="categorias-toolbar">
-                <h2>Listagem de Categorias</h2>
-                <button 
-                    className="categorias-btn categorias-btn-primary" 
-                    onClick={() => setModal({ isOpen: true, data: { id: null, nome: '', status: 'ATIVO' }, erro: null })}
-                >
-                    <Icons.Plus /> Nova Categoria
-                </button>
-            </div>
+  return (
+    <main className="hub-categories-page">
+      <Helmet>
+        <title>Categorias | Hub Commerce</title>
+        <meta name="robots" content="noindex,nofollow" />
+      </Helmet>
 
-            <div className="categorias-table-container">
-                <table className="categorias-table">
-                    <thead>
-                        <tr>
-                            <th>Nome da Categoria</th>
-                            <th>Status</th>
-                            <th style={{ textAlign: 'right' }}>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {isLoading ? (
-                            <tr><td colSpan="3" style={{ textAlign: 'center', padding: 'var(--hub-space-8)' }}>Carregando...</td></tr>
-                        ) : categorias.length > 0 ? categorias.map(cat => (
-                            <tr key={cat.id}>
-                                <td style={{ fontWeight: 'var(--hub-font-weight-bold)' }}>{cat.nome}</td>
-                                <td>
-                                    <span className={`categorias-badge ${cat.status === 'ATIVO' ? 'categorias-badge-active' : 'categorias-badge-inactive'}`}>
-                                        {cat.status}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div className="categorias-actions">
-                                        <button className="categorias-action-btn edit" onClick={() => setModal({ isOpen: true, data: cat, erro: null })}>
-                                            <Icons.Edit />
-                                        </button>
-                                        <button className="categorias-action-btn delete" onClick={() => handleExcluir(cat.id)}>
-                                            <Icons.Trash />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )) : <tr><td colSpan="3" style={{ textAlign: 'center', padding: 'var(--hub-space-8)' }}>Nenhuma categoria encontrada.</td></tr>}
-                    </tbody>
-                </table>
-            </div>
-
-            {modal.isOpen && (
-                <div className="categorias-modal-overlay" onClick={() => setModal({ isOpen: false, data: { id: null, nome: '', status: 'ATIVO' }, erro: null })}>
-                    <div className="categorias-modal" onClick={e => e.stopPropagation()}>
-                        <div className="categorias-modal-header">
-                            <h3>{modal.data.id ? 'Editar Categoria' : 'Nova Categoria'}</h3>
-                            <p>Organize os seus produtos de forma eficiente.</p>
-                        </div>
-                        
-                        <div className="categorias-form-group">
-                            <label>Nome da Categoria *</label>
-                            <input 
-                                className="categorias-input"
-                                value={modal.data.nome} 
-                                onChange={e => setModal(prev => ({...prev, data: {...prev.data, nome: e.target.value}, erro: null}))} 
-                                autoFocus
-                            />
-                            {modal.erro && <p className="categorias-error">{modal.erro}</p>}
-                        </div>
-
-                        <div className="categorias-form-group">
-                            <label>Status</label>
-                            <select 
-                                className="categorias-input"
-                                value={modal.data.status} 
-                                onChange={e => setModal(prev => ({...prev, data: {...prev.data, status: e.target.value}}))}
-                            >
-                                <option value="ATIVO">Ativa</option>
-                                <option value="INATIVO">Inativa</option>
-                            </select>
-                        </div>
-
-                        <div className="categorias-modal-footer">
-                            <button className="categorias-btn categorias-btn-secondary" onClick={() => setModal({ isOpen: false, data: { id: null, nome: '', status: 'ATIVO' }, erro: null })}>Cancelar</button>
-                            <button className="categorias-btn categorias-btn-primary" onClick={handleSalvar} disabled={mutacaoSalvarCat.isPending}>
-                                {mutacaoSalvarCat.isPending ? 'Salvando...' : 'Salvar'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+      <header className="hub-categories-heading">
+        <div>
+          <p className="hub-categories-eyebrow">Catálogo</p>
+          <h1>Categorias</h1>
+          <p>Organize a navegação do catálogo com categorias reais desta loja.</p>
         </div>
-    );
-};
+        <Button icon={Plus} onClick={startNewCategory}>Nova categoria</Button>
+      </header>
 
-const CategoriesPage = () => (
-    <QueryClientProvider client={localQueryClient}>
-        <CategoriasContent />
-    </QueryClientProvider>
-);
+      {notice ? <p className={'hub-categories-notice hub-categories-notice-' + notice.tone} role="status">{notice.text}</p> : null}
 
-export default CategoriesPage;
+      <section className="hub-categories-surface hub-stable-data-region" aria-labelledby="categories-list-title">
+        <header className="hub-categories-section-heading">
+          <div>
+            <h2 id="categories-list-title"><Tags aria-hidden="true" size={19} /> Categorias da loja</h2>
+            <p>O status controla a disponibilidade da categoria na vitrine. Categorias com produtos vinculados não podem ser excluídas.</p>
+          </div>
+          {!categoriesQuery.isLoading && !categoriesQuery.isError ? <span className="hub-categories-count">{categories.length} {categories.length === 1 ? 'categoria' : 'categorias'}</span> : null}
+        </header>
+
+        {categoriesQuery.isError ? <CategoryQueryError error={categoriesQuery.error} onRetry={() => categoriesQuery.refetch()} /> : (
+          <CategoryList categories={categories} loading={categoriesQuery.isLoading} onCreate={startNewCategory} onEdit={openEditor} onDelete={openDeleteDialog} />
+        )}
+      </section>
+
+      {editorCategory ? (
+        <ModalDialog labelledBy="category-editor-title" describedBy="category-editor-description" onClose={() => { setEditorCategory(null); setEditorError(''); }} busy={saveCategory.isPending}>
+          {(requestClose) => <CategoryForm key={editorCategory.id || 'new-category'} category={editorCategory} saving={saveCategory.isPending} error={editorError} onClearError={() => setEditorError('')} onCancel={requestClose} onSave={(payload) => saveCategory.mutate({ id: editorCategory.id, payload })} />}
+        </ModalDialog>
+      ) : null}
+
+      {deleteTarget ? (
+        <ModalDialog labelledBy="category-delete-title" describedBy="category-delete-description" onClose={() => { setDeleteTarget(null); setDeleteError(''); }} busy={deleteCategory.isPending}>
+          {(requestClose) => (
+            <section className="hub-categories-dialog">
+              <h2 id="category-delete-title">Excluir {deleteTarget.nome}?</h2>
+              <p id="category-delete-description">Esta ação remove o cadastro permanentemente. A exclusão será bloqueada se houver produtos vinculados a esta categoria.</p>
+              {deleteError ? <p className="hub-categories-inline-error" role="alert">{deleteError}</p> : null}
+              <footer className="hub-categories-dialog-actions">
+                <Button variant="secondary" onClick={requestClose}>Cancelar</Button>
+                <Button variant="danger" loading={deleteCategory.isPending} onClick={() => deleteCategory.mutate(deleteTarget.id)}>Excluir categoria</Button>
+              </footer>
+            </section>
+          )}
+        </ModalDialog>
+      ) : null}
+    </main>
+  );
+}
