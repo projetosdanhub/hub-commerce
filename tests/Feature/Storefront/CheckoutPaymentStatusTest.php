@@ -12,6 +12,7 @@ use App\Models\StorefrontCustomer;
 use App\Models\Tenant;
 use App\Models\TenantDomain;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CheckoutPaymentStatusTest extends TestCase
@@ -109,7 +110,7 @@ class CheckoutPaymentStatusTest extends TestCase
             'environment' => 'SANDBOX',
             'payment_method' => 'CARD',
             'status' => $paymentStatus,
-            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
+            'idempotency_key' => (string) Str::uuid(),
             'checkout_fingerprint' => hash('sha256', $email),
             'amount_cents' => 2500,
             'currency' => 'BRL',
