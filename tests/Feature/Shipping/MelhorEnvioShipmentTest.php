@@ -91,23 +91,31 @@ class MelhorEnvioShipmentTest extends TestCase
 
     public function test_uncertain_creation_is_not_repeated_and_can_be_recovered_by_opaque_tag(): void
     {
-        $this->fakeCreation(Http::failedConnection());
+        $reference = (string) Str::uuid();
+        $canRecoverCreation = false;
+        $publicId = '';
+        Http::fake([
+            '*/shipment/calculate' => Http::response([['id' => 1, 'price' => '15.50', 'delivery_time' => 3]]),
+            '*/api/v2/me/cart' => function () use (&$canRecoverCreation, &$publicId, $reference): mixed {
+                return $canRecoverCreation
+                    ? Http::response([['id' => $reference, 'tags' => [['tag' => $publicId]]]])
+                    : Http::failedConnection();
+            },
+            '*/shipment/tracking' => Http::response([$reference => ['status' => 'pending']]),
+        ]);
         $service = app(MelhorEnvioShipmentService::class);
         try {
             $service->create($this->order, $this->input());
             $this->fail('Timeout deve permanecer pendente.');
         } catch (DomainException) {
             $shipment = OrderShipment::query()->firstOrFail();
+            $publicId = $shipment->public_id;
             $this->assertSame(ShipmentOperation::CREATE, $shipment->operation);
             $this->assertSame('RECONCILIATION_REQUIRED', $shipment->failure_code);
         }
         $service->create($this->order, $this->input());
         Http::assertSentCount(2); // Cotação e criação inicial; a repetição não chama o provedor novamente.
-        $reference = (string) Str::uuid();
-        Http::fake([
-            '*/api/v2/me/cart' => Http::response([['id' => $reference, 'tags' => [['tag' => $shipment->public_id]]]]),
-            '*/shipment/tracking' => Http::response([$reference => ['status' => 'pending']]),
-        ]);
+        $canRecoverCreation = true;
         $recovered = $service->synchronize($shipment);
         $this->assertSame($reference, $recovered->provider_reference);
         $this->assertNull($recovered->operation);

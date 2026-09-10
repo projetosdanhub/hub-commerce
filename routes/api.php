@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\TenantDomainController;
 use App\Http\Controllers\Admin\ProviderInstallationController;
 use App\Http\Controllers\Storefront\CheckoutAddressController;
 use App\Http\Controllers\Storefront\CheckoutCustomerSessionController;
+use App\Http\Controllers\Storefront\CheckoutPaymentStatusController;
 use App\Http\Controllers\Storefront\FreeShippingProgressController;
 use App\Http\Controllers\Storefront\CheckoutSummaryController;
 use App\Http\Controllers\Storefront\PostalCodeLookupController;
@@ -109,6 +110,7 @@ Route::middleware('auth:sanctum')->prefix('storefront/checkout')->group(function
     Route::get('/addresses', [CheckoutAddressController::class, 'index'])->middleware('throttle:30,1');
     Route::post('/addresses', [CheckoutAddressController::class, 'store'])->middleware('throttle:10,1');
     Route::post('/stripe/payment-intent', [StripeCheckoutController::class, 'store'])->middleware('throttle:5,1');
+    Route::get('/orders/{id}/payment-status', [CheckoutPaymentStatusController::class, 'show'])->middleware('throttle:30,1');
 });
 Route::get('/tracking', [TrackingController::class, 'getPublicSettings'])->middleware('throttle:60,1');
 

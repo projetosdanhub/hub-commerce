@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, CircleAlert, CreditCard, Loader2, LockKeyhole, ShieldCheck } from 'lucide-react';
-import { requestStripePaymentIntent, responseMessage } from './checkoutApi';
+import { requestCheckoutPaymentStatus, requestStripePaymentIntent, responseMessage } from './checkoutApi';
+import { clearCheckoutPaymentSession, saveCheckoutPaymentSession } from './checkoutPaymentSession';
 
 const loadStripe = (publishableKey) => new Promise((resolve, reject) => {
     if (window.Stripe) {
@@ -33,6 +34,7 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
     const [notice, setNotice] = useState(null);
     const [isPreparing, setIsPreparing] = useState(true);
     const [isConfirming, setIsConfirming] = useState(false);
+    const [isAwaitingConfirmation, setIsAwaitingConfirmation] = useState(false);
     const idempotencyKey = useRef(window.crypto?.randomUUID?.() || null);
 
     useEffect(() => {
@@ -83,6 +85,50 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
         };
     }, [address, checkoutToken, items, shippingQuoteToken]);
 
+    useEffect(() => {
+        if (!isAwaitingConfirmation || !intent) return undefined;
+
+        let cancelled = false;
+        let timer;
+        const check = async () => {
+            try {
+                const result = await requestCheckoutPaymentStatus(intent.order_id, checkoutToken);
+
+                if (cancelled) return;
+
+                if (result.payment_status === 'SUCCEEDED') {
+                    clearCheckoutPaymentSession();
+                    setIsAwaitingConfirmation(false);
+                    setNotice('Pagamento confirmado. Seu pedido entrou em preparação.');
+
+                    return;
+                }
+
+                if (['FAILED', 'CANCELLED'].includes(result.payment_status)) {
+                    clearCheckoutPaymentSession();
+                    setIsAwaitingConfirmation(false);
+                    setError('O pagamento não foi confirmado. Revise os dados e tente novamente.');
+
+                    return;
+                }
+
+                timer = window.setTimeout(check, 2000);
+            } catch (requestError) {
+                if (!cancelled) {
+                    setIsAwaitingConfirmation(false);
+                    setError(responseMessage(requestError, 'Não foi possível confirmar o pagamento agora.'));
+                }
+            }
+        };
+
+        check();
+
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timer);
+        };
+    }, [checkoutToken, intent, isAwaitingConfirmation]);
+
     const confirm = async () => {
         if (!stripeState) return;
 
@@ -90,6 +136,7 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
         setIsConfirming(true);
 
         try {
+            saveCheckoutPaymentSession({ checkoutToken, orderId: intent.order_id });
             const result = await stripeState.stripe.confirmPayment({
                 elements: stripeState.elements,
                 confirmParams: {
@@ -99,13 +146,15 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
             });
 
             if (result.error) {
+                clearCheckoutPaymentSession();
                 setError(result.error.message || 'Não foi possível confirmar o pagamento.');
                 return;
             }
 
+            setIsAwaitingConfirmation(true);
             setNotice('Pagamento enviado. Estamos aguardando a confirmação para atualizar seu pedido.');
-        } catch {
-            setError('Não foi possível confirmar o pagamento. Tente novamente.');
+        } catch (requestError) {
+            setError(responseMessage(requestError, 'Não foi possível confirmar o pagamento. Tente novamente.'));
         } finally {
             setIsConfirming(false);
         }
@@ -152,7 +201,7 @@ export default function CheckoutPaymentStep({ checkoutToken, items, address, shi
                 <div ref={mountRef} aria-label="Formulário seguro de pagamento Stripe" />
             </div>
 
-            <button type="button" disabled={!intent || !stripeState || isConfirming} onClick={confirm} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-700 px-5 font-bold text-white transition hover:bg-orange-800 disabled:cursor-not-allowed disabled:bg-slate-300">
+            <button type="button" disabled={!intent || !stripeState || isConfirming || isAwaitingConfirmation} onClick={confirm} className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-700 px-5 font-bold text-white transition hover:bg-orange-800 disabled:cursor-not-allowed disabled:bg-slate-300">
                 {isConfirming ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <CreditCard className="h-5 w-5" aria-hidden="true" />}
                 {isConfirming ? 'Confirmando…' : 'Pagar com segurança'}
             </button>

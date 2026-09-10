@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CheckoutPaymentStep from './CheckoutPaymentStep';
-import { requestStripePaymentIntent } from './checkoutApi';
+import { requestCheckoutPaymentStatus, requestStripePaymentIntent } from './checkoutApi';
 
-vi.mock('./checkoutApi', () => ({ requestStripePaymentIntent: vi.fn(), responseMessage: (_error, fallback) => fallback }));
+vi.mock('./checkoutApi', () => ({ requestStripePaymentIntent: vi.fn(), requestCheckoutPaymentStatus: vi.fn(), responseMessage: (_error, fallback) => fallback }));
 
 let mount;
 let destroy;
@@ -13,9 +13,10 @@ beforeEach(() => {
   destroy = vi.fn();
   confirmPayment = vi.fn().mockResolvedValue({ paymentIntent: { status: 'processing' } });
   window.Stripe = vi.fn(() => ({ elements: () => ({ create: () => ({ mount, destroy }) }), confirmPayment }));
-  requestStripePaymentIntent.mockResolvedValue({ publishable_key: 'pk_test_fixture', client_secret: 'pi_fixture_secret_value' });
+  requestStripePaymentIntent.mockResolvedValue({ order_id: 42, publishable_key: 'pk_test_fixture', client_secret: 'pi_fixture_secret_value' });
+  requestCheckoutPaymentStatus.mockResolvedValue({ payment_status: 'PROCESSING' });
 });
-afterEach(() => { delete window.Stripe; vi.clearAllMocks(); });
+afterEach(() => { delete window.Stripe; window.sessionStorage.clear(); vi.clearAllMocks(); });
 
 const props = { checkoutToken: 'fixture', items: [], address: {}, shippingQuoteToken: 'quote', onBack: vi.fn() };
 describe('Pagamento Stripe', () => {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Storefront;
 
+use App\Domain\Orders\StorefrontCheckoutCustomerResolver;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Storefront\StoreCheckoutAddressRequest;
 use App\Models\StorefrontCustomer;
@@ -9,10 +10,11 @@ use App\Models\StorefrontCustomerAddress;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class CheckoutAddressController extends Controller
 {
+    public function __construct(private readonly StorefrontCheckoutCustomerResolver $customers) {}
+
     public function index(Request $request): JsonResponse
     {
         $customer = $this->customer($request);
@@ -62,23 +64,7 @@ class CheckoutAddressController extends Controller
 
     private function customer(Request $request): StorefrontCustomer
     {
-        $accessToken = PersonalAccessToken::findToken($request->bearerToken());
-
-        if (
-            $accessToken === null
-            || $accessToken->tokenable_type !== StorefrontCustomer::class
-            || ! $accessToken->can('storefront.checkout')
-        ) {
-            abort(403);
-        }
-
-        $customer = StorefrontCustomer::query()->find($accessToken->tokenable_id);
-
-        if ($customer === null || ! $customer->isActive()) {
-            abort(403);
-        }
-
-        return $customer;
+        return $this->customers->resolve($request);
     }
 
     /**

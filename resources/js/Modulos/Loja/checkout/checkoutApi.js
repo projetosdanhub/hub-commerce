@@ -48,6 +48,14 @@ export async function requestStripePaymentIntent(payload, checkoutToken) {
     return dataFrom(response);
 }
 
+export async function requestCheckoutPaymentStatus(orderId, checkoutToken) {
+    const response = await storefrontApi.get('/storefront/checkout/orders/' + orderId + '/payment-status', {
+        headers: { Authorization: 'Bearer ' + checkoutToken },
+    });
+
+    return dataFrom(response);
+}
+
 export async function getCheckoutAddresses(checkoutToken) {
     const response = await storefrontApi.get('/storefront/checkout/addresses', {
         headers: { Authorization: 'Bearer ' + checkoutToken },
