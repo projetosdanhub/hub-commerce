@@ -15,6 +15,13 @@ export default defineConfig({
     server: {
         host: '0.0.0.0',
         origin: 'http://localhost:5173',
+        cors: {
+            origin: [
+                'http://localhost:8000',
+                'http://127.0.0.1:8000',
+                'http://localhost:5173',
+            ],
+        },
         hmr: {
             host: 'localhost',
             clientPort: 5173,

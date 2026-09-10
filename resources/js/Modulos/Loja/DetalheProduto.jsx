@@ -110,7 +110,7 @@ const ProductCarouselRelated = ({ onOpenQuickView }) => {
 
             <div className="overflow-hidden w-full px-2">
                 <div ref={carouselRef} onScroll={checkScrollPosition} className="flex gap-3 sm:gap-5 pt-2 pb-6 overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    <style dangerouslySetContent={{__html: `::-webkit-scrollbar { display: none; }`}}></style>
+                    <style dangerouslySetInnerHTML={{__html: `::-webkit-scrollbar { display: none; }`}}></style>
                     {[1, 2, 3, 4, 5, 6].map(prodId => (
                         <div key={prodId} className="snap-start flex-shrink-0">
                             <ProductCard abrirModal={onOpenQuickView} produtoId={prodId} />
@@ -530,7 +530,7 @@ const ProductDetail = ({ onAddCart, onOpenQuickView }) => {
                     <div className="prose prose-sm max-w-none text-gray-600">
                         {abaAtiva === 'descricao' && (
                             <div className="leading-relaxed space-y-4">
-                                <div dangerouslySetContent={{ __html: produto.descricao }}></div>
+                                <div dangerouslySetInnerHTML={{ __html: produto.descricao }}></div>
                             </div>
                         )}
                         {abaAtiva === 'especificacoes' && (
