@@ -369,4 +369,4 @@ Atualizado em: 2026-09-08 — OAuth Mercado Pago/PagBank passou a usar URLs ofic
 ## Auditoria de integrações — 2026-09-10
 
 - [~] INT-READY-001 — Revisar gateways, logística e prontidão test/live a partir de `75ca497`; corrigir riscos verificáveis, executar gates e registrar limitações antes de liberar produção.
-- Evidência/escopo de INT-READY-001: `docs/reviews/integration-readiness-2026-09-10.md`. Stripe/OAuth/cotação/UI/inbox, ciclo de etiquetas e retorno seguro do checkout foram corrigidos na PR #84; gateways adicionais, refund/reconciliação e produção continuam abertos. Aguardar Tests, E2E Tests e Security Scans da revisão final.
+- Evidência/escopo de INT-READY-001: `docs/reviews/integration-readiness-2026-09-10.md`. Stripe/OAuth/cotação/UI/inbox, ciclo de etiquetas e retorno seguro do checkout foram corrigidos na PR #84; a revisão de código `9d9901e` passou em Tests #551, E2E Tests #377 e Security Scans #379. Gate financeiro de revisão humana, gateways adicionais, refund/reconciliação e produção continuam abertos.

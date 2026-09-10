@@ -1,5 +1,0 @@
-[allowlist]
-description = "Synthetic Stripe webhook fixtures used only by automated tests"
-regexes = [
-  '''whsec_.*test_(123|sync)''',
-]
