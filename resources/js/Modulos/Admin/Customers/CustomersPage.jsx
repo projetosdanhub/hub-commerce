@@ -1,119 +1,74 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CircleAlert, RefreshCw, UsersRound } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
-import { adminQueryKeys } from '../../../queryClient';
-import { PageHeader } from '../DesignSystem/patterns/PageHeader';
-import { Button } from '../DesignSystem/primitives/Button';
-import { CustomerActionDialog } from './CustomerActionDialog';
-import { CustomerManagementPanels, CustomerSections } from './CustomerManagementPanels';
-import { CustomerProfile } from './CustomerProfile';
-import { CustomersDashboard } from './CustomersDashboard';
-import { CustomersList } from './CustomersList';
-import {
-  addWalletTransaction, deleteVipLevel, fetchCrmSettings, fetchCustomerMetrics, fetchCustomers, fetchVipLevels,
-  forceCustomerEmail, generateTemporaryPassword, saveCrmSettings, saveVipLevel, sendCustomerEmailLink,
-  sendPasswordReset, updateCustomerBasics, updateCustomerNotes, updateCustomerPhone, updateCustomerStatus,
-  updateCustomerTags, updateSensitiveData,
-} from './customerApi';
+import React, { useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { ChartNoAxesCombined, Crown, LockKeyhole, Settings2, ShieldAlert, UsersRound } from 'lucide-react';
+import { SectionTabs } from '../DesignSystem/patterns/SectionTabs';
+import './customers.css';
 
-const initialFilters = { page: 1, perPage: 15, search: '', status: 'TODOS', birthMonth: 'TODOS' };
+const sections = [
+  {
+    value: 'PAINEL', label: 'Painel', icon: ChartNoAxesCombined,
+    title: 'Indicadores indisponíveis por enquanto',
+    description: 'Os indicadores só serão exibidos quando pedidos e métricas estiverem isolados pela loja atual.',
+  },
+  {
+    value: 'CLIENTES', label: 'Clientes', icon: UsersRound,
+    title: 'Diretório de clientes indisponível por enquanto',
+    description: 'A busca, o perfil e as ações de atendimento aguardam um cadastro de clientes vinculado à loja atual.',
+  },
+  {
+    value: 'VIP', label: 'Benefícios VIP', icon: Crown,
+    title: 'Benefícios VIP indisponíveis por enquanto',
+    description: 'Regras de VIP, carteira e segmentação só serão liberadas com dados e cálculo auditáveis por loja.',
+  },
+  {
+    value: 'CONFIG', label: 'Configurações', icon: Settings2,
+    title: 'Configurações de CRM indisponíveis por enquanto',
+    description: 'As regras de cadastro e relacionamento aguardam uma configuração própria e autorizada para cada loja.',
+  },
+];
 
-export default function AdminCustomers() {
-  const queryClient = useQueryClient();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [section, setSection] = useState(() => searchParams.get('section') || 'PAINEL');
-  const [filters, setFilters] = useState(initialFilters);
-  const [selectedId, setSelectedId] = useState(() => searchParams.get('id'));
-  const [action, setAction] = useState(null);
-  const [notice, setNotice] = useState(null);
+export default function CustomersPage() {
+  const [activeSection, setActiveSection] = useState('PAINEL');
+  const section = useMemo(() => sections.find((item) => item.value === activeSection) || sections[0], [activeSection]);
+  const SectionIcon = section.icon;
 
-  const customersQuery = useQuery({ queryKey: adminQueryKeys.customers(filters), queryFn: () => fetchCustomers(filters), refetchInterval: 30_000 });
-  const metricsQuery = useQuery({ queryKey: adminQueryKeys.customerMetrics(), queryFn: fetchCustomerMetrics, refetchInterval: 60_000 });
-  const vipQuery = useQuery({ queryKey: adminQueryKeys.vipLevels(), queryFn: fetchVipLevels, enabled: section === 'VIP' });
-  const settingsQuery = useQuery({ queryKey: adminQueryKeys.crmSettings(), queryFn: fetchCrmSettings, enabled: section === 'CONFIG' });
+  return (
+    <main className="hub-customers-page">
+      <Helmet>
+        <title>Clientes | Hub Commerce</title>
+        <meta name="robots" content="noindex,nofollow" />
+      </Helmet>
 
-  const customers = customersQuery.data?.data ?? [];
-  const selectedCustomer = customers.find((customer) => String(customer.id) === String(selectedId)) ?? null;
-  const pagination = { page: Number(customersQuery.data?.current_page) || filters.page, lastPage: Number(customersQuery.data?.last_page) || 1 };
+      <header className="hub-customers-heading">
+        <div>
+          <p className="hub-customers-eyebrow">Relacionamento e retenção</p>
+          <h1>Clientes</h1>
+          <p>Centralize o relacionamento com privacidade e controles próprios para cada loja.</p>
+        </div>
+      </header>
 
-  useEffect(() => {
-    if (!notice) return undefined;
-    const timeout = window.setTimeout(() => setNotice(null), 7000);
-    return () => window.clearTimeout(timeout);
-  }, [notice]);
+      <SectionTabs ariaLabel="Seções de clientes" items={sections} value={activeSection} onChange={setActiveSection} />
 
-  const refresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: adminQueryKeys.root() });
-    await Promise.all([customersQuery.refetch(), metricsQuery.refetch()]);
-  };
+      <section className="hub-customers-surface hub-stable-data-region" aria-labelledby="customers-unavailable-title">
+        <div className="hub-customers-unavailable" role="status">
+          <span className="hub-customers-icon" aria-hidden="true"><SectionIcon size={28} /></span>
+          <p className="hub-customers-eyebrow">Área protegida</p>
+          <h2 id="customers-unavailable-title">{section.title}</h2>
+          <p>{section.description}</p>
+          <div className="hub-customers-requirement">
+            <LockKeyhole aria-hidden="true" size={18} />
+            <p>Nenhum dado ou ação é disponibilizado até que clientes, pedidos, benefícios e configurações estejam vinculados e autorizados para a loja atual.</p>
+          </div>
+        </div>
 
-  const mutate = useMutation({
-    mutationFn: async ({ type, fields }) => {
-      const customerId = selectedCustomer.id;
-      switch (type) {
-        case 'BASICS': return updateCustomerBasics({ customerId, fields: { nome: fields.nome, sexo: fields.sexo, motivo: fields.motivo } });
-        case 'PHONE': return updateCustomerPhone({ customerId, fields: { telefone: fields.telefone, motivo: fields.motivo } });
-        case 'SENSITIVE': return updateSensitiveData({ customerId, fields: { arquivo: fields.arquivo, cpf: fields.cpf, nascimento: fields.nascimento, motivo: fields.motivo } });
-        case 'EMAIL_LINK': return sendCustomerEmailLink({ customerId, email: fields.email });
-        case 'EMAIL_FORCE': return forceCustomerEmail({ customerId, fields: { email: fields.email, motivo: fields.motivo } });
-        case 'PASSWORD_TEMP': return generateTemporaryPassword(customerId);
-        case 'PASSWORD_LINK': return sendPasswordReset(customerId);
-        case 'STATUS': return updateCustomerStatus({ customerId, fields: { acao: fields.acao, motivo: fields.motivo } });
-        case 'WALLET': return addWalletTransaction({ customerId, fields: { tipo: fields.tipo, valor: fields.valor, motivo: fields.motivo } });
-        case 'NOTES': return updateCustomerNotes({ customerId, notes: fields.notas });
-        case 'TAGS': return updateCustomerTags({ customerId, tags: fields.tags.split(',').map((tag) => tag.trim()).filter(Boolean) });
-        default: throw new Error('Ação não reconhecida.');
-      }
-    },
-    onSuccess: async (response, variables) => {
-      setAction(null);
-      await refresh();
-      const password = variables.type === 'PASSWORD_TEMP' ? response?.data?.password : null;
-      setNotice({ tone: 'success', message: password ? `Senha provisória: ${password}. Guarde-a agora; ela não será mostrada novamente.` : 'Operação concluída e dados atualizados.' });
-    },
-  });
-
-  const changeSection = (next) => {
-    setSection(next);
-    setSelectedId(null);
-    setAction(null);
-    setSearchParams({ section: next });
-  };
-  const openCustomer = (customer) => {
-    setSection('CLIENTES');
-    setSelectedId(String(customer.id));
-    setSearchParams({ section: 'CLIENTES', id: String(customer.id) });
-  };
-  const closeCustomer = () => {
-    setSelectedId(null);
-    setAction(null);
-    setSearchParams({ section: 'CLIENTES' });
-  };
-  const runAction = (type, fields) => mutate.mutateAsync({ type, fields });
-
-  if (customersQuery.isError) return <section className="hub-surface hub-error-state" role="alert"><div><CircleAlert aria-hidden="true" size={28} /><h1 className="hub-panel-title">Não foi possível carregar os clientes</h1><p>Verifique a conexão e tente novamente. Nenhum dado foi alterado.</p><Button className="mt-5" icon={RefreshCw} onClick={() => customersQuery.refetch()}>Tentar novamente</Button></div></section>;
-
-  if (selectedCustomer) return <>
-    {notice ? <p className="hub-orders-notice" data-tone={notice.tone} role="status">{notice.message}</p> : null}
-    <CustomerProfile customer={selectedCustomer} refreshing={customersQuery.isFetching} onBack={closeCustomer} onRefresh={refresh} onAction={setAction} />
-    <CustomerActionDialog key={action || 'closed'} action={action} customer={selectedCustomer} loading={mutate.isPending} onClose={() => setAction(null)} onSubmit={runAction} />
-  </>;
-
-  return <>
-    <PageHeader eyebrow="Relacionamento e retenção" title="Clientes" icon={UsersRound} description="Gerencie o relacionamento e ações sensíveis em uma visão auditável." actions={<Button variant="secondary" icon={RefreshCw} loading={customersQuery.isFetching} onClick={refresh}>Atualizar dados</Button>} />
-    {notice ? <p className="hub-orders-notice" data-tone={notice.tone} role="status">{notice.message}</p> : null}
-    <CustomerSections active={section} onChange={changeSection}>
-      {section === 'PAINEL' ? <CustomersDashboard
-        metrics={metricsQuery.data}
-        loading={metricsQuery.isLoading}
-        error={metricsQuery.isError}
-        onRetry={() => metricsQuery.refetch()}
-        onOpenDirectory={() => changeSection('CLIENTES')}
-      /> : null}
-      {section === 'CLIENTES' ? <CustomersList customers={customers} filters={filters} pagination={pagination} loading={customersQuery.isLoading || customersQuery.isFetching} onChange={(changes) => setFilters((current) => ({ ...current, ...changes }))} onClear={() => setFilters(initialFilters)} onOpen={openCustomer} /> : null}
-      {section === 'VIP' ? <CustomerManagementPanels mode="VIP" vipLevels={vipQuery.data || []} loading={vipQuery.isLoading} error={vipQuery.isError} onRetry={() => vipQuery.refetch()} onSaveVip={async (level) => { await saveVipLevel(level); await queryClient.invalidateQueries({ queryKey: adminQueryKeys.vipLevels() }); }} onDeleteVip={async (id) => { await deleteVipLevel(id); await queryClient.invalidateQueries({ queryKey: adminQueryKeys.vipLevels() }); }} /> : null}
-      {section === 'CONFIG' ? <CustomerManagementPanels key={JSON.stringify(settingsQuery.data || {})} mode="CONFIG" settings={settingsQuery.data} loading={settingsQuery.isLoading} error={settingsQuery.isError} onRetry={() => settingsQuery.refetch()} onSaveSettings={async (settings) => { await saveCrmSettings(settings); await queryClient.invalidateQueries({ queryKey: adminQueryKeys.crmSettings() }); setNotice({ tone: 'success', message: 'Configurações atualizadas.' }); }} /> : null}
-    </CustomerSections>
-  </>;
-};
+        <aside className="hub-customers-assurance" aria-label="Proteção de dados de clientes">
+          <ShieldAlert aria-hidden="true" size={20} />
+          <div>
+            <strong>Privacidade antes da operação</strong>
+            <p>Esta proteção impede que dados de outra loja apareçam no painel durante a evolução do CRM.</p>
+          </div>
+        </aside>
+      </section>
+    </main>
+  );
+}
