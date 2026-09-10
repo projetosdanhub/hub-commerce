@@ -30,6 +30,8 @@ Base inspecionada: `75ca49736e1aaff1a05c20bdf23b417cce15eead` (`main`). A análi
 - Resposta do PaymentIntent confere ID, valor, moeda e modo test/live.
 - Checkout exige chave publicável e webhook configurados antes de criar pedido; implantação Laravel `production` rejeita checkout Sandbox.
 - Tipos de pagamento do Stripe limitados a cartão, conforme o contrato atual da tentativa.
+- Retorno do Stripe mantém apenas a sessão curta no `sessionStorage`, nunca em URL; consulta status mínimo de pagamento pelo comprador autenticado no tenant atual e só anuncia sucesso após o servidor registrar o webhook.
+- Analytics e layout global não são carregados em nenhuma rota `/checkout/*`, incluindo o retorno que pode receber parâmetros do gateway.
 
 ### Melhor Envio
 
@@ -43,19 +45,20 @@ Base inspecionada: `75ca49736e1aaff1a05c20bdf23b417cce15eead` (`main`). A análi
 - Central de Logística usa OAuth, removendo o formulário de token manual que chamava endpoint desativado.
 - Falhas de mutação têm feedback e a UI só confirma seleção depois da persistência.
 - Inbox verifica assinatura e identifica ambiente, limita os campos persistidos e reenvia eventos ainda não processados à fila após retentativa do fornecedor.
-- Evento sem vínculo de etiqueta fica com `failed_at`, sem receber `processed_at` fictício. O consumidor ainda exige implementação do vínculo de etiqueta.
+- Evento sem vínculo de etiqueta fica com `failed_at`, sem receber `processed_at` fictício. Com vínculo local, o job resolve tenant, etiqueta e pedido por referência persistida e aplica somente transições monotônicas.
 - Instalações não anunciam mais URLs de webhook sem rota implementada. O webhook central Melhor Envio usa `/api/webhooks/melhor-envio`.
+- A expedição usa um registro tenant-scoped por pedido e separa preparar, comprar, gerar, imprimir, cancelar e sincronizar; timeout não repete criação até a reconciliação pela referência opaca.
 
 ## Lacunas para fechar o escopo solicitado
 
 | Área | Evidência no código | Implementação que falta |
 |---|---|---|
-| Stripe | `StripeGateway`, `StripePaymentIntentCreator`, `StripeWebhookProcessor` | Refund, reconciliação automática, fila de webhook, testes de concorrência e fluxo pós-compra; Stripe Connect onboarding ainda retorna indisponível |
+| Stripe | `StripeGateway`, `StripePaymentIntentCreator`, `StripeWebhookProcessor`, retorno de checkout | Refund, reconciliação automática, fila de webhook, testes de concorrência e Stripe Connect; confirmação visual agora consulta somente o estado persistido, mas depende de homologação externa |
 | Mercado Pago | OAuth e credenciais cifradas em `ProviderOAuthTokenExchangeService` | Adapter de cobrança, frontend oficial tokenizado, webhook HMAC, refresh, estorno e reconciliação |
 | PagBank | OAuth e credenciais cifradas | Adapter de cobrança, tokenização/fluxo contratado, notificações autenticadas, refresh, estorno e reconciliação |
 | Pagar.me | Catálogo `API_KEYS` | Cofre de chaves por ambiente, adapter, tokenização, webhook conforme modalidade contratada, refund e reconciliação |
-| Melhor Envio: expedição | `OrderController::executarAcao` / ramo `DESPACHAR` | Substituir token legado/sandbox fixo, remover dados fictícios de destinatário, persistir ID e ambiente da etiqueta separados do rastreio e tratar resposta incerta sem duplicação |
-| Melhor Envio: ciclo da etiqueta | POST legado para `/me/cart`; job inbox sem vínculo | Compra, geração assíncrona, impressão autorizada, cancelamento verificado, reconciliação, estados fora de ordem e rastreio associado a pedido/tenant |
+| Melhor Envio: expedição | `MelhorEnvioShipmentService`, `OrderShipment`, `OrderShipmentController` | Implementação coberta por testes automatizados; falta Sandbox real, confirmação da compatibilidade com a conta e procedimentos operacionais |
+| Melhor Envio: ciclo da etiqueta | registro tenant-scoped, webhooks e operações separadas | Compra, geração, impressão, cancelamento, reconciliação e estados fora de ordem foram implementados; falta homologação Sandbox/produção e observabilidade operacional |
 | Dados do comprador | `StorefrontCustomer` armazena nome/e-mail/senha/status | Capturar e validar os dados realmente exigidos pelos provedores e pelo documento de envio; o legado não pode substituir CPF/telefone por valores fictícios |
 | Produção | Board OPS-001 a OPS-012 | Servidor e domínio reais, secrets no cofre, workers/scheduler, banco/cache, backup/restore, pipeline, rollback e verificação externa |
 | Qualidade | Workflows atuais limitam parte de lint/análise a arquivos novos | Sanear dívida global registrada em QA; sucesso da CI atual não significa lint/análise integral sem dívida |

@@ -571,6 +571,17 @@ Copie este bloco para cada handoff relevante:
 - Evidências: build e imports locais aprovados; 4 testes Vitest + 6 de interação aprovados. ESLint dos componentes alterados aprovado após correções. Testes PHP de regressão adicionados; execução depende do CI, pois PHP/Composer/Docker não estão disponíveis na sessão.
 - Limitações: nenhuma homologação ou implantação real. Expedição legada, gateways adicionais, Connect, refund/reconciliação e requisitos OPS ainda estão abertos. Detalhes em `docs/reviews/integration-readiness-2026-09-10.md`.
 - Próxima ação: executar e acompanhar os gates da PR; mudanças financeiras exigem revisão humana antes de merge conforme regra 10.
+
+### 2026-09-10 — Codex — correções de CI e retorno seguro da PR #84
+
+- Objetivo e escopo: corrigir os gates da PR #84, manter a expedição Melhor Envio idempotente e completar o retorno do Stripe sem expor parâmetros de checkout a analytics.
+- Branch e commit: `integrations/release-readiness`, revisão até `697065a4930091a9f2410bfb9dce5e4c04e1de81`.
+- Task board: INT-READY-001, PAY-004, PAY-007, PAY-008, APP-015, SHIP-003 e SHIP-005 permanecem `[~]`; nenhum gateway ou operação foi marcado como homologado.
+- Arquivos alterados: contratos tipados de pedido/credencial, ciclo tenant-scoped de etiqueta, controller de expedição, testes de segurança/idempotência, resolver de sessão curta do comprador, consulta de status de pagamento, retorno de checkout, rotas, bloqueio de analytics `/checkout/*`, relatório e board.
+- Contratos preservados: o comprador só lê o estado mínimo do próprio pedido no tenant atual; token curto não vai para URL, logs ou analytics e é removido em estados terminais. Pedido não avança por resposta do navegador. Etiquetas exigem pedido, instalação e credencial do tenant atual, e timeout exige reconciliação antes de repetir.
+- Evidências: `git diff --check` passou. Em `d8e4adf`, Larastan, ESLint/Vitest, E2E e Security Scans passaram; PHPUnit falhou apenas no fake de reconciliação da etiqueta, corrigido na revisão `3f044e2`. A revisão `3f044e2` parou no Pint por um import totalmente qualificado no novo teste de status; a correção isolada está em `697065a`. Os gates finais continuam pendentes; não há PHP/Composer nem `node_modules` na sessão local.
+- Riscos, bloqueios e itens não verificados: falta homologação real de Stripe e Melhor Envio, cofre/credenciais, workers/scheduler, refund, reconciliação e revisão humana financeira. Mercado Pago, PagBank e Pagar.me permanecem indisponíveis para cobrança.
+- Próxima ação única: acompanhar Tests, E2E Tests e Security Scans da revisão `697065a`; corrigir somente falhas verificáveis antes de solicitar revisão humana.
 ### 2026-09-10 — Codex — Transportadoras e configuração logística
 
 - Objetivo e escopo: modernizar o menu de Transportadoras e separar a configuração do Melhor Envio no fluxo de Configurações → Logística, preservando somente contratos existentes por tenant.
