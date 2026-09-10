@@ -5,20 +5,20 @@ Este arquivo mantém a continuidade operacional entre KIA, Codex, Claude, Gemini
 ## Estado atual
 
 - **Objetivo:** modernizar as telas internas por módulo, preservando contratos de negócio e fluxos auditáveis.
-- **Última integração:** PR #86, squash commit `9b2db05d283c9d813bf882c86509c1eaad44271a` na `main`.
-- **Branch de trabalho:** `ui/categories-modernization`, modernização do menu Categorias em validação.
-- **Tarefas afetadas:** UI-032 concluída; UI-028 permanece em andamento com Categorias entregue para validação. CAT-001 continua pendente de hierarquia e consolidação de modelo; CAT-002 e MKT-001 a MKT-003 continuam pendentes.
-- **Próxima ação:** publicar a PR de Categorias, aguardar os checks obrigatórios e só então iniciar o bloco independente de Menus.
+- **Última integração:** PR #87, squash commit `04e67ffd3bf4d63372a7f16e1da279cf5abf93a0` na `main`.
+- **Branch de trabalho:** `ui/reviews-modernization`, modernização do menu Avaliações ainda não iniciada.
+- **Tarefas afetadas:** UI-032 concluída; UI-028 permanece em andamento com Categorias integrada. CAT-001 continua pendente de hierarquia e consolidação de modelo; MKT-003 segue bloqueada até haver contrato administrativo tenant-scoped de avaliações e moderação.
+- **Próxima ação:** mapear Avaliações e só criar uma interface conectada se o contrato real atender isolamento, autoria e moderação.
 
 ### 2026-09-10 — Codex — modernização administrativa de Categorias
 - Objetivo e escopo: substituir o layout legado de Categorias pela composição canônica do painel, preservando os endpoints existentes de listar/criar/editar/excluir e sem inventar hierarquia, filtros, imagens ou métricas sem contrato.
-- Branch e commit: `ui/categories-modernization`, `61e5e628a1bcbbcff3a3f74627ffd840a57c4dd7`.
-- Task board: UI-028 `[~]` — Categorias foi registrada como modernizada e aguarda validação da PR; CAT-001 permanece `[ ]` porque a entrega não cria hierarquia nem altera o modelo.
+- Branch e commit: `ui/categories-modernization`, integrada na PR #87 pelo squash commit `04e67ffd3bf4d63372a7f16e1da279cf5abf93a0`.
+- Task board: UI-028 `[~]` — Categorias integrada com evidência de CI; CAT-001 permanece `[ ]` porque a entrega não cria hierarquia nem altera o modelo.
 - Arquivos alterados: `CategoriesPage`, novos `CategoryForm` e `CategoryList`, `categories.css` e `task-board.md`.
 - Contratos preservados: `GET/POST/PUT/DELETE /api/admin/categories`, permissões `tenant.catalog.view/manage`, query key vinculada ao host do tenant, invalidação após mutação e bloqueio de exclusão no backend quando houver produtos vinculados.
-- Evidências: `git diff --check` passou; ESLint direcionado aos três componentes novos passou; `npm run build` passou; `npm run test:ui` passou (Vitest 4/4 e interações 6/6); `node scripts/verify-local-imports.mjs` passou (139 arquivos). PHP/Composer não estão instalados neste ambiente, portanto os testes Laravel seguem pendentes de CI.
-- Riscos, bloqueios e itens não verificados: validar visualmente 320px, 768px e desktop, temas claro/escuro, teclado, zoom de 200% e reduced motion; o aviso de chunk Vite acima de 500 kB é legado e não foi ampliado intencionalmente. A cobertura tenant/contrato da API existente será reexecutada pelo workflow Tests.
-- Próxima ação única: abrir a PR, acompanhar Tests, E2E Tests e Security Scans e integrar somente após os checks verdes.
+- Evidências: `git diff --check` passou; ESLint direcionado aos três componentes novos passou; `npm run build` passou; `npm run test:ui` passou (Vitest 4/4 e interações 6/6); `node scripts/verify-local-imports.mjs` passou (139 arquivos). [Tests #543](https://github.com/projetosdanhub/hub-commerce/actions/runs/34472573944), [E2E Tests #369](https://github.com/projetosdanhub/hub-commerce/actions/runs/34472573918) e [Security Scans #371](https://github.com/projetosdanhub/hub-commerce/actions/runs/34472573870) passaram.
+- Riscos, bloqueios e itens não verificados: validar visualmente 320px, 768px e desktop, temas claro/escuro, teclado, zoom de 200% e reduced motion; o aviso de chunk Vite acima de 500 kB é legado e não foi ampliado intencionalmente.
+- Próxima ação única: mapear Avaliações; sem contrato administrativo tenant-scoped de autoria e moderação, manter o recurso indisponível e o MKT-003 aberto.
 
 ### 2026-09-10 — Codex — encerramento de PRs históricas e UI-032
 - Objetivo e escopo: encerrar PRs abertas já substituídas e modernizar somente o login administrativo, em pt-BR, com composição desktop/mobile, tema escuro, acessibilidade e contrato MFA existente.
