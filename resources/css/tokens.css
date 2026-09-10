@@ -97,6 +97,7 @@
   --hub-motion-slow: 320ms;
   --hub-motion-spinner: 720ms;
   --hub-motion-shimmer: 1.4s;
+  --hub-motion-auth-orbit: 8s;
   --hub-ease-in: ease-in;
   --hub-ease-out: ease-out;
   --hub-ease-in-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -107,6 +108,16 @@
   --hub-z-modal: 400;
   --hub-z-toast: 500;
   --hub-z-tooltip: 600;
+
+  /* Autenticação administrativa */
+  --hub-auth-shell-max-width: 72rem;
+  --hub-auth-shell-min-height: 38rem;
+  --hub-auth-form-min-width: 28rem;
+  --hub-auth-form-max-width: 34rem;
+  --hub-auth-copy-width: 26rem;
+  --hub-auth-mark-size: 2.75rem;
+  --hub-auth-orb-size: 30rem;
+  --hub-auth-orb-size-mobile: 18rem;
 }
 
 /* O painel é intencionalmente escuro; a vitrine pública não herda este tema. */

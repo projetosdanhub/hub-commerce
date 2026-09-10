@@ -364,3 +364,4 @@ Atualizado em: 2026-09-08 — OAuth Mercado Pago/PagBank passou a usar URLs ofic
 | [ ] | BILL-004 | P0 | Bloqueio gradual e reativação de loja | BILL-002, BILL-003 | Tolerância, restrição, suspensão e reativação só por estado financeiro confirmado |
 | [ ] | UI-030 | P1 | Guias do Super Admin para cofre e billing | VAULT-002, BILL-001 | Livro de ajuda filtrável, dicionário, estados e passos de diagnóstico |
 | [~] | UI-031 | P1 | Guias da Central de Apps para lojista | APP-010 | Livro com busca/filtro e capítulos de gateway integrado; faltam links oficiais e validação visual/CI |
+| [~] | UI-032 | P1 | Modernizar login administrativo | SEC-003, SEC-005, SEC-006, UI-001 | Tela pt-BR com tokens, dark, desktop/mobile dedicados, MFA já suportado pelo contrato e sessão temporária; aguardando validação de Tests, E2E Tests e Security Scans |
