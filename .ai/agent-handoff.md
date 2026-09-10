@@ -575,13 +575,13 @@ Copie este bloco para cada handoff relevante:
 ### 2026-09-10 — Codex — correções de CI e retorno seguro da PR #84
 
 - Objetivo e escopo: corrigir os gates da PR #84, manter a expedição Melhor Envio idempotente e completar o retorno do Stripe sem expor parâmetros de checkout a analytics.
-- Branch e commit: `integrations/release-readiness`, revisão até `697065a4930091a9f2410bfb9dce5e4c04e1de81`.
+- Branch e commit: `integrations/release-readiness`, revisão até `d33bdeff7c49ccba7168315cf461b4b3f1810b07`.
 - Task board: INT-READY-001, PAY-004, PAY-007, PAY-008, APP-015, SHIP-003 e SHIP-005 permanecem `[~]`; nenhum gateway ou operação foi marcado como homologado.
 - Arquivos alterados: contratos tipados de pedido/credencial, ciclo tenant-scoped de etiqueta, controller de expedição, testes de segurança/idempotência, resolver de sessão curta do comprador, consulta de status de pagamento, retorno de checkout, rotas, bloqueio de analytics `/checkout/*`, relatório e board.
 - Contratos preservados: o comprador só lê o estado mínimo do próprio pedido no tenant atual; token curto não vai para URL, logs ou analytics e é removido em estados terminais. Pedido não avança por resposta do navegador. Etiquetas exigem pedido, instalação e credencial do tenant atual, e timeout exige reconciliação antes de repetir.
-- Evidências: `git diff --check` passou. Em `d8e4adf`, Larastan, ESLint/Vitest, E2E e Security Scans passaram; PHPUnit falhou apenas no fake de reconciliação da etiqueta, corrigido na revisão `3f044e2`. A revisão `3f044e2` parou no Pint por um import totalmente qualificado no novo teste de status; a correção isolada está em `697065a`. Os gates finais continuam pendentes; não há PHP/Composer nem `node_modules` na sessão local.
+- Evidências: `git diff --check` passou. Em `d8e4adf`, Larastan, ESLint/Vitest, E2E e Security Scans passaram; PHPUnit falhou apenas no fake de reconciliação da etiqueta, corrigido na revisão `3f044e2`. A revisão `3f044e2` parou no Pint por um import totalmente qualificado no novo teste de status, corrigido em `697065a`; a rodada seguinte chegou ao ESLint e revelou atualização síncrona no efeito do retorno, corrigida em `d33bdef`. Os gates finais continuam pendentes; não há PHP/Composer nem `node_modules` na sessão local.
 - Riscos, bloqueios e itens não verificados: falta homologação real de Stripe e Melhor Envio, cofre/credenciais, workers/scheduler, refund, reconciliação e revisão humana financeira. Mercado Pago, PagBank e Pagar.me permanecem indisponíveis para cobrança.
-- Próxima ação única: acompanhar Tests, E2E Tests e Security Scans da revisão `697065a`; corrigir somente falhas verificáveis antes de solicitar revisão humana.
+- Próxima ação única: acompanhar Tests, E2E Tests e Security Scans da revisão `d33bdef`; corrigir somente falhas verificáveis antes de solicitar revisão humana.
 ### 2026-09-10 — Codex — Transportadoras e configuração logística
 
 - Objetivo e escopo: modernizar o menu de Transportadoras e separar a configuração do Melhor Envio no fluxo de Configurações → Logística, preservando somente contratos existentes por tenant.
