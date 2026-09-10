@@ -29,6 +29,11 @@ final class StripeGatewayConfiguration
             throw new StripeGatewayUnavailableException('O Stripe não está configurado para este ambiente.');
         }
 
+        $prefix = $environment === self::PRODUCTION ? 'live' : 'test';
+        if (! str_starts_with($secretKey, 'sk_'.$prefix.'_')) {
+            throw new StripeGatewayUnavailableException('A credencial Stripe não corresponde ao ambiente.');
+        }
+
         return [
             'secret_key' => $secretKey,
             'publishable_key' => $this->stringOrNull($credentials['publishable_key'] ?? null),

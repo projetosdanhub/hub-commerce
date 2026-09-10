@@ -254,6 +254,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::get('/settings', [MelhorEnvioController::class, 'getSettings'])->middleware('tenant.permission:tenant.shipping.view');
         Route::post('/verify-token', [MelhorEnvioController::class, 'verifyToken'])->middleware('tenant.permission:tenant.shipping.manage');
         Route::post('/carriers', [MelhorEnvioController::class, 'saveCarriers'])->middleware('tenant.permission:tenant.shipping.manage');
+        Route::post('/environment', [MelhorEnvioController::class, 'saveEnvironment'])->middleware('tenant.permission:tenant.shipping.manage');
         Route::post('/sender', [MelhorEnvioController::class, 'saveSender'])->middleware('tenant.permission:tenant.shipping.manage');
         Route::post('/disconnect', [MelhorEnvioController::class, 'disconnect'])->middleware('tenant.permission:tenant.shipping.manage');
         Route::post('/calculate', [MelhorEnvioController::class, 'calculate'])->middleware('tenant.permission:tenant.shipping.manage'); 

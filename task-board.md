@@ -365,3 +365,8 @@ Atualizado em: 2026-09-08 — OAuth Mercado Pago/PagBank passou a usar URLs ofic
 | [ ] | UI-030 | P1 | Guias do Super Admin para cofre e billing | VAULT-002, BILL-001 | Livro de ajuda filtrável, dicionário, estados e passos de diagnóstico |
 | [~] | UI-031 | P1 | Guias da Central de Apps para lojista | APP-010 | Livro com busca/filtro e capítulos de gateway integrado; faltam links oficiais e validação visual/CI |
 | [x] | UI-032 | P1 | Modernizar login administrativo | SEC-003, SEC-005, SEC-006, UI-001 | Tela pt-BR com tokens, dark, desktop/mobile dedicados, MFA já suportado pelo contrato e sessão temporária; PR #81 integrada com Tests, E2E Tests e Security Scans verdes |
+
+## Auditoria de integrações — 2026-09-10
+
+- [~] INT-READY-001 — Revisar gateways, logística e prontidão test/live a partir de `75ca497`; corrigir riscos verificáveis, executar gates e registrar limitações antes de liberar produção.
+- Evidência/escopo de INT-READY-001: `docs/reviews/integration-readiness-2026-09-10.md`. Correções Stripe/OAuth/cotação/UI/inbox preparadas; gateways adicionais, ciclo de etiquetas, refund/reconciliação e produção ainda não concluídos. Aguardar Tests, E2E Tests e Security Scans.

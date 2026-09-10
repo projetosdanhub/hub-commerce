@@ -16,34 +16,43 @@ class MelhorEnvioWebhookController extends Controller
         $signature = $request->header('X-ME-Signature');
         $secrets = array_filter(
             [
-                config('provider-connections.melhor_envio.sandbox_client_secret'),
-                config('provider-connections.melhor_envio.production_client_secret'),
+                'SANDBOX' => config('provider-connections.melhor_envio.sandbox_client_secret'),
+                'PRODUCTION' => config('provider-connections.melhor_envio.production_client_secret'),
             ],
             static fn (mixed $secret): bool => is_string($secret) && $secret !== '',
         );
 
-        if (! is_string($signature) || ! $this->signatureMatchesAnySecret($rawBody, $signature, $secrets)) {
+        $environment = is_string($signature) ? $this->signatureEnvironment($rawBody, $signature, $secrets) : null;
+        if ($environment === null) {
             return response()->json(['message' => 'Assinatura inválida.'], 401);
         }
 
         $payload = json_decode($rawBody, true);
 
-        if (! is_array($payload) || ! is_string($payload['event'] ?? null) || ! is_array($payload['data'] ?? null)) {
+        if (! is_array($payload) || ! is_string($payload['event'] ?? null) || ! is_array($payload['data'] ?? null) || ! is_string($payload['data']['id'] ?? null)) {
             return response()->json(['message' => 'Evento inválido.'], 422);
         }
 
-        $payloadHash = hash('sha256', $rawBody);
+        $payloadHash = hash('sha256', $environment.':'.$rawBody);
+        // Guardar apenas referências e estado operacional; nunca o payload integral.
+        $safePayload = [
+            'event' => $payload['event'],
+            'environment' => $environment,
+            'data' => array_intersect_key($payload['data'], array_flip([
+                'id', 'status', 'tracking', 'user_id', 'posted_at', 'delivered_at', 'canceled_at',
+            ])),
+        ];
 
         $event = ProviderWebhookEvent::query()->firstOrCreate(
             ['provider' => 'melhor_envio', 'payload_hash' => $payloadHash],
             [
                 'event_name' => $payload['event'],
-                'payload' => $payload,
+                'payload' => $safePayload,
                 'received_at' => now(),
             ],
         );
 
-        if ($event->wasRecentlyCreated) {
+        if ($event->processed_at === null) {
             ProcessMelhorEnvioWebhook::dispatch($event->id);
         }
 
@@ -51,16 +60,16 @@ class MelhorEnvioWebhookController extends Controller
     }
 
     /**
-     * @param  array<int, string>  $secrets
+     * @param  array<string, string>  $secrets
      */
-    private function signatureMatchesAnySecret(string $rawBody, string $signature, array $secrets): bool
+    private function signatureEnvironment(string $rawBody, string $signature, array $secrets): ?string
     {
-        foreach ($secrets as $secret) {
+        foreach ($secrets as $environment => $secret) {
             if (hash_equals(base64_encode(hash_hmac('sha256', $rawBody, $secret, true)), $signature)) {
-                return true;
+                return $environment;
             }
         }
 
-        return false;
+        return null;
     }
 }

@@ -25,7 +25,7 @@ class StripeWebhookController extends Controller
                 TenantContext::fromTenant($tenant),
                 fn (): bool => $this->processor->process($request->getContent(), $request->header('Stripe-Signature')),
             );
-        } catch (InvalidArgumentException) {
+        } catch (InvalidArgumentException|\JsonException|\App\Domain\Payments\StripeGatewayUnavailableException) {
             return response()->json(['message' => 'Webhook inválido.'], 400);
         }
 

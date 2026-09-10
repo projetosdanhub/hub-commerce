@@ -1,11 +1,11 @@
-import React, { useState, useEffect, Component } from 'react';
+import React, { useState, Component } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient, QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import api from '../../../api';
 
 // Components
-import { CarriersIcons, screenTransition, SuccessOverlay } from './Shared/CarriersUI';
+import { CarriersIcons, screenTransition } from './Shared/CarriersUI';
 import PartnersTab from './Partners/PartnersTab';
 import CarrierEditor from './Partners/CarrierEditor';
 import CarrierDetail from './Partners/CarrierDetail';
@@ -44,57 +44,29 @@ const AdminCarriersContent = () => {
     const [currentView, setCurrentView] = useState('LIST');
     const [activeTab, setActiveTab] = useState('MANUAIS'); // MANUAIS, MELHOR_ENVIO, REMETENTE, EMBALAGENS
     const [isManualRefresh, setIsManualRefresh] = useState(false);
-    const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
     const [isOpeningForm, setIsOpeningForm] = useState(false);
 
     // 🟢 FORMS STATES
     const [carrierToEdit, setCarrierToEdit] = useState(null);
     const [packageToEdit, setPackageToEdit] = useState(null);
     
-    const [senderForm, setSenderForm] = useState({ nome: '', documento: '', email: '', telefone: '', cep: '', rua: '', numero: '', bairro: '', cidade: '', uf: '' });
+    const [senderDraft, setSenderForm] = useState(null);
 
-    // Dicionário Visual Master do Melhor Envio
-    const dicMelhorEnvio = [
-        { id: '1', key: 'Correios PAC', logo: 'https://logospng.org/download/correios/logo-correios-2048.png', color: 'from-yellow-400 to-yellow-500' },
-        { id: '2', key: 'Correios SEDEX', logo: 'https://logospng.org/download/correios/logo-correios-2048.png', color: 'from-blue-500 to-blue-600' },
-        { id: '3', key: 'Jadlog', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/25/Jadlog_logo.png', color: 'from-red-600 to-red-700' },
-        { id: '4', key: 'Loggi', logo: 'https://logospng.org/download/loggi/logo-loggi-2048.png', color: 'from-sky-400 to-sky-500' },
-        { id: '5', key: 'Azul Cargo', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Azul_Linhas_Aereas_Brasileiras_logo.svg', color: 'from-indigo-600 to-indigo-800' },
-        { id: '6', key: 'LATAM Cargo', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/05/LATAM_Cargo_logo.svg', color: 'from-red-700 to-red-900' }
-    ];
-
-    const [meTokenInput, setMeTokenInput] = useState('');
-    const [meCarriersAtivas, setMeCarriersAtivas] = useState([]);
-    const [isAuthenticatedME, setIsAuthenticatedME] = useState(false);
+    const [shippingError, setShippingError] = useState(null);
 
     // 🟢 FETCH QUERIES
     const { data: fetchResult, isLoading, refetch } = useQuery({ queryKey: ['adminCarriers'], queryFn: async () => { const res = await api.get('/admin/carriers'); return res.data; } });
     const transportadoras = fetchResult?.data || [];
 
-    const { data: meResult, refetch: refetchME } = useQuery({ queryKey: ['melhorEnvioSettings'], queryFn: async () => { const res = await api.get('/admin/melhorenvio/settings'); return res.data; } });
+    const { data: meResult, refetch: refetchME, isFetching: isFetchingME } = useQuery({ queryKey: ['melhorEnvioSettings'], queryFn: async () => { const res = await api.get('/admin/melhorenvio/settings'); return res.data; } });
 
     const { data: packagesResult, isLoading: loadingPackages, refetch: refetchPackages } = useQuery({ queryKey: ['adminPackages'], queryFn: async () => { const res = await api.get('/admin/shipping-packages'); return res.data; } });
     const embalagens = packagesResult?.data || [];
 
-    useEffect(() => {
-        if (meResult?.data) {
-            const carriersAtivasBanco = meResult.data.carriers_ativas || [];
-            const mergedCarriers = dicMelhorEnvio.map(masterItem => {
-                const found = carriersAtivasBanco.find(c => c.id === masterItem.id || c.nome === masterItem.key);
-                return { id: masterItem.id, nome: masterItem.key, ativo: found ? found.ativo : false, logo: masterItem.logo, color: masterItem.color };
-            });
-
-            setMeCarriersAtivas(mergedCarriers);
-            setIsAuthenticatedME(meResult.data.is_authenticated);
-            setMeTokenInput(''); 
-            
-            if (meResult.data.sender_info && Object.keys(meResult.data.sender_info).length > 0) {
-                setSenderForm(meResult.data.sender_info);
-            }
-        } else {
-            setMeCarriersAtivas(dicMelhorEnvio.map(m => ({ id: m.id, nome: m.key, ativo: false, logo: m.logo, color: m.color })));
-        }
-    }, [meResult]);
+    const meCarriersAtivas = meResult?.data?.carriers_ativas || [];
+    const isAuthenticatedME = meResult?.data?.is_authenticated === true;
+    const senderForm = senderDraft || meResult?.data?.sender_info || { nome: '', documento: '', email: '', telefone: '', cep: '', rua: '', numero: '', bairro: '', cidade: '', uf: '' };
+    const changeSenderForm = (next) => setSenderForm(typeof next === 'function' ? next(senderForm) : next);
 
     const handleRefresh = async () => {
         setIsManualRefresh(true);
@@ -110,14 +82,15 @@ const AdminCarriersContent = () => {
     const mutacaoToggleStatus = useMutation({ mutationFn: async ({ id, data }) => await api.post(`/admin/carriers/${id}/status`, data), onSuccess: () => queryClientLocal.invalidateQueries({ queryKey: ['adminCarriers'] }) });
 
     // 🟢 MUTAÇÕES MELHOR ENVIO
-    const mutacaoVerifyToken = useMutation({
-        mutationFn: async (token) => await api.post('/admin/melhorenvio/verify-token', { access_token: token }),
-        onSuccess: () => { setShowSuccessOverlay(true); setTimeout(() => { setShowSuccessOverlay(false); queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); setIsAuthenticatedME(true); }, 2500); },
-        onError: (err) => { alert(err.response?.data?.message || "Token inválido."); }
-    });
-    const mutacaoSaveCarriersME = useMutation({ mutationFn: async (carriers) => await api.post('/admin/melhorenvio/carriers', { carriers_ativas: carriers }), onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); } });
-    const mutacaoDesconectarME = useMutation({ mutationFn: async () => await api.post('/admin/melhorenvio/disconnect'), onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); setIsAuthenticatedME(false); setMeTokenInput(''); } });
-    
+    const shippingFailure = (error) => setShippingError(error?.response?.data?.message || 'Não foi possível salvar a configuração de frete.');
+    const refreshShipping = () => {
+        setShippingError(null);
+        queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] });
+    };
+    const mutacaoEnvironmentME = useMutation({ mutationFn: (environment) => api.post('/admin/melhorenvio/environment', { environment }), onSuccess: refreshShipping, onError: shippingFailure });
+    const mutacaoSaveCarriersME = useMutation({ mutationFn: (carriers) => api.post('/admin/melhorenvio/carriers', { carriers_ativas: carriers }), onSuccess: refreshShipping, onError: shippingFailure });
+    const mutacaoDesconectarME = useMutation({ mutationFn: () => api.post('/admin/melhorenvio/disconnect'), onSuccess: refreshShipping, onError: shippingFailure });
+
     // 🟢 MUTAÇÕES REMETENTE E EMBALAGENS
     const mutacaoSaveSender = useMutation({ mutationFn: async (dados) => await api.post('/admin/melhorenvio/sender', dados), onSuccess: () => { alert("Remetente atualizado!"); queryClientLocal.invalidateQueries({ queryKey: ['melhorEnvioSettings'] }); } });
     const mutacaoSavePackage = useMutation({ mutationFn: async (dados) => await api.post('/admin/shipping-packages', dados), onSuccess: () => { queryClientLocal.invalidateQueries({ queryKey: ['adminPackages'] }); setCurrentView('LIST'); setPackageToEdit(null); } });
@@ -138,9 +111,8 @@ const AdminCarriersContent = () => {
     const abrirNovaEmbalagem = () => { setPackageToEdit(null); setCurrentView('FORM_PACKAGE'); };
     const abrirEdicaoEmbalagem = (p) => { setPackageToEdit(p); setCurrentView('FORM_PACKAGE'); };
 
-    const handleSincronizarME = () => { if (!meTokenInput) return alert("Cole o seu Personal Access Token."); mutacaoVerifyToken.mutate(meTokenInput); };
-    const handleDesconectarME = () => { if (window.confirm("Deseja realmente desconectar?")) mutacaoDesconectarME.mutate(); };
-    const toggleMeCarrier = (id) => { const novosCarriers = meCarriersAtivas.map(c => c.id === id ? { ...c, ativo: !c.ativo } : c); setMeCarriersAtivas(novosCarriers); mutacaoSaveCarriersME.mutate(novosCarriers); };
+    const handleDesconectarME = () => { if (window.confirm('Desconectar o Melhor Envio neste ambiente?')) mutacaoDesconectarME.mutate(); };
+    const toggleMeCarrier = (id) => { const carriers = meCarriersAtivas.map(c => c.id === id ? { ...c, ativo: !c.ativo } : c); mutacaoSaveCarriersME.mutate(carriers); };
 
     // ============================================================================
     // RENDER: LISTA E ABAS
@@ -199,22 +171,22 @@ const AdminCarriersContent = () => {
                 {activeTab === 'MELHOR_ENVIO' && (
                     <MelhorEnvioTab 
                         isAuthenticatedME={isAuthenticatedME}
-                        meTokenInput={meTokenInput}
-                        setMeTokenInput={setMeTokenInput}
-                        isAuthenticatingME={mutacaoVerifyToken.isPending}
-                        handleSincronizarME={handleSincronizarME}
                         handleDesconectarME={handleDesconectarME}
                         isDisconnecting={mutacaoDesconectarME.isPending}
                         meCarriersAtivas={meCarriersAtivas}
                         toggleMeCarrier={toggleMeCarrier}
-                        isLoading={isManualRefresh}
+                        isLoading={isManualRefresh || isFetchingME}
+                        environment={meResult?.data?.environment || 'SANDBOX'}
+                        onEnvironmentChange={(environment) => mutacaoEnvironmentME.mutate(environment)}
+                        isSaving={mutacaoEnvironmentME.isPending || mutacaoSaveCarriersME.isPending}
+                        error={shippingError || meResult?.data?.services_error}
                     />
                 )}
 
                 {activeTab === 'REMETENTE' && (
                     <SenderTab 
                         senderForm={senderForm}
-                        setSenderForm={setSenderForm}
+                        setSenderForm={changeSenderForm}
                         onSave={() => mutacaoSaveSender.mutate(senderForm)}
                         isSaving={mutacaoSaveSender.isPending}
                         isLoading={isManualRefresh}
@@ -242,7 +214,6 @@ const AdminCarriersContent = () => {
             <Helmet><title>Transportadoras & Rotas | Hub Commerce</title></Helmet>
             
             <AnimatePresence>
-                {showSuccessOverlay && <SuccessOverlay />}
             </AnimatePresence>
 
             <div className="max-w-7xl mx-auto space-y-6">

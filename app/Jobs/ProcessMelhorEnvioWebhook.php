@@ -16,6 +16,18 @@ class ProcessMelhorEnvioWebhook implements ShouldQueue
 
     public int $tries = 5;
 
+    public int $timeout = 30;
+
+    public function backoff(): array
+    {
+        return [15, 60, 300, 900];
+    }
+
+    public function failed(?\Throwable $exception): void
+    {
+        ProviderWebhookEvent::query()->whereKey($this->eventId)->update(['failed_at' => now()]);
+    }
+
     public function __construct(public readonly int $eventId) {}
 
     public function handle(): void
@@ -30,7 +42,9 @@ class ProcessMelhorEnvioWebhook implements ShouldQueue
             // A vinculação da etiqueta ao pedido será adicionada junto ao fluxo
             // idempotente de geração de etiquetas. Nunca atualize pedidos por dados
             // não vinculados ao tenant.
-            $event->forceFill(['processed_at' => now()])->save();
+            // Inbox recebido não é rastreio processado. Sem vínculo persistido de
+            // etiqueta, manter a pendência visível para reconciliação operacional.
+            $event->forceFill(['failed_at' => now()])->save();
         });
     }
 }

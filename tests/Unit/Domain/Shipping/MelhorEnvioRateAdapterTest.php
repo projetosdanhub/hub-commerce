@@ -16,12 +16,14 @@ class MelhorEnvioRateAdapterTest extends TestCase
             'https://sandbox.melhorenvio.com.br/*' => Http::response([
                 ['id' => 1, 'price' => '12.50', 'delivery_time' => 3],
                 ['error' => 'fora dos limites'],
+                ['id' => 2, 'price' => '25.00', 'delivery_time' => 1],
             ]),
         ]);
 
         $config = new MelhorEnvioSetting([
             'access_token' => 'token-teste',
             'environment' => 'SANDBOX',
+            'carriers_ativas' => [['id' => '1', 'nome' => 'PAC', 'ativo' => true]],
             'sender_info' => ['cep' => '01001-000'],
         ]);
 
@@ -30,6 +32,7 @@ class MelhorEnvioRateAdapterTest extends TestCase
             '20040-020',
             ['height' => 10, 'width' => 20, 'length' => 30, 'weight' => 1],
             '100.00',
+            'token-teste',
         );
 
         $this->assertSame([
@@ -41,5 +44,29 @@ class MelhorEnvioRateAdapterTest extends TestCase
                 && $request['from']['postal_code'] === '01001000'
                 && $request['to']['postal_code'] === '20040020';
         });
+    }
+    public function test_timeout_returns_a_safe_domain_error(): void
+    {
+        Http::fake(['*' => Http::failedConnection()]);
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('O serviço de frete está temporariamente indisponível.');
+        (new MelhorEnvioRateAdapter)->calculate(
+            new MelhorEnvioSetting(['environment' => 'SANDBOX', 'sender_info' => ['cep' => '01001000']]),
+            '20040020', ['height' => 10, 'width' => 10, 'length' => 10, 'weight' => 1], '10.00', 'fixture',
+        );
+    }
+
+    public function test_invalid_dimensions_never_reach_the_provider(): void
+    {
+        Http::fake();
+        try {
+            (new MelhorEnvioRateAdapter)->calculate(
+                new MelhorEnvioSetting(['environment' => 'SANDBOX', 'sender_info' => ['cep' => '01001000']]),
+                '20040020', ['height' => 0, 'width' => 10, 'length' => 10, 'weight' => 1], '10.00', 'fixture',
+            );
+            $this->fail('Dimensão inválida foi aceita.');
+        } catch (\DomainException) {
+            Http::assertNothingSent();
+        }
     }
 }

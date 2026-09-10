@@ -37,6 +37,13 @@ class StripeCheckoutController extends Controller
 
         try {
             $environment = $configuration->safeStatus()['active_environment'];
+            $credentials = $configuration->credentialsFor($environment);
+            if (blank($credentials['publishable_key']) || blank($credentials['webhook_secret'])) {
+                throw new StripeGatewayUnavailableException('A configuração de checkout está incompleta.');
+            }
+            if (app()->environment('production') && $environment !== StripeGatewayConfiguration::PRODUCTION) {
+                throw new StripeGatewayUnavailableException('Sandbox não está disponível nesta implantação.');
+            }
             $result = $orders->create(new CheckoutOrderCommand(
                 $customer->getKey(),
                 $request->validated('items'),

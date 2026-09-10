@@ -551,3 +551,13 @@ Copie este bloco para cada handoff relevante:
 - Evidências: `npm run test:ui` passou (3 arquivos/4 testes Vitest e 6 testes de interação); `npm run build` passou e a busca em `public/build` não encontrou `localhost:8000/api`; [Tests #532](https://github.com/projetosdanhub/hub-commerce/actions/runs/34405869011), [E2E Tests #358](https://github.com/projetosdanhub/hub-commerce/actions/runs/34405868844) e [Security Scans #360](https://github.com/projetosdanhub/hub-commerce/actions/runs/34405868879) concluíram com sucesso na PR #79.
 - Riscos, bloqueios e itens não verificados: `composer` e `docker` não estão disponíveis no ambiente de trabalho; a homologação no host real do ngrok ainda depende de recriar os containers e gerar o build. `npm run lint` continua vermelho por 51 erros preexistentes em módulos legados, sem arquivos tocados neste commit.
 - Próxima ação única: após o merge da PR #79, aplicar os comandos documentados no host do túnel e validar no navegador que HTML, assets e API usam apenas a origem HTTPS pública.
+
+### 2026-09-10 — Auditoria de integrações e correções verificáveis
+
+- Objetivo: revisar main/PRs e preparar gateways e Melhor Envio para testes e produção. A revisão encontrou lacunas de implementação além de homologação; a conclusão global permanece pendente.
+- Branch/base: `integrations/release-readiness`, criada de `75ca497`.
+- Board: INT-READY-001 `[~]`; PAY e SHIP não recebem conclusão antecipada.
+- Alterações: validação/idempotência de Stripe, cotação OAuth estrita por tenant/ambiente, catálogo real e formulário OAuth de logística, validação de remetente, inbox Melhor Envio com pendências explícitas e URLs reais de webhook.
+- Evidências: build e imports locais aprovados; 4 testes Vitest + 6 de interação aprovados. ESLint dos componentes alterados aprovado após correções. Testes PHP de regressão adicionados; execução depende do CI, pois PHP/Composer/Docker não estão disponíveis na sessão.
+- Limitações: nenhuma homologação ou implantação real. Expedição legada, gateways adicionais, Connect, refund/reconciliação e requisitos OPS ainda estão abertos. Detalhes em `docs/reviews/integration-readiness-2026-09-10.md`.
+- Próxima ação: executar e acompanhar os gates da PR; mudanças financeiras exigem revisão humana antes de merge conforme regra 10.
